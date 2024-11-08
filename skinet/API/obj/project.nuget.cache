@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "bAXP0UGgHdE=",
+  "dgSpecHash": "DEChaMudCys=",
   "success": true,
-  "projectFilePath": "D:\\Programare\\Proiecte\\E-commerce\\skinet\\api\\API.csproj",
+  "projectFilePath": "D:\\Programare\\Proiecte\\E-commerce\\skinet\\API\\API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\vieri\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.0-rc.2.24474.3\\microsoft.aspnetcore.openapi.9.0.0-rc.2.24474.3.nupkg.sha512",
     "C:\\Users\\vieri\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
