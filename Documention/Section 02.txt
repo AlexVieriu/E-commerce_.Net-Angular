@@ -48,3 +48,8 @@ dotnet build
 cd API
 dotnet run
 
+--- appsettings.Development.json ---
+"Microsoft.AspNetCore": "Warning" -> "Microsoft.AspNetCore": "Information"
+
+ctrl + ~
+dotnet watch

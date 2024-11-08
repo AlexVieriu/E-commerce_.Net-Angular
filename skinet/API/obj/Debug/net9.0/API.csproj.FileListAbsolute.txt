@@ -39,3 +39,4 @@ D:\Programare\Proiecte\E-commerce\skinet\api\bin\Debug\net9.0\Swashbuckle.AspNet
 D:\Programare\Proiecte\E-commerce\skinet\api\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Programare\Proiecte\E-commerce\skinet\api\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\Programare\Proiecte\E-commerce\skinet\api\bin\Debug\net9.0\Scalar.AspNetCore.dll
+D:\Programare\Proiecte\E-commerce\skinet\API\obj\Debug\net9.0\API.sourcelink.json
