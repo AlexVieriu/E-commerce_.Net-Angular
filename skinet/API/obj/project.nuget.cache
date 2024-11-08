@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "bAXP0UGgHdE=",
+  "success": true,
+  "projectFilePath": "D:\\Programare\\Proiecte\\E-commerce\\skinet\\api\\API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\vieri\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.0-rc.2.24474.3\\microsoft.aspnetcore.openapi.9.0.0-rc.2.24474.3.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\scalar.aspnetcore\\1.2.33\\scalar.aspnetcore.1.2.33.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\swashbuckle.aspnetcore\\6.9.0\\swashbuckle.aspnetcore.6.9.0.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.9.0\\swashbuckle.aspnetcore.swagger.6.9.0.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.9.0\\swashbuckle.aspnetcore.swaggergen.6.9.0.nupkg.sha512",
+    "C:\\Users\\vieri\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.9.0\\swashbuckle.aspnetcore.swaggerui.6.9.0.nupkg.sha512"
+  ],
+  "logs": []
+}

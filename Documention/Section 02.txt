@@ -1,0 +1,50 @@
+5. Introduction
+-> API Basics
+-> Create the 3 projects: 
+    -> API (receives requests and sends responses)
+    -> Infrastructure (communicate with DB and send queries and get data)
+    -> Core (contain the business logic)
+
+    Why is this important?
+    -> separation of concerns
+    -> testability
+    -> scalability and maintainability
+    -> flexibility
+    -> reusability
+
+-> Clean architecture concepts
+-> Entity Framework 
+-> Docker/SQL Server
+-> Postman
+-> Using git 
+
+6. Creating the .NET projects
+-> go into the project folder
+-> open the terminal: ctrl + ~
+mkdir skinet 
+cd skinet
+clear
+dotnet --list-sdks
+dotnet -h
+dotnet new list
+dotnet new sln
+dotnet new webapi -o API -controllers
+dotnet new classlib -o Core
+dotnet new classlib -o Infrastructure
+ls
+dotnet sln add API/
+dotnet sln add Core/
+dotnet sln add Infrastructure/
+dotnet sln list
+cd API
+dotnet add reference ../Infrastructure
+cd ..
+cd Infrastructure
+dotnet add reference ../Core
+dotnet restore
+dotnet build
+
+7. See the projects 
+cd API
+dotnet run
+
