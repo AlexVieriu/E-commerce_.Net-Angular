@@ -59,6 +59,24 @@ dotnet watch
 Entity  -> Product.cs(Name, Description, Price, PictureUrl, Type, Brand, QuantityInStock)
         -> BaseEntity.cs(Id)
 
-        
-        
+9. Setting up Entity Framework
 
+Tip: if the preview packages are not shown, search them on the https://www.nuget.org/packages
+
+--- API.csproj ---
+Microsoft.EntityFrameworkCore.Design
+GlobalUsings.cs
+
+--- Infrastructure.csproj ---
+Microsoft.EntityFrameworkCore.SqlServer
+Data -> StoreContext.cs
+GlobalUsings.cs
+        
+Primary constructor:
+public class StoreContext(DbContextOptions options) : DbContext(options)
+{
+}
+
+--- API -> Program.cs ---
+builder.Services.AddDbContext<StoreContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
