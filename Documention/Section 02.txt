@@ -64,11 +64,10 @@ Entity  -> Product.cs(Name, Description, Price, PictureUrl, Type, Brand, Quantit
 Tip: if the preview packages are not shown, search them on the https://www.nuget.org/packages
 
 --- API.csproj ---
-Microsoft.EntityFrameworkCore.Design
 GlobalUsings.cs
 
 --- Infrastructure.csproj ---
-Microsoft.EntityFrameworkCore.SqlServer
+Microsoft.EntityFrameworkCore.Sqlite
 Data -> StoreContext.cs
 GlobalUsings.cs
         
@@ -80,3 +79,33 @@ public class StoreContext(DbContextOptions options) : DbContext(options)
 --- API -> Program.cs ---
 builder.Services.AddDbContext<StoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    
+
+10. Setting up Sql Server
+
+https://hub.docker.com/r/microsoft/azure-sql-edge
+https://hub.docker.com/r/keinos/sqlite3
+
+--- skinet ---
+docker-compose.yml
+
+services:
+  sqlite:
+    image: keinos/sqlite3:latest
+    container_name: sqlite3
+    command: tail -f /dev/null  # Keeps the container running
+    volumes:
+      - ./data:/data  # Persists SQLite data in the local `data` folder
+    working_dir: /data
+
+
+Terminal:
+docker compose up -d
+docker ps -a
+
+If is not working:
+docker compose down
+docker compose up -d
+docker ps -a
+
+Restart the docker window if the container is not shown
