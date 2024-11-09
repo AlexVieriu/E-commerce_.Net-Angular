@@ -53,3 +53,12 @@ dotnet run
 
 ctrl + ~
 dotnet watch
+
+8. Creating the Product Entity
+
+Entity  -> Product.cs(Name, Description, Price, PictureUrl, Type, Brand, QuantityInStock)
+        -> BaseEntity.cs(Id)
+
+        
+        
+
