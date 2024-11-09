@@ -64,7 +64,9 @@ Entity  -> Product.cs(Name, Description, Price, PictureUrl, Type, Brand, Quantit
 Tip: if the preview packages are not shown, search them on the https://www.nuget.org/packages
 
 --- API.csproj ---
+Microsoft.EntityFrameworkCore.Design
 GlobalUsings.cs
+
 
 --- Infrastructure.csproj ---
 Microsoft.EntityFrameworkCore.Sqlite
@@ -109,3 +111,25 @@ docker compose up -d
 docker ps -a
 
 Restart the docker window if the container is not shown
+
+
+11. Connect to the SQLite from the app
+
+-- API -> appsettings.Development.json ---
+"ConnectionStrings": {
+    "DefaultConnection": "Data Source=D:/Programare/Proiecte/E-commerce/skinet/data/store.db"
+  }
+
+File location: 
+Ensure the store.db file exists in the ./data folder on your local system before running 
+your application. If it doesn't exist, SQLite will create it automatically when your application 
+connects.
+
+Install dotnet-ef (for creating migrations):
+https://www.nuget.org/packages/dotnet-ef/9.0.0-rc.2.24474.1
+
+Terminal:
+dotnet ef 
+dotnet ef migrations add InitialCreate -s API -p Infrastructure
+dotnet ef migrations remove -s API -p Infrastructure
+
