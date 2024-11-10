@@ -58,6 +58,12 @@
               "target": "Package",
               "version": "[9.0.0-rc.2.24474.3, )"
             },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.0-rc.2.24474.1, )"
+            },
             "Scalar.AspNetCore": {
               "target": "Package",
               "version": "[1.2.33, )"
@@ -204,6 +210,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[9.0.0-rc.2.24474.1, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
