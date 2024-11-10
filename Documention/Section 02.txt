@@ -48,3 +48,162 @@ dotnet build
 cd API
 dotnet run
 
+--- appsettings.Development.json ---
+"Microsoft.AspNetCore": "Warning" -> "Microsoft.AspNetCore": "Information"
+
+ctrl + ~
+dotnet watch
+
+8. Creating the Product Entity
+
+Entity  -> Product.cs(Name, Description, Price, PictureUrl, Type, Brand, QuantityInStock)
+        -> BaseEntity.cs(Id)
+
+9. Setting up Entity Framework
+
+Tip: if the preview packages are not shown, search them on the https://www.nuget.org/packages
+
+--- API.csproj ---
+Microsoft.EntityFrameworkCore.Design
+GlobalUsings.cs
+
+
+--- Infrastructure.csproj ---
+Microsoft.EntityFrameworkCore.Sqlite
+Data -> StoreContext.cs
+GlobalUsings.cs
+        
+Primary constructor:
+public class StoreContext(DbContextOptions options) : DbContext(options)
+{
+}
+
+--- API -> Program.cs ---
+builder.Services.AddDbContext<StoreContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    
+
+10. Setting up Sql Server
+
+https://hub.docker.com/r/microsoft/azure-sql-edge
+https://hub.docker.com/r/keinos/sqlite3
+
+--- skinet ---
+docker-compose.yml
+
+services:
+  sqlite:
+    image: keinos/sqlite3:latest
+    container_name: sqlite3
+    command: tail -f /dev/null  # Keeps the container running
+    volumes:
+      - ./data:/data  # Persists SQLite data in the local `data` folder
+    working_dir: /data
+
+
+Terminal:
+docker compose up -d
+docker ps -a
+
+If is not working:
+docker compose down
+docker compose up -d
+docker ps -a
+
+Restart the docker window if the container is not shown
+
+
+11. Connect to the SQLite from the app
+
+-- API -> appsettings.Development.json ---
+"ConnectionStrings": {
+    "DefaultConnection": "Data Source=./data/store.db"
+  }
+
+File location: 
+Ensure the store.db file exists in the ./data folder on your local system before running 
+your application. If it doesn't exist, SQLite will create it automatically when your application 
+connects.
+
+Install dotnet-ef (for creating migrations):
+https://www.nuget.org/packages/dotnet-ef/9.0.0-rc.2.24474.1
+
+Terminal:
+dotnet ef 
+dotnet ef migrations add InitialCreate -s API -p Infrastructure
+dotnet ef migrations remove -s API -p Infrastructure
+
+
+12. Configuring the entities for the migrations
+
+-- Infrastructure --
+-> Config -> ProductConfiguration.cs
+
+-- StoreContext.cs --
+override OnModelCreating .... 
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
+}
+
+Terminal:
+dotnet ef migrations add InitialCreate -s API -p Infrastructure
+dotnet ef database update -s API -p Infrastructure
+
+If the SQLite database (store.db) is not in the folder "./data/store.db" it will 
+automatically be created where we run the "database up" command
+
+Open the current folder explorer command:
+explorer .
+
+Connect to SQLite:
+-> install extensions:
+  -> SQLiteViewer
+  -> SQLite
+
+ctrl + shift + p -> SQLite Explorer SQLiteView 
+
+check the _EFMigrationsHistory table in SQLITE EXPLORER(left sidebar):
+MigrationId	                  ProductVersion
+20241109045457_InitialCreate	9.0.0-rc.2.24474.1
+
+
+13. Creating the products controller
+ctrl + U + U (put every line in the alphabetic order)
+
+-- Skinet --
+.editorconfig
+[*.{cs,vb}]
+dotnet_naming_rule.private_members_with_underscore.symbols  = private_fields
+dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.severity = suggestion
+
+dotnet_naming_symbols.private_fields.applicable_kinds           = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
+
+
+-- API -> ProductsController.cs --
+ActionResult<> : allows as to get HTTP types of responses
+
+[HttpGet]             -> IEnumerable<Product> ... GetProducts()
+[HttpGet("{id:int}")] -> Product ... GetProduct(int id)
+[HttpPost]            -> Product ... CreateProduct(Product product)
+
+
+14. Using postman to test our new API Endpoints
+
+Global Variables: 
+-> available across all workspaces and environments
+
+Environment Variables: 
+-> available only within the context of a specific environment
+
+Workspace Variables: 
+-> available within the context of a specific workspace
+
