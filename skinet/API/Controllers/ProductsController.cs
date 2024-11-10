@@ -25,7 +25,7 @@ public class ProductsController : ControllerBase
         if (product == null)
             return NotFound();
 
-        return product;
+        return Ok(product);
     }
 
     [HttpPost]
@@ -46,7 +46,7 @@ public class ProductsController : ControllerBase
         _context.Entry(product).State = EntityState.Modified;
         await _context.SaveChangesAsync();
 
-        return product;
+        return Ok(product);
     }
 
     [HttpDelete("{id:int}")]

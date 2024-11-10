@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "C#: API",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}\\skinet\\API\\API.csproj",
+            "launchConfigurationId": "TargetFramework=;http"
+        }
+    ]
+}
