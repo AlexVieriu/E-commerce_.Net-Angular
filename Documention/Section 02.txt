@@ -195,3 +195,15 @@ ActionResult<> : allows as to get HTTP types of responses
 [HttpGet("{id:int}")] -> Product ... GetProduct(int id)
 [HttpPost]            -> Product ... CreateProduct(Product product)
 
+
+14. Using postman to test our new API Endpoints
+
+Global Variables: 
+-> available across all workspaces and environments
+
+Environment Variables: 
+-> available only within the context of a specific environment
+
+Workspace Variables: 
+-> available within the context of a specific workspace
+
