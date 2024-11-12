@@ -1,0 +1,17 @@
+18. Introduction
+
+API:
+-> Controllers
+-> Program.cs
+-> Middleware
+
+Infrastructure:
+-> Repository
+-> DbContext
+-> Services
+
+Core:
+-> Entities
+-> Interfaces
+
+
