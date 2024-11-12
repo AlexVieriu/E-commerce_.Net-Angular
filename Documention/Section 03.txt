@@ -93,5 +93,6 @@ Task<IReadOnlyList<string>> GetTypesAsync();
 -> implement GetBrandsAsync() and GetTypesAsync()
 
 -- API -> Controllers -> ProductsController.cs --
-
+GetBrandsAsync()
+GetTypesAsync()
 
