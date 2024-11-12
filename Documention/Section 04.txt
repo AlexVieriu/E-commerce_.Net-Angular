@@ -1,0 +1,12 @@
+28. Introduction
+
+-> creating a generic repository
+-> specification pattern
+-> using of specification pattern
+-> using the Debugger
+-> shaping data
+
+About generics:
+-> since 2002
+-> help avoid code duplication
+-> type safety(code replaced at compile time, not runtime)
