@@ -52,3 +52,38 @@ Infrastructure -> Data -> ProductRepository.cs
 
 -- API -> Controllers -> ProductsController.cs --
 -> modify the code using the repository
+
+
+23. Seeding data
+
+CourseAssets -> seed data   
+    -> products.json
+    -> delivery.json
+
+Infrastructure -> Data -> StoreContentSeed.cs
+-> get the data from json
+-> deserialize it
+-> check if there are products in the .json file
+-> add the products
+-> save changes
+
+Where do we call the seed method?
+-> in the Program.cs, in the Middleware
+
+-- skinet -> API -> Program.cs --
+try{}
+catch{}
+
+-- skinet --
+Terminal:
+dotnet ef database drop -p Infrastructure -s API
+cd API
+dotnet watch
+
+Test it with postman
+
+
+24. Getting the brands and types
+
+
+
