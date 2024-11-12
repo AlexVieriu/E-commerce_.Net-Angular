@@ -10,3 +10,9 @@ About generics:
 -> since 2002
 -> help avoid code duplication
 -> type safety(code replaced at compile time, not runtime)
+
+
+29. Creating a generic repository
+
+-- Core -> Interfaces -> IGenericRepository.cs --
+-- Infrastructure -> Data -> GenericRepository.cs --
