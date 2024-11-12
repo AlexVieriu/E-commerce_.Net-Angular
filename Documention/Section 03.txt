@@ -48,3 +48,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 Infrastructure -> Data -> ProductRepository.cs
 
 
+22. Using ProductRepository
+
+-- API -> Controllers -> ProductsController.cs --
+-> modify the code using the repository
