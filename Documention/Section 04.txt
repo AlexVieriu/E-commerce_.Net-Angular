@@ -16,3 +16,13 @@ About generics:
 
 -- Core -> Interfaces -> IGenericRepository.cs --
 -- Infrastructure -> Data -> GenericRepository.cs --
+
+
+30. Implementing the generic repository
+
+ChatGPT:
+I have a C# course , that is using 
+"context.Set<T>().Attach(entity);
+context.Entry(entity).State = EntityState.Modified;" 
+instead of simple version :" context.Update(entity);" and i wanna know why?
+

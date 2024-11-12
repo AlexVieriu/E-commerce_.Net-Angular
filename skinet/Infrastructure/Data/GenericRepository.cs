@@ -7,36 +7,37 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
 {
     public void Add(T entity)
     {
-        throw new NotImplementedException();
+        context.Set<T>().Add(entity);
     }
 
     public void Delete(T entity)
     {
-        throw new NotImplementedException();
+        context.Set<T>().Remove(entity);
     }
 
     public bool Exists(int id)
     {
-        throw new NotImplementedException();
+        return context.Set<T>().Any(e => e.Id == id);
     }
 
-    public Task<IReadOnlyList<T>> GetAllAsync()
+    public async Task<IReadOnlyList<T>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await context.Set<T>().ToListAsync();
     }
 
-    public Task<T?> GetByIdAsync(int id)
+    public async Task<T?> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        return await context.Set<T>().FindAsync(id);
     }
 
-    public Task<bool> SaveAllAsync()
+    public async Task<bool> SaveAllAsync()
     {
-        throw new NotImplementedException();
+        return await context.SaveChangesAsync() > 0;
     }
 
     public void Update(T entity)
     {
-        throw new NotImplementedException();
+        context.Set<T>().Attach(entity);
+        context.Entry(entity).State = EntityState.Modified;
     }
 }
