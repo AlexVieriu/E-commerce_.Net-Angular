@@ -15,3 +15,22 @@ Core:
 -> Interfaces
 
 
+19. Repository Pattern
+
+-> decouple business code from data access
+-> separation of concerns
+-> minimize duplicate query logic
+-> testability
+
+Advantages?
+-> avoid messy Controllers
+-> simplified testing
+-> increased abstraction
+-> maintainability 
+-> reduced duplicate code
+
+Disadvantages?
+-> abstraction of an abstraction
+-> optimization challenges
+
+Documentation -> 3.2.png
