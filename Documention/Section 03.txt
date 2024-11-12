@@ -36,6 +36,13 @@ Disadvantages?
 Documentation -> 3.2.png
 
 
-20. Repository Interface and Implementation class
+20. Repository Interface and Implementation 
+
+Core-> Interfaces -> IProductRepository.cs
+Infrastructure -> Data -> ProductRepository.cs
+API -> Program.cs :
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+
 
 
