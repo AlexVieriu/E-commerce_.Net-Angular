@@ -2,25 +2,18 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController(StoreContext context) : ControllerBase
 {
-    private readonly StoreContext _context;
-
-    public ProductsController(StoreContext context)
-    {
-        _context = context;
-    }
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
-        return await _context.Products.ToListAsync();
+        return await context.Products.ToListAsync();
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await context.Products.FindAsync(id);
 
         if (product == null)
             return NotFound();
@@ -31,8 +24,8 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
     {
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
     }
@@ -43,8 +36,8 @@ public class ProductsController : ControllerBase
         if (id != product.Id || !ProductExists(id))
             return BadRequest("Can't update product");
 
-        _context.Entry(product).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        context.Entry(product).State = EntityState.Modified;
+        await context.SaveChangesAsync();
 
         return Ok(product);
     }
@@ -52,13 +45,13 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await context.Products.FindAsync(id);
 
         if (product == null)
             return NotFound();
 
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
+        context.Products.Remove(product);
+        await context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -66,6 +59,6 @@ public class ProductsController : ControllerBase
 
     private bool ProductExists(int id)
     {
-        return _context.Products.Any(e => e.Id == id);
+        return context.Products.Any(e => e.Id == id);
     }
 }

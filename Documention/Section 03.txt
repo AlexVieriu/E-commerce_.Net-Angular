@@ -34,3 +34,8 @@ Disadvantages?
 -> optimization challenges
 
 Documentation -> 3.2.png
+
+
+20. Repository Interface and Implementation class
+
+
