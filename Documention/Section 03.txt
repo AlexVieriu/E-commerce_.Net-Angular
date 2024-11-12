@@ -1,0 +1,120 @@
+18. Introduction
+
+API:
+-> Controllers
+-> Program.cs
+-> Middleware
+
+Infrastructure:
+-> Repository
+-> DbContext
+-> Services
+
+Core:
+-> Entities
+-> Interfaces
+
+
+19. Repository Pattern
+
+-> decouple business code from data access
+-> separation of concerns
+-> minimize duplicate query logic
+-> testability
+
+Advantages?
+-> avoid messy Controllers
+-> simplified testing
+-> increased abstraction
+-> maintainability 
+-> reduced duplicate code
+
+Disadvantages?
+-> abstraction of an abstraction
+-> optimization challenges
+
+Documentation -> 3.2.png
+
+
+20. Repository Interface and Implementation 
+
+Core-> Interfaces -> IProductRepository.cs
+Infrastructure -> Data -> ProductRepository.cs
+API -> Program.cs :
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+21. Implementing the repository methods
+
+Infrastructure -> Data -> ProductRepository.cs
+
+
+22. Using ProductRepository
+
+-- API -> Controllers -> ProductsController.cs --
+-> modify the code using the repository
+
+
+23. Seeding data
+
+CourseAssets -> seed data   
+    -> products.json
+    -> delivery.json
+
+Infrastructure -> Data -> StoreContentSeed.cs
+-> get the data from json
+-> deserialize it
+-> check if there are products in the .json file
+-> add the products
+-> save changes
+
+Where do we call the seed method?
+-> in the Program.cs, in the Middleware
+
+-- skinet -> API -> Program.cs --
+try{}
+catch{}
+
+-- skinet --
+Terminal:
+dotnet ef database drop -p Infrastructure -s API
+cd API
+dotnet watch
+
+Test it with postman
+
+
+24. Getting the brands and types
+
+-- Core -> Interfaces -> IProductRepository.cs --
+Task<IReadOnlyList<string>> GetBrandsAsync();
+Task<IReadOnlyList<string>> GetTypesAsync();
+
+-- Infrastructure -> Data -> ProductRepository.cs --
+-> implement GetBrandsAsync() and GetTypesAsync()
+
+-- API -> Controllers -> ProductsController.cs --
+GetBrandsAsync()
+GetTypesAsync()
+
+
+25. Filtering the products by brand and type
+
+-- Infrastructure -> Data -> ProductRepository.cs  --
+public async Task<IReadOnlyList<Product>> GetProductAsync(string? brand = null, string? type = null)
+{
+    return await context.Products
+        .Where(p => (brand == null || p.Brand == brand) && (type == null || p.Type == type))
+        .ToListAsync();
+}
+
+-- API -> Controllers -> ProductsController.cs --
+GetProducts(string? brand, string? type)
+
+
+26. Sorting the products
+-- Infrastructure -> Data -> ProductRepository.cs  --
+ GetProductAsync(string? brand = null, string? type = null, string? sort = null)
+
+
+-- API -> Controllers -> ProductsController.cs --
+ GetProducts(string? brand, string? type, string? sort)
