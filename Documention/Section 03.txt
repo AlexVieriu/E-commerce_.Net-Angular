@@ -43,6 +43,8 @@ Infrastructure -> Data -> ProductRepository.cs
 API -> Program.cs :
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
+21. Implementing the repository methods
 
+Infrastructure -> Data -> ProductRepository.cs
 
 
