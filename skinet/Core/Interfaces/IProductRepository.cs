@@ -8,7 +8,7 @@ public interface IProductRepository
     Task<bool> SaveChangesAsync();
     Task<IReadOnlyList<string>> GetBrandsAsync();
     Task<IReadOnlyList<string>> GetTypesAsync();
-    Task<IReadOnlyList<Product>> GetProductAsync();
+    Task<IReadOnlyList<Product>> GetProductAsync(string? brand, string? type);
     Task<Product?> GetProductByIdAsync(int id);
     void AddProduct(Product product);
     void DeleteProduct(Product product);

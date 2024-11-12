@@ -9,6 +9,7 @@ public class ProductRepository(StoreContext context) : IProductRepository
         context.Products.Add(product);
     }
 
+
     public void DeleteProduct(Product product)
     {
         context.Products.Remove(product);
@@ -19,9 +20,11 @@ public class ProductRepository(StoreContext context) : IProductRepository
         return await context.Products.Select(p => p.Brand).Distinct().ToListAsync();
     }
 
-    public async Task<IReadOnlyList<Product>> GetProductAsync()
+    public async Task<IReadOnlyList<Product>> GetProductAsync(string? brand = null, string? type = null)
     {
-        return await context.Products.ToListAsync();
+        return await context.Products
+            .Where(p => (brand == null || p.Brand == brand) && (type == null || p.Type == type))
+            .ToListAsync();
     }
 
     public async Task<Product?> GetProductByIdAsync(int id)

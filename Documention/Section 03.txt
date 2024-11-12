@@ -96,3 +96,18 @@ Task<IReadOnlyList<string>> GetTypesAsync();
 GetBrandsAsync()
 GetTypesAsync()
 
+
+25. Filtering the products by brand and type
+
+-- Infrastructure -> Data -> ProductRepository.cs  --
+public async Task<IReadOnlyList<Product>> GetProductAsync(string? brand = null, string? type = null)
+{
+    return await context.Products
+        .Where(p => (brand == null || p.Brand == brand) && (type == null || p.Type == type))
+        .ToListAsync();
+}
+
+-- API -> Controllers -> ProductsController.cs --
+GetProducts(string? brand, string? type)
+
+
