@@ -20,11 +20,20 @@ public class ProductRepository(StoreContext context) : IProductRepository
         return await context.Products.Select(p => p.Brand).Distinct().ToListAsync();
     }
 
-    public async Task<IReadOnlyList<Product>> GetProductAsync(string? brand = null, string? type = null)
+    public async Task<IReadOnlyList<Product>> GetProductAsync(
+        string? brand = null, string? type = null, string? sort = null)
     {
-        return await context.Products
-            .Where(p => (brand == null || p.Brand == brand) && (type == null || p.Type == type))
-            .ToListAsync();
+        var query = context.Products
+            .Where(p => (brand == null || p.Brand == brand) && (type == null || p.Type == type));
+
+        query = sort switch
+        {
+            "priceAsc" => query.OrderBy(p => (double)p.Price),
+            "priceDesc" => query.OrderByDescending(p => (double)p.Price),
+            _ => query.OrderBy(p => p.Name)
+        };
+
+        return await query.ToListAsync();
     }
 
     public async Task<Product?> GetProductByIdAsync(int id)

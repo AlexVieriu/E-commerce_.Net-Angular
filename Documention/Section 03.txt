@@ -111,3 +111,10 @@ public async Task<IReadOnlyList<Product>> GetProductAsync(string? brand = null, 
 GetProducts(string? brand, string? type)
 
 
+26. Sorting the products
+-- Infrastructure -> Data -> ProductRepository.cs  --
+ GetProductAsync(string? brand = null, string? type = null, string? sort = null)
+
+
+-- API -> Controllers -> ProductsController.cs --
+ GetProducts(string? brand, string? type, string? sort)
