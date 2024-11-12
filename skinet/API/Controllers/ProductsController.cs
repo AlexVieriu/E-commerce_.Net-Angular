@@ -61,4 +61,24 @@ public class ProductsController(IProductRepository productRepo) : ControllerBase
         else
             return BadRequest();
     }
+
+    [HttpGet("brands")]
+    public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
+    {
+        var products = await productRepo.GetBrandsAsync();
+        if (products == null)
+            return NotFound();
+
+        return Ok(products);
+    }
+
+    [HttpGet("types")]
+    public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()
+    {
+        var products = await productRepo.GetTypesAsync();
+        if (products == null)
+            return NotFound();
+
+        return Ok(await productRepo.GetTypesAsync());
+    }
 }

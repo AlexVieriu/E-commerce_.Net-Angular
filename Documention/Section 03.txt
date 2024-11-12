@@ -85,5 +85,13 @@ Test it with postman
 
 24. Getting the brands and types
 
+-- Core -> Interfaces -> IProductRepository.cs --
+Task<IReadOnlyList<string>> GetBrandsAsync();
+Task<IReadOnlyList<string>> GetTypesAsync();
+
+-- Infrastructure -> Data -> ProductRepository.cs --
+-> implement GetBrandsAsync() and GetTypesAsync()
+
+-- API -> Controllers -> ProductsController.cs --
 
 
