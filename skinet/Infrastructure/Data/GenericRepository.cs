@@ -1,10 +1,11 @@
-
-
 namespace Infrastructure.Data;
 
 public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
     where T : BaseEntity
 {
+    // we make the methods that interact directly with the database async, the rest are sync so we don't block any thread
+    // the ones that are sync are saved on the context
+    // SaveChangesAsync() will take all the changes on the context, and execute the queries to the DB
     public void Add(T entity)
     {
         context.Set<T>().Add(entity);
@@ -15,9 +16,9 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
         context.Set<T>().Remove(entity);
     }
 
-    public bool Exists(int id)
+    public async Task<bool> ExistsAsync(int id)
     {
-        return context.Set<T>().Any(e => e.Id == id);
+        return await context.Set<T>().AnyAsync(x => x.Id == id);
     }
 
     public async Task<IReadOnlyList<T>> GetAllAsync()

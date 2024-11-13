@@ -26,3 +26,7 @@ I have a C# course , that is using
 context.Entry(entity).State = EntityState.Modified;" 
 instead of simple version :" context.Update(entity);" and i wanna know why?
 
+
+31. Generic Repository in the Controller
+
+-- API -> Controllers -> ProductsController.cs --
