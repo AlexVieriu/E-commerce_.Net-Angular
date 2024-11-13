@@ -30,3 +30,10 @@ instead of simple version :" context.Update(entity);" and i wanna know why?
 31. Generic Repository in the Controller
 
 -- API -> Controllers -> ProductsController.cs --
+
+
+32. Specification pattern
+-> describes a query in an object
+-> returns a IQueryable<T>
+-> generic List method takes specification as parameter
+
