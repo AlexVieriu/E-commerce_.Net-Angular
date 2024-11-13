@@ -37,3 +37,15 @@ instead of simple version :" context.Update(entity);" and i wanna know why?
 -> returns a IQueryable<T>
 -> generic List method takes specification as parameter
 
+
+33. Setting up the specification classes
+
+-- Core -> Interfaces -> ISpecification.cs --       
+Expression<Func<T, bool>> Criteria { get; }
+
+-- Specifications ->  BaseSpecification.cs --  
+public Expression<Func<T, bool>> Criteria => criteria;
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+{...}
