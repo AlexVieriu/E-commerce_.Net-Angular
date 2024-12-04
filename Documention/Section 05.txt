@@ -64,3 +64,21 @@ if (spec.IsPagingEnabled)
 
 if (spec.IsPagingEnabled)
     selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);
+
+
+5.45. Adding pagination part 2    
+
+-- Core -> Specifications -> ProductSpecParams.cs --
+private const int MaxPageSize 
+public int PageIndex
+public int PageSize
+
+-- Core -> Specifications -> ProductSpecification.cs --
+ApplyPaging(specParams.PageSize * (specParams.PageIndex - 1), specParams.PageSize);
+
+-- API -> RequestHelpers -> Pagination.cs --
+int PageIndex
+int PageSize
+int Count 
+IReadOnlyList<T> Data
+
