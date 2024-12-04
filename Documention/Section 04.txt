@@ -125,3 +125,15 @@ static IQueryable<TResult> GetQuery<TSpec, TResult>(
 {
     ...
 }
+
+
+4.38. Adding projection to the spec part 2
+
+-- Core -> Interfaces -> IGenericRepository.cs --
+Task<IReadOnlyList<TResult>> GetAllAsync<TResult>(ISpecification<T, TResult> spec);
+Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
+
+-- Infrastructure -> Data -> GenericRepository.cs --
+public async Task<IReadOnlyList<TResult>> GetAllAsync<TResult>(ISpecification<T, TResult> spec)
+public async Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec)
+private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T, TResult> spec)
