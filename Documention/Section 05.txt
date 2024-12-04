@@ -1,0 +1,25 @@
+5.42. Introduction 
+-> sorting
+-> filtering
+-> searching
+-> paging
+
+
+Pagination:
+-> performance
+-> parameters passed by query string:
+  /api/products?pageNumber=3&pageSize=10  
+-> page size should be limited
+-> we should always page results
+
+Deferred Execution:
+-> when we're building our query, we're not hitting our database, we deferring it until we got the query
+-> each part of the query built up as an expression three, and then goes to the database
+
+Steps:
+-> query commands are stored in a variable
+-> execution of that query will be deferred
+-> IQueryable<T> creates an expression three
+-> Execution:
+    -> ToList(), ToArray(), ToDictionary()
+    -> Count() or other singleton queries
