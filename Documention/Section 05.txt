@@ -40,3 +40,27 @@ public ProductSpecification(ProductSpecParams specParams) : base(x =>
 -- API -> Controllers -> ProductsController.cs --
 GetProducts([FromQuery] ProductSpecParams specParams)
 
+
+5.44. Adding Pagination part 1
+-- Infrastructure -> Data -> ProductRepository.cs --
+
+return await query.Skip(5).Take(5).ToListAsync();
+-> we need to find a way to apply this to our Specification Pattern
+
+-- Core -> Interfaces -> ISpecification.cs --
+int Take { get; }
+int Skip { get; }
+bool IsPagingEnabled { get; }
+
+-- Core -> Specifications -> BaseSpecification.cs --
+public int Take { get; private set; }
+public int Skip { get; private set; }
+public bool IsPagingEnabled { get; private set; }
+protected void ApplyPaging(int skip, int take) { ...}
+
+-- Infrastructure -> Data -> BaseSpecification.cs --
+if (spec.IsPagingEnabled)
+    query = query.Skip(spec.Skip).Take(spec.Take);
+
+if (spec.IsPagingEnabled)
+    selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);

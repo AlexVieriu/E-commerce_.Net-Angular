@@ -18,7 +18,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<Product>> GetProductById(int id)
     {
         var product = await productRepo.GetByIdAsync(id);
 
@@ -33,7 +33,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     {
         productRepo.Add(product);
         if (await productRepo.SaveAllAsync())
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
         else
             return BadRequest();
     }
@@ -69,7 +69,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     }
 
     [HttpGet("brands")]
-    public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
+    public async Task<ActionResult<IEnumerable<string>>> GetBrands()
     {
         var spec = new BrandListSpecification();
 
@@ -77,7 +77,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     }
 
     [HttpGet("types")]
-    public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()
+    public async Task<ActionResult<IEnumerable<string>>> GetTypes()
     {
         var spec = new TypeListSpecification();
 
