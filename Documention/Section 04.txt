@@ -71,3 +71,27 @@ public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
 {
     return await ApplySpecification(spec).FirstOrDefaultAsync();
 }
+
+
+4.36. Adding sorting to the specification
+
+-- Core -> Specifications --
+
+-> ProductSpecification.cs
+Expression<Func<T, object>>? OrderBy { get; }
+Expression<Func<T, object>>? OrderByDescending { get; }
+
+-> BaseSpecification.cs
+OrderBy { get; private set; }
+OrderByDescending { get; private set; }
+void AddOrderBy(Expression<Func<T, object>> orderByExpression) {}
+void AddOrderByDescending(Expression<Func<T, object>> orderByDescendingExpression) {}
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+if (spec.OrderBy != null)
+    ...
+if (spec.OrderByDescending != null)
+    ...
+
+-- Core -> Specifications -> ProductSpecification.cs --
+-> creating switch cases for "priceAsc" and "priceDesc", with default "priceAsc"
