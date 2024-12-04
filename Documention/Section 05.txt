@@ -23,3 +23,20 @@ Steps:
 -> Execution:
     -> ToList(), ToArray(), ToDictionary()
     -> Count() or other singleton queries
+
+
+5.43. Creating product spec parameters
+
+-- Core -> Specifications -> ProductSpecParams.cs --
+List<string> Brands
+List<string> Types
+string? Sort { get; set; }
+
+-- Core -> Specifications -> ProductSpecification.cs --
+public ProductSpecification(ProductSpecParams specParams) : base(x =>
+    (specParams.Brands.Count == 0 || specParams.Brands.Contains(x.Brand)) &&
+    (specParams.Types.Count == 0 || specParams.Types.Contains(x.Type)))
+
+-- API -> Controllers -> ProductsController.cs --
+GetProducts([FromQuery] ProductSpecParams specParams)
+
