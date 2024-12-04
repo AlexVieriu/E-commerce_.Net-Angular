@@ -101,3 +101,27 @@ if (spec.OrderByDescending != null)
 
 Why we build the app this way?
 -> image you have 100 entities, 100 repositories, 100 specification files
+
+
+4.38. Adding projection to the spec part 1
+
+Why we want to add projection?
+-> so this link work in Postman: "{{localhost}}/api/products/"
+
+-- Core -> Interfaces -> ISpecification.cs --
+ISpecification<T, TResult> : ISpecification<T> {...}
+
+-- Core -> Specification -> BaseSpecification.cs --
+BaseSpecification<T, TResult>(Expression<Func<T, bool>>? criteria) :
+    : BaseSpecification<T>(criteria), ISpecification<T, TResult>
+{
+    public Expression<Func<T, TResult>>? Select { get; private set; }
+    protected void AddSelect(Expression<Func<T, TResult>> selectExpression)
+}
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+static IQueryable<TResult> GetQuery<TSpec, TResult>(
+        IQueryable<T> query, ISpecification<T, TResult> spec)
+{
+    ...
+}
