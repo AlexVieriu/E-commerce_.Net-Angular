@@ -1,5 +1,3 @@
-
-
 namespace Infrastructure.Data;
 
 public class ProductRepository(StoreContext context) : IProductRepository
@@ -8,7 +6,6 @@ public class ProductRepository(StoreContext context) : IProductRepository
     {
         context.Products.Add(product);
     }
-
 
     public void DeleteProduct(Product product)
     {

@@ -1,0 +1,177 @@
+28. Introduction
+
+-> creating a generic repository
+-> specification pattern
+-> using of specification pattern
+-> using the Debugger
+-> shaping data
+
+About generics:
+-> since 2002
+-> help avoid code duplication
+-> type safety(code replaced at compile time, not runtime)
+
+
+29. Creating a generic repository
+
+-- Core -> Interfaces -> IGenericRepository.cs --
+-- Infrastructure -> Data -> GenericRepository.cs --
+
+
+30. Implementing the generic repository
+
+ChatGPT:
+I have a C# course , that is using 
+"context.Set<T>().Attach(entity);
+context.Entry(entity).State = EntityState.Modified;" 
+instead of simple version :" context.Update(entity);" and i wanna know why?
+
+
+31. Generic Repository in the Controller
+
+-- API -> Controllers -> ProductsController.cs --
+
+
+32. Specification pattern
+-> describes a query in an object
+-> returns a IQueryable<T>
+-> generic List method takes specification as parameter
+
+
+33. Setting up the specification classes
+
+-- Core -> Interfaces -> ISpecification.cs --       
+Expression<Func<T, bool>> Criteria { get; }
+
+-- Specifications ->  BaseSpecification.cs --  
+public Expression<Func<T, bool>> Criteria => criteria;
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+{...}
+
+
+34. Using the specification pattern
+
+-- Core -> Specifications -> ProductFilterSpecification.cs --
+
+public ProductSpecification(string? brand, string? type) : base(x =>
+(string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
+(string.IsNullOrWhiteSpace(type) || x.Type == type))
+{
+
+}
+
+-> the good part of this approach is that we don't need to write validation
+methods for every single endpoint when we use the ProductSpecification.cs
+
+-- Infrastructure -> Data -> GenericRepository.cs --
+
+public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
+{
+    return await ApplySpecification(spec).FirstOrDefaultAsync();
+}
+
+
+4.36. Adding sorting to the specification
+
+-- Core -> Specifications --
+
+-> ProductSpecification.cs
+Expression<Func<T, object>>? OrderBy { get; }
+Expression<Func<T, object>>? OrderByDescending { get; }
+
+-> BaseSpecification.cs
+OrderBy { get; private set; }
+OrderByDescending { get; private set; }
+void AddOrderBy(Expression<Func<T, object>> orderByExpression) {}
+void AddOrderByDescending(Expression<Func<T, object>> orderByDescendingExpression) {}
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+if (spec.OrderBy != null)
+    ...
+if (spec.OrderByDescending != null)
+    ...
+
+-- Core -> Specifications -> ProductSpecification.cs --
+-> creating switch cases for "priceAsc" and "priceDesc", with default "priceAsc"
+
+
+4.37. Using the Debugger
+
+Why we build the app this way?
+-> image you have 100 entities, 100 repositories, 100 specification files
+
+
+4.38. Adding projection to the spec part 1
+
+Why we want to add projection?
+-> so this link work in Postman: "{{localhost}}/api/products/"
+
+-- Core -> Interfaces -> ISpecification.cs --
+ISpecification<T, TResult> : ISpecification<T> {...}
+
+-- Core -> Specification -> BaseSpecification.cs --
+BaseSpecification<T, TResult>(Expression<Func<T, bool>>? criteria) :
+    : BaseSpecification<T>(criteria), ISpecification<T, TResult>
+{
+    public Expression<Func<T, TResult>>? Select { get; private set; }
+    protected void AddSelect(Expression<Func<T, TResult>> selectExpression)
+}
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+static IQueryable<TResult> GetQuery<TSpec, TResult>(
+        IQueryable<T> query, ISpecification<T, TResult> spec)
+{
+    ...
+}
+
+
+4.38. Adding projection to the spec part 2
+
+-- Core -> Interfaces -> IGenericRepository.cs --
+Task<IReadOnlyList<TResult>> GetAllAsync<TResult>(ISpecification<T, TResult> spec);
+Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
+
+-- Infrastructure -> Data -> GenericRepository.cs --
+public async Task<IReadOnlyList<TResult>> GetAllAsync<TResult>(ISpecification<T, TResult> spec)
+public async Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec)
+private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T, TResult> spec)
+
+
+4.39. Adding projection to the spec part 3
+
+-- Core -> Interfaces -> ISpecification.cs --
+bool IsDistinct { get; }
+
+-- Core -> Specification -> BaseSpecification.cs --
+-> implement the interface
+void ApplyDistinct()
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+if (spec.IsDistinct)
+    query = query.Distinct();
+
+if (spec.IsDistinct)
+    selectQuery = selectQuery?.Distinct();
+
+-- Core -> Specifications -- 
+-> BrandListSpecification.cs 
+-> TypeListSpecification.cs
+
+-- API -> Controllers -> ProductsController.cs --
+public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
+public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()
+
+4.41. Summary
+-> creating a generic repository
+-> specification pattern 
+-> using the specification pattern
+-> using the Debugger
+-> shaping data
+
+Q: This is over engineering in action!
+
+A: True for now, but we do now have repository for every entity we create
+Imagine we have 100-1000 entities, then we have just created repositories for 
+all of them
