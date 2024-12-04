@@ -1,3 +1,5 @@
+using System.Net.Cache;
+
 namespace API.Controllers;
 
 [ApiController]
@@ -69,16 +71,16 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     [HttpGet("brands")]
     public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
     {
-        // TODO: Implement method
+        var spec = new BrandListSpecification();
 
-        return Ok();
+        return Ok(await productRepo.GetAllAsync(spec));
     }
 
     [HttpGet("types")]
     public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()
     {
-        // TODO: Implement method
+        var spec = new TypeListSpecification();
 
-        return Ok();
+        return Ok(await productRepo.GetAllAsync(spec));
     }
 }

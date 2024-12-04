@@ -137,3 +137,28 @@ Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
 public async Task<IReadOnlyList<TResult>> GetAllAsync<TResult>(ISpecification<T, TResult> spec)
 public async Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec)
 private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T, TResult> spec)
+
+
+4.39. Adding projection to the spec part 3
+
+-- Core -> Interfaces -> ISpecification.cs --
+bool IsDistinct { get; }
+
+-- Core -> Specification -> BaseSpecification.cs --
+-> implement the interface
+void ApplyDistinct()
+
+-- Infrastructure -> Data -> SpecificationEvaluator.cs --
+if (spec.IsDistinct)
+    query = query.Distinct();
+
+if (spec.IsDistinct)
+    selectQuery = selectQuery?.Distinct();
+
+-- Core -> Specifications -- 
+-> BrandListSpecification.cs 
+-> TypeListSpecification.cs
+
+-- API -> Controllers -> ProductsController.cs --
+public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
+public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()

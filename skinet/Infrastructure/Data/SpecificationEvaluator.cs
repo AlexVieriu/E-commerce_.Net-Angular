@@ -13,6 +13,9 @@ public class SpecificationEvaluator<T> where T : BaseEntity
         if (spec.OrderByDescending != null)
             query = query.OrderByDescending(spec.OrderByDescending);
 
+        if (spec.IsDistinct)
+            query = query.Distinct();
+
         return query;
     }
 
@@ -32,6 +35,9 @@ public class SpecificationEvaluator<T> where T : BaseEntity
 
         if (spec.Select != null)
             selectQuery = query.Select(spec.Select);
+
+        if (spec.IsDistinct)
+            selectQuery = selectQuery?.Distinct();
 
         return selectQuery ?? query.Cast<TResult>();
     }
