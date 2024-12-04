@@ -49,3 +49,25 @@ public Expression<Func<T, bool>> Criteria => criteria;
 -- Infrastructure -> Data -> SpecificationEvaluator.cs --
 public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
 {...}
+
+
+34. Using the specification pattern
+
+-- Core -> Specifications -> ProductFilterSpecification.cs --
+
+public ProductSpecification(string? brand, string? type) : base(x =>
+(string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
+(string.IsNullOrWhiteSpace(type) || x.Type == type))
+{
+
+}
+
+-> the good part of this approach is that we don't need to write validation
+methods for every single endpoint when we use the ProductSpecification.cs
+
+-- Infrastructure -> Data -> GenericRepository.cs --
+
+public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
+{
+    return await ApplySpecification(spec).FirstOrDefaultAsync();
+}

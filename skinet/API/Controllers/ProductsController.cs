@@ -8,7 +8,9 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         string? brand, string? type, string? sort)
     {
-        var products = await productRepo.GetAllAsync();
+        var spec = new ProductSpecification(brand, type);
+
+        var products = await productRepo.GetAllAsync(spec);
 
         return Ok(products);
     }

@@ -5,3 +5,4 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Scalar.AspNetCore;
 global using static System.Console;
+global using Core.Specifications;

@@ -21,9 +21,9 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
         return await context.Set<T>().AnyAsync(x => x.Id == id);
     }
 
-    public async Task<IReadOnlyList<T>> GetAllAsync()
+    public async Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec)
     {
-        return await context.Set<T>().ToListAsync();
+        return await ApplySpecification(spec).ToListAsync();
     }
 
     public async Task<T?> GetByIdAsync(int id)
@@ -38,6 +38,10 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
 
     public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
     {
+        // return await context.Set<T>().Where(x =>
+        // (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
+        // (string.IsNullOrWhiteSpace(type) || x.Type == type)).ToListAsync();
+
         return await ApplySpecification(spec).ToListAsync();
     }
 

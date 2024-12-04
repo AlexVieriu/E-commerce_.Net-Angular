@@ -1,6 +1,7 @@
 namespace Core.Specifications;
 
-public class BaseSpecification<T>(Expression<Func<T, bool>> criteria) : ISpecification<T>
+public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecification<T>
 {
-    public Expression<Func<T, bool>> Criteria => criteria;
+    protected BaseSpecification() : this(null) { }
+    public Expression<Func<T, bool>>? Criteria => criteria;
 }
