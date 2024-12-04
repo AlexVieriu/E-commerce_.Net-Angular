@@ -162,3 +162,16 @@ if (spec.IsDistinct)
 -- API -> Controllers -> ProductsController.cs --
 public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
 public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()
+
+4.41. Summary
+-> creating a generic repository
+-> specification pattern 
+-> using the specification pattern
+-> using the Debugger
+-> shaping data
+
+Q: This is over engineering in action!
+
+A: True for now, but we do now have repository for every entity we create
+Imagine we have 100-1000 entities, then we have just created repositories for 
+all of them
