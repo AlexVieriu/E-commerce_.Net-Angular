@@ -95,3 +95,9 @@ if (spec.OrderByDescending != null)
 
 -- Core -> Specifications -> ProductSpecification.cs --
 -> creating switch cases for "priceAsc" and "priceDesc", with default "priceAsc"
+
+
+4.37. Using the Debugger
+
+Why we build the app this way?
+-> image you have 100 entities, 100 repositories, 100 specification files
