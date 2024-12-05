@@ -82,3 +82,44 @@ int PageSize
 int Count 
 IReadOnlyList<T> Data
 
+
+5.46. Adding pagination part 3
+
+-- Core -> Specifications -> IGenericRepository.cs --
+Task<int> CountAsync(ISpecification<T> spec);
+
+-- Core -> Specifications -> ISpecification.cs --
+IQueryable<T> ApplyCriteria(IQueryable<T> query);
+
+-- Core -> Specifications -> BaseSpecification.cs --
+IQueryable<T> ApplyCriteria(IQueryable<T> query) {...}
+
+-- Infrastructure -> Data -> GenericRepository.cs --
+Task<int> CountAsync(ISpecification<T> spec){...}
+
+-- API-> Controllers -> ProductsController.cs --
+GetProducts(..)
+{
+    ...
+    var count = await productRepo.CountAsync(spec);
+    var pagination = new Pagination<Product>(
+        specParams.PageIndex, specParams.PageSize, count, products);
+
+    return Ok(pagination);
+}
+
+
+5.47. Creating a Base API Controller
+
+-- API -> Controllers -> BaseApiController.cs --
+-> move the variables items, count and pagination from ProductsController.cs 
+to BaseApiController.cs in CreatePagedResult(...)
+
+-- API -> Controllers -> ProductsController.cs --
+GetProducts(...) :
+-> delete items, count and pagination 
+-> return CreatePagedResult(...);  
+
+
+
+

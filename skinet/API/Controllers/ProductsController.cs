@@ -1,10 +1,6 @@
-using System.Net.Cache;
-
 namespace API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController(IGenericRepository<Product> productRepo) : ControllerBase
+public class ProductsController(IGenericRepository<Product> productRepo) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
@@ -12,9 +8,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     {
         var spec = new ProductSpecification(specParams);
 
-        var products = await productRepo.GetAllAsync(spec);
-
-        return Ok(products);
+        return await CreatePagedResult(productRepo, spec, specParams.PageIndex, specParams.PageSize);
     }
 
     [HttpGet("{id:int}")]
