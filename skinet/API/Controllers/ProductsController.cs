@@ -1,24 +1,18 @@
-using System.Net.Cache;
-
 namespace API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController(IGenericRepository<Product> productRepo) : ControllerBase
+public class ProductsController(IGenericRepository<Product> productRepo) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
-        string? brand, string? type, string? sort)
+        [FromQuery] ProductSpecParams specParams)
     {
-        var spec = new ProductSpecification(brand, type, sort);
+        var spec = new ProductSpecification(specParams);
 
-        var products = await productRepo.GetAllAsync(spec);
-
-        return Ok(products);
+        return await CreatePagedResult(productRepo, spec, specParams.PageIndex, specParams.PageSize);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<Product>> GetProductById(int id)
     {
         var product = await productRepo.GetByIdAsync(id);
 
@@ -33,7 +27,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     {
         productRepo.Add(product);
         if (await productRepo.SaveAllAsync())
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
         else
             return BadRequest();
     }
@@ -69,7 +63,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     }
 
     [HttpGet("brands")]
-    public async Task<ActionResult<IEnumerable<string>>> GetBrandsAsync()
+    public async Task<ActionResult<IEnumerable<string>>> GetBrands()
     {
         var spec = new BrandListSpecification();
 
@@ -77,7 +71,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : Contr
     }
 
     [HttpGet("types")]
-    public async Task<ActionResult<IEnumerable<string>>> GetTypesAsync()
+    public async Task<ActionResult<IEnumerable<string>>> GetTypes()
     {
         var spec = new TypeListSpecification();
 
