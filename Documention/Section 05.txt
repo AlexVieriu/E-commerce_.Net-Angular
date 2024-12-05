@@ -121,5 +121,10 @@ GetProducts(...) :
 -> return CreatePagedResult(...);  
 
 
+5.48. Adding the search functionality
+-- Core -> Specifications -> ProductSpecParams.cs --
+-> add Search propFull
 
+-- Core -> Specifications -> ProductSpecification.cs --
+-> add Search logic
 
