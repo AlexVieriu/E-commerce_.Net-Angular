@@ -128,3 +128,8 @@ GetProducts(...) :
 -- Core -> Specifications -> ProductSpecification.cs --
 -> add Search logic
 
+
+5.49. Summary
+
+Goal:
+-> implement filtering, sorting, searching and pagination
