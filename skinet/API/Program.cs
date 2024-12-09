@@ -32,9 +32,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 
-try
+try // Database Migration
 {
     // when we use services inside or outside DI, we need to create a Scoped
     // once this is executed the framework will dispose the scope    
