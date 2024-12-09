@@ -84,3 +84,28 @@ Postman:
 
 Dictionary:
 [ApiController] -> handles models state errors from us
+
+
+6.54. Adding CORS support on the API
+
+CORS(Cross Origin Resource Sharing)
+ChatGPT: 
+-> give me a complex implementation of CORS in .net 9. 
+Let's say i'm working at a top payment company, what is the implementation?
+
+-- API -> Program.cs --
+builder.Services.AddCors();
+
+app.UseCors(options => options.AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowCredentials()
+                              .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
+Postman:
+-> add header: Origin: http://localhost:4200                              
+-> add test Script:
+pm.test("CORS header is present", function(){
+    pm.response.to.have.header("Access-Control-Allow-Origin");
+    pm.expect(pm.response.headers.get("Access-Control-Allow-Origin")).to.eql
+    ("https://localhost:4200");
+});
