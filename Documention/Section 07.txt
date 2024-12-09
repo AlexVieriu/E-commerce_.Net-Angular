@@ -1,0 +1,20 @@
+7.56. Introduction
+-> installing the Angular CLI
+-> creating the Angular project
+-> setting up VS Code for Angular
+-> setting up Angular to use HTTPS
+-> Adding Angular Material and Tailwind CSS
+
+Neil Cummings:
+-> Rider for .net(JetBrains)
+-> WebStorm for Angular, React(JetBrains)
+
+Goal:
+-> have a working Angular app running on HTTPS
+-> understand angular standalone components and how we use them to build an app
+
+Angular Release Schedule
+-> major release every 6 months
+-> 1-3 minor releases for each major release
+-> a patch release build almost every week 
+-> at time of recording Angular is on v18
