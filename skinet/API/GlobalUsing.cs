@@ -1,3 +1,6 @@
+global using API.DTOs;
+global using API.Errors;
+global using API.Middleware;
 global using API.RequestHelpers;
 global using Core.Entities;
 global using Core.Interfaces;
@@ -7,3 +10,6 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Scalar.AspNetCore;
 global using static System.Console;
+global using System.ComponentModel.DataAnnotations;
+global using System.Net;
+global using System.Text.Json;
