@@ -58,3 +58,29 @@ RequestDelegate : a task that represents the compilation of request processing
 IHostEnvironment: provides information about the hosting environment an application is running in
 
 Testing with Postman(Internal Error)
+
+
+6.53. Validation error Responses
+
+-- Product.cs --
+-> because of the "required" attribute, we can't create a JSON file 
+when we handle the POST("validationerror") method
+
+Why we used required attribute in the first place?
+
+What we want to do at this chapter?
+-> we don't want to create e product from our entity class
+-> we want to create a different type of object that we can apply validation
+to at the API level
+
+-- API -> DTOs -> CreateProductDTO.cs --
+-> use [Required], [Range()] attributes instead of "request"
+
+-- API -> Controllers -> BuggyController.cs --
+-> use CreateProductDTO
+
+Postman:
+-> test validationerror 
+
+Dictionary:
+[ApiController] -> handles models state errors from us
