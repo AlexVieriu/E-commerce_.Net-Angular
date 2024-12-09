@@ -22,3 +22,19 @@ HttpResponse(most used):
 >= 300 and < 400 => "Redirection Messages",
 >= 400 and < 500 => "Client Error Responses",
 >= 500 and < 600 => "Server Error Responses",
+
+
+6.52. Adding a test controller for error handling
+
+-- API -> Controllers -> BuggyController.cs --
+-> add 4 HttpGet methods
+    -> GetUnauthorized
+    -> GetBadRequest
+    -> GetNotFound
+    -> GetInternalServerError
+
+-> add HttpPost method
+    -> GetValidationError
+
+Postman Collection links for all 5 methods:
+-> {{localhost}}/api/buggy/[action name]
