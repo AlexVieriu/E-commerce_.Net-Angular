@@ -309,3 +309,31 @@ Certbot(for Let's Encrypt) or through your cloud provider's services
 tools like Nagios, Pingdom, or cloud-native solutions
 
 
+60. Adding Angular Material and Tailwind CSS
+
+-- Angular Material --
+https://material.angular.io/
+cd /skinet/client
+ng add @angular/material@next
+Yes
+Azure/Blue
+Global Angular Material Typography: N
+Include and Enable animations
+cls
+
+-- Tailwind CSS --
+https://tailwindcss.com/docs/guides/angular
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+
+-> configure the tailwind.config.js file
+-> add the tailwind directives to your CSS: ./src/styles.css
+  -> delete all the code and replace it with the documentation
+  -> to ignore the warning, fo to Settings.json and add:
+    -> "scss.lint.unknownAtRules": "ignore"
+
+-- client -> src -> app-> app.component.html --
+<h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
+
+ng serve
