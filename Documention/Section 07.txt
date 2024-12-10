@@ -99,3 +99,35 @@ Windows PowerShell vs PowerShell vs Visual Studio 2022 Developer PowerShell v17.
 -> customized instance of PowerShell that is designed to provide PowerShell support within Visual Studio 
 for development tasks, such as managing builds, running scripts, and interacting with the IDE
 
+
+7.56. Reviewing the Angular project files
+-- client -> scr ->  index.html --
+<title>Skinet</title>
+
+-- client -> scr -> app -> app.component.ts --
+-> in the older version we used modular approach
+-> in the newer version we use standalone approach
+    -> each component is responsible for importing its own dependencies 
+
+@Component({
+    standalone: true,
+    ...
+})
+
+-- client -> scr -> app -> app.component.html --
+-> delete all of the code
+<title>Welcome to {{tittle}}</title>
+
+{{tittle}} is from kind of a variable from AppComponent
+
+-> delete the app.component.spec.ts
+
+-- Other important files --
+app.config.t
+app.routes.ts 
+main.ts 
+angular.json
+package.json 
+    -> when we install this packages, they are added into: client-> node_modules
+tsconfig.json
+    -> "strict": true (strict typescript code)
