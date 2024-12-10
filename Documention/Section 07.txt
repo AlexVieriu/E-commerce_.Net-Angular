@@ -337,3 +337,10 @@ npx tailwindcss init
 <h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
 
 ng serve
+
+
+7.61. Adding VS Code extensions for Angular and Tailwind
+Add Extensions:
+-> Angular Language Service
+-> Tailwind CSS IntelliSense
+-> Auto Rename Tag
