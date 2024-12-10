@@ -344,3 +344,11 @@ Add Extensions:
 -> Angular Language Service
 -> Tailwind CSS IntelliSense
 -> Auto Rename Tag
+
+
+7.62. Summary
+-> installed the Angular CLI
+-> created the Angular project
+-> set up VS Code for Angular
+-> set up Angular to use HTTPS
+-> added Angular Material and Tailwind CSS
