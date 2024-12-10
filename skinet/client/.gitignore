@@ -42,4 +42,5 @@ testem.log
 Thumbs.db
 
 # Ignore the SSL Angular Client for security in Development
-ssl/*
+ssl/localhost.pem
+ssl/localhost-key.pem
