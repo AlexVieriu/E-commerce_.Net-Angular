@@ -485,5 +485,8 @@ $RECYCLE.BIN/
 skinet/API/appsettings.json
 
 # Ignore the SSL Angular Client for security in Development
-/skinet/client/ssl/*
+skinet/client/ssl/*.pem
+skinet/client/ssl/*.key
+
+
 
