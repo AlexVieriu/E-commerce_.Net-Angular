@@ -1,0 +1,354 @@
+7.56. Introduction
+-> installing the Angular CLI
+-> creating the Angular project
+-> setting up VS Code for Angular
+-> setting up Angular to use HTTPS
+-> Adding Angular Material and Tailwind CSS
+
+Neil Cummings text editors:
+-> Rider for .net(JetBrains)
+-> WebStorm for Angular, React(JetBrains)
+
+Goal:
+-> have a working Angular app running on HTTPS
+-> understand angular standalone components and how we use them to build an app
+
+Angular Release Schedule
+-> major release every 6 months
+-> 1-3 minor releases for each major release
+-> a patch release build almost every week 
+-> at time of recording Angular is on v18
+
+
+7.57. Creating the angular project
+
+Check the version compatibility:
+https://next.angular.dev/reference/versions
+
+-- Install Node.js: https://joachim8675309.medium.com/installing-node-js-with-nvm-4dc469c977d9 --
+
+# chose desired node version
+$version = "23.3.0"
+# install nvm w/ cmder
+choco install cmder
+choco install nvm
+refreshenv
+# install node
+nvm install $version
+nvm use $version
+
+-- Install a new Node.js version  --
+# chose desired node version
+$version = "22.12.0"
+# install node
+nvm install $version
+
+
+-- Install angular CLI: https://next.angular.dev/tools/cli/setup-local --
+node -v
+nmp -v
+
+-- PowerShell --
+Get-ExecutionPolicy -List
+Get-ExecutionPolicy
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+-- Install angular version --
+npm install -g @angular/cli
+ng --version
+ng version
+
+-- Install Preview angular version --
+npm uninstall -g @angular/cli
+npm install -g @angular/cli@next
+ng --version
+
+
+-- Create angular app commands --
+ng new client
+-> select Sass
+-> Enable Server-Side Rendering?: No
+
+-- Check if everything is working --
+cd client
+ng serve
+
+-> browse to the http://localhost:4200/
+
+
+
+Dictionary:
+Install the last version of PowerShell: https://github.com/PowerShell/PowerShell/releases
+-> look for "Assets" -> PowerShell-7.5.0-rc.1-win-x64.msi
+
+Add "onmyposh" to PowerShell:
+https://ohmyposh.dev/docs/installation/windows  (download oh my posh)
+https://ohmyposh.dev/docs/installation/prompt   (configure oh my posh)
+
+Windows PowerShell vs PowerShell vs Visual Studio 2022 Developer PowerShell v17.13.0-pre.1.0
+1. Windows PowerShell
+-> this is the older, built-in version of PowerShell that comes with Windows.
+-> based on the .NET Framework 
+
+2. PowerShell (PowerShell Core)
+-> PowerShell 7.x and beyond are the cross-platform, modern versions of PowerShell
+-> PowerShell Core (now just called PowerShell) is cross-platform,
+
+3. Visual Studio 2022 Developer PowerShell
+-> PowerShell environment that comes integrated into Visual Studio 2022, specifically for developer tasks
+-> customized instance of PowerShell that is designed to provide PowerShell support within Visual Studio 
+for development tasks, such as managing builds, running scripts, and interacting with the IDE
+
+
+7.56. Reviewing the Angular project files
+-- client -> scr ->  index.html --
+<title>Skinet</title>
+
+-- client -> scr -> app -> app.component.ts --
+-> in the older version we used modular approach
+-> in the newer version we use standalone approach
+    -> each component is responsible for importing its own dependencies 
+
+@Component({
+    standalone: true,
+    ...
+})
+
+-- client -> scr -> app -> app.component.html --
+-> delete all of the code
+<title>Welcome to {{tittle}}</title>
+
+{{tittle}} is from kind of a variable from AppComponent
+
+-> delete the app.component.spec.ts
+
+-- Other important files --
+app.config.t
+app.routes.ts 
+main.ts 
+angular.json
+package.json 
+    -> when we install this packages, they are added into: client-> node_modules
+tsconfig.json
+    -> "strict": true (strict typescript code)
+
+
+7.59. Using HTTPS with Angular project 
+-> get a self trusted certificate 
+https://github.com/FiloSottile/mkcert
+
+Install on Windows(run as admin):
+choco install mkcert
+
+Terminal:
+mkcert -install
+
+Create a new certificate for localhost:
+cd ..//skinet//client
+mkdir ssl
+cd ssl
+mkcert localhost
+
+To use this certificate, we ned to configure Angular to use them.
+
+-- angular.json --
+-> look for "serve" and add :
+"options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+}
+
+-> start the app: cd /client
+ng serve
+https://localhost:4200/ 
+
+We put https because, when we will use Strips, we will get some errors
+
+
+-- Best Practices approach --
+1. Use a Trusted Certificate for Production
+-> always use certificates issued by a trusted Certificate Authority (CA), 
+such as Let's Encrypt or commercial providers
+-> ensure the certificate includes proper domain names (SANs) and is not just for "localhost."
+
+2. Store Certificates Securely
+Development:
+a. Secure Directory for Certificates
+-> Place your .pem or .pfx files in a directory that is not under source control
+or use .gitignore to exclude them
+~/ssl/localhost-key.pem
+~/ssl/localhost.pem
+
+Even if you later remove the certificate and add it to .gitignore, 
+Git tracks the file in the repository history. 
+Anyone with access can still retrieve older commits to access the certificate
+
+b. Add an entry in .gitignore
+-> client/src/ssl/*
+
+c. Angular Setup
+-> Modify your angular.json to point to the local certificate
+"serve": {
+    "options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+    }
+}
+
+d. Backend Configuration
+-> For .NET development, load the certificate locally
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps("ssl/localhost.pfx", "your-cert-password");
+    });
+});
+
+
+Production:
+-> store certificates in a dedicated secret management solution 
+(e.g., Azure Key Vault, AWS Secrets Manager)
+
+-> keep your .pem files in a secure directory outside the source control 
+-> use .gitignore to exclude them
+ChatGpt: "Give me and example of how to store certificates in a secure way, outside the source control for a .net with Angular project"
+
+a. Upload the Certificate to Azure Key Vault
+Export your certificate in .pfx format.
+Go to Azure Portal → Key Vault → Certificates → Generate/Import → Import.
+Upload your certificate and provide a name.
+
+b. Access Certificate in Your .NET 9 Backend
+-> Add the Azure Key Vault NuGet package to your .NET project:
+dotnet add package Azure.Extensions.AspNetCore.Configuration.Secrets
+
+-> Configure your appsettings.json to include Key Vault settings:
+{
+  "AzureKeyVault": {
+    "VaultUri": "https://<your-key-vault-name>.vault.azure.net/"
+  }
+}
+
+-> Retrieve the certificate in your Program.cs or Startup.cs:
+builder.Configuration.AddAzureKeyVault(
+    new Uri(builder.Configuration["AzureKeyVault:VaultUri"]),
+    new DefaultAzureCredential()
+);
+
+var certificateClient = new CertificateClient(
+    new Uri(builder.Configuration["AzureKeyVault:VaultUri"]),
+    new DefaultAzureCredential()
+);
+
+var certificate = certificateClient.GetCertificate("Your-Certificate-Name");
+var keyVaultSecret = certificateClient.GetSecret(certificate.Value.SecretId.AbsoluteUri);
+var cert = new X509Certificate2(Convert.FromBase64String(keyVaultSecret.Value));
+
+Use the certificate in Kestrel:
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Any, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps(cert);
+    });
+});
+
+
+3. Enable HTTPS for the Backend API
+-> your .NET 9 API must also use HTTPS, configure the Kestrel server in appsettings.json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Https": {
+        "Url": "https://localhost:5001",
+        "Certificate": {
+          "Path": "ssl/localhost.pfx",
+          "Password": "your-cert-password"
+        }
+      }
+    }
+  }
+}
+-> replace the localhost.pfx with your certificate file and ensure 
+the password is securely managed
+
+4. Set Up Angular's Development Server
+"serve": {
+    "builder": "@angular-devkit/build-angular:dev-server",
+    "options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+    }}
+
+5. Browser Compatibility
+-> add the certificate to the browser’s trusted root certificate store to 
+avoid warnings during local development
+
+6. Enforce HTTPS in 
+-> using reverse proxy (e.g., Nginx, Apache) or middleware in your .NET app
+app.UseHttpsRedirection();
+
+7. Enable HSTS(STTP Strict Transport Security)
+app.UseHsts();
+
+8. Secure Communication Between Angular and .NET
+-> use relative URLs for API calls in Angular and ensure the Angular app 
+communicates with the HTTPS backend only
+-> set up CORS in your .NET application to only allow requests from your Angular app's domain
+
+9. CI/CD 
+-> for production deployments, automate certificate renewal using tools like 
+Certbot(for Let's Encrypt) or through your cloud provider's services
+
+10. Monitoring and Alerts
+-> set up monitoring for certificate expiry and HTTPS health using 
+tools like Nagios, Pingdom, or cloud-native solutions
+
+
+60. Adding Angular Material and Tailwind CSS
+
+-- Angular Material --
+https://material.angular.io/
+cd /skinet/client
+ng add @angular/material@next
+Yes
+Azure/Blue
+Global Angular Material Typography: N
+Include and Enable animations
+cls
+
+-- Tailwind CSS --
+https://tailwindcss.com/docs/guides/angular
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+
+-> configure the tailwind.config.js file
+-> add the tailwind directives to your CSS: ./src/styles.css
+  -> delete all the code and replace it with the documentation
+  -> to ignore the warning, fo to Settings.json and add:
+    -> "scss.lint.unknownAtRules": "ignore"
+
+-- client -> src -> app-> app.component.html --
+<h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
+
+ng serve
+
+
+7.61. Adding VS Code extensions for Angular and Tailwind
+Add Extensions:
+-> Angular Language Service
+-> Tailwind CSS IntelliSense
+-> Auto Rename Tag
+
+
+7.62. Summary
+-> installed the Angular CLI
+-> created the Angular project
+-> set up VS Code for Angular
+-> set up Angular to use HTTPS
+-> added Angular Material and Tailwind CSS
