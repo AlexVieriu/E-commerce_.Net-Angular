@@ -483,6 +483,3 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 API/appsettings.json
-
-# Ignore the SSL Angular Client for security in Development
-client/src/ssl/*
