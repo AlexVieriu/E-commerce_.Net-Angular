@@ -131,3 +131,181 @@ package.json
     -> when we install this packages, they are added into: client-> node_modules
 tsconfig.json
     -> "strict": true (strict typescript code)
+
+
+7.59. Using HTTPS with Angular project 
+-> get a self trusted certificate 
+https://github.com/FiloSottile/mkcert
+
+Install on Windows(run as admin):
+choco install mkcert
+
+Terminal:
+mkcert -install
+
+Create a new certificate for localhost:
+cd ..//skinet//client
+mkdir ssl
+cd ssl
+mkcert localhost
+
+To use this certificate, we ned to configure Angular to use them.
+
+-- angular.json --
+-> look for "serve" and add :
+"options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+}
+
+-> start the app: cd /client
+ng serve
+https://localhost:4200/ 
+
+We put https because, when we will use Strips, we will get some errors
+
+
+-- Best Practices approach --
+1. Use a Trusted Certificate for Production
+-> always use certificates issued by a trusted Certificate Authority (CA), 
+such as Let's Encrypt or commercial providers
+-> ensure the certificate includes proper domain names (SANs) and is not just for "localhost."
+
+2. Store Certificates Securely
+Development:
+a. Secure Directory for Certificates
+-> Place your .pem or .pfx files in a directory that is not under source control
+or use .gitignore to exclude them
+~/ssl/localhost-key.pem
+~/ssl/localhost.pem
+
+Even if you later remove the certificate and add it to .gitignore, 
+Git tracks the file in the repository history. 
+Anyone with access can still retrieve older commits to access the certificate
+
+b. Add an entry in .gitignore
+-> client/src/ssl/*
+
+c. Angular Setup
+-> Modify your angular.json to point to the local certificate
+"serve": {
+    "options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+    }
+}
+
+d. Backend Configuration
+-> For .NET development, load the certificate locally
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps("ssl/localhost.pfx", "your-cert-password");
+    });
+});
+
+
+Production:
+-> store certificates in a dedicated secret management solution 
+(e.g., Azure Key Vault, AWS Secrets Manager)
+
+-> keep your .pem files in a secure directory outside the source control 
+-> use .gitignore to exclude them
+ChatGpt: "Give me and example of how to store certificates in a secure way, outside the source control for a .net with Angular project"
+
+a. Upload the Certificate to Azure Key Vault
+Export your certificate in .pfx format.
+Go to Azure Portal → Key Vault → Certificates → Generate/Import → Import.
+Upload your certificate and provide a name.
+
+b. Access Certificate in Your .NET 9 Backend
+-> Add the Azure Key Vault NuGet package to your .NET project:
+dotnet add package Azure.Extensions.AspNetCore.Configuration.Secrets
+
+-> Configure your appsettings.json to include Key Vault settings:
+{
+  "AzureKeyVault": {
+    "VaultUri": "https://<your-key-vault-name>.vault.azure.net/"
+  }
+}
+
+-> Retrieve the certificate in your Program.cs or Startup.cs:
+builder.Configuration.AddAzureKeyVault(
+    new Uri(builder.Configuration["AzureKeyVault:VaultUri"]),
+    new DefaultAzureCredential()
+);
+
+var certificateClient = new CertificateClient(
+    new Uri(builder.Configuration["AzureKeyVault:VaultUri"]),
+    new DefaultAzureCredential()
+);
+
+var certificate = certificateClient.GetCertificate("Your-Certificate-Name");
+var keyVaultSecret = certificateClient.GetSecret(certificate.Value.SecretId.AbsoluteUri);
+var cert = new X509Certificate2(Convert.FromBase64String(keyVaultSecret.Value));
+
+Use the certificate in Kestrel:
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Any, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps(cert);
+    });
+});
+
+
+3. Enable HTTPS for the Backend API
+-> your .NET 9 API must also use HTTPS, configure the Kestrel server in appsettings.json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Https": {
+        "Url": "https://localhost:5001",
+        "Certificate": {
+          "Path": "ssl/localhost.pfx",
+          "Password": "your-cert-password"
+        }
+      }
+    }
+  }
+}
+-> replace the localhost.pfx with your certificate file and ensure 
+the password is securely managed
+
+4. Set Up Angular's Development Server
+"serve": {
+    "builder": "@angular-devkit/build-angular:dev-server",
+    "options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+    }}
+
+5. Browser Compatibility
+-> add the certificate to the browser’s trusted root certificate store to 
+avoid warnings during local development
+
+6. Enforce HTTPS in 
+-> using reverse proxy (e.g., Nginx, Apache) or middleware in your .NET app
+app.UseHttpsRedirection();
+
+7. Enable HSTS(STTP Strict Transport Security)
+app.UseHsts();
+
+8. Secure Communication Between Angular and .NET
+-> use relative URLs for API calls in Angular and ensure the Angular app 
+communicates with the HTTPS backend only
+-> set up CORS in your .NET application to only allow requests from your Angular app's domain
+
+9. CI/CD 
+-> for production deployments, automate certificate renewal using tools like 
+Certbot(for Let's Encrypt) or through your cloud provider's services
+
+10. Monitoring and Alerts
+-> set up monitoring for certificate expiry and HTTPS health using 
+tools like Nagios, Pingdom, or cloud-native solutions
+
+
