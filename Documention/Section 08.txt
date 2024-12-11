@@ -1,0 +1,9 @@
+8.63. Introduction 
+-> adding components
+-> http client module
+-> observables
+-> Typescript 
+
+Goal:
+-> able to use Http client to retrieve data from the API
+-> understand the basics of observables and Typescript
