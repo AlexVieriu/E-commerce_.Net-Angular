@@ -7,3 +7,54 @@
 Goal:
 -> able to use Http client to retrieve data from the API
 -> understand the basics of observables and Typescript
+
+8.64. Setting up the folder structure and creating components
+
+-- client -> src -> app -> core --
+-> services
+-> guards 
+-> interceptors
+
+
+-- -- client -> src -> app -> shared --
+-> shared components
+-> shared directives
+-> shared models
+
+-- -- client -> src -> app -> features --
+-> shop
+-> shopping cart
+-> checkout
+
+-- -- client -> src -> app -> layout --
+-> header
+-> footer
+
+Open the terminal: 
+-> at the end of the terminal we have aliases(snippets) that we will use
+cd skinet/client
+ng help             
+ng generate help 
+ng generate component [name] (aliases: ng c [name])
+ng generate guard [name] (aliases: ng g guard [name])
+ng g c layout/header --dry-run 
+    -> creates:
+        -> header.component.ts
+        -> header.component.html
+        -> header.component.spec.ts
+        -> header.component.scss
+ng g c layout/header --skip-tests
+    -> creates 
+        -> header.component.ts
+        -> header.component.html
+        -> header.component.scss
+
+Dictionary:
+--dry-run : running the command without actually making any changes to the filesystem
+
+Check to see if the header component is created:
+cd skinet/client
+ns serve
+-> browse to http://localhost:4200/
+
+
