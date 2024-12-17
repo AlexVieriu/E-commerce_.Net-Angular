@@ -58,3 +58,70 @@ ns serve
 -> browse to http://localhost:4200/
 
 
+8.65. Adding a Header component
+-- skinet -> client -> src -> app -> layout -> header -> header.component.html --
+
+https://material.angular.io/components/categories
+-> Badge
+-> Button
+
+-- skinet -> client -> src -> app -> layout -> header -> header.component.ts --
+  imports: [
+    MatIcon,
+    MatButton,
+    MatBadge
+  ]
+
+Dictionary:
+border-b: 
+-> border-bottom-width: 1px;
+
+shadow-md: 
+-> medium shadow (sm, md, lg, xl, 2xl) 
+
+p-3:
+-> padding: 0.75rem;
+
+w-full:      
+-> width: 100%
+
+flex:
+-> utilities for controlling how flex items both grow and shrink
+https://tailwindcss.com/docs/flex
+
+align-middle: 
+-> vertical-align: middle;
+-> align items along the center of the container’s cross axis
+https://tailwindcss.com/docs/vertical-align#middle
+
+items-center:
+-> align-items: center;
+-> align items along the center of the container’s cross axis
+https://tailwindcss.com/docs/align-items#center
+
+justify-between: 
+-> justify-content: space-between; 
+-> items along the container’s main axis such that there is an equal amount 
+of space between each item 
+https://tailwindcss.com/docs/justify-content#space-between
+
+max-w-screen-2xl: 
+-> max-width: 1536px;
+-> sets the maximum width of the container to the predefined 2xl breakpoint value
+-> classes can be used to give an element a max-width matching a specific breakpoint 
+https://tailwindcss.com/docs/max-width#constraining-to-your-breakpoints
+
+mx-auto:
+-> margin-left: auto;
+   margin-right: auto;
+-> adds horizontal margin to the left and right of an element
+-> This centers the div horizontally within its parent container
+https://tailwindcss.com/docs/container#using-the-container
+
+gap-3:
+-> gap-* utilities to change the gap between both rows and columns in 
+grid and flexbox layouts
+-> gap-x-* and gap-y-*
+https://tailwindcss.com/docs/gap#setting-the-gap-between-elements
+
+
