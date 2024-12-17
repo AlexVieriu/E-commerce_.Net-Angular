@@ -1,0 +1,12 @@
+9.73. Introduction
+-> Angular services
+    -> make our http response 
+    -> are singleton in our app         
+-> Building the UI for the shop
+    -> Angular Material
+    -> Tailwind CSS
+-> Pagination (from Angular Material)
+-> Filtering, Sorting & Search
+-> Input properties
+    -> as we creates more components, we will break them in smaller pieces
+    -> we will pass the properties from the parent component to the child component
