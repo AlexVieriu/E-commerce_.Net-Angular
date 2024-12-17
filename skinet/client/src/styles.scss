@@ -1,3 +1,32 @@
+// get access to the Angular Material
+@use '@angular/material' as mat;
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+// https://angular-material.dev/courses/m2-ng-components/m2-ng-components/create-custom-theme
+// creates a new Angular Material theme object
+$customTheme: mat.define-theme();
+
+// imports the core styles of Angular Material
+@include mat.core();
+
+// .MDC - Material Design Components
+// https://v15.material.angular.io/guide/mdc-migration
+// https://www.youtube.com/watch?v=DpCwKpZlcbg
+.custom-theme {
+    @include mat.all-component-themes($customTheme);
+
+    // override the button styles
+    .mdc-button,
+    .mdc-raised-button,
+    .mdc-stroked-button,
+    .mdc-flat-button {
+        @apply rounded-md
+    }
+}
+
+.container {
+    @apply mx-auto max-w-screen-2xl
+}

@@ -125,3 +125,69 @@ grid and flexbox layouts
 https://tailwindcss.com/docs/gap#setting-the-gap-between-elements
 
 
+8.66. Improving the header component
+-- client -> public -- 
+-> copy the images from the project here
+-> restart the server: 
+  ng serve
+
+-- head.component.scss --
+.customer-badge .mat-badge-content {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    line-height: 24px;
+}
+
+.customer-badge .mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+
+-- client -> src -> styles.scss --
+// get access to the Angular Material
+@use '@angular/material' as mat;
+...
+$customTheme: mat.define-theme();
+
+@include mat.core();
+
+.custom-theme {
+    @include mat.all-component-themes($customTheme);
+
+    // override the button color
+    .mdc.button,
+    .mdc-raised,
+    .mdc-stroked-button,
+    .mdc-flat-button {
+        // use a tailwind class
+        @apply rounded-md
+    }
+}
+
+.container {
+    @apply mx-auto max-w-screen-2xl
+}
+
+-- client -> src -> index.html --
+<html lang="en" class="custom-theme">
+
+
+Dictionary:
+.mdc.button         : Base button
+.mdc-raised         : Raised button with a shadow
+.mdc-stroked-button : Outlined (stroked) button
+.mdc-flat-button    : Flat button with no background
+
+
+MDC - Material Design Components
+-> set of Web Components developed by the Material Design team to provide reusable, 
+customizable, and accessible UI components that adhere to Material Design guidelines
+https://v15.material.angular.io/guide/mdc-migration
+https://www.youtube.com/watch?v=DpCwKpZlcbg 
+
+-> .mdc have now variables to the Material Design Tokens
+https://m3.material.io/foundations/design-tokens/overview
+
