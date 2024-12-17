@@ -51,3 +51,73 @@ Dictionary:
 providedIn: 'root'  -> when the app is start running, is provided in the entire app
 
 
+9.74. Designing the shop page
+https://material.angular.io/components/card/overview
+
+-- terminal --
+cd skinet/client
+ng g c features/shop --dry-run
+ng g c features/shop --skip-tests
+
+g -> generate
+c -> component
+
+-- app.component.ts --
+import { Component } from '@angular/core';
+import { HeaderComponent } from "./layout/header/header.component";
+import { ShopComponent } from "./features/shop/shop.component";
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
+  imports: [HeaderComponent, ShopComponent],
+})
+export class AppComponent {
+  title = 'Skinet';
+}
+
+-- shop.component.html --
+<app-header></app-header>
+<div class="container mt-6">
+    <app-shop></app-shop>
+</div>
+
+-- shop.component.ts --
+import { Component, inject, OnInit } from '@angular/core';
+import { ShopService } from '../../core/services/shop.service';
+import { Product } from '../../shared/models/products';
+import { MatCard } from '@angular/material/card';
+
+@Component({
+  selector: 'app-shop',
+  standalone: true,
+  templateUrl: './shop.component.html',
+  styleUrl: './shop.component.scss', 
+  imports: [MatCard]
+})
+export class ShopComponent implements OnInit {
+  private shopService = inject(ShopService);
+  products: Product[] = [];
+
+  ngOnInit(): void {
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+}
+
+-- shop.component.html --
+<div class="grid grid-cols-5 gap-4">
+    @for (product of products; track product.id) {
+    <mat-card appearance="raised">
+        <img src="{{product.pictureUrl}}" alt="image of {{product.name}}">
+    </mat-card>
+    }
+</div>
+
+
+-- shop.service.ts  --
+return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20');
