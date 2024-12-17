@@ -4,6 +4,7 @@ import { HeaderComponent } from "./layout/header/header.component";
 import { HttpClient } from '@angular/common/http';
 import { Product } from "./shared/models/products";
 import { Pagination } from './shared/models/pagination';
+import { ShopService } from './core/services/shop.service';
 
 
 @Component({
@@ -14,19 +15,15 @@ import { Pagination } from './shared/models/pagination';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-
-  baseUrl = "https://localhost:7096/api/"
-  // inject HTTP Client
-  private http = inject(HttpClient);
+  private shopService = inject(ShopService);
   title = 'Skinet';
   products: Product[] = [];
 
 
   ngOnInit(): void {
-    this.http.get<Pagination<Product>>(this.baseUrl + 'products').subscribe({
+    this.shopService.getProducts().subscribe({
       next: response => this.products = response.data,
-      error: error => console.log(error),
-      complete: () => console.info('complete')
+      error: error => console.log(error)
     })
   }
 }

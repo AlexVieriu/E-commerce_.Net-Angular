@@ -10,3 +10,44 @@
 -> Input properties
     -> as we creates more components, we will break them in smaller pieces
     -> we will pass the properties from the parent component to the child component
+
+9.74. Introduction to Angular services
+-> to make a http request, we need to make a service 
+-> Angular services are singletons
+-> when we generate components in our app, and we move around from 
+component to component, the data is created and destroyed when the leave those
+component
+-> the only way to persist is to use services 
+-> all our services are in the "core" folder
+
+-- open terminal --
+cd skinet/client
+ng g --help
+ng g s core/services/shop --dry-run
+ng g s core/services/shop --skip-tests
+
+We gonna shift from app component to services:
+
+-- shop.services.ts --
+export class ShopService {
+  baseUrl = "https://localhost:7096/api/"
+  // inject HTTP Client
+  private http = inject(HttpClient);
+
+  getProducts() {
+    return this.http.get<Pagination<Product>>(this.baseUrl + 'products')
+  }
+}
+
+-- app.component.ts --
+private shopService = inject(ShopService);
+... 
+this.shopService.getProducts().subscribe({...})
+
+
+Dictionary:
+-- shop.services.ts --
+@Injectable         -> we can inject this service wherever we need it our Angular code
+providedIn: 'root'  -> when the app is start running, is provided in the entire app
+
+
