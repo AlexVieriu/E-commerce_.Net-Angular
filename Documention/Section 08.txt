@@ -191,3 +191,79 @@ https://www.youtube.com/watch?v=DpCwKpZlcbg
 -> .mdc have now variables to the Material Design Tokens
 https://m3.material.io/foundations/design-tokens/overview
 
+
+8.67. Making http requests in Angular
+
+-> start client app
+ng serve
+
+-> start API app
+cd skinet/API
+dotnet watch
+
+-- client -> src -> app -> app.config.ts --
+import { provideHttpClient } from '@angular/common/http';
+...
+provideHttpClient()
+
+-> Angular use DI(Dependency Injection)
+-> 
+
+-- app.component.ts --
+import { Component, inject, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+export class AppComponent implements OnInit {
+
+  baseUrl = "https://localhost:7096/api/"
+  // inject HTTP Client
+  private http = inject(HttpClient);
+  title = 'Skinet';
+  products: any[] = [];
+
+  ngOnInit(): void {
+    this.http.get<any>(this.baseUrl + 'products').subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error),
+      complete: () => console.info('complete')
+    })
+  }
+}
+
+-- app.component.html --
+<div class="container mt-6">
+    <h2 class="text-3xl font-bold underline">Welcome to {{title}}</h2>
+    <ul>
+        @for (product of products; track product.id){
+        <li>{{product.name}}</li>
+        }
+    </ul>
+</div>
+
+
+
+Dictionary:
+ngOnInit()
+-> is one of Angular's lifecycle hooks
+-> it is called after the component is initialized and ensures 
+that the component’s input bindings are done
+-> is often used for initializing data or making API calls 
+
+-> this.http.delete 
+this.http.delete<T>(url: string, options?: { headers, params, etc. })
+
+-> this.http.get
+this.http.get<T>(url: string, options?: { headers, params, etc. })
+
+-> this.http.head
+-> this.http.jsonp
+-> this.http.options
+-> this.http.patch
+-> this.http.post
+-> this.http.put
+-> this.http.request
+
+track product.id
+-> optimize DOM updates when rendering a list of items
+
+
