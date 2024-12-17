@@ -430,3 +430,17 @@ products: Product[] = [];
 
  -- app.component.html --
  -> now we have type safety
+
+
+ 8.72. Summary
+ -> use the http client to retrieve data from the API
+ -> understand the basics of observables and Typescript
+
+
+Questions:
+1. Can i use <CssFramework> instead of Angular Material and Tailwind?
+-> with great difficulty
+-> this is heavily integrated into the app
+
+2. Are we making a responsive app(desktop, mobile, tablet, web)?
+-> No
