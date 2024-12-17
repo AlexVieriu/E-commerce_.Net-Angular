@@ -3,11 +3,11 @@
 -> creating the Angular project
 -> setting up VS Code for Angular
 -> setting up Angular to use HTTPS
--> Adding Angular Material and Tailwind CSS
+-> adding Angular Material and Tailwind CSS
 
-Neil Cummings text editors:
--> Rider for .net(JetBrains)
--> WebStorm for Angular, React(JetBrains)
+Neil Cummings text editors(from JetBrains):
+-> Rider for .net
+-> WebStorm for Angular, React
 
 Goal:
 -> have a working Angular app running on HTTPS
@@ -17,7 +17,7 @@ Angular Release Schedule
 -> major release every 6 months
 -> 1-3 minor releases for each major release
 -> a patch release build almost every week 
--> at time of recording Angular is on v18
+-> course Angular: v18
 
 
 7.57. Creating the angular project
@@ -25,7 +25,8 @@ Angular Release Schedule
 Check the version compatibility:
 https://next.angular.dev/reference/versions
 
--- Install Node.js: https://joachim8675309.medium.com/installing-node-js-with-nvm-4dc469c977d9 --
+-- Install Node.js --
+https://joachim8675309.medium.com/installing-node-js-with-nvm-4dc469c977d9
 
 # chose desired node version
 $version = "23.3.0"
@@ -43,10 +44,12 @@ $version = "22.12.0"
 # install node
 nvm install $version
 
+-- Install angular CLI --
+https://next.angular.dev/tools/cli/setup-local
 
--- Install angular CLI: https://next.angular.dev/tools/cli/setup-local --
-node -v
-nmp -v
+nvm ls    (list of node version)
+node -v   (current node version)
+npm -v    (current Nuget Package Manager version)
 
 -- PowerShell --
 Get-ExecutionPolicy -List
@@ -54,7 +57,7 @@ Get-ExecutionPolicy
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 
 -- Install angular version --
-npm install -g @angular/cli
+npm install -g @angular/cli   (will install the last stable version)
 ng --version
 ng version
 
@@ -70,11 +73,10 @@ ng new client
 -> Enable Server-Side Rendering?: No
 
 -- Check if everything is working --
-cd client
+cd /skinet/client
 ng serve
 
 -> browse to the http://localhost:4200/
-
 
 
 Dictionary:
@@ -116,14 +118,14 @@ for development tasks, such as managing builds, running scripts, and interacting
 
 -- client -> scr -> app -> app.component.html --
 -> delete all of the code
-<title>Welcome to {{tittle}}</title>
+<title>Welcome to {{title}}</title>
 
-{{tittle}} is from kind of a variable from AppComponent
+{{title}} is a property from AppComponent
 
--> delete the app.component.spec.ts
+-> add "standalone: true," to the @Component
 
 -- Other important files --
-app.config.t
+app.config.ts
 app.routes.ts 
 main.ts 
 angular.json
@@ -149,7 +151,7 @@ mkdir ssl
 cd ssl
 mkcert localhost
 
-To use this certificate, we ned to configure Angular to use them.
+To use this certificate, we need to configure Angular
 
 -- angular.json --
 -> look for "serve" and add :
@@ -159,7 +161,7 @@ To use this certificate, we ned to configure Angular to use them.
     "sslKey": "ssl/localhost-key.pem"
 }
 
--> start the app: cd /client
+cd /client  (start the Angular app)
 ng serve
 https://localhost:4200/ 
 
@@ -327,11 +329,18 @@ https://tailwindcss.com/docs/guides/angular
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init
 
--> configure the tailwind.config.js file
--> add the tailwind directives to your CSS: ./src/styles.css
-  -> delete all the code and replace it with the documentation
-  -> to ignore the warning, fo to Settings.json and add:
-    -> "scss.lint.unknownAtRules": "ignore"
+
+-> configure the tailwind.config.js file:
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
 
 -- client -> src -> app-> app.component.html --
 <h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
