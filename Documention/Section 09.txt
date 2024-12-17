@@ -51,7 +51,7 @@ Dictionary:
 providedIn: 'root'  -> when the app is start running, is provided in the entire app
 
 
-9.74. Designing the shop page
+9.75. Designing the shop page
 https://material.angular.io/components/card/overview
 
 -- terminal --
