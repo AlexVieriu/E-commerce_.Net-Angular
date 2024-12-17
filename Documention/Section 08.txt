@@ -390,3 +390,43 @@ node src/demo.js
 OutPut:
 { id: 2, title: 'Build API', completed: false }
 [ { id: 1, title: 'Publish App', completed: true } ]
+
+
+8.71. Using Typescript in our Project
+
+-- shared -> models -> product.ts --
+export type Product = {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    pictureUrl: string;
+    type: string;
+    brand: string;
+    quantityInStock: number;
+}
+
+-> be sure to use CamelCase for the typescript files
+-> make sure to be the same as the one coming form the API
+
+-> shared -> models -> pagination.ts
+export type Pagination<T> = {
+    pageIdex: number;
+    pageSize: number;
+    count: number;
+    data: T[]
+}
+
+-- app.component.ts --
+import { Product } from "./shared/models/products";
+import { Pagination } from './shared/models/pagination';
+
+
+products: Product[] = [];
+
+ this.http.get<Pagination<Product>>(this.baseUrl + 'products').subscribe({
+    ...
+ })
+
+ -- app.component.html --
+ -> now we have type safety
