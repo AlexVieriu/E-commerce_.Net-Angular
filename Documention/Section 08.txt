@@ -299,3 +299,22 @@ RxJS
 -> Utility library for working with Observables, similar to lodash or underscore
 for JS objects and arrays
 -> Uses the pipe() method to chain RxJS operators together
+
+
+8.69. Typescript
+
+Pro:
+-> strong typing
+-> object orientated
+-> better intellisense
+-> access modifiers (private, public)
+-> future JS features
+-> catches silly mistakes in development
+-> 3rd party support
+-> easy to learn if you know JS
+
+Cons:
+-> more upfront code 
+-> 3rd party libraries (some don't have definition file)
+-> strict mode is.. strict!
+
