@@ -267,3 +267,35 @@ track product.id
 -> optimize DOM updates when rendering a list of items
 
 
+8.68. Observables
+-> a sequence of items that arrive asynchronously over time
+
+Promises vs Observables
+Promises:
+-> has one pipeline
+-> used with async data return 
+-> not easy to cancel
+
+Observables:
+-> are cancellable 
+-> stream data in multiple pipelines
+-> array like operations
+-> can be created from other sources like events 
+-> they can be subscribe to
+
+ChatGPT: " Give me an example for each Observable points in Angular 19"
+
+8.68.1.png
+8.68.2.png
+
+HTTP, Observables and RxJS
+-> HTTP Get request from ShopService
+-> Receive the Observable and cast it into a Products array
+-> Subscribe to the Observable from component
+-> Assign the Products array to a local variable for us in the components template
+
+RxJS
+-> Reactive extensions for JavaScript
+-> Utility library for working with Observables, similar to lodash or underscore
+for JS objects and arrays
+-> Uses the pipe() method to chain RxJS operators together
