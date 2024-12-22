@@ -13,12 +13,6 @@ Goal:
 -> have a working Angular app running on HTTPS
 -> understand angular standalone components and how we use them to build an app
 
-Angular Release Schedule
--> major release every 6 months
--> 1-3 minor releases for each major release
--> a patch release build almost every week 
--> course Angular: v18
-
 
 7.57. Creating the angular project
 
@@ -67,7 +61,7 @@ npm install -g @angular/cli@next
 ng --version
 
 
--- Create angular app commands --
+-- Create angular app --
 ng new client
 -> select Sass
 -> Enable Server-Side Rendering?: No
@@ -82,6 +76,9 @@ ng serve
 Dictionary:
 Install the last version of PowerShell: https://github.com/PowerShell/PowerShell/releases
 -> look for "Assets" -> PowerShell-7.5.0-rc.1-win-x64.msi
+
+Check the PowerShell version:
+$PSVersionTable.PSVersion
 
 Add "onmyposh" to PowerShell:
 https://ohmyposh.dev/docs/installation/windows  (download oh my posh)
@@ -106,7 +103,7 @@ for development tasks, such as managing builds, running scripts, and interacting
 -- client -> scr ->  index.html --
 <title>Skinet</title>
 
--- client -> scr -> app -> app.component.ts --
+-- app.component.ts --
 -> in the older version we used modular approach
 -> in the newer version we use standalone approach
     -> each component is responsible for importing its own dependencies 
@@ -116,13 +113,10 @@ for development tasks, such as managing builds, running scripts, and interacting
     ...
 })
 
--- client -> scr -> app -> app.component.html --
--> delete all of the code
+-- app.component.html --
 <title>Welcome to {{title}}</title>
 
 {{title}} is a property from AppComponent
-
--> add "standalone: true," to the @Component
 
 -- Other important files --
 app.config.ts
@@ -130,7 +124,7 @@ app.routes.ts
 main.ts 
 angular.json
 package.json 
-    -> when we install this packages, they are added into: client-> node_modules
+    -> when we install packages, they are added into: client-> node_modules
 tsconfig.json
     -> "strict": true (strict typescript code)
 
@@ -153,7 +147,7 @@ mkcert localhost
 
 To use this certificate, we need to configure Angular
 
--- angular.json --
+-- client -> angular.json --
 -> look for "serve" and add :
 "options": {
     "ssl": true,
@@ -161,18 +155,120 @@ To use this certificate, we need to configure Angular
     "sslKey": "ssl/localhost-key.pem"
 }
 
-cd /client  (start the Angular app)
+cd/client  (start the Angular app)
 ng serve
 https://localhost:4200/ 
 
 We put https because, when we will use Strips, we will get some errors
 
 
--- Best Practices approach --
+60. Adding Angular Material and Tailwind CSS
+
+-- Angular Material --
+https://material.angular.io/
+
+cd /skinet/client
+ng add @angular/material@next
+Yes
+Azure/Blue
+Global Angular Material Typography: N
+Include and Enable animations
+cls
+
+-- Tailwind CSS --
+https://tailwindcss.com/docs/guides/angular
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+
+
+-> configure the tailwind.config.js file:
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+-- client -> src -> app-> app.component.html --
+<h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
+
+ng serve
+
+Dictionary:
+-d (or --save-dev): installs the packages as dev dependencies(not in production)
+
+postcss           : a tool/framework for transforming CSS using JavaScript 
+                    relies on plugins to perform specific tasks
+                    Without plugins, PostCSS does not modify CSS
+                    https://postcss.org/
+
+                    Parsing CSS: Reads and analyzes raw CSS files.
+                    AST (Abstract Syntax Tree): Converts CSS into a tree structure, which plugins use to make transformations.
+                    Rewriting CSS: Writes the transformed AST back into CSS.
+
+autoprefixer      : installs a PostCSS plugin that automatically adds vendor prefixes
+                    (e.g., -webkit-, -moz-) to ensure compatibility with older browsers
+
+npx:              : Executes a package binary without globally installing it
+                    It runs the tailwindcss CLI tool that was installed earlier
+
+init              : initializes a default tailwind.config.js file in your project
+
+
+
+-- PstCSS examples: 
+CSS input:
+:fullscreen {
+}
+
+CSS output:
+:-webkit-full-screen {
+}
+:-ms-fullscreen {
+}
+:fullscreen {
+}
+
+-- Autoprefixer:
+Css input:
+.example {
+  display: flex;
+}
+
+Css output:
+.example {
+  display: -webkit-box; /* for older Safari */
+  display: -ms-flexbox; /* for older IE */
+  display: flex;        /* standard */
+}
+
+
+7.61. Adding VS Code extensions for Angular and Tailwind
+Add Extensions:
+-> Angular Language Service
+-> Tailwind CSS IntelliSense
+-> Auto Rename Tag
+
+
+7.62. Summary
+-> installed the Angular CLI
+-> created the Angular project
+-> set up VS Code for Angular
+-> set up Angular to use HTTPS
+-> added Angular Material and Tailwind CSS
+
+
+
+
+-- Best Practices approach when adding certificates --
 1. Use a Trusted Certificate for Production
--> always use certificates issued by a trusted Certificate Authority (CA), 
-such as Let's Encrypt or commercial providers
--> ensure the certificate includes proper domain names (SANs) and is not just for "localhost."
+-> always use certificates issued by a trusted Certificate Authority (CA)
+-> ensure the certificate includes proper domain names (SANs) and is not just for "localhost"
 
 2. Store Certificates Securely
 Development:
@@ -183,7 +279,7 @@ or use .gitignore to exclude them
 ~/ssl/localhost.pem
 
 Even if you later remove the certificate and add it to .gitignore, 
-Git tracks the file in the repository history. 
+Git tracks the file in the repository history 
 Anyone with access can still retrieve older commits to access the certificate
 
 b. Add an entry in .gitignore
@@ -208,7 +304,6 @@ builder.WebHost.ConfigureKestrel(options =>
         listenOptions.UseHttps("ssl/localhost.pfx", "your-cert-password");
     });
 });
-
 
 Production:
 -> store certificates in a dedicated secret management solution 
@@ -309,55 +404,3 @@ Certbot(for Let's Encrypt) or through your cloud provider's services
 10. Monitoring and Alerts
 -> set up monitoring for certificate expiry and HTTPS health using 
 tools like Nagios, Pingdom, or cloud-native solutions
-
-
-60. Adding Angular Material and Tailwind CSS
-
--- Angular Material --
-https://material.angular.io/
-cd /skinet/client
-ng add @angular/material@next
-Yes
-Azure/Blue
-Global Angular Material Typography: N
-Include and Enable animations
-cls
-
--- Tailwind CSS --
-https://tailwindcss.com/docs/guides/angular
-
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init
-
-
--> configure the tailwind.config.js file:
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./src/**/*.{html,ts}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-
--- client -> src -> app-> app.component.html --
-<h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
-
-ng serve
-
-
-7.61. Adding VS Code extensions for Angular and Tailwind
-Add Extensions:
--> Angular Language Service
--> Tailwind CSS IntelliSense
--> Auto Rename Tag
-
-
-7.62. Summary
--> installed the Angular CLI
--> created the Angular project
--> set up VS Code for Angular
--> set up Angular to use HTTPS
--> added Angular Material and Tailwind CSS

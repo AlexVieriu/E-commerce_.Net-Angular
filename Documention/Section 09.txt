@@ -2,14 +2,19 @@
 -> Angular services
     -> make our http response 
     -> are singleton in our app         
+
 -> Building the UI for the shop
     -> Angular Material
     -> Tailwind CSS
+
 -> Pagination (from Angular Material)
+
 -> Filtering, Sorting & Search
+
 -> Input properties
     -> as we creates more components, we will break them in smaller pieces
     -> we will pass the properties from the parent component to the child component
+
 
 9.74. Introduction to Angular services
 -> to make a http request, we need to make a service 
@@ -121,3 +126,29 @@ export class ShopComponent implements OnInit {
 
 -- shop.service.ts  --
 return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20');
+
+
+9.76. Adding a product item component
+
+cd skinet/client
+ng g c features/shop/product-item --skip-tests 
+
+-- product-item.component.ts --
+import { Product } from '../../../shared/models/products';
+
+imports: [MatCard]
+
+export class ProductItemComponent {
+  @Input() product?: Product;
+}
+
+Files that need to be changed:
+-- product-item.component.ts
+imports: [MatCard, MatCardContent, CurrencyPipe, MatCardActions, MatButton, MatIcon]
+
+-- product-item.component.html
+all the component
+
+-- shop.component.html
+(passing param to child component)
+<app-product-item [product]="product"></app-product-item>
