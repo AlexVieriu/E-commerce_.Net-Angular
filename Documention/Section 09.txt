@@ -162,3 +162,26 @@ getTypes()
 
 -- shop.component.ts --
 initializeShop()
+
+
+9.78. Adding filtering functionality using Material Dialog
+
+https://next.material.angular.io/components/dialog/overview
+
+ng g c features/shop/filter-dialog --skip-tests
+
+-- app -> features -> shop -> filter-dialog.component.ts --
+shopService = inject(ShopService);
+
+-- app -> features -> shop -> filter-dialog.component.html --
+-> create 2 divs(for Brands and Types) and a button(Apply Filters)
+
+
+Dictionary:
+<mat-divider>
+https://material.angular.io/components/divider/overview
+
+<mat-selection-list>, <mat-list-option> :
+https://material.angular.io/components/list/overview#selection
+
+
