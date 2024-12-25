@@ -476,7 +476,59 @@ Test to see if it works
 
 
 83. Adding pagination to the client using Material
+-- shop.service.ts --
+params = params.append('pageSize', shopParams.pageSize);
+params = params.append('pageIndex', shopParams.pageNumber);
+
+-- shop.component.ts --
+import { MatPaginator } from '@angular/material/paginator';
+import: [..., MatPaginator]
+
+products?: Pagination<Product>;
+
+getProducts() {
+  this.shopService.getProducts(this.shopParams).subscribe({
+    next: response => this.products = response,
+    error: error => console.log(error)
+  })
+}
+
+
+--shop.component.html--
+-> put the buttons in a div, so they are grouped
+
+<mat-paginator (page)="handlePageEvent($event)" [length]="products?.count" [pageSize]="shopParams.pageSize"
+    [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [pageIndex]="shopParams.pageNumber-1"
+    aria-label="Select page">
+</mat-paginator>
+
+handlePageEvent(event: PageEvent) {
+  this.shopParams.pageNumber = event.pageIndex + 1;
+  this.shopParams.pageSize = event.pageSize;
+  this.getProducts();
+}
+
+-> if we have filtering, and we are at page nr. 5, 
+and they are only 2 items, we can't see anything at page 5
+-> in this case we need to reset our page number
+
+onSortChange(){
+  ...
+  this.shopParams.pageNumber = 1;
+}
+
+openFiltersDialog() {
+...
+  this.shopParams.pageNumber = 1;
+}
+
+-> test the App
+
+-- tailwind.config.js --
+important: true
+
 
 84. Adding the search functionality to the client
+
 
 85. Summary
