@@ -530,5 +530,44 @@ important: true
 
 84. Adding the search functionality to the client
 
+-- shop.component.ts --
+import { FormsModule } from '@angular/forms';
+inports: [..., FormsModule]
+
+
+onSearchChanged() {
+  this.shopParams.pageNumber = 1;
+  this.getProducts();
+}
+
+-- shop.component.html --
+<form class="relative flex items-center w-full max-w-md mx-4" #searchFrom="ngForm"
+    (ngSubmit)="onSearchChanged()">
+    <input type="search" class="block w-full p-4 text-sm text-gray-900 boder border-gray-300 rounded-lg"
+        placeholder="Search" name="search" [(ngModel)]="shopParams.search" />
+    <button mat-icon-button class="absolute inset-y-0 right-8 top-2 flex items-center pl-3">
+        <mat-icon>search</mat-icon>
+    </button>
+</form>
+
+-> add class="match-input-height" to the buttons:
+  -> Filters
+  -> Sort
+
+-- shop.service.ts --
+if (shopParams.search)
+  params = params.append('search', shopParams.search);
+
+-- styles.scss --
+.text-primary {
+    color: #7d00fa
+}
+
+button.match-input-height {
+    height: var(--mat-form-container-height) !important;
+}
+
+
+
 
 85. Summary
