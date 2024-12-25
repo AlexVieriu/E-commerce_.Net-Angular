@@ -9,6 +9,7 @@ import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { MatListOption, MatSelectionList, MatSelectionListChange } from '@angular/material/list';
+import { ShopParams } from '../../shared/models/shopParams';
 
 @Component({
   selector: 'app-shop',
@@ -29,10 +30,8 @@ export class ShopComponent implements OnInit {
   private shopService = inject(ShopService);
   private dialogService = inject(MatDialog);
 
+  shopParams = new ShopParams();
   products: Product[] = [];
-  selectBrands: string[] = [];
-  selectTypes: string[] = [];
-  selectedSort: string = 'name';
   sortOptions = [
     { name: 'Alphabetical', value: 'name' },
     { name: 'Price: Low-High', value: 'priceAsc' },
@@ -50,7 +49,7 @@ export class ShopComponent implements OnInit {
   }
 
   getProducts() {
-    this.shopService.getProducts(this.selectBrands, this.selectTypes, this.selectedSort).subscribe({
+    this.shopService.getProducts(this.shopParams).subscribe({
       next: response => this.products = response.data,
       error: error => console.log(error)
     })
@@ -60,7 +59,7 @@ export class ShopComponent implements OnInit {
     // we select the first option on the list by default
     const selectedOption = event.options[0];
     if (selectedOption) {
-      this.selectedSort = selectedOption.value;
+      this.shopParams.sort = selectedOption.value;
       this.getProducts();
     }
   }
@@ -69,8 +68,8 @@ export class ShopComponent implements OnInit {
     const dialogRef = this.dialogService.open(FilterDialogComponent, {
       width: '500px',
       data: {
-        selectBrands: this.selectBrands,
-        selectTypes: this.selectTypes
+        selectBrands: this.shopParams.brands,
+        selectTypes: this.shopParams.types
       }
     });
 
@@ -78,8 +77,8 @@ export class ShopComponent implements OnInit {
       next: result => {
         if (result) {
           console.log(result);
-          this.selectBrands = result.selectBrands;
-          this.selectTypes = result.selectTypes;
+          this.shopParams.brands = result.selectBrands;
+          this.shopParams.types = result.selectTypes;
 
           // apply filters
           this.getProducts();

@@ -322,7 +322,7 @@ import { MatListOption, MatSelectionList } from '@angular/material/list';
 
 @Component{
   ...
-  [imports] : [..., MatMenu, MatMenuTrigger, MatListOption, MatSelectionList]
+  imports : [..., MatMenu, MatMenuTrigger, MatListOption, MatSelectionList]
 }
 
 class ShopComponent{
@@ -386,9 +386,94 @@ getProducts(brands?: string[], types?: string[], sort?: string){
 
 Dictionary:
 
+-- Angular Material --
+-> MatMenu:
+Inputs: ariaDescribedby, ariaLabel, ariaLabelledby, ...
+OutPut: closed
+https://material.angular.io/components/menu/api#MatMenu 
+
+-> MatMenuTrigger
+Input: menu, menuData, restoreFocus, ...
+Output:menuClosed, menuOpened, ...
+https://material.angular.io/components/menu/api#MatMenuTrigger
+
+-> MatListOption:
+https://material.angular.io/components/list/api#MatListOption
+Input: color, disableRipple, disable, selected, value, ...
+
+-> MatSelectionList:
+https://material.angular.io/components/list/api#MatSelectionList
+Input: color, disabled, multiple, ...
+Output: selectionChange
+
+-- shop.component.html --
+
+HTML:
+<div>, <button>, <mat-icon>
+-> Standard HTML elements for creating structure and UI components.
+
+Tailwind CSS:
+class="flex flex-col gap-3", 
+class="grid grid-cols-5 gap-4"
+class="flex justify-end gap-3"
+-> Tailwind utility classes for styling the layout, grid, gaps, and flexbox properties.
+
+Angular Material:
+[matMenuTriggerFor]
+<mat-menu>
+<mat-selection-list>
+<mat-list-option>
+-> 	Angular Material components for menus and lists with built-in styling and functionality.
+
+Angular Material:
+mat-stroked-button
+-> 	Angular Material directive to style buttons with a stroked appearance.
+
+Angular/HTML:
+Angular bindings: property binding ([multiple]) for component attributes and event binding
+                 ((selectionChange)) for responding to events
+
+Angular:
+(click)="openFiltersDialog()"
+-> Angular event binding to handle a button click and invoke the specified method (openFiltersDialog).
+
+Angular:
+[value]="sort.value", [selected]="selectedSort === sort.value"
+-> Angular property bindings to pass data to child components or set attributes dynamically
+
+Angular:
+{{sort.name}}
+-> Angular interpolation syntax to display the value of a variable (sort.name) within the HTML
 
 
 82. Using a class for supply the params for the API request 
+https://material.angular.io/components/paginator/overview
+
+-> when u have more then 3 params, create a class
+-> create a typescript class
+
+-- shared-> models-> shopParams.ts --
+export class ShopParams {
+    brand: string[] = [];
+    types: string[] = [];
+    sort = 'name';
+    pageNumber = 1;
+    pageSize = 10;
+    search = '';
+}
+
+-- shop.component.ts --
+-> replace selectedSort, selectedBrands, selectedTypes with shopParams
+
+
+Components that need to be modified after the refactoring:
+-- shop.component.html --
+-- shop.service.ts --
+
+Test to see if it works
+-> check filters
+-> check sorting
+
 
 83. Adding pagination to the client using Material
 
