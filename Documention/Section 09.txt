@@ -164,7 +164,7 @@ getTypes()
 initializeShop()
 
 
-9.78. Adding filtering functionality using Material Dialog
+9.78. Adding filtering functionality using Material Dialog I
 
 https://next.material.angular.io/components/dialog/overview
 
@@ -185,3 +185,213 @@ https://material.angular.io/components/divider/overview
 https://material.angular.io/components/list/overview#selection
 
 
+9.79. Adding filtering functionality using Material Dialog II
+
+-- shop.component.ts --
+imports: [MatCard, ProductItemComponent, MatButton]
+
+private dialogService = inject(MatDialog);
+
+openFiltersDialog() {
+  const dialogRef = this.dialogService.open(FilterDialogComponent, {
+  });
+}
+
+-- shop.component.html --
+<div class="flex flex-col gap-3">
+  <div class="flex justify-end">
+    <button mat-stroked-button (click)="openFiltersDialog()">
+      <mat-icon>filter_list</mat-icon>
+    </button>
+  </div>
+</div>
+
+How can i get a icon in the button?
+https://fonts.google.com/icons 
+search for the icon: Filter List
+in the right bar search for: "Inserting the icon"
+https://fonts.google.com/icons?selected=Material+Symbols+Outlined:filter_list:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=filter&icon.size=24&icon.color=%235f6368
+
+
+Make the filter functional:
+
+-- shop.component.ts --
+  selectBrands: string[] = [];
+  selectTypes: string[] = [];
+
+  openFiltersDialog() {
+    const dialogRef = this.dialogService.open(FilterDialogComponent, {
+      width: '500px',
+      data: {
+        selectBrands: this.selectBrands,
+        selectTypes: this.selectTypes
+      }
+    });
+
+    dialogRef.afterClosed().subscribe({
+      next: result => {
+        if (result) {
+          this.selectBrands = result.selectBrands;
+          this.selectTypes = result.selectTypes;
+          // apply filters
+        }
+      }
+    });
+  }
+
+  We need to do something to access to the data:
+  -- filter-dialog.component.ts --
+
+  export class FilterDialogComponent {
+  shopService = inject(ShopService);
+  private dialogRef = inject(MatDialogRef<FilterDialogComponent>);
+  data = inject(MAT_DIALOG_DATA);
+
+  selectBrands: string[] = this.data.selectBrands;
+  selectTypes: string[] = this.data.selectTypes;
+
+  applyFilters() {
+    this.dialogRef.close({
+      selectBrands: this.selectBrands,
+      selectTypes: this.selectTypes
+    })
+  }
+}
+
+9.80. Hooking up the filters to the service
+
+Duo-way biding: FormsModule
+-> get data from the template
+-> modify the data in the template 
+
+-- filter-dialog.component.html --
+[] -> input values (modify the UI)
+() -> output values (read from UI)
+
+[(ngModel)]="selectBrands" [multiple]="true"
+value="{{brand}}"
+(click)="applyFilters()"
+
+<mat-selection-list [(ngModel)]="selectBrands" [multiple]="true">
+    @for (brand of shopService.brands; track $index) {
+    <mat-list-option value="{{brand}}">{{brand}}</mat-list-option>
+    }
+</mat-selection-list>
+
+<mat-selection-list [(ngModel)]="selectTypes" [multiple]="true">
+    @for (type of shopService.types; track $index) {
+    <mat-list-option value="{{type}}">{{type}}</mat-list-option>
+    }
+</mat-selection-list>
+
+<button mat-flat-button (click)="applyFilters()">Apply Filters</button>
+
+
+-- app -> core-> services -> shop.service.ts --
+-> rewrite the getProducts()
+
+ getProducts(brands?: string[], types?: string[]) {
+  let params = new HttpParams();
+
+  if (brands && brands.length > 0) {
+    params = params.append('brands', brands.join(','));
+  }
+
+  if (types && types.length > 0) {
+    params = params.append('types', types.join(','));
+  }
+
+  params = params.append('pageSize', 20);
+
+  return this.http.get<Pagination<Product>>(this.baseUrl + 'products', { params });
+}
+
+-- shop.component.ts --
+// apply filters
+this.shopService.getProducts(this.selectBrands, this.selectTypes).subscribe({
+  next: response => this.products = response.data,
+  error: error => console.log(error)
+})
+
+
+81. Adding the sorting functionality
+
+-- shop.component.ts --
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
+import { MatListOption, MatSelectionList } from '@angular/material/list';
+
+@Component{
+  ...
+  [imports] : [..., MatMenu, MatMenuTrigger, MatListOption, MatSelectionList]
+}
+
+class ShopComponent{
+...
+selectedSort: string = 'name';
+sortOptions = [
+  { name: 'Alphabetical', value: 'name' },
+  { name: 'Price: Low-High', value: 'priceAsc' },
+  { name: 'Price: High-Low', value: 'priceDesc' }
+]
+
+ getProducts() {
+    this.shopService.getProducts(this.selectBrands, this.selectTypes, this.selectedSort).subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+  onSortChange(event: MatSelectionListChange) {
+    // we select the first option on the list by default
+    const selectedOption = event.options[0];
+    if (selectedOption) {
+      this.selectedSort = selectedOption.value;
+      this.getProducts();
+    }
+  }
+}
+
+
+-- shop.component.html --
+<button mat-stroked-button [matMenuTriggerFor]="sortMenu">
+    <mat-icon>swap-vert</mat-icon>
+    Sort
+</button>
+
+swap-vert:
+https://fonts.google.com/icons?selected=Material+Symbols+Outlined:swap_vert:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=swap&icon.size=24&icon.color=%235f6368
+
+
+<mat-menu #sortMenu="matMenu">
+    <!-- [multiple]: select multiple options when filtering -->
+    <mat-selection-list [multiple]="false" (selectionChange)="onSortChange($event)">
+        @for (sort of sortOptions; track $index) {
+        <mat-list-option [value]="sort.value" [selected]="selectedSort === sort.value">
+            {{sort.name}}
+        </mat-list-option>
+        }
+    </mat-selection-list>
+</mat-menu>
+
+
+-- shop.service.ts --
+-> add the sort logic/param
+getProducts(brands?: string[], types?: string[], sort?: string){
+...
+  if (sort) {
+    params = params.append('sort', sort);
+  }
+}
+
+
+Dictionary:
+
+
+
+82. Using a class for supply the params for the API request 
+
+83. Adding pagination to the client using Material
+
+84. Adding the search functionality to the client
+
+85. Summary
