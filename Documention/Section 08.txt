@@ -10,23 +10,17 @@ Goal:
 
 8.64. Setting up the folder structure and creating components
 
--- client -> src -> app -> core --
--> services
--> guards 
--> interceptors
-
-
--- -- client -> src -> app -> shared --
--> shared components
+-- client -> src -> app -> shared --
+-> shared components 
 -> shared directives
 -> shared models
 
--- -- client -> src -> app -> features --
+-- client -> src -> app -> features --
 -> shop
 -> shopping cart
 -> checkout
 
--- -- client -> src -> app -> layout --
+-- client -> src -> app -> layout --
 -> header
 -> footer
 
@@ -52,20 +46,27 @@ ng g c layout/header --skip-tests
 Dictionary:
 --dry-run : running the command without actually making any changes to the filesystem
 
+What is a Route Guard? (ng generate guard)
+-> allows you to control navigation to or from specific routes in your application
+
+Folders:
+-> auth.guard.ts
+-> auth.guard.spec.ts
+
 Check to see if the header component is created:
 cd skinet/client
-ns serve
+ng serve
 -> browse to http://localhost:4200/
 
 
 8.65. Adding a Header component
--- skinet -> client -> src -> app -> layout -> header -> header.component.html --
+-- client -> src -> app -> layout -> header -> header.component.html --
 
 https://material.angular.io/components/categories
 -> Badge
 -> Button
 
--- skinet -> client -> src -> app -> layout -> header -> header.component.ts --
+-- client -> src -> app -> layout -> header -> header.component.ts --
   imports: [
     MatIcon,
     MatButton,
@@ -127,7 +128,7 @@ https://tailwindcss.com/docs/gap#setting-the-gap-between-elements
 
 8.66. Improving the header component
 -- client -> public -- 
--> copy the images from the project here
+-> copy the images from the project(Course Assets) into client/public
 -> restart the server: 
   ng serve
 
@@ -144,7 +145,6 @@ https://tailwindcss.com/docs/gap#setting-the-gap-between-elements
     width: 32px;
     height: 32px;
 }
-
 
 -- client -> src -> styles.scss --
 // get access to the Angular Material
@@ -174,13 +174,11 @@ $customTheme: mat.define-theme();
 -- client -> src -> index.html --
 <html lang="en" class="custom-theme">
 
-
 Dictionary:
 .mdc.button         : Base button
 .mdc-raised         : Raised button with a shadow
 .mdc-stroked-button : Outlined (stroked) button
 .mdc-flat-button    : Flat button with no background
-
 
 MDC - Material Design Components
 -> set of Web Components developed by the Material Design team to provide reusable, 
@@ -207,14 +205,12 @@ import { provideHttpClient } from '@angular/common/http';
 provideHttpClient()
 
 -> Angular use DI(Dependency Injection)
--> 
 
 -- app.component.ts --
 import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 export class AppComponent implements OnInit {
-
   baseUrl = "https://localhost:7096/api/"
   // inject HTTP Client
   private http = inject(HttpClient);
@@ -239,7 +235,6 @@ export class AppComponent implements OnInit {
         }
     </ul>
 </div>
-
 
 
 Dictionary:
@@ -270,20 +265,27 @@ track product.id
 8.68. Observables
 -> a sequence of items that arrive asynchronously over time
 
-Promises vs Observables
-Promises:
--> has one pipeline
--> used with async data return 
--> not easy to cancel
-
 Observables:
--> are cancellable 
--> stream data in multiple pipelines
--> array like operations
--> can be created from other sources like events 
--> they can be subscribe to
+-> Asynchronous Data Handling(HTTP requests, WebSockets, etc.)
+    -> allow developers to process data as it becomes available 
+    rather than waiting for all the data to be received
 
-ChatGPT: " Give me an example for each Observable points in Angular 19"
+-> Composability with RxJS Operators
+    -> extensive capabilities for transforming, filtering, and combining streams of data
+
+-> Lazy Evaluation
+    -> meaning they don't execute until they are subscribed to
+    -> ensures that resources are only consumed when needed
+
+-> Multiple Emissions of Data
+    -> multiple values can be emitted over time
+    -> real-time updates, handling events, or streaming data from APIs
+
+-> Cancellation and Cleanup
+    ->  when you unsubscribe, it stops emitting data and cleans up resources
+
+
+ChatGPT: "Give me an example for each Observable points in Angular 19"
 
 8.68.1.png
 8.68.2.png

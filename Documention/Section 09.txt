@@ -1,0 +1,540 @@
+9.73. Introduction
+-> Angular services
+    -> make our http response 
+    -> are singleton in our app         
+
+-> Building the UI for the shop
+    -> Angular Material
+    -> Tailwind CSS
+
+-> Pagination (from Angular Material)
+
+-> Filtering, Sorting & Search
+
+-> Input properties
+    -> as we creates more components, we will break them in smaller pieces
+    -> we will pass the properties from the parent component to the child component
+
+
+9.74. Introduction to Angular services
+-> to make a http request, we need to make a service 
+-> Angular services are singleton
+-> when we generate components in our app, and we move around from 
+component to component, the data is created and destroyed when we leave the
+component
+-> the only way to persist is to use services 
+-> all our services are in the "core" folder
+
+-- open terminal --
+cd skinet/client
+ng g --help
+ng g s core/services/shop --dry-run
+ng g s core/services/shop --skip-tests
+
+We gonna shift from app component to services:
+
+-- shop.services.ts --
+export class ShopService {
+  baseUrl = "https://localhost:7096/api/"
+  // inject HTTP Client
+  private http = inject(HttpClient);
+
+  getProducts() {
+    return this.http.get<Pagination<Product>>(this.baseUrl + 'products')
+  }
+}
+
+-- app.component.ts --
+private shopService = inject(ShopService);
+... 
+this.shopService.getProducts().subscribe({...})
+
+
+Dictionary:
+-- shop.services.ts --
+@Injectable         -> we can inject this service wherever we need it our Angular code
+providedIn: 'root'  -> when the app is start running, is provided in the entire app
+
+
+9.75. Designing the shop page
+https://material.angular.io/components/card/overview
+
+-- terminal --
+cd skinet/client
+ng g c features/shop --dry-run
+ng g c features/shop --skip-tests
+
+g -> generate
+c -> component
+
+What folders we are changing? 
+-- app.component.ts --
+imports: [HeaderComponent, ShopComponent]
+
+-- shop.component.html --
+
+-- shop.component.ts --
+imports: [ProductItemComponent, MatButton, MatIcon, MatMenu, 
+MatSelectionList, MatListOption, MatMenuTrigger, MatPaginator, FormsModule]
+
+-- shop.service.ts --
+-> getProducts()
+  -> checking if there are: brands, types, sort, search
+  -> after checking, make the http request to get the products 
+-> getBrands()
+-> getTypes
+
+
+9.76. Adding a product item component
+
+cd skinet/client
+ng g c features/shop/product-item --skip-tests 
+
+-- product-item.component.ts --
+imports: [MatCard, MatCardContent, CurrencyPipe, MatCardActions, MatButton, MatIcon],
+
+export class ProductItemComponent {
+  @Input() product?: Product;
+}
+
+-- shop.component.html
+(passing param to child component)
+<app-product-item [product]="product"></app-product-item>
+
+
+
+9.77. Getting the types and brands lists
+
+-- shop.service.ts --
+getBrands() 
+getTypes()
+
+-- shop.component.ts --
+initializeShop()
+
+
+9.78. Adding filtering functionality using Material Dialog I
+
+https://next.material.angular.io/components/dialog/overview
+
+ng g c features/shop/filter-dialog --skip-tests
+
+-- app -> features -> shop -> filter-dialog.component.ts --
+shopService = inject(ShopService);
+
+-- app -> features -> shop -> filter-dialog.component.html --
+-> create 2 divs(for Brands and Types) and a button(Apply Filters)
+
+
+Dictionary:
+<mat-divider>
+https://material.angular.io/components/divider/overview
+
+<mat-selection-list>, <mat-list-option> :
+https://material.angular.io/components/list/overview#selection
+
+
+9.79. Adding filtering functionality using Material Dialog II
+
+-- shop.component.ts --
+imports: [ ProductItemComponent, MatButton, MatIcon, MatMenu, MatSelectionList, 
+MatListOption, MatMenuTrigger, MatPaginator, FormsModule ]
+
+MatDialog:
+-> a dialog is opened by calling the open method with a component to be loaded
+and an optional config object
+-> the open method will return an instance of MatDialogRef
+-> components created via MatDialog can inject MatDialogRef and use it to close
+the dialog in which they care contained
+
+MAT_DIALOG_DATA:
+-> to access the data in your dialog component, inject MAT_DIALOG_DATA
+
+https://material.angular.io/components/dialog/overview
+
+
+private dialogService = inject(MatDialog);
+
+openFiltersDialog() {
+  const dialogRef = this.dialogService.open(FilterDialogComponent, {
+    ...
+  });
+}
+
+-- shop.component.html --
+<button mat-stroked-button (click)="openFiltersDialog()">
+  <mat-icon>filter_list</mat-icon>
+
+
+How can i get a icon in the button?
+-> https://fonts.google.com/icons 
+-> search for the icon: Filter List
+-> in the right bar search for: "Inserting the icon"
+https://fonts.google.com/icons?selected=Material+Symbols+Outlined:filter_list:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=filter&icon.size=24&icon.color=%235f6368
+
+
+I want to use the MatDialog from Angular(ex: filters)? What are the steps?
+-> i need to go to make a Filters  button 
+-> i need a event on it: "openFiltersDialog"
+-> i need to inject the (MatDialog) into var so i can use it to open/close event
+-> open event: pass the class(FilterDialogComponent) and the brands, types
+-> inject ShopService, MatDialogRef<FilterDialogComponent>, MAT_DIALOG_DATA
+-> create applyFilters() inside the class FilterDialogComponent
+
+-- shop.component.ts --
+  selectBrands: string[] = [];
+  selectTypes: string[] = [];
+
+  openFiltersDialog() {
+    const dialogRef = this.dialogService.open(FilterDialogComponent, {
+      width: '500px',
+      data: {
+        selectBrands: this.selectBrands,
+        selectTypes: this.selectTypes
+      }
+    });
+
+    dialogRef.afterClosed().subscribe({
+      next: result => {
+        if (result) {
+          this.selectBrands = result.selectBrands;
+          this.selectTypes = result.selectTypes;
+          // apply filters
+        }
+      }
+    });
+  }
+
+  We need to do something to access to the data:
+  -- filter-dialog.component.ts --
+
+  export class FilterDialogComponent {
+  shopService = inject(ShopService);
+  private dialogRef = inject(MatDialogRef<FilterDialogComponent>);
+  data = inject(MAT_DIALOG_DATA);
+
+  selectBrands: string[] = this.data.selectBrands;
+  selectTypes: string[] = this.data.selectTypes;
+
+  applyFilters() {
+    this.dialogRef.close({
+      selectBrands: this.selectBrands,
+      selectTypes: this.selectTypes
+    })
+  }
+}
+
+
+9.80. Hooking up the filters to the service
+
+Duo-way biding: FormsModule
+-> get data from the template
+-> modify the data in the template 
+
+
+-- filter-dialog.component.html --
+
+[] -> input values (modify the UI)
+() -> output values (read from UI)
+
+[(ngModel)]="selectBrands" [multiple]="true"
+value="{{brand}}"
+(click)="applyFilters()"
+
+
+-> create <mat-selection-list> for Types and Brands
+
+ex(Brands): 
+<mat-selection-list [(ngModel)]="selectBrands" [multiple]="true">
+    @for (brand of shopService.brands; track $index) {
+    <mat-list-option value="{{brand}}">{{brand}}</mat-list-option>
+    }
+</mat-selection-list>
+
+<button mat-flat-button (click)="applyFilters()">Apply Filters</button>
+
+Dictionary:
+<mat-selection-list>:
+-> Angular Material component that displays a list of selectable options
+-> allows users to select multiple options
+
+[(ngModel)]="selectBrands" 
+-> Angular two-way binding syntax 
+-> "selectBrands" = (property) FilterDialogComponent.selectBrands: string[]
+-> the why .html knows about the selectBrands is by name
+filter-dialog.component.html
+filter-dialog.component.ts
+
+-- app -> core-> services -> shop.service.ts --
+-- getProducts() --
+-> check if there are: brands, types, sort, search
+
+
+-- shop.component.ts --
+// apply filters
+this.shopService.getProducts(this.selectBrands, this.selectTypes).subscribe({
+  next: response => this.products = response.data,
+  error: error => console.log(error)
+})
+
+
+81. Adding the sorting functionality
+
+-- shop.component.ts --
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
+import { MatListOption, MatSelectionList } from '@angular/material/list';
+
+@Component{
+  ...
+  imports : [..., MatMenu, MatMenuTrigger, MatListOption, MatSelectionList]
+}
+
+class ShopComponent{
+...
+selectedSort: string = 'name';
+sortOptions = [
+  { name: 'Alphabetical', value: 'name' },
+  { name: 'Price: Low-High', value: 'priceAsc' },
+  { name: 'Price: High-Low', value: 'priceDesc' }
+]
+
+ getProducts() {
+    this.shopService.getProducts(this.selectBrands, this.selectTypes, this.selectedSort).subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+  onSortChange(event: MatSelectionListChange) {
+    // we select the first option on the list by default
+    const selectedOption = event.options[0];
+    if (selectedOption) {
+      this.selectedSort = selectedOption.value;
+      this.getProducts();
+    }
+  }
+}
+
+-- shop.component.html --
+<button mat-stroked-button [matMenuTriggerFor]="sortMenu">
+    <mat-icon>swap-vert</mat-icon>
+    Sort
+</button>
+
+swap-vert:
+https://fonts.google.com/icons?selected=Material+Symbols+Outlined:swap_vert:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=swap&icon.size=24&icon.color=%235f6368
+
+
+<mat-menu #sortMenu="matMenu">
+    <!-- [multiple]: select multiple options when filtering -->
+    <mat-selection-list [multiple]="false" (selectionChange)="onSortChange($event)">
+        @for (sort of sortOptions; track $index) {
+        <mat-list-option [value]="sort.value" [selected]="selectedSort === sort.value">
+            {{sort.name}}
+        </mat-list-option>
+        }
+    </mat-selection-list>
+</mat-menu>
+
+
+-- shop.service.ts --
+-> add the sort logic/param
+getProducts(brands?: string[], types?: string[], sort?: string){
+...
+  if (sort) {
+    params = params.append('sort', sort);
+  }
+}
+
+
+Dictionary:
+
+-- Angular Material --
+-> MatMenu:
+Inputs: ariaDescribedby, ariaLabel, ariaLabelledby, ...
+OutPut: closed
+https://material.angular.io/components/menu/api#MatMenu 
+
+-> MatMenuTrigger
+Input: menu, menuData, restoreFocus, ...
+Output:menuClosed, menuOpened, ...
+https://material.angular.io/components/menu/api#MatMenuTrigger
+
+-> MatListOption:
+https://material.angular.io/components/list/api#MatListOption
+Input: color, disableRipple, disable, selected, value, ...
+
+-> MatSelectionList:
+https://material.angular.io/components/list/api#MatSelectionList
+Input: color, disabled, multiple, ...
+Output: selectionChange
+
+-- shop.component.html --
+
+HTML:
+<div>, <button>, <mat-icon>
+-> Standard HTML elements for creating structure and UI components.
+
+Tailwind CSS:
+class="flex flex-col gap-3", 
+class="grid grid-cols-5 gap-4"
+class="flex justify-end gap-3"
+-> Tailwind utility classes for styling the layout, grid, gaps, and flexbox properties.
+
+Angular Material:
+[matMenuTriggerFor]
+<mat-menu>
+<mat-selection-list>
+<mat-list-option>
+-> 	Angular Material components for menus and lists with built-in styling and functionality.
+
+Angular Material:
+mat-stroked-button
+-> 	Angular Material directive to style buttons with a stroked appearance.
+
+Angular/HTML:
+Angular bindings: property binding ([multiple]) for component attributes and event binding
+                 ((selectionChange)) for responding to events
+
+Angular:
+(click)="openFiltersDialog()"
+-> Angular event binding to handle a button click and invoke the specified method (openFiltersDialog).
+
+Angular:
+[value]="sort.value", [selected]="selectedSort === sort.value"
+-> Angular property bindings to pass data to child components or set attributes dynamically
+
+Angular:
+{{sort.name}}
+-> Angular interpolation syntax to display the value of a variable (sort.name) within the HTML
+
+
+82. Using a class for supply the params for the API request 
+https://material.angular.io/components/paginator/overview
+
+-> when u have more then 3 params, create a class
+-> create a typescript class
+
+-- shared-> models-> shopParams.ts --
+export class ShopParams {
+    brand: string[] = [];
+    types: string[] = [];
+    sort = 'name';
+    pageNumber = 1;
+    pageSize = 10;
+    search = '';
+}
+
+-- shop.component.ts --
+-> replace selectedSort, selectedBrands, selectedTypes with shopParams
+
+
+Components that need to be modified after the refactoring:
+-- shop.component.html --
+-- shop.service.ts --
+
+Test to see if it works
+-> check filters
+-> check sorting
+
+
+83. Adding pagination to the client using Material
+-- shop.service.ts --
+params = params.append('pageSize', shopParams.pageSize);
+params = params.append('pageIndex', shopParams.pageNumber);
+
+-- shop.component.ts --
+import { MatPaginator } from '@angular/material/paginator';
+import: [..., MatPaginator]
+
+products?: Pagination<Product>;
+
+getProducts() {
+  this.shopService.getProducts(this.shopParams).subscribe({
+    next: response => this.products = response,
+    error: error => console.log(error)
+  })
+}
+
+
+--shop.component.html--
+-> put the buttons in a div, so they are grouped
+
+<mat-paginator (page)="handlePageEvent($event)" [length]="products?.count" [pageSize]="shopParams.pageSize"
+    [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [pageIndex]="shopParams.pageNumber-1"
+    aria-label="Select page">
+</mat-paginator>
+
+handlePageEvent(event: PageEvent) {
+  this.shopParams.pageNumber = event.pageIndex + 1;
+  this.shopParams.pageSize = event.pageSize;
+  this.getProducts();
+}
+
+-> if we have filtering, and we are at page nr. 5, 
+and they are only 2 items, we can't see anything at page 5
+-> in this case we need to reset our page number
+
+onSortChange(){
+  ...
+  this.shopParams.pageNumber = 1;
+}
+
+openFiltersDialog() {
+...
+  this.shopParams.pageNumber = 1;
+}
+
+-> test the App
+
+-- tailwind.config.js --
+important: true
+
+
+84. Adding the search functionality to the client
+
+-- shop.component.ts --
+import { FormsModule } from '@angular/forms';
+inports: [..., FormsModule]
+
+
+onSearchChanged() {
+  this.shopParams.pageNumber = 1;
+  this.getProducts();
+}
+
+-- shop.component.html --
+<form class="relative flex items-center w-full max-w-md mx-4" #searchFrom="ngForm"
+    (ngSubmit)="onSearchChanged()">
+    <input type="search" class="block w-full p-4 text-sm text-gray-900 boder border-gray-300 rounded-lg"
+        placeholder="Search" name="search" [(ngModel)]="shopParams.search" />
+    <button mat-icon-button class="absolute inset-y-0 right-8 top-2 flex items-center pl-3">
+        <mat-icon>search</mat-icon>
+    </button>
+</form>
+
+-> add class="match-input-height" to the buttons:
+  -> Filters
+  -> Sort
+
+-- shop.service.ts --
+if (shopParams.search)
+  params = params.append('search', shopParams.search);
+
+-- styles.scss --
+.text-primary {
+    color: #7d00fa
+}
+
+button.match-input-height {
+    height: var(--mat-form-container-height) !important;
+}
+
+
+85. Summary
+-> Angular services
+-> Building the UI for the shop
+-> Material components
+-> Pagination (from Material)
+-> Filtering, Sorting & Search
+-> Input properties
