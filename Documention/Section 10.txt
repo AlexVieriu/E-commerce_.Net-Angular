@@ -1,0 +1,9 @@
+10.86. Introduction 
+-> adding new feature components
+-> setting up routes in Angular
+-> nav links 
+
+Angular is a SPA(Single Page Application), so to move from one page to another,
+we need to use routing
+
+
