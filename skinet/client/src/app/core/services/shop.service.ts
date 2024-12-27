@@ -5,7 +5,7 @@ import { Product } from '../../shared/models/products';
 import { ShopParams } from '../../shared/models/shopParams';
 
 @Injectable({
-  // when the app is start running is provided in the entire app
+  // when the app starts running is provided in the entire app
   providedIn: 'root'
 })
 export class ShopService {

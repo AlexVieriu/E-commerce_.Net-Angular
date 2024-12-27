@@ -18,9 +18,9 @@
 
 9.74. Introduction to Angular services
 -> to make a http request, we need to make a service 
--> Angular services are singletons
+-> Angular services are singleton
 -> when we generate components in our app, and we move around from 
-component to component, the data is created and destroyed when the leave those
+component to component, the data is created and destroyed when we leave the
 component
 -> the only way to persist is to use services 
 -> all our services are in the "core" folder
@@ -67,65 +67,22 @@ ng g c features/shop --skip-tests
 g -> generate
 c -> component
 
+What folders we are changing? 
 -- app.component.ts --
-import { Component } from '@angular/core';
-import { HeaderComponent } from "./layout/header/header.component";
-import { ShopComponent } from "./features/shop/shop.component";
-
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
-  imports: [HeaderComponent, ShopComponent],
-})
-export class AppComponent {
-  title = 'Skinet';
-}
+imports: [HeaderComponent, ShopComponent]
 
 -- shop.component.html --
-<app-header></app-header>
-<div class="container mt-6">
-    <app-shop></app-shop>
-</div>
 
 -- shop.component.ts --
-import { Component, inject, OnInit } from '@angular/core';
-import { ShopService } from '../../core/services/shop.service';
-import { Product } from '../../shared/models/products';
-import { MatCard } from '@angular/material/card';
+imports: [ProductItemComponent, MatButton, MatIcon, MatMenu, 
+MatSelectionList, MatListOption, MatMenuTrigger, MatPaginator, FormsModule]
 
-@Component({
-  selector: 'app-shop',
-  standalone: true,
-  templateUrl: './shop.component.html',
-  styleUrl: './shop.component.scss', 
-  imports: [MatCard]
-})
-export class ShopComponent implements OnInit {
-  private shopService = inject(ShopService);
-  products: Product[] = [];
-
-  ngOnInit(): void {
-    this.shopService.getProducts().subscribe({
-      next: response => this.products = response.data,
-      error: error => console.log(error)
-    })
-  }
-}
-
--- shop.component.html --
-<div class="grid grid-cols-5 gap-4">
-    @for (product of products; track product.id) {
-    <mat-card appearance="raised">
-        <img src="{{product.pictureUrl}}" alt="image of {{product.name}}">
-    </mat-card>
-    }
-</div>
-
-
--- shop.service.ts  --
-return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20');
+-- shop.service.ts --
+-> getProducts()
+  -> checking if there are: brands, types, sort, search
+  -> after checking, make the http request to get the products 
+-> getBrands()
+-> getTypes
 
 
 9.76. Adding a product item component
@@ -134,24 +91,16 @@ cd skinet/client
 ng g c features/shop/product-item --skip-tests 
 
 -- product-item.component.ts --
-import { Product } from '../../../shared/models/products';
-
-imports: [MatCard]
+imports: [MatCard, MatCardContent, CurrencyPipe, MatCardActions, MatButton, MatIcon],
 
 export class ProductItemComponent {
   @Input() product?: Product;
 }
 
-Files that need to be changed:
--- product-item.component.ts
-imports: [MatCard, MatCardContent, CurrencyPipe, MatCardActions, MatButton, MatIcon]
-
--- product-item.component.html
-all the component
-
 -- shop.component.html
 (passing param to child component)
 <app-product-item [product]="product"></app-product-item>
+
 
 
 9.77. Getting the types and brands lists
@@ -188,32 +137,49 @@ https://material.angular.io/components/list/overview#selection
 9.79. Adding filtering functionality using Material Dialog II
 
 -- shop.component.ts --
-imports: [MatCard, ProductItemComponent, MatButton]
+imports: [ ProductItemComponent, MatButton, MatIcon, MatMenu, MatSelectionList, 
+MatListOption, MatMenuTrigger, MatPaginator, FormsModule ]
+
+MatDialog:
+-> a dialog is opened by calling the open method with a component to be loaded
+and an optional config object
+-> the open method will return an instance of MatDialogRef
+-> components created via MatDialog can inject MatDialogRef and use it to close
+the dialog in which they care contained
+
+MAT_DIALOG_DATA:
+-> to access the data in your dialog component, inject MAT_DIALOG_DATA
+
+https://material.angular.io/components/dialog/overview
+
 
 private dialogService = inject(MatDialog);
 
 openFiltersDialog() {
   const dialogRef = this.dialogService.open(FilterDialogComponent, {
+    ...
   });
 }
 
 -- shop.component.html --
-<div class="flex flex-col gap-3">
-  <div class="flex justify-end">
-    <button mat-stroked-button (click)="openFiltersDialog()">
-      <mat-icon>filter_list</mat-icon>
-    </button>
-  </div>
-</div>
+<button mat-stroked-button (click)="openFiltersDialog()">
+  <mat-icon>filter_list</mat-icon>
+
 
 How can i get a icon in the button?
-https://fonts.google.com/icons 
-search for the icon: Filter List
-in the right bar search for: "Inserting the icon"
+-> https://fonts.google.com/icons 
+-> search for the icon: Filter List
+-> in the right bar search for: "Inserting the icon"
 https://fonts.google.com/icons?selected=Material+Symbols+Outlined:filter_list:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=filter&icon.size=24&icon.color=%235f6368
 
 
-Make the filter functional:
+I want to use the MatDialog from Angular(ex: filters)? What are the steps?
+-> i need to go to make a Filters  button 
+-> i need a event on it: "openFiltersDialog"
+-> i need to inject the (MatDialog) into var so i can use it to open/close event
+-> open event: pass the class(FilterDialogComponent) and the brands, types
+-> inject ShopService, MatDialogRef<FilterDialogComponent>, MAT_DIALOG_DATA
+-> create applyFilters() inside the class FilterDialogComponent
 
 -- shop.component.ts --
   selectBrands: string[] = [];
@@ -258,13 +224,16 @@ Make the filter functional:
   }
 }
 
+
 9.80. Hooking up the filters to the service
 
 Duo-way biding: FormsModule
 -> get data from the template
 -> modify the data in the template 
 
+
 -- filter-dialog.component.html --
+
 [] -> input values (modify the UI)
 () -> output values (read from UI)
 
@@ -272,39 +241,34 @@ Duo-way biding: FormsModule
 value="{{brand}}"
 (click)="applyFilters()"
 
+
+-> create <mat-selection-list> for Types and Brands
+
+ex(Brands): 
 <mat-selection-list [(ngModel)]="selectBrands" [multiple]="true">
     @for (brand of shopService.brands; track $index) {
     <mat-list-option value="{{brand}}">{{brand}}</mat-list-option>
     }
 </mat-selection-list>
 
-<mat-selection-list [(ngModel)]="selectTypes" [multiple]="true">
-    @for (type of shopService.types; track $index) {
-    <mat-list-option value="{{type}}">{{type}}</mat-list-option>
-    }
-</mat-selection-list>
-
 <button mat-flat-button (click)="applyFilters()">Apply Filters</button>
 
+Dictionary:
+<mat-selection-list>:
+-> Angular Material component that displays a list of selectable options
+-> allows users to select multiple options
+
+[(ngModel)]="selectBrands" 
+-> Angular two-way binding syntax 
+-> "selectBrands" = (property) FilterDialogComponent.selectBrands: string[]
+-> the why .html knows about the selectBrands is by name
+filter-dialog.component.html
+filter-dialog.component.ts
 
 -- app -> core-> services -> shop.service.ts --
--> rewrite the getProducts()
+-- getProducts() --
+-> check if there are: brands, types, sort, search
 
- getProducts(brands?: string[], types?: string[]) {
-  let params = new HttpParams();
-
-  if (brands && brands.length > 0) {
-    params = params.append('brands', brands.join(','));
-  }
-
-  if (types && types.length > 0) {
-    params = params.append('types', types.join(','));
-  }
-
-  params = params.append('pageSize', 20);
-
-  return this.http.get<Pagination<Product>>(this.baseUrl + 'products', { params });
-}
 
 -- shop.component.ts --
 // apply filters
@@ -350,7 +314,6 @@ sortOptions = [
     }
   }
 }
-
 
 -- shop.component.html --
 <button mat-stroked-button [matMenuTriggerFor]="sortMenu">
@@ -568,6 +531,10 @@ button.match-input-height {
 }
 
 
-
-
 85. Summary
+-> Angular services
+-> Building the UI for the shop
+-> Material components
+-> Pagination (from Material)
+-> Filtering, Sorting & Search
+-> Input properties

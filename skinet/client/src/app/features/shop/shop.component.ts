@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ShopService } from '../../core/services/shop.service';
 import { Product } from '../../shared/models/products';
-import { MatCard } from '@angular/material/card';
 import { ProductItemComponent } from "./product-item/product-item.component";
 import { MatDialog } from '@angular/material/dialog';
 import { FilterDialogComponent } from './filter-dialog/filter-dialog.component';
@@ -20,9 +19,9 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss',
   imports: [
-    MatCard,
     ProductItemComponent,
-    MatButton, MatIcon,
+    MatButton,
+    MatIcon,
     MatMenu,
     MatSelectionList,
     MatListOption,
