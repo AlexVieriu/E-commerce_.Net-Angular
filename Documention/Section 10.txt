@@ -31,3 +31,42 @@ Ex:
 -> if the current route is /shop, <router-outlet> will render the ShopComponent
 
 https://angular.dev/api/router/RouterOutlet
+
+-- header.components.ts --
+RouterLink
+
+
+10.88. Setting up the links in the app
+
+-- header.component.html --
+-> add routerLink for Home, Shop, Contact and <img/>
+
+-- header.components.ts --
+RouterLinkActive
+
+-- header.component.html --
+ <a routerLink="/" 
+ routerLinkActive="active"
+
+>Home</a>
+
+ -- header.component.scss --
+a {
+    &.active {
+        color: #7d00fa;
+    }
+}
+
+The & symbol refers to the parent selector (in this case, a).
+When you write &.active, it generates the CSS rule a.active.
+This means that the style inside &.active will apply to an <a> element 
+with the active class.
+
+Reduce the flickering:
+-- shop.component.html --
+
+@if(products){
+    .....
+}
+
+
