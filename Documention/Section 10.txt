@@ -70,3 +70,78 @@ Reduce the flickering:
 }
 
 
+89. Getting a individual product using Route params
+
+-- shop.service.ts --
+ getProduct(id: number) {
+    return this.http.get<Product>(this.baseUrl + 'products/' + id);
+  }
+
+-- product-details.component.ts --
+-> inject the ShopService
+-> inject the ActivatedRoute
+-> implement ngOnInit()
+-> loadProduct()
+const id = this.activatedRoute.snapshot.paramMap.get('id');
+ this.shopService.getProduct(+id).subscribe({
+  next: ...
+  error: ...
+ })
+
+ +id: converts the string to a number
+
+Dictionary:
+.activatedRoute 
+  -> angular service provided by ActivatedRoute
+  -> gives access to information about the active route that the user is currently on 
+  -> includes route, query params, data and other route-related information
+  -> https://next.angular.dev/api/router/ActivatedRoute#
+
+Properties:
+.snapshot, .title, .url, .params, .queryParams, ...
+
+
+.snapshot
+-> static snapshot of the route state at the moment this component was initialized
+-> unlike activateRoute.params(an Observable), snapshot is not reactive
+-> it captures the route params at a specific point in time(component initialized)  
+-> https://angular.dev/api/router/ActivatedRouteSnapshot 
+
+Properties:
+.routeConfig, .title, .url, .params, .queryParams, ...
+
+
+.paramMap
+-> a property of .snapshot that is a interface of ParamMap
+-> ensures that parameter values are accessible via methods 
+instead of directly accessing an object 
+-> https://next.angular.dev/api/router/ParamMap# 
+
+Properties:
+.get, .getAll, .has, .keys
+
+
+-- product-details.component.html --
+@if(product){
+  <h1 class="text-2lx">{{product.name}}</h1>
+}
+
+-- product-item.component.html --
+<mat-card appearance="raised" routerLink="/shop/{{product.id}}" class="product-card">
+
+-- product-item.component.ts --
+RouterLink
+
+-- product-item.component.scss --
+.product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+Dictionary:
+How Routing is working in Angular?
