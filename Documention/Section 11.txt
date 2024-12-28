@@ -1,0 +1,10 @@
+11.92. Introduction
+-> error handling in Angular 
+-> Http interceptors (alternative to Try/Catch)
+-> adding toast notifications 
+-> adding loading indicators
+
+Goal: 
+-> handle errors we receive from the API centrally and handled by Http interceptors
+-> understand how to troubleshoot API errors
+
