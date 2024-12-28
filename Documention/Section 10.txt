@@ -7,3 +7,27 @@ Angular is a SPA(Single Page Application), so to move from one page to another,
 we need to use routing
 
 
+10.87. Creating components and routing
+
+ng g c features/home --skip-tests
+ng g c features/shop/product-details --skip-tests
+
+-- app.routes.ts --
+
+{ path: '', component: HomeComponent },
+{ path: 'shop', component: ShopComponent },
+{ path: 'shop/:id', component: ProductDetailsComponent },
+{ path: '**', redirectTo: '', pathMatch: 'full' }
+
+-- app.component.html --
+-> replace <app-shop> with <router-outlet>
+
+Why? 
+
+<router-outlet>
+-> acts as a placeholder that Angular dynamically fills based on the current router state
+
+Ex: 
+-> if the current route is /shop, <router-outlet> will render the ShopComponent
+
+https://angular.dev/api/router/RouterOutlet
