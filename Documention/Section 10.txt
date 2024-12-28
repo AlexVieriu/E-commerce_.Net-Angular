@@ -260,3 +260,4 @@ ngOnInit(): void {
 }
 
 -> navigate to /shop/123/
+10.91.png
