@@ -8,3 +8,21 @@ Goal:
 -> handle errors we receive from the API centrally and handled by Http interceptors
 -> understand how to troubleshoot API errors
 
+
+11.93. Creating a test error component
+ng g c features/test-error --skip-tests
+
+-- app.routes.ts --
+{ path: 'test-error', component: TestErrorComponent }
+
+-- header.component.html --
+<a routerLink="/test-error" routerLinkActive="active">Error</a>
+
+-- tets-error.component.ts --
+-> in production we need to make Services for each kind of errors(404, 200, 500, etc)   
+-> in our case we use methods
+
+-- tets-error.component.html --
+
+Dictionary:
+justify-center(html): aligns it's children horizontally in the center of the container
