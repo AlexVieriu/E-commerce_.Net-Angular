@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 import { ShopComponent } from './features/shop/shop.component';
 import { ProductDetailsComponent } from './features/shop/product-details/product-details.component';
+import { NotFoundComponent } from './shared/components/not-found/not-found.component';
+import { ServerErrorComponent } from './shared/components/server-error/server-error.component';
 import { TestErrorComponent } from './features/test-error/test-error.component';
 
 export const routes: Routes = [
@@ -14,10 +16,11 @@ export const routes: Routes = [
     // 'shop/:id' -> https://example.com/shop/1
     { path: 'shop/:id', component: ProductDetailsComponent },
 
-    // 'test-error' -> https://example.com/test-error
     { path: 'test-error', component: TestErrorComponent },
+    { path: 'server-error', component: NotFoundComponent },
+    { path: 'not-found', component: ServerErrorComponent },
 
     // '**' matches any URL that hasn't been defined in the routes above
     // redirect to HomeComponent 
-    { path: '**', redirectTo: '', pathMatch: 'full' },
+    { path: '**', redirectTo: 'not-found', pathMatch: 'full' },
 ];
