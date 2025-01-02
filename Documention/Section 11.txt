@@ -1,0 +1,126 @@
+11.92. Introduction
+-> error handling in Angular 
+-> Http interceptors (alternative to Try/Catch)
+-> adding toast notifications 
+-> adding loading indicators
+
+Goal: 
+-> handle errors we receive from the API centrally and handled by Http interceptors
+-> understand how to troubleshoot API errors
+
+
+11.93. Creating a test error component
+ng g c features/test-error --skip-tests
+
+-- app.routes.ts --
+{ path: 'test-error', component: TestErrorComponent }
+
+-- header.component.html --
+<a routerLink="/test-error" routerLinkActive="active">Error</a>
+
+-- tets-error.component.ts --
+-> in production we need to make Services for each kind of errors(404, 200, 500, etc)   
+-> in our case we use methods
+
+-- tets-error.component.html --
+
+Dictionary:
+justify-center(html): aligns it's children horizontally in the center of the container
+
+
+11.94. NotFound and Server Error component
+ng g c shared/components/not-found --skip-tests
+ng g c shared/components/server-error --skip-tests
+
+-- server-error.component.html --
+-> create a h1 with msg: Internal Server Error
+
+-- not-found.component.html --
+-> create a h1 with msg: Not Found 
+
+-- app.routes.ts --
+-> configure the routes for not-found and server-error components
+
+
+11.95. Creating an HTTP Interceptor for handling API errors
+ng g --help
+ng g interceptor core/interceptors/error --dry-run
+ng g interceptor core/interceptors/error --skip-tests
+
+-- error.interceptor.ts --
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
+
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 400) {
+        alert(error.error.title || error.error)
+      }
+      // ... 401, 403, 404, 500
+      return throwError(() => error);
+    })
+  );
+};
+
+-> errorInterceptor this is a function not a class
+
+-- app.config.ts -- 
+provideHttpClient(withInterceptors([errorInterceptor]))
+
+Dictionary:
+Angular interceptor:
+-> is a service that implements HttpInterceptorFn act as a middleware 
+int the Http pipeline, providing a centralized way to perform tasks like logging, 
+authentication, or adding headers to requests
+-> modify Http requests before they are sent to the server 
+-> handle or modify Http responses before they are returned to the caller
+-> handle cross-cutting concerns like logging, token injection, error handling, caching;
+
+Pipeline Flow:
+-> HTTP Request → Interceptor 1 → Interceptor 2 → ... → Server
+-> Server Response → Interceptor 2 → Interceptor 1 → HTTP Response
+
+HttpInterceptorFn:
+-> interface introduced in Angular 16
+-> allows defining HTTP interceptors as standalone functions instead of classes
+-> modify outgoing HTTP requests(headers, tokens)
+-> handle incoming HTTP responses(process data, handle errors)
+-> perform cross-cutting concerns like logging, caching, or authentication in the 
+Http request-response pipeline
+
+const router = inject(Router);
+inject():
+    -> obtain an instance of the Router service
+    -> allows interceptor to access the router to navigate to other routes
+
+return next(req).pipe()
+next(req):
+    -> part of the HttpInterceptorFn  (@angular/common/http)
+    -> pass the intercepted Http request(req) to the next handler 
+    in the HTTP pipeline
+
+.pipe():
+    -> provided by RxJS to compose and chain multiple functions to 
+    process data emitted by an observable
+    -> transform/handle the observable stream
+    -> observable.pipe(operator1, operator2, ...)    
+
+catchError:
+    -> part of RxJS(Reactive Extensions for JavaScript)
+    -> intercepts errors in the Http response and provides a way to handle them     
+
+(error: HttpErrorResponse) => { ... }
+    -> a callback function to handle the intercepted error
+
+throwError:
+    -> part of RxJS
+    -> function to create an observable that emits an error.
+
+Core concept of RxJS:
+1. Observable: -> a data producer that emits values over time 
+               -> ex: an HTTP request, user input, real-time data
+2. Observer: -> a data consumer that receives values from an Observable
+3. Operator: -> a function that transforms an Observables(filtering, mapping, combining)
+4. Subscription: -> a mechanism to start listening to an Observable and clean up 
+                resources when done 
+5. Subject: -> a special type of Observable that can multicast values to multiple Observers      
