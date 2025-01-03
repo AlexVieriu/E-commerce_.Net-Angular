@@ -7,20 +7,11 @@ import { ServerErrorComponent } from './shared/components/server-error/server-er
 import { TestErrorComponent } from './features/test-error/test-error.component';
 
 export const routes: Routes = [
-    // '' -> correspond to the route path of the app (ex: https://skinet.com/)
     { path: '', component: HomeComponent },
-
-    // 'shop' -> https://example.com/shop
     { path: 'shop', component: ShopComponent },
-
-    // 'shop/:id' -> https://example.com/shop/1
     { path: 'shop/:id', component: ProductDetailsComponent },
-
     { path: 'test-error', component: TestErrorComponent },
-    { path: 'server-error', component: NotFoundComponent },
-    { path: 'not-found', component: ServerErrorComponent },
-
-    // '**' matches any URL that hasn't been defined in the routes above
-    // redirect to HomeComponent 
+    { path: 'not-found', component: NotFoundComponent },
+    { path: 'server-error', component: ServerErrorComponent },
     { path: '**', redirectTo: 'not-found', pathMatch: 'full' },
 ];

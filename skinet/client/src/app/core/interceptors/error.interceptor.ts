@@ -1,26 +1,40 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationExtras, Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { SnackbarService } from '../services/snackbar.service';
+
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  const snackbar = inject(SnackbarService);
 
   return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 400) {
-        alert(error.error.title || error.error)
+    catchError((err: HttpErrorResponse) => {
+      if (err.status === 400) {
+        if (err.error.errors) {
+          const modelStateErrors = [];
+          for (const key in err.error.errors) {
+            if (err.error.errors[key]) {
+              modelStateErrors.push(err.error.errors[key])
+            }
+          }
+          throw modelStateErrors.flat(); // flat(): have a single array of strings
+        } else {
+          snackbar.error(err.error.title || err.error);
+        }
       }
-      if (error.status === 401) {
-        router.navigate(error.error.title || error.error)
+      if (err.status === 401) {
+        snackbar.error(err.error.title || err.error);
       }
-      if (error.status === 404) {
-        router.navigateByUrl('/not-found')
+      if (err.status === 404) {
+        router.navigateByUrl('/not-found');
       }
-      if (error.status === 500) {
-        router.navigateByUrl('/server-error')
+      if (err.status === 500) {
+        const navigationExtras: NavigationExtras = { state: { error: err.error } }
+        router.navigateByUrl('/server-error', navigationExtras);
       }
-      return throwError(() => error);
+      return throwError(() => err)
     })
-  );
+  )
 };

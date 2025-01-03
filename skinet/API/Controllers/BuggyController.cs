@@ -6,11 +6,9 @@ public class BuggyController : BaseApiController
     public IActionResult GetUnauthorized()
         => Unauthorized("Unauthorized(401)");
 
-
     [HttpGet("badrequest")]
     public IActionResult GetBadRequest()
         => BadRequest("Not a good request(400)");
-
 
     [HttpGet("notfound")]
     public IActionResult GetNotFound()
@@ -22,5 +20,7 @@ public class BuggyController : BaseApiController
 
     [HttpPost("validationerror")]
     public IActionResult GetValidationError(CreateProductDTO product)
-        => Ok();
+    {
+        return Ok();
+    }
 }
