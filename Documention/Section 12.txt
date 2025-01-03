@@ -1,0 +1,24 @@
+1.104. Introduction
+
+-> where we 'store' the cart
+-> adding redis to the API
+-> creating a Cart service & controller
+
+Goal:
+-> set up/configure Redis to store the customer cart in server memory 
+and create the supporting services and controllers
+
+Where to store the basket?
+-> database
+-> local storage
+-> cookies
+-> redis
+
+Redis:
+-> in-memory database
+-> used for cashing 
+-> supports strings, hashes, lists, sets, etc.
+-> Key/Value store
+-> persists data by using snapshots every minute
+-> data can be given time to live
+-> great for caching data
