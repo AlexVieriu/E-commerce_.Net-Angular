@@ -4,7 +4,18 @@ services:
   sqlite:
     image: keinos/sqlite3:latest
     container_name: sqlite3
-    command: tail -f /dev/null  # Keeps the container running
+    command: tail -f /dev/null # Keeps the container running
     volumes:
-      - ./data:/data  # Persists SQLite data in the local `data` folder
+      - sqlite-data:/data # Persists SQLite data in the local `data` folder
     working_dir: /data
+  redis:
+    image: redis:8.0-M02-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data # Persists Redis data in the local `data` folder
+
+volumes:
+  redis-data:
+  sqlite-data:

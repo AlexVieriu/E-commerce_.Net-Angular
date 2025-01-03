@@ -22,3 +22,20 @@ Redis:
 -> persists data by using snapshots every minute
 -> data can be given time to live
 -> great for caching data
+
+
+12.105. Creating a Redis instance 
+
+-- docker-compose.yml --
+-> add redis
+-> add the volumes for sqlite and redis
+-> map the volume from docker to the one in the project
+
+  sqlite:
+    image: keinos/sqlite3:latest
+    container_name: sqlite3
+    command: tail -f /dev/null # Keeps the container running
+    volumes:
+      - sqlite-data:/data # Persists SQLite data in the local `data` folder
+    working_dir: /data
+
