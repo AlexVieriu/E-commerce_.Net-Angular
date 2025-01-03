@@ -18,7 +18,7 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next)
 
     private static Task HandleExceptionAsync(HttpContext context, Exception ex, IHostEnvironment env)
     {
-        context.Request.ContentType = "application/json";
+        context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
         var response = env.IsDevelopment()
