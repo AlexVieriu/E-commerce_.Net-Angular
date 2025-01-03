@@ -1,3 +1,5 @@
+using StackExchange.Redis;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +10,13 @@ builder.Services.AddDbContext<StoreContext>(options =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddCors();
+builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+{
+    var conStr = builder.Configuration.GetConnectionString("Redis") ??
+            throw new Exception("Redis connection string not found");
+    var conf = ConfigurationOptions.Parse(conStr, true);
+    return ConnectionMultiplexer.Connect(conf);
+});
 
 var app = builder.Build();
 

@@ -39,3 +39,25 @@ Redis:
       - sqlite-data:/data # Persists SQLite data in the local `data` folder
     working_dir: /data
 
+
+12.106. Using Redis with .Net
+
+
+-> install redis nuget package in the Infrastructure project
+<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+
+
+-- program.cs --
+builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+{
+    var conStr = builder.Configuration.GetConnectionString("Redis") ??
+            throw new Exception("Redis connection string not found");
+    var conf = ConfigurationOptions.Parse(conStr, true);
+    return ConnectionMultiplexer.Connect(conf);
+});
+
+-- appsettings.Development.json --
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=../data/store.db",
+    "Redis": "localhost"
+}
