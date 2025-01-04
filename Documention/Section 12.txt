@@ -68,3 +68,29 @@ ProductId, ProductName, Price, Quantity, PictureUrl, Brand, Type
 
 -- Core -> Entities -> CartItem.cs
 Id, Items
+
+
+12.108. Creating a Cart service
+
+-- Core -> Interfaces -> ICartService.cs --
+Task<ShoppingCart?> GetCartAsync(string key);
+Task<ShoppingCart?> SetCartAsync(ShoppingCart cart);
+Task<bool> DeleteCartAsync(string key);
+
+-- Infrastructure -> Services -> CartService.cs --
+DeleteCartAsync(string key)
+-> .KeyDeleteAsync(key)
+
+GetCartAsync(string key)
+-> get the data:  _database.StringGetAsync(key)
+-> return the json Deserialized data
+
+SetCartAsync(ShoppingCart cart)
+-> created = _database.StringSetAsync(...)
+-> return created ? await GetCartAsync(cart.Id) : null;
+
+-- Program.cs --
+-> add the cart service
+builder.Services.AddSingleton<ICartService, CartService>();
+
+

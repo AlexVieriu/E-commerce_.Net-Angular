@@ -1,5 +1,3 @@
-using StackExchange.Redis;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,6 +15,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
     var conf = ConfigurationOptions.Parse(conStr, true);
     return ConnectionMultiplexer.Connect(conf);
 });
+builder.Services.AddSingleton<ICartService, CartService>();
+
 
 var app = builder.Build();
 
