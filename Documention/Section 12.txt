@@ -94,3 +94,9 @@ SetCartAsync(ShoppingCart cart)
 builder.Services.AddSingleton<ICartService, CartService>();
 
 
+12.109. Creating the Cart controller
+
+-- API -> Controllers -> CartController.cs --
+GetCartById(string id)
+UpdateCart(ShoppingCart cart)
+DeleteCart(string id)
