@@ -1,4 +1,4 @@
-1.104. Introduction
+12.104. Introduction
 
 -> where we 'store' the cart
 -> adding redis to the API
@@ -42,10 +42,8 @@ Redis:
 
 12.106. Using Redis with .Net
 
-
 -> install redis nuget package in the Infrastructure project
 <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
-
 
 -- program.cs --
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
@@ -61,3 +59,12 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
     "DefaultConnection": "Data Source=../data/store.db",
     "Redis": "localhost"
 }
+
+
+12.107. Creating the Cart classes
+
+-- Core -> Entities -> ShoppingCart.cs --
+ProductId, ProductName, Price, Quantity, PictureUrl, Brand, Type
+
+-- Core -> Entities -> CartItem.cs
+Id, Items
