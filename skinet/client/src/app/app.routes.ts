@@ -5,7 +5,8 @@ import { ProductDetailsComponent } from './features/shop/product-details/product
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { ServerErrorComponent } from './shared/components/server-error/server-error.component';
 import { TestErrorComponent } from './features/test-error/test-error.component';
-import { CartComponent } from '../features/cart/cart.component';
+import { CartComponent } from './features/cart/cart.component';
+
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },

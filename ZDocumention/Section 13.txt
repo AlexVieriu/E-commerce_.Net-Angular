@@ -91,3 +91,29 @@ Cons:
     -> less mature (Angular 16) 
     -> observables: more mature (Angular 2)
 -> Scalability
+
+
+13.115. Adding the Cart service methods
+
+ng g --help
+ng g environments
+
+-- environment.development.ts --
+export const environment = {
+    production: false,
+    apiUrl: 'https://localhost:7096/api/'
+};
+
+-- environment.ts --
+export const environment = {
+    production: true,
+    apiUrl: 'api/'
+};
+
+-- cart.service.ts --
+baseUrl = environment.apiUrl;
+private http = inject(HttpClient);
+cart = signal<Cart | null>(null);
+
+ getCartAsync(){...}
+ setCartAsync(cart: Cart){...}
