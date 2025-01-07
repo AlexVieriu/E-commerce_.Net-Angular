@@ -1,0 +1,10 @@
+13.112. Introduction
+
+-> adding the cart feature
+-> angular signals
+-> environment variables
+
+Goal:
+-> add cart features to angular app
+-> understand the usage of signals in Angular
+
