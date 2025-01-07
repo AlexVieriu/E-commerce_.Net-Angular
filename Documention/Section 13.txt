@@ -8,3 +8,48 @@ Goal:
 -> add cart features to angular app
 -> understand the usage of signals in Angular
 
+
+13.113. Creating the cart components
+
+ng g s core/services/cart --skip-tests
+ng g c features/cart --skip-tests
+
+-- app.routes.ts --
+{ path: 'cart', component: CartComponent }
+
+-- header.component.html --
+-> add the link to shopping cart
+<a routerLink="/cart" routerLinkActive="active"...
+
+echo "" > src/app/shared/models/cartItem.ts
+--cartItem.ts--
+
+
+echo "" > src/app/shared/models/cartType.ts
+-- cartType.ts --
+
+
+echo "" > src/app/shared/models/cart.ts
+-- cart.ts --
+
+-> a tiny, secure, URL-friendly, unique string ID generator for JavaScript
+-> https://github.com/ai/nanoid
+npm install nanoid
+
+
+Dictionary:
+-- Nanoid vs GUID --
+
+Use nanoid when:
+-> You need shorter, readable, and customizable IDs
+-> You want a lightweight solution without adhering to UUID specifications
+-> Performance and efficiency are important (e.g., generating many IDs quickly)
+-> The IDs will not need to conform to standardized UUID formats 
+(e.g., for APIs expecting GUIDs)
+
+Use GUID when:
+-> You require strict adherence to UUID standards (e.g., 
+for database keys or APIs that expect GUIDs)
+-> Interoperability with other systems or languages that expect UUIDs is necessary
+-> The larger size and format aren't a concern
+
