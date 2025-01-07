@@ -53,3 +53,41 @@ for database keys or APIs that expect GUIDs)
 -> Interoperability with other systems or languages that expect UUIDs is necessary
 -> The larger size and format aren't a concern
 
+
+13.114. Angular signals
+-> state that can be observed and reacted to
+-> clean API for state management
+-> avoid the complexity of observables
+https://next.angular.dev/essentials/signals
+
+# We will use 3 main Types:
+-> signal 
+    -> get, set, update a value(int, object, etc.)
+-> computed
+-> effect
+
+-- Signal --
+const count = signal(0);
+
+// Signals are getting functions - calling them reads their value
+console.log("The count is: " + count());
+
+// Set a new value
+count.set(1);
+
+// Update a value
+count.update(value => value + 1);
+
+Pros:
+-> Simplicity
+    -> gives as a API for managing the state of the app, 
+    without the complexity of observables
+    -> small footprint
+-> Performance    
+-> Readability
+
+Cons:
+-> Limited flexibility
+    -> less mature (Angular 16) 
+    -> observables: more mature (Angular 2)
+-> Scalability
