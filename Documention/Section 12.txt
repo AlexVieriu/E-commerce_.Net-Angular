@@ -117,3 +117,8 @@ Delete Cart:
 TTL -> time to leave(redis)
 TTL is set in CartService.cs in .StringSetAsync(..., TimeSpan.FromDays(30));
 
+12.111. Summary
+
+Goal:
+-> set up and configure Redis to store the customer cart in server memory and 
+create the supporting services and controllers
