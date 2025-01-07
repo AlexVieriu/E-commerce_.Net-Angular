@@ -100,3 +100,20 @@ builder.Services.AddSingleton<ICartService, CartService>();
 GetCartById(string id)
 UpdateCart(ShoppingCart cart)
 DeleteCart(string id)
+
+
+12.110. Testing the Cart in Postman
+Get Cart:
+{{localhost}}/api/cart?id=cart1
+
+Update Cart(Post request):
+{{localhost}}/api/cart
+
+-> install redis extension 
+
+Delete Cart:
+{{localhost}}/api/cart?id=cart1
+
+TTL -> time to leave(redis)
+TTL is set in CartService.cs in .StringSetAsync(..., TimeSpan.FromDays(30));
+

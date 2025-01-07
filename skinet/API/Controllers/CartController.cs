@@ -1,11 +1,8 @@
-using Core.Interfaces;
-
 namespace API.Controllers;
 
 public class CartController(ICartService cartService) : BaseApiController
 {
-
-    [HttpGet("{id}")]
+    [HttpGet]
     public async Task<ActionResult<ShoppingCart>> GetCartById(string id)
     {
         var cart = await cartService.GetCartAsync(id);
@@ -24,7 +21,7 @@ public class CartController(ICartService cartService) : BaseApiController
             BadRequest("Problem updating the cart") : Ok(updatedCart);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete]
     public async Task<ActionResult> DeleteCart(string id)
     {
         return await cartService.DeleteCartAsync(id) ?
