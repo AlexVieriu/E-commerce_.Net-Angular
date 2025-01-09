@@ -16,7 +16,7 @@ export class CartService {
   getCartAsync() {
     return this.http.get<Cart>(this.baseUrl + 'cart?id=').subscribe({
       // It takes the cart data received from the API and updates the 
-      // local cart signal by calling this.cart.set(cart).
+      // local cart signal by calling this.cart.set(cart)
       next: cart => this.cart.set(cart),
     });
   }

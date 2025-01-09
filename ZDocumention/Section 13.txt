@@ -150,17 +150,17 @@ console.log(person.age); // Output: undefined
 
 -- "!= vs !==" --
 
-0 !== false // true (different types: number vs. boolean)
-null !== undefined // true (different types: null vs. undefined)
+0 !== false         -> true 
+null !== undefined  -> true 
 
+0 != false          -> false 
+null != undefined   -> false 
 
-0 != false // false (because 0 and false are considered equal in type coercion)
-null != undefined // false (because null and undefined are considered equal in type coercion)
+0 == false          -> true
+0 === false         -> false
 
-0 == false          → true
-0 === false         → false
-null == undefined   → true
-null === undefined  → false
+null == undefined   -> true
+null === undefined  -> false
 
 ChatGPT:
 "Why not check the object type directly in the body?"
@@ -177,9 +177,12 @@ private isProduct(item: object): void {
 -> used to check whether an object is an instance of a class
 -> check if item is instance of Product or CartItem
 
-If Product and CartItem are interfaces, you can't use instanceof, 
-because interfaces don't exist at runtime
-In this case you need to rely on property checks or type guards. 
+Compile-Time: TypeScript types, interfaces, generics
+Runtime     : JavaScript objects, classes, functions, variables.
+
+-> if Product and CartItem are types/interfaces, you will get 
+compile-time errors with "instanceof"
+-> you need to rely on property checks or type guards
 
 private isProduct(item: object): void {
   if ((item as Product).id !== undefined) {
@@ -188,3 +191,25 @@ private isProduct(item: object): void {
     // do something else for CartItem
   }
 }
+
+
+13.117. Using the add item functionality in the product item
+
+-- product-item.component.ts --
+  cartService = inject(CartService);
+
+-- product-item.component.html --
+<mat-card-actions (click)="$event.stopPropagation()">
+(click)="cartService.addItemToCart(product)"
+
+Testing:
+-> chrome -> network
+    -> check headers (we see a POST)
+    -> check payload (we see the items[])
+-> check redis
+
+Dictionary:
+"$event.stopPropagation()":
+-> prevent routerLink="/shop/{{product.id}}" to be access
+when we use the click event
+
