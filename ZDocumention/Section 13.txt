@@ -117,3 +117,74 @@ cart = signal<Cart | null>(null);
 
  getCartAsync(){...}
  setCartAsync(cart: Cart){...}
+
+
+13.116. Adding item to cart
+
+-- cart.service.ts --
+
+addItemToCart(item: CartItem | Product, quantity = 1){...}
+private createCart(): Cart{...} 
+private mapProductToCartItem(product: Product): CartItem {...}
+
+// type guard
+private isProduct(item: CartItem | Product): item is Product {
+    return (item as Product).id !== undefined;
+}
+
+-> the function returns "item is Product"
+
+
+Dictionary:
+"undefined"
+-> a variable has been declared but was never assigned a value
+-> if a function doesn't return a value, it returns "undefined"
+
+Ex 1:
+let x;
+console.log(x); // Output: undefined
+
+Ex 2:
+const person = { name: "Alice" };
+console.log(person.age); // Output: undefined
+
+-- "!= vs !==" --
+
+0 !== false // true (different types: number vs. boolean)
+null !== undefined // true (different types: null vs. undefined)
+
+
+0 != false // false (because 0 and false are considered equal in type coercion)
+null != undefined // false (because null and undefined are considered equal in type coercion)
+
+0 == false          → true
+0 === false         → false
+null == undefined   → true
+null === undefined  → false
+
+ChatGPT:
+"Why not check the object type directly in the body?"
+
+private isProduct(item: object): void {
+  if (item instanceof Product) {
+    // do something for Product
+  } else if (item instanceof CartItem) {
+    // do something else for CartItem
+  }
+}
+
+"instanceof"
+-> used to check whether an object is an instance of a class
+-> check if item is instance of Product or CartItem
+
+If Product and CartItem are interfaces, you can't use instanceof, 
+because interfaces don't exist at runtime
+In this case you need to rely on property checks or type guards. 
+
+private isProduct(item: object): void {
+  if ((item as Product).id !== undefined) {
+    // do something for Product
+  } else if ((item as CartItem).id !== undefined) {
+    // do something else for CartItem
+  }
+}
