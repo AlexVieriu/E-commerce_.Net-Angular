@@ -43,10 +43,10 @@ export class ShopComponent {
   pageSizeOptions = [5, 10, 15, 20]
 
   ngOnInit() {
-    this.initialiseShop();
+    this.initializeShop();
   }
 
-  initialiseShop() {
+  initializeShop() {
     this.shopService.getTypes();
     this.shopService.getBrands();
     this.getProducts();

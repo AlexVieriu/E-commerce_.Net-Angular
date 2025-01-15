@@ -1,9 +1,10 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { environment } from '../../../environments/environment.development';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Cart } from '../../shared/models/cart';
 import { CartItem } from '../../shared/models/cartItem';
 import { Product } from '../../shared/models/products';
+import { map } from 'rxjs/internal/operators/map';
 
 @Injectable({
   providedIn: 'root'
@@ -12,13 +13,17 @@ export class CartService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
   cart = signal<Cart | null>(null);
+  itemCount = computed(() => {
+    return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0)
+  })
 
-  getCartAsync() {
-    return this.http.get<Cart>(this.baseUrl + 'cart?id=').subscribe({
-      // It takes the cart data received from the API and updates the 
-      // local cart signal by calling this.cart.set(cart)
-      next: cart => this.cart.set(cart),
-    });
+  getCartAsync(id: string) {
+    return this.http.get<Cart>(this.baseUrl + 'cart?id=' + id).pipe(
+      map(cart => { // map - allows to perform side effects and transform emitted value before passing it downstream
+        this.cart.set(cart); // Update the `cart` signal with the fetched cart data
+        return cart; // Pass the cart data downstream to subscribers
+      })
+    )
   }
 
   setCartAsync(cart: Cart) {
@@ -36,7 +41,6 @@ export class CartService {
     cart.items = this.addOrUpdateItem(cart.items, item, quantity);
     this.setCartAsync(cart);
   }
-
 
   // private methods
   private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {

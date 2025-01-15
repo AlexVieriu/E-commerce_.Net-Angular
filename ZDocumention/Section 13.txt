@@ -17,6 +17,8 @@ ng g c features/cart --skip-tests
 -- app.routes.ts --
 { path: 'cart', component: CartComponent }
 
+!! the order of the route is very important !!
+
 -- header.component.html --
 -> add the link to shopping cart
 <a routerLink="/cart" routerLinkActive="active"...
@@ -24,10 +26,8 @@ ng g c features/cart --skip-tests
 echo "" > src/app/shared/models/cartItem.ts
 --cartItem.ts--
 
-
 echo "" > src/app/shared/models/cartType.ts
 -- cartType.ts --
-
 
 echo "" > src/app/shared/models/cart.ts
 -- cart.ts --
@@ -53,30 +53,66 @@ for database keys or APIs that expect GUIDs)
 -> Interoperability with other systems or languages that expect UUIDs is necessary
 -> The larger size and format aren't a concern
 
+More about app.routes.ts:
+https://next.angular.dev/tutorials/learn-angular/12-enable-routing#create-an-approutests-file
+
+Types or routes:
+1. Basic Routes
+{
+  path: '',
+  component: HomeComponent,
+  title: 'Home'  // This sets the page title
+}
+
+2. Route Parameters
+{ 
+  path: 'user/:id',  // :id is a parameter
+  component: UserProfileComponent,
+  resolve: {
+    user: UserResolver  // Pre-fetch data before loading
+  }
+}
+
+3. Child Routes 
+{
+  path: 'dashboard',
+  component: DashboardComponent,
+  children: [
+    { path: 'overview', component: OverviewComponent },
+    { path: 'stats', component: StatsComponent },
+    { path: 'settings', component: SettingsComponent }
+  ]
+}
+
+4. Routes Guards
+{
+  path: 'admin',
+  component: AdminComponent,
+  canActivate: [AuthGuard],
+  canDeactivate: [DeactivateGuard]
+}
+
+5. Lazy Loading (for better performance):
+{
+  path: 'products',
+  loadChildren: () => import('./products/products.module')
+    .then(m => m.ProductsModule)
+}
+
+6. Redirects
+{
+  path: 'products',
+  redirectTo: 'products/products-list',
+  pathMatch: 'full'
+}
+
 
 13.114. Angular signals
--> state that can be observed and reacted to
--> clean API for state management
--> avoid the complexity of observables
+
 https://next.angular.dev/essentials/signals
 
-# We will use 3 main Types:
--> signal 
-    -> get, set, update a value(int, object, etc.)
--> computed
--> effect
-
--- Signal --
-const count = signal(0);
-
-// Signals are getting functions - calling them reads their value
-console.log("The count is: " + count());
-
-// Set a new value
-count.set(1);
-
-// Update a value
-count.update(value => value + 1);
+What is a signal?
+-> a lightweight wrapper around a value
 
 Pros:
 -> Simplicity
@@ -91,6 +127,44 @@ Cons:
     -> less mature (Angular 16) 
     -> observables: more mature (Angular 2)
 -> Scalability
+
+# We will use 3 main Types:
+-> signal 
+-> computed
+-> effect
+
+-- Signal example --
+const counter = signal(0);
+
+// Signals are getting functions - calling them reads their value
+console.log("The count is: " + count());
+
+a. update()
+this.counter.update(count => count + 1);
+
+b. set()
+this.counter.set(10);
+
+c. value (getter and setter)
+const currentValue = this.counter.value;
+this.counter.value = currentValue + 1;
+
+d. computed (Creates a derived signal based on other signals.)
+doubleValue = computed(() => this.counter() * 2);
+
+e. effect (Creates a reactive effect that runs whenever the signals it depends on change)
+effect(() => {
+  console.log(`Counter changed: ${this.counter()}`);
+});
+
+ChatGPT:
+1. "Canvas Give me 3 example with signal in Angular from really basic to advanced
+(make examples: basic with signal, medium with .compute, advanced with effect). 
+Create the project also so i can test it.
+Give me the commands to create the Angular project, but make it minimal Angular. 
+Give me also the structure where to put the code" 
+
+2. What signals in Angular do different instead of doing things the traditional way?
 
 
 13.115. Adding the Cart service methods
@@ -118,16 +192,107 @@ cart = signal<Cart | null>(null);
  getCartAsync(){...}
  setCartAsync(cart: Cart){...}
 
+Why not adding a .subscribe() method in the GET requests?
+-> in RxJS, it's considered best practice to avoid subscribing too early or deep inside
+ a service, especially if the data needs to be transformed or further processed
+ by the consumer. Returning an observable gives the consumer full control
+
+
+Dictionary:
+
+-- .get properties --
+.pipe() 
+  -> RxJS operator
+  -> allows to combine multiple RxJS operators to 
+  transform, filter, manipulate the data stream before subscription
+
+.subscribe() 
+  -> RxJS operator
+  -> where you actually execute the HTTP request and handle the response
+  -> without subscribing, the HTTP request won't be made
+  -> can handle success and error cases here
+
+.forEach() 
+  -> NOT RxJS operator   
+  -> takes each value emitted by an Observable
+  -> executes a callback function for each value
+  -> return a Promise that resolves when the Observable completes
+  -> cannot be unsubscribed from (this is important)
+
+
+-- .pipe() & .subscribe() --
+this.http.get<User[]>('api/users')
+  .pipe(
+    map(users => users.filter(user => user.active)),
+    catchError(error => {
+      console.error('Error fetching users:', error);
+      return of([]); // Return empty array on error
+    }),
+    delay(1000) // Add artificial delay
+  )
+  .subscribe(users => {
+    this.activeUsers = users;
+  });
+
+-- .forEach() --
+const numbers$ = interval(1000); // Emits 0, 1, 2, 3... every second
+
+async function logNumbers() {
+  await numbers$.pipe(take(5)).forEach(num => {
+      console.log(`Number emitted: ${num}`);
+  })};
+
+ChatGPT:
+"Why we don't have a .subscribe() method in GET requests?"
+
+Separation of Concerns: 
+-> Services provide data, but components decide when and how to consume it, ensuring 
+clear division of responsibilities
+
+Flexibility: 
+-> Returning an observable lets components control subscription, add operators, 
+or handle results as needed.
+
+Avoid Multiple Subscriptions: 
+-> Subscribing in the service could lead to duplicate calls or memory leaks; 
+components manage their own subscriptions.
+
+Efficient Observable Handling: 
+-> HttpClient observables auto-complete, so returning them is clean and aligns with 
+Angular's reactive model
+
+Signal Integration: 
+-> Returning observables allows seamless integration with signals for reactive 
+state management.
+
+ChatGPT: "Canvas Popular RxJS Operators for .pipe() when we are talking about HTTP?"
+
+-- .pipe() --
+.map()        : Transforms the response data into the desired format
+.catchError() : 
+.filter()     : Filters the stream to process only certain HTTP requests or responses
+.tap          : Performs side effects such as logging or debugging without affecting the data
+.retry()      : Retries the HTTP request if it fails
+.share()      : Shares the Observable between multiple subscribers
+.switchMap()  : Cancels the previous HTTP request if a new one is made, 
+                often used in search or type-ahead scenarios
+.mergeMap()   : Allows multiple HTTP requests to run concurrently, but doesn’t cancel 
+                previous requests     
+.concatMap()  : Processes HTTP requests one at a time in order, ensuring the previous 
+                one completes before the next begins
+.exhaustMap() : Ignores subsequent HTTP requests while the first one is still in progress.  
+                Often used in form submission     
+
 
 13.116. Adding item to cart
 
 -- cart.service.ts --
-
 addItemToCart(item: CartItem | Product, quantity = 1){...}
 private createCart(): Cart{...} 
 private mapProductToCartItem(product: Product): CartItem {...}
 
 // type guard
+-> when we have 2 different types in the same method use type guard
 private isProduct(item: CartItem | Product): item is Product {
     return (item as Product).id !== undefined;
 }
@@ -136,6 +301,12 @@ private isProduct(item: CartItem | Product): item is Product {
 
 
 Dictionary:
+
+What is a type guard?
+-> a function that checks if a value is of a specific type
+-> it helps TypeScript understand the type of a variable at Runtime
+base on conditions
+
 "undefined"
 -> a variable has been declared but was never assigned a value
 -> if a function doesn't return a value, it returns "undefined"
@@ -213,3 +384,147 @@ Dictionary:
 -> prevent routerLink="/shop/{{product.id}}" to be access
 when we use the click event
 
+
+13.118. Persisting the cart
+
+-> cart.id need to be in localStorage
+-> with that id, we go to redis, and store it in the Angular signal 
+that we are using for the cart
+
+ng g s core/services/init --skip-tests
+
+-- cart.service.ts --
+ getCartAsync(id: string) {
+    return this.http.get<Cart>(this.baseUrl + 'cart?id=' + id).pipe(map(cart => {
+      this.cart.set(cart);
+      return cart;
+    }))
+  }
+
+-- init.service.ts --
+init() {
+  const cartId = localStorage.getItem('cart_id');
+  const cart$ = cartId ? this.cartService.getCartAsync(cartId) : of(null);
+
+  return cart$;
+}
+
+-- app.config.ts --
+
+-> we create some HTML that we will display, while initialization is taking place
+-> in this case it's going to get our cart(if possible), in the meantime 
+will display our slash screen
+
+function initializeApp() {
+  const initService = inject(InitService);
+  return lastValueFrom(initService.init()).finally(() => {
+    const splash = document.getElementById('initial-splash');
+    if (splash) {
+      splash.remove();
+    }
+  });
+}
+
+provideAppInitializer(initializeApp)
+
+-- idex.html --
+-> display the logo.png
+
+Test the functionality:
+-> run the program
+-> open the browser -> Network  
+  -> cart?id=
+
+
+Dictionary:
+
+Upgrading to Angular 19
+https://medium.com/sekrabgarage/upgrading-to-angular-version-19-2e3ba8d61d35
+
+provideAppInitializer():
+-> the provided function is injected at app startup and executed during app initialization
+-> if the function returns a/an Promise/Observable, initialization does not
+complete until the Promise/Observable resolves/completed
+-> works with Observables but not with signals
+
+.init():
+-> returns an Observable
+-> checks if the Id , if true is in localStorage, if id is not found,
+ send a request to the API to get the cart
+-> in the response, set the cart to the signal first using .map(), 
+then returns the cart (as Observable)
+
+
+.lastValueFrom() - https://rxjs.dev/api/index/function/lastValueFrom
+-> Converts an observable to a promise by subscribing to the observable, 
+waiting for it to complete, and resolving the returned promise with the
+last value from the observed stream.
+
+**WARNING**: Only use this with observables you *know* will complete. If the source
+ * observable does not complete, you will end up with a promise that is hung up, and
+ * potentially all of the state of an async function hanging out in memory
+
+.firstValueFrom() - https://rxjs.dev/api/index/function/firstValueFrom 
+-> Converts an observable to a promise by subscribing to the observable,
+ and returning a promise that will resolve as soon as the first value
+ arrives from the observable. The subscription will then be closed.
+
+.finally()
+-> ensures that cleanup tasks are performed regardless of weather the Observable
+succeeds or fails
+  -> it looks for an element with the ID initial-splash, typically used 
+  as a loading or splash screen displayed during app startup
+  -> if found, the splash element is removed from the DOM, signaling 
+  that the app has fully initialized
+
+ChatGPT: 
+"Canvas Tell me about Observables in Angular 19. The example needed to be 
+in a E-commerce app. Write it in deep details so i can understand. 
+I m new in angular , coming from C#"
+
+Observables:
+https://next.angular.dev/guide/http/making-requests#http-observables
+
+
+13.119. Updating the nav bar with the cart item count
+
+-- Computed signals -- (https://angular.dev/guide/signals#computed-signals) 
+-> read-only signals that derive their value from other signals
+
+ex: 
+const count: WritableSignal<number> = signal(0);
+const doubleCount: Signal<number> = computed(() => count() * 2);
+
+-- cart.service.ts --
+itemCount = computed(() => {
+  return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0)
+})
+
+-- header.component.ts --
+ cartService = inject(CartService);
+
+-- header.component.html --
+<a routerLink="/cart" routerLinkActive="active" 
+matBadge="{{cartService.itemCount()}}" matBadgeSize="large"
+...
+</a>
+
+-> test the basket
+
+Dictionary:
+
+.reduce():
+-> calls the specified callback function for all the elements in an array. 
+The return value of the callback function is the accumulated result, and is 
+provided as an argument in the next call to the callback function
+
+ChatGPT:
+"give me examples with JavaScript .reduce() method"
+
+Test JS in VSC:
+-> create a .js folder 
+-> write the code
+-> in the terminal write: node "[name of the js folder]
+ex: node "sum.js"
+
+More examples in the Examples folder. 
