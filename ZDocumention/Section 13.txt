@@ -513,10 +513,15 @@ matBadge="{{cartService.itemCount()}}" matBadgeSize="large"
 
 Dictionary:
 
-.reduce():
+-- .reduce() -- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce#callbackfn
 -> calls the specified callback function for all the elements in an array. 
-The return value of the callback function is the accumulated result, and is 
+-> the return value of the callback function is the accumulated result, and is 
 provided as an argument in the next call to the callback function
+
+Syntax:
+array.reduce((accumulator, currentValue, currentIndex, array) => {
+    // function logic
+}, initialValue);
 
 ChatGPT:
 "give me examples with JavaScript .reduce() method"
@@ -527,4 +532,50 @@ Test JS in VSC:
 -> in the terminal write: node "[name of the js folder]
 ex: node "sum.js"
 
-More examples in the Examples folder. 
+
+13.120. Styling the cart
+
+-- cart.component.ts --
+cartService = inject(CartService);
+
+-- cart.component.html --
+@for(item of cartService.cart()?.items; track item.productId){
+<div>{{item.productName}} - {{item.quantity}}</div>
+}
+
+ng g c features/cart/cart-item --skip-tests
+
+-- cart-item.component.ts --
+item = input.required<CartItem>();
+
+-- cart-item.component.html --
+
+-- cart.component.html --
+<
+
+Dictionary:
+-- input --
+-> are signals 
+-> allows declaration of Angular inputs in directives
+
+Types of inputs:
+1. **Optional inputs** with an initial value.
+2. **Required inputs** that consumers need to set.
+
+ChatGPT:
+"I have this list of methods for the .input in Angular in Visual Studio Code. 
+Please explain each of them with a simple example and also put the output"
+
+
+What is a directive? - https://angular.dev/guide/directives 
+-> is a class that allows you to attach behavior to elements in the DOM
+(Document Object Model)
+-> used to manipulate the appearance, behavior or structure of DOM
+elements in the app
+
+
+Types of directives:
+-> Structural directives - https://angular.dev/guide/directives#built-in-structural-directives
+-> Attribute directives - https://angular.dev/guide/directives#built-in-attribute-directives
+-> Component directives - https://angular.dev/guide/components 
+

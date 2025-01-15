@@ -78,3 +78,18 @@ const sentence = words.reduce((accumulator, currentValue) => {
 
 console.log(sentence); // Output: "apple, banana, cherry"
 
+// 7. Display all parameters
+const numbers = [10, 20, 30, 40];
+
+const result = numbers.reduce((accumulator, currentValue, currentIndex, array) => {
+    console.log(`Step ${currentIndex + 1}:`);
+    console.log(`Accumulator: ${accumulator}`);
+    console.log(`Current Value: ${currentValue}`);
+    console.log(`Current Index: ${currentIndex}`);
+    console.log(`Array: ${array}`);
+    console.log('------------------');
+    return accumulator + currentValue;
+}, 0);
+
+console.log(`Final Result: ${result}`);
+
