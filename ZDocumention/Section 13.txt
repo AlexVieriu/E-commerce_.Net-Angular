@@ -581,7 +581,7 @@ Types of directives:
 -> Component directives - https://angular.dev/guide/components 
 
 
-121. Creating the order summary component
+121. Creating the order summary component - part 1
 
 ng g c shared/components/order-summary --skip-tests
 
@@ -589,3 +589,11 @@ ng g c shared/components/order-summary --skip-tests
 
 -- cart.component.html --
 <app-order-summary></app-order-summary>
+
+
+122. Creating the order summary component - part 2
+
+-- order-summary.component.html --
+
+-- order-summary.component.ts --
+imports: [MatButton, RouterLink, MatFormField, MatLabel, MatInput]
