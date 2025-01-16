@@ -1,4 +1,4 @@
-13.112. Introduction
+112. Introduction
 
 -> adding the cart feature
 -> angular signals
@@ -9,7 +9,7 @@ Goal:
 -> understand the usage of signals in Angular
 
 
-13.113. Creating the cart components
+113. Creating the cart components
 
 ng g s core/services/cart --skip-tests
 ng g c features/cart --skip-tests
@@ -107,7 +107,7 @@ Types or routes:
 }
 
 
-13.114. Angular signals
+114. Angular signals
 
 https://next.angular.dev/essentials/signals
 
@@ -167,7 +167,7 @@ Give me also the structure where to put the code"
 2. What signals in Angular do different instead of doing things the traditional way?
 
 
-13.115. Adding the Cart service methods
+115. Adding the Cart service methods
 
 ng g --help
 ng g environments
@@ -284,7 +284,7 @@ ChatGPT: "Canvas Popular RxJS Operators for .pipe() when we are talking about HT
                 Often used in form submission     
 
 
-13.116. Adding item to cart
+116. Adding item to cart
 
 -- cart.service.ts --
 addItemToCart(item: CartItem | Product, quantity = 1){...}
@@ -364,7 +364,7 @@ private isProduct(item: object): void {
 }
 
 
-13.117. Using the add item functionality in the product item
+117. Using the add item functionality in the product item
 
 -- product-item.component.ts --
   cartService = inject(CartService);
@@ -385,7 +385,7 @@ Dictionary:
 when we use the click event
 
 
-13.118. Persisting the cart
+118. Persisting the cart
 
 -> cart.id need to be in localStorage
 -> with that id, we go to redis, and store it in the Angular signal 
@@ -533,7 +533,7 @@ Test JS in VSC:
 ex: node "sum.js"
 
 
-13.120. Styling the cart
+120. Styling the cart
 
 -- cart.component.ts --
 cartService = inject(CartService);
@@ -597,3 +597,19 @@ ng g c shared/components/order-summary --skip-tests
 
 -- order-summary.component.ts --
 imports: [MatButton, RouterLink, MatFormField, MatLabel, MatInput]
+
+
+123. Creating the order totals
+
+-- cart.service.ts --
+-> create a computed signal property: totals
+  -> use computed()
+  -> include the cart value: cart = signal<Cart | null>(null);
+  -> use cart.items.reduce((accumulator, currentValue) => ...)
+  -> return an anonyms object with: subtotal, shipping, discount, total
+
+-- order-summary.component.html --
+-> cartService = inject(CartService);
+
+-- order-summary.component.html --
+-> add subtotal, shipping, discount, totals
