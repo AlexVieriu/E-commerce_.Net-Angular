@@ -551,7 +551,8 @@ item = input.required<CartItem>();
 -- cart-item.component.html --
 
 -- cart.component.html --
-<
+<app-cart-item [item]="item"></app-cart-item>
+
 
 Dictionary:
 -- input --
@@ -579,3 +580,12 @@ Types of directives:
 -> Attribute directives - https://angular.dev/guide/directives#built-in-attribute-directives
 -> Component directives - https://angular.dev/guide/components 
 
+
+121. Creating the order summary component
+
+ng g c shared/components/order-summary --skip-tests
+
+-- order-summary.component.html --
+
+-- cart.component.html --
+<app-order-summary></app-order-summary>
