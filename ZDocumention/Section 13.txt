@@ -742,3 +742,12 @@ Add to cart -> {{getButtonText()}} // for Text change based on quantity
 <input matInput min="0" [(ngModel)]="quantity" type="number">
 
 
+127. Creating the checkout components 
+
+ng g s core/services/checkout --skip-tests
+ng g c features/checkout --skip-tests
+
+-- app.routes.ts --
+{ path: 'checkout', component: CheckoutComponent }
+
+-- checkout.component.html --
