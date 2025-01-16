@@ -751,3 +751,9 @@ ng g c features/checkout --skip-tests
 { path: 'checkout', component: CheckoutComponent }
 
 -- checkout.component.html --
+
+
+128. Summary 
+
+-> add cart features to angular app
+-> understand the usage of signals in Angular
