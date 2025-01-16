@@ -699,3 +699,46 @@ removeItemFromCart() {
 
 -- cart-item.component.html --
 -> add the methods 
+
+
+126. Adding the update cart functionality to the product details
+
+-- product-details.component.ts --
+
+updateQuantityInCart() {
+  if (this.product) {
+    this.quantityInCart = this.cartService.cart()?.items
+      .find(i => i.productId === this.product?.id)?.quantity || 0;
+
+    this.quantity = this.quantityInCart || 1;
+  }
+}
+
+updateCart() {
+  if (!this.product) return;
+  if (this.quantity > this.quantityInCart) {
+    const itemsToAdd = this.quantity - this.quantityInCart;
+    this.quantityInCart += itemsToAdd;
+    this.cartService.addItemToCart(this.product, itemsToAdd);
+  } else {
+    const itemsToRemove = this.quantityInCart - this.quantity;
+    this.quantityInCart -= itemsToRemove;
+    this.cartService.removeItemFromCart(this.product.id, itemsToRemove);
+  }
+}
+
+getButtonText() {
+  return this.quantityInCart > 0 ? 'Update cart' : 'Add to cart'
+}
+
+-- product-details.component.html --
+
+<p>You have {{quantityInCart}} of this item in your cart</p>
+...
+<button [disabled]="quantity === quantityInCart" (click)="updateCart()" mat-flat-button
+...
+Add to cart -> {{getButtonText()}} // for Text change based on quantity
+...
+<input matInput min="0" [(ngModel)]="quantity" type="number">
+
+
