@@ -1,0 +1,124 @@
+12.104. Introduction
+
+-> where we 'store' the cart
+-> adding redis to the API
+-> creating a Cart service & controller
+
+Goal:
+-> set up/configure Redis to store the customer cart in server memory 
+and create the supporting services and controllers
+
+Where to store the basket?
+-> database
+-> local storage
+-> cookies
+-> redis
+
+Redis:
+-> in-memory database
+-> used for cashing 
+-> supports strings, hashes, lists, sets, etc.
+-> Key/Value store
+-> persists data by using snapshots every minute
+-> data can be given time to live
+-> great for caching data
+
+
+12.105. Creating a Redis instance 
+
+-- docker-compose.yml --
+-> add redis
+-> add the volumes for sqlite and redis
+-> map the volume from docker to the one in the project
+
+  sqlite:
+    image: keinos/sqlite3:latest
+    container_name: sqlite3
+    command: tail -f /dev/null # Keeps the container running
+    volumes:
+      - sqlite-data:/data # Persists SQLite data in the local `data` folder
+    working_dir: /data
+
+
+12.106. Using Redis with .Net
+
+-> install redis nuget package in the Infrastructure project
+<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+
+-- program.cs --
+builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+{
+    var conStr = builder.Configuration.GetConnectionString("Redis") ??
+            throw new Exception("Redis connection string not found");
+    var conf = ConfigurationOptions.Parse(conStr, true);
+    return ConnectionMultiplexer.Connect(conf);
+});
+
+-- appsettings.Development.json --
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=../data/store.db",
+    "Redis": "localhost"
+}
+
+
+12.107. Creating the Cart classes
+
+-- Core -> Entities -> ShoppingCart.cs --
+ProductId, ProductName, Price, Quantity, PictureUrl, Brand, Type
+
+-- Core -> Entities -> CartItem.cs
+Id, Items
+
+
+12.108. Creating a Cart service
+
+-- Core -> Interfaces -> ICartService.cs --
+Task<ShoppingCart?> GetCartAsync(string key);
+Task<ShoppingCart?> SetCartAsync(ShoppingCart cart);
+Task<bool> DeleteCartAsync(string key);
+
+-- Infrastructure -> Services -> CartService.cs --
+DeleteCartAsync(string key)
+-> .KeyDeleteAsync(key)
+
+GetCartAsync(string key)
+-> get the data:  _database.StringGetAsync(key)
+-> return the json Deserialized data
+
+SetCartAsync(ShoppingCart cart)
+-> created = _database.StringSetAsync(...)
+-> return created ? await GetCartAsync(cart.Id) : null;
+
+-- Program.cs --
+-> add the cart service
+builder.Services.AddSingleton<ICartService, CartService>();
+
+
+12.109. Creating the Cart controller
+
+-- API -> Controllers -> CartController.cs --
+GetCartById(string id)
+UpdateCart(ShoppingCart cart)
+DeleteCart(string id)
+
+
+12.110. Testing the Cart in Postman
+Get Cart:
+{{localhost}}/api/cart?id=cart1
+
+Update Cart(Post request):
+{{localhost}}/api/cart
+
+-> install redis extension 
+
+Delete Cart:
+{{localhost}}/api/cart?id=cart1
+
+TTL -> time to leave(redis)
+TTL is set in CartService.cs in .StringSetAsync(..., TimeSpan.FromDays(30));
+
+12.111. Summary
+
+Goal:
+-> set up and configure Redis to store the customer cart in server memory and 
+create the supporting services and controllers
