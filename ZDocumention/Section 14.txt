@@ -147,3 +147,18 @@ Properties:
 -- MapGroup("<name>") --
 -> is a way to group a specific endpoints together
 
+
+133. Testing the authentication
+
+-- BuggyController.cs --
+-> create an Authorized GetSecret() of type [HttpGet("secret")]
+-> take name and id from claims
+-> return Ok() with a message
+
+Test in Postman:
+-> delete the cookie
+-> access the secret endpoint
+-> login as Tom
+-> access the secret endpoint
+
+
