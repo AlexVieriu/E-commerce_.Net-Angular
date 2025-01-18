@@ -7,6 +7,7 @@ global using Core.Interfaces;
 global using Core.Specifications;
 global using Infrastructure.Data;
 global using Infrastructure.Services;
+global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Scalar.AspNetCore;

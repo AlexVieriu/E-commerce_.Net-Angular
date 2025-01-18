@@ -99,3 +99,51 @@ dotnet ef migrations add IdentityAdded -s API -p Infrastructure
 
 Cookie: HttpOnly (no JS can access it)
 
+
+132. Adding custom register endpoint
+
+-- API -> DTOs -> RegisterDTO.cs --
+FirstName, LastName, Email, Password
+
+-- API -> Controllers -> AccountController.cs --
+
+-> add SignInManager<AppUser> to constructor
+-> add HttpPost for Register(RegisterDTO registerDto)
+-> create a new AppUser, and transfer the information from the RegisterDTO to it
+-> create a IdentityResult from the UserManager
+-> return OK or BadRequest
+
+Test in Postman:
+{
+    "firstName": "Tom",
+    "lastName": "Smith",
+    "email": "tom@test.com",
+    "password": "Pa$$w0rd"
+}
+{{localhost}}/api/account/register
+
+{
+    "email": "tom@test.com",
+    "password": "Pa$$w0rd"
+}
+{{localhost}}/api/login                 -> for token
+{{localhost}}/api/login?useCookies=true -> for cookie
+
+
+Dictionary:
+
+-- SignInManager --
+-> Provides the APIs for user sign in
+https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.signinmanager-1?view=aspnetcore-9.0&viewFallbackFrom=aspnetcore-10.0
+
+Properties:
+-> AuthenticationScheme
+-> ClaimsFactory
+-> Context
+-> Logger
+-> Options 
+-> UserManager
+
+-- MapGroup("<name>") --
+-> is a way to group a specific endpoints together
+
