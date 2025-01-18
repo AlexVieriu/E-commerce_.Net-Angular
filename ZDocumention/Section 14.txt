@@ -1,0 +1,21 @@
+129. Introduction 
+-> setting up ASP.Net Identity
+-> using the UserManager and SignInManager
+-> claims
+-> extensions methods
+
+Storing user account in the app - why do it ?
+
+Pros:
+-> full control
+-> customization
+-> no dependencies
+-> cost 
+
+Cons:
+-> security risk
+-> compliance 
+-> overhead
+
+MapIdentityApi<TUser> endpoint
+
