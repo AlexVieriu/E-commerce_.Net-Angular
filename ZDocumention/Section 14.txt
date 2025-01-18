@@ -19,3 +19,83 @@ Cons:
 
 MapIdentityApi<TUser> endpoint
 
+
+130. Setting up identity
+https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
+
+IdentityDbContext
+MapIdentityApi<TUser> : https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0#the-mapidentityapituser-endpoints
+
+Security tip:
+-> never store sensitive information on your own server; store it somewhere else
+
+Offloading identity: managed by 3rd party services
+
+-- Core Project --
+Microsoft.Extensions.Identity.Stores
+
+-- Infrastructure Project --
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+
+
+-- Core -> AppUser.cs --
+string? FirstName
+string? LastName
+
+-- StoreContext.cs --
+-> inherit from IdentityDbContext
+
+-- API -> Program.cs --
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+                .AddEntityFrameworkStores<StoreContext>();
+...
+app.MapControllers();
+app.MapIdentityApi<AppUser>(); 
+
+
+Dictionary:
+
+-- .AddAuthorization() --
+-> adds authorization policy services to the specified IServiceCollection
+
+services.AddAuthorizationCore();
+services.AddAuthorizationPolicyEvaluator();
+services.TryAddSingleton<AuthorizationPolicyCache>();
+return services;
+
+-- .AddIdentityApiEndpoints<TUser>() -- 
+-> introduced with .Net 8
+-> prior to .NET 8, developers had to manually configure these services and endpoints
+-> adds a set of common identity services to the application to support 
+<see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+and configures authentication to support identity bearer tokens and cookies.
+
+-- .AddEntityFrameworkStores<TContext>() --
+-> adds an Entity Framework implementation of identity information store 
+
+public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
+    where TContext : DbContext
+{
+    AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
+    return builder;
+}
+
+131. Updating the DB
+cd D:\Programare\Proiecte\E-commerce\skinet
+dotnet --version
+dotnet tool update --global dotnet-ef
+dotnet ef migrations add IdentityAdded -s API -p Infrastructure
+
+-- Test in postman --
+{
+    "email": "test@test.com",
+    "password": "Pa$w0rd"
+}
+
+-> register : {{localhost}}/register
+-> login    : {{localhost}}/login
+-> login with cookies: {{localhost}}/login?useCookies=true
+
+Cookie: HttpOnly (no JS can access it)
+

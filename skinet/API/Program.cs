@@ -1,6 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// Chaining of methods - static methods [Name of Method](this IServiceCollection services)
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 builder.Services.AddDbContext<StoreContext>(options =>
@@ -16,6 +17,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
     return ConnectionMultiplexer.Connect(conf);
 });
 builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+                .AddEntityFrameworkStores<StoreContext>();
 
 
 var app = builder.Build();
@@ -48,6 +52,7 @@ app.UseCors(options => options.AllowAnyHeader()
                               .AllowCredentials()
                               .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 app.MapControllers();
+app.MapIdentityApi<AppUser>();
 
 try // Database Migration
 {
