@@ -1,6 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-
 namespace API.Controllers;
 
 [Route("api/[controller]")]
@@ -39,11 +36,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
         if (User.Identity?.IsAuthenticated == false)
             return NoContent();
 
-        var user = await signInManager.UserManager.Users
-            .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
-
-        if (user == null)
-            return Unauthorized();
+        var user = await signInManager.UserManager.GetUserByEmail(User);
 
         return Ok(new
         {
