@@ -19,4 +19,6 @@ global using System.ComponentModel.DataAnnotations;
 global using System.Net;
 global using System.Security.Authentication;
 global using System.Security.Claims;
+global using System.Security.Authentication;
+global using System.Security.Claims;
 global using System.Text.Json;
