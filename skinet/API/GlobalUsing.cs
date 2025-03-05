@@ -1,6 +1,7 @@
 
 global using API.DTOs;
 global using API.Errors;
+global using API.Extensions;
 global using API.Middleware;
 global using API.RequestHelpers;
 global using Core.Entities;
@@ -17,8 +18,6 @@ global using StackExchange.Redis;
 global using static System.Console;
 global using System.ComponentModel.DataAnnotations;
 global using System.Net;
-global using System.Security.Authentication;
-global using System.Security.Claims;
 global using System.Security.Authentication;
 global using System.Security.Claims;
 global using System.Text.Json;
