@@ -1,6 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-
 namespace API.Controllers;
 
 public class BuggyController : BaseApiController

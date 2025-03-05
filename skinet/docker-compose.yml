@@ -7,7 +7,7 @@ services:
       - ./data:/data # Persists SQLite data in the local `data` folder
     working_dir: /data
   redis:
-    image: redis:8.0-M02-alpine
+    image: redis:8.0-M03-alpine
     container_name: redis
     ports:
       - "6379:6379"

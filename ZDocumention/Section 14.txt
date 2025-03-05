@@ -171,11 +171,19 @@ GetUserInfo()   : check if IAuthenticated
                   get the user by email using UserManager  
                   return null if not found
                   return anonymous user
-                  
+
 GetAuthState()  : check if IAuthenticated
 
 -> checkout the Identity: 
 https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0#the-mapidentityapituser-endpoints
 
 
+135. Creating extension methods
 
+-- API -> Extensions -> ClaimsPrincipleExtensions.cs --
+
+GetUserByEmailAsync(this UserManager<AppUser> userManager, ClaimsPrincipal user)
+-> get the user using the GetEmail()
+
+GetEmail(this ClaimsPrincipal user)
+-> get the email from the user using ClaimTypes.Email
