@@ -18,7 +18,14 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
         var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
 
         if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+
+            return ValidationProblem();
+        }
 
         return Ok();
     }

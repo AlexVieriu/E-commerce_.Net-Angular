@@ -187,3 +187,26 @@ GetUserByEmailAsync(this UserManager<AppUser> userManager, ClaimsPrincipal user)
 
 GetEmail(this ClaimsPrincipal user)
 -> get the email from the user using ClaimTypes.Email
+
+
+136. Validation Errors
+
+-- API -> Controllers -> AccountController.cs --
+
+-> result.Errors -> loop into this errors with foreach
+
+
+Dictionary:
+
+ModelState:
+-> contains the state of the model and of model-binding validation
+ public ModelStateDictionary ModelState => ControllerContext.ModelState;
+
+AddModelError(string key, string errorMessage):
+-> collect and organize validation errors so they can be returned to the client in a structured format
+-> after adding all errors to the ModelState, it returns ValidationProblem(), which produces a 
+400 Bad Request response with all the validation errors in the response body.
+
+ValidationProblem():
+-> creates an ActionResult that produces a StatusCodes.Status400BadRequest 
+response with validation errors from ModelState
