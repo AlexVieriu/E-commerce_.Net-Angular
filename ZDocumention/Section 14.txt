@@ -210,3 +210,26 @@ AddModelError(string key, string errorMessage):
 ValidationProblem():
 -> creates an ActionResult that produces a StatusCodes.Status400BadRequest 
 response with validation errors from ModelState
+
+
+137. Adding a user address class
+
+-- Core -> Entities -> Address.cs --
+-> Line1, Line2, City, State, ZipCode, Country
+
+-- Core -> Entities -> AppUser.cs --
+-> add Address prop
+
+-- Core -> Entities -> Address.cs --
+-> DbSet<Address> Address 
+
+
+Create a new migration to update our DB:
+cd skinet
+dotnet ef migrations add AddressAdded -s API -p Infrastructure
+
+Dictionary:
+-s : startup Project
+-p : the project containing your DbContext class
+
+
