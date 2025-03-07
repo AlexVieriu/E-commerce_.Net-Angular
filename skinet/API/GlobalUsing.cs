@@ -1,5 +1,7 @@
+
 global using API.DTOs;
 global using API.Errors;
+global using API.Extensions;
 global using API.Middleware;
 global using API.RequestHelpers;
 global using Core.Entities;
@@ -7,6 +9,8 @@ global using Core.Interfaces;
 global using Core.Specifications;
 global using Infrastructure.Data;
 global using Infrastructure.Services;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Scalar.AspNetCore;
@@ -14,4 +18,6 @@ global using StackExchange.Redis;
 global using static System.Console;
 global using System.ComponentModel.DataAnnotations;
 global using System.Net;
+global using System.Security.Authentication;
+global using System.Security.Claims;
 global using System.Text.Json;

@@ -1,0 +1,265 @@
+129. Introduction 
+-> setting up ASP.Net Identity
+-> using the UserManager and SignInManager
+-> claims
+-> extensions methods
+
+Storing user account in the app - why do it ?
+
+Pros:
+-> full control
+-> customization
+-> no dependencies
+-> cost 
+
+Cons:
+-> security risk
+-> compliance 
+-> overhead
+
+MapIdentityApi<TUser> endpoint
+
+
+130. Setting up identity
+https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
+
+IdentityDbContext
+MapIdentityApi<TUser> : https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0#the-mapidentityapituser-endpoints
+
+Security tip:
+-> never store sensitive information on your own server; store it somewhere else
+
+Offloading identity: managed by 3rd party services
+
+-- Core Project --
+Microsoft.Extensions.Identity.Stores
+
+-- Infrastructure Project --
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+
+
+-- Core -> AppUser.cs --
+string? FirstName
+string? LastName
+
+-- StoreContext.cs --
+-> inherit from IdentityDbContext
+
+-- API -> Program.cs --
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+                .AddEntityFrameworkStores<StoreContext>();
+...
+app.MapControllers();
+app.MapIdentityApi<AppUser>(); 
+
+
+Dictionary:
+
+-- .AddAuthorization() --
+-> adds authorization policy services to the specified IServiceCollection
+
+services.AddAuthorizationCore();
+services.AddAuthorizationPolicyEvaluator();
+services.TryAddSingleton<AuthorizationPolicyCache>();
+return services;
+
+-- .AddIdentityApiEndpoints<TUser>() -- 
+-> introduced with .Net 8
+-> prior to .NET 8, developers had to manually configure these services and endpoints
+-> adds a set of common identity services to the application to support 
+<see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+and configures authentication to support identity bearer tokens and cookies.
+
+-- .AddEntityFrameworkStores<TContext>() --
+-> adds an Entity Framework implementation of identity information store 
+
+public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
+    where TContext : DbContext
+{
+    AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
+    return builder;
+}
+
+131. Updating the DB
+cd D:\Programare\Proiecte\E-commerce\skinet
+dotnet --version
+dotnet tool update --global dotnet-ef
+dotnet ef migrations add IdentityAdded -s API -p Infrastructure
+
+-- Test in postman --
+{
+    "email": "test@test.com",
+    "password": "Pa$w0rd"
+}
+
+-> register : {{localhost}}/register
+-> login    : {{localhost}}/login
+-> login with cookies: {{localhost}}/login?useCookies=true
+
+Cookie: HttpOnly (no JS can access it)
+
+
+132. Adding custom register endpoint
+
+-- API -> DTOs -> RegisterDTO.cs --
+FirstName, LastName, Email, Password
+
+-- API -> Controllers -> AccountController.cs --
+
+-> add SignInManager<AppUser> to constructor
+-> add HttpPost for Register(RegisterDTO registerDto)
+-> create a new AppUser, and transfer the information from the RegisterDTO to it
+-> create a IdentityResult from the UserManager
+-> return OK or BadRequest
+
+Test in Postman:
+{
+    "firstName": "Tom",
+    "lastName": "Smith",
+    "email": "tom@test.com",
+    "password": "Pa$$w0rd"
+}
+{{localhost}}/api/account/register
+
+{
+    "email": "tom@test.com",
+    "password": "Pa$$w0rd"
+}
+{{localhost}}/api/login                 -> for token
+{{localhost}}/api/login?useCookies=true -> for cookie
+
+
+Dictionary:
+
+-- SignInManager --
+-> Provides the APIs for user sign in
+https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.signinmanager-1?view=aspnetcore-9.0&viewFallbackFrom=aspnetcore-10.0
+
+Properties:
+-> AuthenticationScheme
+-> ClaimsFactory
+-> Context
+-> Logger
+-> Options 
+-> UserManager
+
+-- MapGroup("<name>") --
+-> is a way to group a specific endpoints together
+
+
+133. Testing the authentication
+
+-- BuggyController.cs --
+-> create an Authorized GetSecret() of type [HttpGet("secret")]
+-> take name and id from claims
+-> return Ok() with a message
+
+Test in Postman:
+-> delete the cookie
+-> access the secret endpoint
+-> login as Tom
+-> access the secret endpoint
+
+
+134. Creating additional user endpoints
+
+-- AccountController.cs --
+Logout()        : we have direct method from UserManager to sign out
+
+GetUserInfo()   : check if IAuthenticated
+                  get the user by email using UserManager  
+                  return null if not found
+                  return anonymous user
+
+GetAuthState()  : check if IAuthenticated
+
+-> checkout the Identity: 
+https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0#the-mapidentityapituser-endpoints
+
+
+135. Creating extension methods
+
+-- API -> Extensions -> ClaimsPrincipleExtensions.cs --
+
+GetUserByEmailAsync(this UserManager<AppUser> userManager, ClaimsPrincipal user)
+-> get the user using the GetEmail()
+
+GetEmail(this ClaimsPrincipal user)
+-> get the email from the user using ClaimTypes.Email
+
+
+136. Validation Errors
+
+-- API -> Controllers -> AccountController.cs --
+
+-> result.Errors -> loop into this errors with foreach
+
+
+Dictionary:
+
+ModelState:
+-> contains the state of the model and of model-binding validation
+ public ModelStateDictionary ModelState => ControllerContext.ModelState;
+
+AddModelError(string key, string errorMessage):
+-> collect and organize validation errors so they can be returned to the client in a structured format
+-> after adding all errors to the ModelState, it returns ValidationProblem(), which produces a 
+400 Bad Request response with all the validation errors in the response body.
+
+ValidationProblem():
+-> creates an ActionResult that produces a StatusCodes.Status400BadRequest 
+response with validation errors from ModelState
+
+
+137. Adding a user address class
+
+-- Core -> Entities -> Address.cs --
+-> Line1, Line2, City, State, ZipCode, Country
+
+-- Core -> Entities -> AppUser.cs --
+-> add Address prop
+
+-- Core -> Entities -> Address.cs --
+-> DbSet<Address> Address 
+
+
+Create a new migration to update our DB:
+cd skinet
+dotnet ef migrations add AddressAdded -s API -p Infrastructure
+
+Dictionary:
+-s : startup Project
+-p : the project containing your DbContext class
+
+
+138. Adding an endpoint to update the user address
+
+-- API -> DTOs -> AddressDto.cs --
+-> same props as Address.cs
+
+-- API -> Controllers -> AccountController.cs --
+CreateOrUpdateAddress(AddressDto addressDto)
+
+-- API -> Extensions -- 
+-- ClaimsPrincipleExtensions.cs --
+GetUserByEmailWithAddressAsync(this UserManager<AppUser> userManager, ClaimsPrincipal user)
+
+-- AddressMappingExtensions.cs --
+UpdateEntity(this Address address, AddressDto addressDto)
+toEntity(this AddressDto addressDto)
+toDto(this Address address)
+
+
+139. Updating the user address part 2
+
+Testing in Postman:
+-> add user address tom
+-> update user address tom
+
+
+140. Summary
+-> setting up ASP.Net Identity
+-> using the UserManager and SignInManager
+-> using claims
+-> using extensions methods
