@@ -58,4 +58,24 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
     {
         return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated });
     }
+
+    [Authorize]
+    [HttpPost("address")]
+    public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
+    {
+        var user = await signInManager.UserManager.GetUserByEmailWithAddressAsync(User);
+
+        if (user.Address == null)
+            user.Address = addressDto.toEntity(); // create
+
+        else
+            user.Address.UpdateFromDto(addressDto); // update
+
+        var result = await signInManager.UserManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+            return BadRequest("Problem updating the user address");
+
+        return Ok(user.Address.toDto());
+    }
 }

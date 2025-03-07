@@ -233,3 +233,20 @@ Dictionary:
 -p : the project containing your DbContext class
 
 
+138. Adding an endpoint to update the user address
+
+-- API -> DTOs -> AddressDto.cs --
+-> same props as Address.cs
+
+-- API -> Controllers -> AccountController.cs --
+CreateOrUpdateAddress(AddressDto addressDto)
+
+-- API -> Extensions -- 
+-- ClaimsPrincipleExtensions.cs --
+GetUserByEmailWithAddressAsync(this UserManager<AppUser> userManager, ClaimsPrincipal user)
+
+-- AddressMappingExtensions.cs --
+UpdateEntity(this Address address, AddressDto addressDto)
+toEntity(this AddressDto addressDto)
+toDto(this Address address)
+
