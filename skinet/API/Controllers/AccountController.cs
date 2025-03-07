@@ -43,13 +43,14 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
         if (User.Identity?.IsAuthenticated == false)
             return NoContent();
 
-        var user = await signInManager.UserManager.GetUserByEmailAsync(User);
+        var user = await signInManager.UserManager.GetUserByEmailWithAddressAsync(User);
 
         return Ok(new
         {
             user.FirstName,
             user.LastName,
-            user.Email
+            user.Email,
+            Address = user.Address?.toDto()
         });
     }
 

@@ -2,10 +2,10 @@ namespace API.Extensions;
 
 public static class AddressMappingExtensions
 {
-    public static AddressDto toDto(this Address address)
+    public static AddressDto? toDto(this Address? address)
     {
         if (address == null)
-            throw new ArgumentNullException(nameof(address));
+            return null;
 
         return new AddressDto
         {
