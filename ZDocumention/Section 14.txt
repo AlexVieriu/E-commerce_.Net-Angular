@@ -256,3 +256,10 @@ toDto(this Address address)
 Testing in Postman:
 -> add user address tom
 -> update user address tom
+
+
+140. Summary
+-> setting up ASP.Net Identity
+-> using the UserManager and SignInManager
+-> using claims
+-> using extensions methods
