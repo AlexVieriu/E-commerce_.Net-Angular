@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { User } from '../../shared/models/user';
+import { map } from 'rxjs/internal/operators/map';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class AccountService {
       }
     ): Observable<T>;
     */
-    return this.http.post<User>(this.baseUrl + 'account/login', values, { params });
+    return this.http.post<User>(this.baseUrl + 'login', values, { params, withCredentials: true });
   }
 
   register(values: any) {
@@ -37,13 +38,16 @@ export class AccountService {
   }
 
   getUserInfo() {
-    return this.http.get<User>(this.baseUrl + 'account/user-info').subscribe({
-      next: user => this.currentUser.set(user)
-    })
+    return this.http.get<User>(this.baseUrl + 'account/user-info', { withCredentials: true }).pipe(
+      map(user => {
+        this.currentUser.set(user);
+        return user;
+      })
+    );
   }
 
   logout() {
-    return this.http.post(this.baseUrl + 'account/logout', {});
+    return this.http.post(this.baseUrl + 'account/logout', {}, { withCredentials: true });
   }
 
   updateAddress(address: any) {

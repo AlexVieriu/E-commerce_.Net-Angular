@@ -92,3 +92,64 @@ Building blocks of forms:
 -> FormControl
 -> FormGroup
 -> FormArray
+
+
+144. Creating the login form
+
+-- login.component.ts --
+imports: [ReactiveFormsModule, MatCard, MatFormField, MatInput, MatLabel, MatButton]
+
+onSubmit():
+-> access login(this.loginForm.value) with AccountService    
+
+-> next: this.accountService.getUserInfo();
+         this.router.navigate(['/shop']);
+
+--login.component.html--    
+
+Angular-Specific Elements
+<mat-card>
+<mat-form-field>
+<mat-label>
+
+Angular-Specific Attributes
+[formGroup]
+(ngSubmit)
+formControlName
+matInput
+mat-flat-button
+appearance
+
+HTML Attributes
+class
+type
+placeholder
+
+
+Testing:
+https://localhost:4200/
+
+tom@test.com
+Pa$$w0rd
+
+
+-- account.service.ts --
+-> adding "withCredentials"
+
+login(values: any)
+{
+    ...
+    return this.http.post<User>(this.baseUrl + 'login', values, { params, withCredentials: true });
+}
+
+getUserInfo(){
+    return this.http.get<User>(this.baseUrl + 'account/user-info', { withCredentials: true })
+    .pipe(...)
+}
+
+
+Dictionary:
+
+withCredentials: true
+-> property in your HTTP request enables the browser to send cookies, 
+HTTP authentication, and client-side SSL certificates to cross-origin requests
