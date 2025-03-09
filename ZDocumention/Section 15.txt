@@ -153,3 +153,26 @@ Dictionary:
 withCredentials: true
 -> property in your HTTP request enables the browser to send cookies, 
 HTTP authentication, and client-side SSL certificates to cross-origin requests
+
+
+145. Updating the header component
+
+-- header.component.ts --
+-> inject the AccountService
+-> logout(){...};
+
+
+-- header.component.html --
+@if(accountService.currentUser()) {
+<button mat-stroked-button (click)="logout()">Logout</button>
+}
+@else{
+    login button ...
+    register button ...
+}
+
+
+Dictionary:
+-> services are public so they can be access by other components
+-> if the variable is doesn't give an access modifier(public protected, private), 
+they are public by default
