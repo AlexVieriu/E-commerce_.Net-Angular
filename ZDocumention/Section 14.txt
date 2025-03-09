@@ -21,7 +21,7 @@ MapIdentityApi<TUser> endpoint
 
 
 130. Setting up identity
-https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
+https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0 
 
 IdentityDbContext
 MapIdentityApi<TUser> : https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0#the-mapidentityapituser-endpoints
@@ -36,7 +36,6 @@ Microsoft.Extensions.Identity.Stores
 
 -- Infrastructure Project --
 Microsoft.AspNetCore.Identity.EntityFrameworkCore
-
 
 -- Core -> AppUser.cs --
 string? FirstName
@@ -80,6 +79,7 @@ public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBu
     AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
     return builder;
 }
+
 
 131. Updating the DB
 cd D:\Programare\Proiecte\E-commerce\skinet
@@ -160,6 +160,38 @@ Test in Postman:
 -> access the secret endpoint
 -> login as Tom
 -> access the secret endpoint
+
+Dictionary:
+
+-- BaseApiController.cs --
+IGenericRepository<T>:
+-> a generic repository for CRUD operation from Microsoft
+
+-- Properties & Methods --
+Task<bool> ExistsAsync(int id);
+Task<bool> SaveAllAsync();
+Task<int> CountAsync(ISpecification<T> spec);
+Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec);
+Task<IReadOnlyList<TResult>> GetAllAsync<TResult>(ISpecification<T, TResult> spec);
+Task<T?> GetByIdAsync(int id);
+Task<T?> GetEntityWithSpec(ISpecification<T> spec);
+Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
+void Add(T entity);
+void Delete(T entity);
+void Update(T entity);
+
+
+ISpecification<T>
+
+-- Properties & Methods --
+bool IsDistinct { get; }
+bool IsPagingEnabled { get; }
+Expression<Func<T, bool>>? Criteria { get; }
+Expression<Func<T, object>>? OrderBy { get; }
+Expression<Func<T, object>>? OrderByDescending { get; }
+int Skip { get; }
+int Take { get; }
+IQueryable<T> ApplyCriteria(IQueryable<T> query);
 
 
 134. Creating additional user endpoints

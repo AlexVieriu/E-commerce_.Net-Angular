@@ -1,0 +1,67 @@
+141. Introduction
+-> adding an account feature
+-> forms in Angular
+-> reactive forms
+-> reusable form components
+-> client side validation
+
+
+142. Creating the account components
+
+cd skinet/client
+ng g s core/services/account --skip-tests
+ng g c features/account/login --skip-tests
+ng g c features/account/register --skip-tests
+
+-- app.routes.ts --
+{ path: 'login', component: LoginComponent },
+{ path: 'register', component: RegisterComponent }
+
+-- header.component.html --
+-> add routerLink to Login and Register
+
+-- app -> shared -> models --  
+user.ts     : firstName, lastName, email, address
+address.ts  : City, State, Line1, Line2, Country, PostalCode
+
+-- app -> core -> services -> account.service.ts --
+-> login() ...
+-> register() ...
+-> getUserInfo() ...
+-> logout() ...
+-> updateAddress() ...
+
+
+Dictionary:
+
+-- HttpClient --
+
+1. Methods
+
+get<T>(url, options?)           : Makes a GET request
+post<T>(url, body, options?)    : Makes a POST request
+put<T>(url, body, options?)     : Makes a PUT request
+delete<T>(url, options?)        : Makes a DELETE request
+patch<T>(url, body, options?)   : Makes a PATCH request
+request<T>(method, url, options?)   : Generic method for any HTTP request
+request<T>(method: string, url: string, options?: {...})    : Observable<HttpEvent<T>>
+
+2. Request Options
+headers         : For adding HTTP headers
+params          : For adding URL parameters
+observe         : Controls the response type ('body', 'response', 'events')
+responseType    : Specifies the format ('json', 'text', 'blob', 'arraybuffer')
+reportProgress  : Enables progress events for uploads/downloads
+withCredentials : Includes cookies in cross-site requests
+
+3. Related Interfaces
+
+HttpHeaders         : Manage request/response headers
+HttpParams          : Manage URL query parameters
+HttpResponse<T>     : Complete HTTP response with status and headers
+HttpErrorResponse   : Error HTTP response
+HttpEvent<T>        : Base interface for HTTP events
+HttpInterceptor     : Interface for intercepting HTTP requests/responses
+
+4. Interceptors
+HttpInterceptor interface with intercept() method for modifying requests/responses
