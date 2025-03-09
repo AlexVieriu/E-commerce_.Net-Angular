@@ -176,3 +176,42 @@ Dictionary:
 -> services are public so they can be access by other components
 -> if the variable is doesn't give an access modifier(public protected, private), 
 they are public by default
+
+
+146. Persisting the login
+
+-> our Angular app, when the cookies has the HttpOnly flag set, 
+can't access the cookie from 
+
+How we can check if a user is logged in so we can update the header?
+
+-- account.service.ts --
+-> we need to return an observable so we don't .subscribe in the AccountService
+getUserInfo(){
+    return ... .pipe(map(user => {
+        this.currentUser.set(user);
+        return user;
+    }))    
+}
+
+-- init.service.ts --
+-> inject the AccountService
+init(){
+    ...
+    return forkJoin([cart$, this.accountService.getUserInfo()]);
+}
+
+-- login.component.ts --
+-> subscribe to .getUserInfo()
+
+
+Dictionary:
+
+scheduled:
+-> part of RxJS
+-> converts from a common {@link ObservableInput} type to an observable where 
+subscription and emissions are scheduled on the provided scheduler
+
+forkJoin:
+-> allow us for multiple observables to complete and then emits the latest
+values as an array
