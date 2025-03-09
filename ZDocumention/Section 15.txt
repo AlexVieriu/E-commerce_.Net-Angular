@@ -65,3 +65,30 @@ HttpInterceptor     : Interface for intercepting HTTP requests/responses
 
 4. Interceptors
 HttpInterceptor interface with intercept() method for modifying requests/responses
+
+
+143.Introduction to Angular forms 
+
+https://next.angular.dev/guide/forms/reactive-forms
+
+1. FormsModule (Template-driven) : https://next.angular.dev/guide/forms/template-driven-forms
+-> template driven
+-> easy to use
+-> 2 way binding
+-> NgModel directive
+-> minimal component code
+-> automatic tracking by Angular
+-> testing is difficult
+
+2. ReactiveFormsModule (Reactive) : https://next.angular.dev/guide/forms/reactive-forms
+-> flexible 
+-> Immutable data model 
+-> uses observable operators
+-> more complex component code
+-> easier to test
+-> reactive transformations (debounce)
+
+Building blocks of forms:
+-> FormControl
+-> FormGroup
+-> FormArray
