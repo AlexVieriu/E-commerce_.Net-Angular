@@ -215,3 +215,28 @@ subscription and emissions are scheduled on the provided scheduler
 forkJoin:
 -> allow us for multiple observables to complete and then emits the latest
 values as an array
+
+
+147. Adding an auth interceptor
+
+Interceptor:
+-> special type of service that allows you to intercept and modify HTTP requests
+and responses globally before they're handled by your application code
+
+ng g interceptor core/interceptors/auth --skip-tests
+
+-- auth.interceptor.ts --
+{
+    const clonedRequest = req.clone({
+        withCredentials: true
+    });
+
+    return next(clonedRequest);
+}
+
+-- app.appConfig.ts --
+-> add authInterceptor to provideHttpClient
+
+-> remove { withCredentials: true } from account.service.ts
+
+
