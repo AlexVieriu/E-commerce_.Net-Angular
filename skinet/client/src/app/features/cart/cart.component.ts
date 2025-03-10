@@ -5,7 +5,6 @@ import { OrderSummaryComponent } from '../../shared/components/order-summary/ord
 
 @Component({
   selector: 'app-cart',
-  standalone: true,
   imports: [CartItemComponent, OrderSummaryComponent],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss'

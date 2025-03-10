@@ -12,7 +12,6 @@ import { MatDivider } from '@angular/material/divider';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [
     MatIcon,
     MatButton,

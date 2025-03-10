@@ -9,7 +9,6 @@ import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-product-item',
-  standalone: true,
   imports: [
     MatCard,
     MatCardContent,

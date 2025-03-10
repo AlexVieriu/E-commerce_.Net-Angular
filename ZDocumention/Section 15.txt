@@ -255,3 +255,30 @@ https://material.angular.io/components/menu/overview
 MatIcons list:
 https://fonts.google.com/icons
 
+
+149. Adding the register form 
+
+-- register.component.ts --
+-> inject: FormBuilder, AccountService, Router, SnackbarService
+-> create a prop "registerForm" with props: firstName, lastName, email, password
+using FormBuilder with group(): fb.group({...})
+-> onSubmit():
+    -> use register() from AccountService to make a post call to the API
+    -> use next: () => {...} to 
+        -> write a success message
+        -> navigate to the login page
+
+-- register.component.html --
+-> same template as Login.html
+    -> firstName
+    -> lastName
+    -> email
+    -> password
+
+Dictionary:
+
+FormBuilder:
+-> creates an "AbstractControl" from a user-specified configuration
+-> provides syntactic sugar that shortens creating instances of a 
+"FormControl", "FormGroup", or "FormArray"
+-> it reduces the amount of boilerplate needed to build complex forms

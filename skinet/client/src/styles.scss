@@ -44,13 +44,13 @@ button.match-input-height {
 }
 
 .mat-mdc-snack-bar-container.snack-error {
-    --mdc-snack-bar-container-color: red !important;
-    --mat-snack-bar-button-color: white !important;
-    --mdc-snack-bar-supporting-text-color: white !important;
+    --mdc-snackbar-container-color: red;
+    --mat-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
 }
 
 .mat-mdc-snack-bar-container.snack-success {
-    --mdc-snack-bar-container-color: green !important;
-    --mat-snack-bar-button-color: white !important;
-    --mdc-snack-bar-supporting-text-color: white !important;
+    --mdc-snackbar-container-color: green;
+    --mat-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
 }

@@ -13,7 +13,6 @@ import { Product } from '../../../shared/models/products';
 
 @Component({
   selector: 'app-product-details',
-  standalone: true,
   imports: [
     CurrencyPipe,
     MatButton,

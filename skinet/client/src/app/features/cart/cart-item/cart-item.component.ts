@@ -8,7 +8,6 @@ import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-cart-item',
-  standalone: true,
   imports: [RouterLink, MatButton, MatIcon, CurrencyPipe],
   templateUrl: './cart-item.component.html',
   styleUrl: './cart-item.component.scss'
