@@ -282,3 +282,26 @@ FormBuilder:
 -> provides syntactic sugar that shortens creating instances of a 
 "FormControl", "FormGroup", or "FormArray"
 -> it reduces the amount of boilerplate needed to build complex forms
+
+
+150. Form validation - server side check
+
+-> check the server side validation first
+-> we need to see some console error validation int he browser
+
+-- register.component.ts --
+validationErrors?: string[];
+
+onSubmit(){
+    ...
+    error: errors => this.validationErrors = errors
+}
+
+-- register.component.html --
+
+@if(validationErrors) {
+    -> create a @for loop that loops through the validationErrors array    
+}
+
+
+
