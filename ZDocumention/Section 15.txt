@@ -240,3 +240,18 @@ ng g interceptor core/interceptors/auth --skip-tests
 -> remove { withCredentials: true } from account.service.ts
 
 
+148. Adding an Angular Material Menu
+
+-- header.component.ts --
+-> import MatMenu, MatDivider, MatListItem, MatMenuTrigger 
+https://material.angular.io/components/menu/overview
+
+-- header.component.html --
+-> use [matMenuTriggerFor] from Angular Material to store a HTML block for: 
+    -> cart 
+    -> orders
+    -> logout
+
+MatIcons list:
+https://fonts.google.com/icons
+
