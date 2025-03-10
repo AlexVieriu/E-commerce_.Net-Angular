@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCard } from '@angular/material/card';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { AccountService } from '../../../core/services/account.service';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, MatCard, MatFormField, MatLabel, MatInput, MatButton, JsonPipe],
+  imports: [ReactiveFormsModule, MatCard, MatFormField, MatLabel, MatInput, MatButton, JsonPipe, MatError],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -24,10 +24,10 @@ export class RegisterComponent {
   validationErrors?: string[];
 
   registerForm = this.fb.group({
-    firstName: null,
-    lastName: null,
-    email: null,
-    password: null
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    email: ['', Validators.required],
+    password: ['', Validators.required]
   })
 
   onSubmit() {

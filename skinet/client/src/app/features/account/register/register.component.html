@@ -6,6 +6,9 @@
         </div>
 
         <mat-form-field appearance="outline" class="w-full mb-4">
+            @if(registerForm.get('firstName')?.hasError('required')) {
+            <mat-error>First Name is required</mat-error>
+            }
             <mat-label>First Name</mat-label>
             <input formControlName="firstName" type="text" placeholder="John" matInput />
         </mat-form-field>
@@ -35,7 +38,9 @@
         </div>
         }
 
-        <button mat-flat-button type="submit" class="w-full py-2">Register</button>
+        <button [disabled]="registerForm.invalid" mat-flat-button type="submit" class="w-full py-2">
+            Register
+        </button>
     </form>
 </mat-card>
 

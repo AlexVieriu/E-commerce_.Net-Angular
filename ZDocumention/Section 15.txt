@@ -304,4 +304,28 @@ onSubmit(){
 }
 
 
+151. Form validation - client side check
+
+-- register.component.ts --
+-> add Validators.required for each field
+
+registerForm = this.fb.group({
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    email: ['', Validators.required],
+    password: ['', Validators.required]
+})
+
+-> Material adds * automatic to the each field placeholder
+
+-- register.component.html --
+-> add an error message for each field
+
+@if(registerForm.get('firstName')?.hasError('required')) {
+    <mat-error>First Name is required</mat-error>
+}
+
+-> disable the submit button if the form is invalid
+[disabled]="registerForm.invalid"
+
 
