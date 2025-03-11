@@ -568,8 +568,30 @@ return accountService.getAuthState().pipe(
 
 155. Challenge - empty cart guard
 
+ng g g core/guards/emptycart --skip-tests
+
 -> we need a guard that prevent users to get to checkout component
 if they don't have something in there basket
 
 -> when u click on the checkout button, we need to see a red toast message 
 "Your cart is empty" if the cart is empty
+
+
+157. Adding an empty state component
+
+-- empty-state.component.ts --
+MatIcon, MatButton, RouterLink
+
+-- empty-state.component.html --
+-> add shopping_cart icon
+-> add text: "Your shopping cart is empty"
+-> add button: "Go shopping!" with routerLink="/shop">
+
+--empty-state.component.scss --
+.icon-display {
+    transform: scale(3);
+}
+
+-- cart.component.html --
+-> add the new <app-empty-state>
+
