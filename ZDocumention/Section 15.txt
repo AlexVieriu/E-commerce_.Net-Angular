@@ -595,3 +595,14 @@ MatIcon, MatButton, RouterLink
 -- cart.component.html --
 -> add the new <app-empty-state>
 
+
+158. Summary
+-> adding an Account feature
+-> forms in Angular 
+-> reactive forms
+-> reusable form components
+-> client side validation 
+
+Why didn't you cover template forms?
+-> they don't give us any functionality we can't have in Reactive forms
+-> reactive forms are more powerful
