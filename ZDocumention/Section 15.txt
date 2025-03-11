@@ -417,3 +417,110 @@ updateValueAndValidity(), hasError(), getError()
 
 [formControl]
 -> Tracks the FormControl instance bound to the directive
+
+
+153. Creating an auth guard
+ng g --help
+ng g guard core/guards/auth --dry-run
+-> pick "CanActivate" from the list
+
+ng g guard core/guards/auth --skip-tests
+
+-- auth.guard.ts --
+-> inject AccountService and Router
+
+-> if accountService.currentUser() is not null, return true
+-> else, navigate to /account/Login and pass the queryParams to redirect 
+the user back to the page they were trying to access
+
+-- app.routes.ts --
+{ path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
+
+
+-- login.component.ts --
+private activatedRoute = inject(ActivatedRoute);
+returnUrl = '/shop'
+
+constructor() {
+  const url = this.activatedRoute.snapshot.queryParams['returnUrl'];
+  if (url) this.returnUrl = url;
+}
+
+.snapshot -> of type ActivatedRouteSnapshot
+
+Why use .snapshot (that has properties: url, params , queryParams, data,...)
+instead of direct use of .activatedRoute(type: ActivatedRoute) that have the same properties 
+(but they are Observables)?
+
+-> snapshot property gives you immediate access to the current values without subscribing to an Observable
+
+
+Dictionary:
+
+Angular Route Guards 
+https://medium.com/@sehban.alam/everything-you-need-to-know-about-angular-guards-768c21ddbe2b
+
+1. CanActivate 
+    -> determines if a route can be activated(most used)
+    -> determines if a user can access a route
+
+2. CanActivateChild 
+    -> determines if child routes can be activated
+
+3. CanDeactivate
+    -> allows users to leave a page if certain conditions are met
+    -> prevent data loss when editing a form
+
+4. CanMatch
+    -> prevents lazy-loaded modules from loading until conditions are met
+    ->  can improve performance and security
+
+5. Resolve
+    -> fetches data before the route is activated
+    -> useful for ensuring all necessary data is available before rendering
+
+Best Practices for Using Guards
+-> Keep Guards Simple: 
+    -> Guards should contain simple, declarative checks
+    -> For complex logic, move the code to a service
+-> Avoid Heavy Operations in Guards: 
+    -> Avoid API calls within guards, as it can slow down navigation
+    -> Use Resolve guards for pre-fetching data
+-> Combine Guards Wisely: 
+    -> You can combine multiple guards on a single route to control various aspects of navigation
+    -> User Feedback on Blocked Navigation: 
+        -> For example, if a user is redirected due to lack of permissions, show a message explaining why   
+
+
+Types vs Class
+
+Types:
+-> Compile-time only (erased during compilation)
+-> Define data shape/structure
+-> Cannot use new or contain implementation logic
+-> Used for type checking
+
+Classes:
+-> Both types AND runtime objects
+-> Can use new and contain logic/data
+-> Support inheritance
+-> Exist in compiled JavaScript
+
+ActivatedRoute
+-> gives you information about the currently active route
+-> it lets you access route parameters, query parameters, and data associated with the current route
+
+ActivatedRouteSnapshot Properties:
+url        : UrlSegment[];
+params     : Params;
+queryParams: Params;
+fragment   : string | null;
+data       : Data;
+outlet     : string;
+
+ActivatedRouteSnapshot Methods:
+paramMap        - Provides safe access to route parameters with built-in get/has methods
+queryParamMap   - Same as paramMap but for URL query parameters
+data            - Accesses static and resolved data attached to the route
+params          - Direct access to route parameters as a simple object
+root            - Gets the root node of the route tree hierarchy

@@ -24,8 +24,7 @@ export class AccountService {
     url: string, 
     body: any | null, 
     options?: {
-      params?: HttpParams | {
-        [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
+      params?: HttpParams | {[param: string]: string | number | boolean;
         };
       }
     ): Observable<T>;
