@@ -54,7 +54,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
         });
     }
 
-    [HttpGet]
+    [HttpGet("auth-status")]
     public ActionResult GetAuthState()
     {
         return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated });

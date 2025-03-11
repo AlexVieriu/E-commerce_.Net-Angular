@@ -52,6 +52,8 @@ app.UseCors(options => options.AllowAnyHeader()
                               .AllowCredentials()
                               .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 app.MapControllers();
+
+// https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
 app.MapGroup("api").MapIdentityApi<AppUser>();
 
 try // Database Migration

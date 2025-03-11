@@ -15,7 +15,6 @@ import { ShopService } from '../../core/services/shop.service';
 
 @Component({
   selector: 'app-shop',
-  standalone: true,
   imports: [
     ProductItemComponent,
     MatButton,

@@ -5,7 +5,6 @@ import { environment } from '../../../environments/environment.development';
 
 @Component({
     selector: 'app-test-error',
-    standalone: true,
     imports: [
         MatButton
     ],
