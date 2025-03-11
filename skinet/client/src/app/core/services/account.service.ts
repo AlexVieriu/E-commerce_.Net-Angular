@@ -52,4 +52,8 @@ export class AccountService {
   updateAddress(address: any) {
     return this.http.put(this.baseUrl + 'account/address', address);
   }
+
+  getAuthState() {
+    return this.http.get<{ isAuthenticated: boolean }>(this.baseUrl + 'account/auth-status');
+  }
 }

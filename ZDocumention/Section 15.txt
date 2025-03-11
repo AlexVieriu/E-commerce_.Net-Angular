@@ -524,3 +524,45 @@ queryParamMap   - Same as paramMap but for URL query parameters
 data            - Accesses static and resolved data attached to the route
 params          - Direct access to route parameters as a simple object
 root            - Gets the root node of the route tree hierarchy
+
+
+154. Updating the auth guard to use observables
+
+-- auth.guard.ts --
+-> .currentUser() = signal (it's a synchronous functionality)
+-> we have a timing issues 
+-> when we go to the login page, signal immediate check if the user is logged in
+
+Solution:
+-> we need to work with Observables, they are asynchronous
+-> our route guard will w8 for observables but not for signals
+-> we need to return an Observable
+
+-- AccountController.cs --
+ [HttpGet("auth-status")]
+GetAuthState()
+-> check if the user is IsAuthenticated
+-> we send an Observable to this endpoint and w8 for it
+
+-- accountService.ts --
+getAuthState() {
+    return this.http.get<{ isAuthenticated: boolean }>(this.baseUrl + 'account/auth-status');
+}
+
+-- auth.guard.ts --
+
+if (accountService.currentUser()) {
+    return of(true);
+}
+else {
+return accountService.getAuthState().pipe(
+    map(auth => {
+    if (auth.isAuthenticated) {
+        return true;
+    } else
+        router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
+    return false;
+    })
+)
+}
+
