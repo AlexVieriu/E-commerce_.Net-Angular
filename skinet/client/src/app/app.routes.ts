@@ -16,8 +16,8 @@ export const routes: Routes = [
     { path: '', component: HomeComponent },         // Default route
     { path: 'shop', component: ShopComponent },
     { path: 'shop/:id', component: ProductDetailsComponent },
-    { path: 'cart', component: CartComponent, canActivate: [emptycartGuard] },
-    { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
+    { path: 'cart', component: CartComponent },
+    { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard, emptycartGuard] },
     { path: 'account/login', component: LoginComponent },
     { path: 'account/register', component: RegisterComponent },
     { path: 'test-error', component: TestErrorComponent },

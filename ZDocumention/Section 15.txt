@@ -566,3 +566,10 @@ return accountService.getAuthState().pipe(
 )
 }
 
+155. Challenge - empty cart guard
+
+-> we need a guard that prevent users to get to checkout component
+if they don't have something in there basket
+
+-> when u click on the checkout button, we need to see a red toast message 
+"Your cart is empty" if the cart is empty
