@@ -1,0 +1,62 @@
+159. Introduction
+-> creating a Stripe account
+-> PCI DSS Compliance
+-> Strong Customer Authentication
+-> setting up Payment Intents
+-> using Stripe Elements
+-> confirming Card payments
+
+Goal: 
+-> able to accept payments securely globally that complies with EU regulations and PCI DSS regulations
+
+PCI DSS: Payment Card Industry Data Security Standard
+-> set of industry standards
+-> designed to protect payment card data
+-> 12 broad requirements and collectively more than 200 line item requirements
+
+6 key requirements:
+-> building and maintaining a secure network
+-> protecting cardholder data
+-> maintaining a vulnerability management program
+-> implementing strong access control measures
+-> regular monitor and test networks
+-> maintaining an information security policy
+
+PCI DSS non-compliance consequences(don't take credit cards directly):
+-> monthly financial penalties from 5000$ to 100.000$
+-> infringement consequences ($50 to 90$ per card holder whose information has been endangered)
+-> compensation costs
+-> legal action 
+-> damaged reputation
+-> revenue loss
+-> federal audits
+
+Strong Customer Authentication:
+-> EU standards for authenticating online payments
+-> Requires 2 of the 3 elements:
+    -> something that Customer 
+        -> knows (pass or pin)
+        -> has (phone or hardware token)
+        -> is (fingerprint)
+-> Banks will decline payments that require SCA and don't need this criteria
+
+
+-- Stripe without SCA(USA and Canadian payments only) : 16.159.jpg  --
+1. User -> API              : Create order on API
+2. Api -> User -> Stripe    : If successful, make payment to Stripe
+3. Stripe -> User           : Stripe return one time use token if payment is successful
+4. Client -> API            : Client sends token to the API
+5. API -> Stripe            : API sends token to Stripe
+6. Stripe -> Client         : Stripe confirms token
+7. API -> Client            : On success/failure result sent to the Client
+
+
+-- Stripe with SCA(Accept payments globally) --
+1. User -> API      : Create payment intent with API(before payment)
+2. API -> Stripe    : API sends payment intent to Stripe
+3. Stripe -> API    : Stripe returns payment intent returns client secret
+4. API -> Client    : API return client secret to client
+5. USer -> Stripe   : Client sends payment ton Stripe using the client secret
+6. Stripe -> User   : Stripe sends confirmation to the client
+7. User -> API      : Client creates order with API
+8. Stripe -> API    : Stripe sends conformation to API that payment was successful
