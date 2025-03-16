@@ -124,3 +124,30 @@ required:
 -> enforces initialization at runtime
 
 
+161. Setting up Stripe
+https://dashboard.stripe.com/test/dashboard
+
+-> create new account 
+    -> name     : skinet-2024
+    -> country  : United States 
+
+For developers:
+-> publish key  : we give to the client
+-> secret key   : only in our server
+
+-> add the keys on our configuration file
+
+-- API -> appsettings.json --
+-> we save it here, because appsettings.json will not be saved on GitHub
+
+Add Stripe:
+<PackageReference Include="Stripe.net" Version="47.4.0" />
+
+-- Core -> Interfaces -> IPaymentService.cs --
+CreateOrUpdatePaymentIntent(string cartId)
+
+-- Infrastructure -> Services -> PaymentService.cs --
+CreateOrUpdatePaymentIntent(string cartId)
+
+-- Program.cs --
+builder.Services.AddScoped<IPaymentService, PaymentService>();

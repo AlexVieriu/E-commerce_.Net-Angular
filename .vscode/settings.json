@@ -1,3 +1,11 @@
 {
-  "editor.fontSize": 15
+  "editor.fontSize": 15, 
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.json": "${capture}.*.json",
+    "appsettings.json": "appsettings.*.json"
+  },
+  "files.exclude": {
+    "**/*.Development.json": false
+  }
 }
