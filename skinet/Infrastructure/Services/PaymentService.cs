@@ -65,8 +65,6 @@ public class PaymentService(IConfiguration config,
 
                 intent = await serviceIntent.UpdateAsync(cart.PaymentIntentId, options);
             }
-
-
         }
         await cartService.SetCartAsync(cart);
 
