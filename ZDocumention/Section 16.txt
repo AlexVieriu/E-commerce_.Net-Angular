@@ -253,3 +253,27 @@ https://dashboard.stripe.com/test/payments
 -> check Stripe:
 https://dashboard.stripe.com/test/payments
 
+
+154. Checkout page layout
+
+-- checkout.component.ts --
+import : [MatStepperModule]
+
+-- checkout.component.html --
+-> add stepper: 
+https://next.material.angular.io/components/stepper/overview
+
+<mat-stepper>
+<mat-step>
+    -> for: Payment, Delivery, Payment, Review
+
+-- cart.component.html --
+remove :   <div class="mx-auto max-w-screen-xl">
+
+-> remove the checkout button:
+
+-- order-summary.component.ts --
+location = inject(Location); //  from angular/common
+
+-- order-summary.component.html --
+@if(location.path() !== '/checkout') { . . . }
