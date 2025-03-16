@@ -8,3 +8,5 @@ global using StackExchange.Redis;
 global using Stripe;
 global using System.Text.Json;
 global using Product = Core.Entities.Product;
+global using Address = Core.Entities.Address;
+global using File = System.IO.File;

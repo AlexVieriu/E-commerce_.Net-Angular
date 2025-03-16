@@ -25,17 +25,17 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
         context.Set<T>().Remove(entity);
     }
 
-    public async Task<bool> ExistsAsync(int id)
+    public bool Exists(int id)
     {
-        return await context.Set<T>().AnyAsync(x => x.Id == id);
+        return context.Set<T>().Any(x => x.Id == id);
+    }
+    public async Task<IReadOnlyList<T>> GetAllAsync()
+    {
+        return await context.Set<T>().ToListAsync();
     }
 
     public async Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec)
     {
-        // return await context.Set<T>().Where(x =>
-        // (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
-        // (string.IsNullOrWhiteSpace(type) || x.Type == type)).ToListAsync();
-
         return await ApplySpecification(spec).ToListAsync();
     }
 

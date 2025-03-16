@@ -185,3 +185,71 @@ CreateOrUpdatePaymentIntent(string cartId):
             -> update the intentService
 -> setCartService with the new cart created/updated
 -> return cart
+
+
+163. Creating a payment controller
+
+Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent(string cartId)
+-> get the cart by from PaymentService 
+
+Task<ActionResult<IReadOnlyList<DeliveryMethod>>> GetDeliveryMethods()
+
+
+Postman:
+
+-- Update Cart --
+{{localhost}}/api/cart
+
+{
+  "id": "cart1",
+  "items": [
+    {
+      "productId": 17,
+      "productName": "Angular Purple Boots",
+      "price": 1,
+      "quantity": 2,
+      "pictureUrl": "https://localhost:5150/images/products/boot-ang2.png",
+      "brand": "Angular",
+      "type": "Boots"
+    }
+  ]
+}
+
+
+-- Create Payment Intent as tom--
+-> login as tom
+
+{{localhost}}/api/payments/cart1
+
+-> check Stripe:
+https://dashboard.stripe.com/test/payments
+
+
+-- Update Cart - Add payment intent details --
+
+{{localhost}}/api/cart1
+
+{
+    "id": "cart",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 1,
+            "quantity": 2,
+            "pictureUrl": "https://localhost:5150/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    "deliveryMethodId": null,
+    "clientSecret": "pi_3R3IsTGMOucV11Le1oj03Xlr_secret_z00B8mXlWho7KiMf0Fq4cCCUh",
+    "paymentIntentId": "pi_3R3IsTGMOucV11Le1oj03Xlr"
+}
+
+-> check if the intent is updated:  
+    {{localhost}}/api/payments/cart1 
+
+-> check Stripe:
+https://dashboard.stripe.com/test/payments
+

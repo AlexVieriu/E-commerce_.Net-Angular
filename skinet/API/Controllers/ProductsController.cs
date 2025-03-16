@@ -35,7 +35,7 @@ public class ProductsController(IGenericRepository<Product> productRepo) : BaseA
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Product>> UpdateProduct(int id, Product product)
     {
-        var exists = await productRepo.ExistsAsync(id);
+        var exists = productRepo.Exists(id);
         if (id != product.Id || !exists)
             return BadRequest("Can't update product");
 
