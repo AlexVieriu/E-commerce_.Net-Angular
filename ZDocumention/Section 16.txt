@@ -151,3 +151,37 @@ CreateOrUpdatePaymentIntent(string cartId)
 
 -- Program.cs --
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+
+162. Implementing the payment intent
+
+-- ShoppingCart.cs --
+-> add PaymentIntentId, ClientSecret, DeliveryMethodId
+
+-- PaymentService.cs --
+
+Services needed:
+-> IConfiguration
+-> ICartService
+-> IGenericRepository<Product>
+-> IGenericRepository<DeliveryMethod>
+
+CreateOrUpdatePaymentIntent(string cartId):
+-> get SecretKey from configuration (appsettings.json)
+-> get cart from Redis
+-> if cart.DeliveryMethodId.HasValue
+    -> get delivery method
+    -> calculate shipping price
+-> for each item in the cart
+    -> get the Product
+    -> check if the price has changed
+    -> create PaymentIntentService obj
+    -> create PaymentIntent
+        -> if no PaymentIntentId, create a PaymentIntentCreateOptions obj
+            -> update amount, currency, payment method
+            -> create the intentService
+        -> else create a PaymentIntentUpdateOptions obj
+            -> update amount 
+            -> update the intentService
+-> setCartService with the new cart created/updated
+-> return cart
