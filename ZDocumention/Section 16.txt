@@ -60,3 +60,67 @@ Strong Customer Authentication:
 6. Stripe -> User   : Stripe sends confirmation to the client
 7. User -> API      : Client creates order with API
 8. Stripe -> API    : Stripe sends conformation to API that payment was successful
+
+
+160. Creating the delivery methods in the API 
+
+-- Core -> Entities -> DeliveryMethod.cs --
+-> Id, ShortName, DeliveryTime, Description, Price
+
+-- Infrastructure -> Config -> ProductConfiguration.cs --
+-> inherits from IEntityTypeConfiguration
+-> implement Configure()
+ -> add .Price property with decimal(18,2)
+
+-- StoreContext.cs --
+-> add DbSet<DeliveryMethod>
+
+-- Infrastructure -> Data -> Seed Data -> delivery.json --
+
+-- StoreContextSeed.cs --
+-> add delivery methods
+
+Create a new migration:
+-> we need to be in the skinet folder
+cd .. 
+dotnet ef migrations add DeliveryMethodsAdded -s API -p Infrastructure
+-> double check the migration file
+cd API
+dotnet watch
+
+
+Dictionary: 
+
+-- IEntityTypeConfiguration --
+https://learn.microsoft.com/en-us/ef/core/modeling/ 
+
+->  enables you to separate entity configuration logic from your DbContext, following 
+a "configuration class per entity" pattern
+-> each entity gets its own dedicated configuration class
+
+-- EntityTypeBuilder --
+https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.metadata.builders.entitytypebuilder?view=efcore-9.0
+
+-> a fluent API that provides methods for configuring various aspects of your entity
+    -> Primary keys and alternate keys
+    -> Relationships between entities
+    -> Property constraints (required, length, etc.)
+    -> Indexes
+    -> Default values
+    -> Table mapping
+    -> Shadow properties
+
+-> this approach significantly improves code organization in larger projects with many entities, 
+keeping your configurations clean, focused, and maintainable
+
+
+required vs [Required]
+https://stackoverflow.com/questions/75891221/required-vs-required-in-c-sharp-11
+
+required:
+-> enforces initialization at compile time
+
+[Required]
+-> enforces initialization at runtime
+
+
