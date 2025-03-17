@@ -277,3 +277,122 @@ location = inject(Location); //  from angular/common
 
 -- order-summary.component.html --
 @if(location.path() !== '/checkout') { . . . }
+
+
+165. Adding client side Stripe
+
+cd skinet/client
+npm install @stripe/stripe-js 
+
+-> we want a single instance of Stripe it our app
+-> create a StripeService
+ng g s core/services/stripe --skip-tests
+
+-> we need the stripe publishable key
+
+-- environment.developments.ts --
+-> public key: https://dashboard.stripe.com/test/dashboard
+stripePublicKey: 'pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4'
+
+-- environment.ts --
+stripePublicKey: 'pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4'
+
+-- cart.ts --
+deliveryMethodId?: number;
+paymentIntentId?: string;
+clientSecret?: string;
+
+-- cartType.ts --
+deliveryMethodId?: number;
+paymentIntentId?: string;
+clientSecret?: string;
+
+-- stripe.service.ts --
+baseUrl = environment.apiUrl;
+private stripePromise: Promise<Stripe | null>
+private http = inject(HttpClient);
+private cartService = inject(CartService);
+private elements?: StripeElements;
+
+getStripePromise()
+-> return the stripePromise
+
+createOrUpdatePaymentIntent()
+-> get the cart from the cartService
+-> if no cart, throw an error
+-> return the cart (post<Cart>)
+    -> use pipe(map(cart => {
+        -> to update the cart in the cartService
+        -> return cart 
+    })) 
+
+initializeStripeElements()
+-> check for are elements (stripePublicKey, StripeConstructorOptions )
+    -> get elements: .getStripePromise()
+    -> if are elements 
+        -> get the cart: createOrUpdatePaymentIntent()
+            -> goes to the API, PaymentController
+                -> then go to the Infrastructure.proj, for the implementation                
+        -> set elements with clientSecret, appearance
+    -> if no elements throw an error 
+-> return elements
+
+
+Dictionary:
+
+export const loadStripe: (
+  publishableKey: string,
+  options?: StripeConstructorOptions | undefined
+) => Promise<Stripe | null>;
+
+StripeConstructorOptions:
+-> stripeAccount    : For Connect applications, specifies the connected account ID
+-> apiVersion       : Sets a specific Stripe API version to use
+-> locale           : Sets the locale for translations (e.g., 'en', 'fr', 'de')
+-> betas            : Optional array of beta features to enable
+
+-- StripeElements (interface) 
+https://docs.stripe.com/payments/elements
+-> is a set of prebuilt UI components for building your web checkout flow
+-> a feature of Stripe.js, our foundational JS library for building payment flows
+-> Stripe.js tokenizes sensitive payment details within an Element without ever having them touch your server
+
+1. Imports
+-> StripePaymentElement, StripeCardElement, StripeAddressElement, 
+and their associated options from an elements module, as well as StripeError from stripe
+
+2. StripeElements Interface
+-> update(options)          : Updates the configuration of Elements
+-> on(eventType, handler)   : Handles events like updates
+-> fetchUpdates()           : Fetches updates from a PaymentIntent or SetupIntent
+-> submit()                 : Submits payment details for validation and collection
+
+3. Element Creation and Retrieval
+-> address
+-> card, cardNumber, cardExpiry, cardCvc
+-> payment
+-> paymentRequestButton
+-> linkAuthentication
+-> iban, idealBank, p24Bank, fpxBank
+-> affirmMessage, afterpayClearpayMessage
+-> issuingCardNumberDisplay, issuingCardCvcDisplay
+
+4. Element Types
+-> Defines supported element types (StripeElementType) and their corresponding instances (StripeElement)
+
+5. Configuration Options
+StripeElementsOptions and StripeElementsUpdateOptions provide 
+settings for initialization and updates, including:
+-> locale
+-> appearance (for styling)
+-> paymentMethodTypes
+-> customerOptions
+-> captureMethod (manual or automatic capture)
+-> clientSecret for authentication
+
+6. Customization and Styling
+-> defines Appearance settings to configure the look and feel of the elements
+-> supports custom fonts through CssFontSource and CustomFontSource
+
+7. Payment Method Support
+-> visa, mastercard, amex, jcb
