@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
+import { loadStripe, Stripe, StripeAddressElement, StripeAddressElementOptions, StripeElements } from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from './cart.service';
@@ -16,6 +16,7 @@ export class StripeService {
   private http = inject(HttpClient);
   private cartService = inject(CartService);
   private elements?: StripeElements;
+  private addressElement?: StripeAddressElement;
 
   constructor() {
     this.stripePromise = loadStripe(environment.stripePublicKey);
@@ -50,5 +51,22 @@ export class StripeService {
       }
     }
     return this.elements;
+  }
+
+  async createAddressElement() {
+    if (!this.addressElement) {
+      const elements = await this.initializeStripeElements();
+      if (elements) {
+        const options: StripeAddressElementOptions = {
+          // when we use shipping, when it gets to payment option, they are ask if they wanna use 
+          // the same address for shipping and billing          
+          mode: 'shipping',
+        }
+        this.addressElement = elements.create('address', options);
+      }
+      else
+        throw new Error("Stripe Elements is not initialized");
+    }
+    return this.addressElement
   }
 }

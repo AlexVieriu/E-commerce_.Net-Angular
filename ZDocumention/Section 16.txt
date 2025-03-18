@@ -396,3 +396,57 @@ settings for initialization and updates, including:
 
 7. Payment Method Support
 -> visa, mastercard, amex, jcb
+
+
+166. Creating the address elements
+
+-- stripe.service.ts --
+
+createAddressElement()
+-> initializeStripeElements()
+    -> if (elements)
+        -> use mode: 'shipping'
+    -> else throw Error
+-> return addressElement
+
+
+-- checkout.component.html --
+-> button for with routerLink   : "Continue shopping"
+-> button for matStepperNext    : "Next"
+
+
+Dictionary:
+
+-- StripeAddressElement --
+-> type StripeAddressElement = StripeElementBase & {
+    on(...)
+    once(...)
+    off(...)    
+}
+
+-> on(), once(), off() have 2 parameters: eventType, handler
+    -> depending on the value given to eventType and handler, ca do different things
+    
+-- StripeElementBase --
+-> properties: 
+    -> mount(domElement: string | HTMLElement): void;
+    -> blur(): void;
+    -> clear(): void;
+    -> destroy(): void;
+    -> focus(): void;
+    -> unmount(): void;
+
+mount():
+-> `element.mount` method attaches your element to the DOM
+-> `element.mount` accepts either a CSS Selector (e.g., `'#card-element'`) or a DOM element
+-> you need to create a container DOM element to mount an `Element`
+-> if the container DOM element has a label, the `Element` 
+is automatically focused when its label is clicked.
+
+
+ngOnInit():
+-> a lifecycle hook in Angular that runs exactly once after the first change detection 
+cycle checks a component's data-bound props, but before any child components are checked
+-> ideal place to perform one-time initialization tasks that require bound properties to be 
+available
+

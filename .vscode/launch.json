@@ -1,11 +1,6 @@
 {
   "version": "0.2.0",
-  "configurations": [        
-    {
-      "name": ".NET Core Attach",
-      "type": "coreclr",
-      "request": "attach"      
-    },
+  "configurations": [
     {
       "name": "C#: API Debug",
       "type": "dotnet",
@@ -17,14 +12,17 @@
       "request": "launch",
       "type": "chrome",
       "url": "http://localhost:4200",
-      "webRoot": "${workspaceFolder}\\skinet\\client", 
-      "preLaunchTask": "npm: start"      
-    },     
-  ]  , 
-  "compounds": [
-    {
-      "name": "Compound",
-      "configurations": ["C#: API Debug", "Angular"]
-    }
-  ]
+      "webRoot": "${workspaceFolder}\\skinet\\client",
+      "preLaunchTask": "npm: start",
+      "skipFiles": [
+        "chrome-error:\u002F\u002F*"
+      ],
+      "timeout": 30000,
+      "serverReadyAction": {
+        "pattern": "Compiled successfully",
+        "uriFormat": "http://localhost:4200",
+        "action": "openExternally"
+      }
+    },
+  ],
 }
