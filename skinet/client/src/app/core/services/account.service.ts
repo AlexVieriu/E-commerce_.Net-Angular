@@ -19,16 +19,6 @@ export class AccountService {
     // adding a parameter named 'useCookies' with the value 'true'
     params = params.append('useCookies', true);
 
-    /*
-    post<T>(
-    url: string, 
-    body: any | null, 
-    options?: {
-      params?: HttpParams | {[param: string]: string | number | boolean;
-        };
-      }
-    ): Observable<T>;
-    */
     return this.http.post<User>(this.baseUrl + 'login', values, { params });
   }
 

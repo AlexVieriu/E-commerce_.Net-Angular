@@ -6,6 +6,7 @@ import { CartService } from './cart.service';
 import { Cart } from '../../shared/models/cart';
 import { map } from 'rxjs/internal/operators/map';
 import { firstValueFrom } from 'rxjs';
+import { AccountService } from './account.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,10 +14,12 @@ import { firstValueFrom } from 'rxjs';
 export class StripeService {
   baseUrl = environment.apiUrl;
   private stripePromise: Promise<Stripe | null>
-  private http = inject(HttpClient);
-  private cartService = inject(CartService);
   private elements?: StripeElements;
   private addressElement?: StripeAddressElement;
+
+  private http = inject(HttpClient);
+  private cartService = inject(CartService);
+  private accountService = inject(AccountService);
 
   constructor() {
     this.stripePromise = loadStripe(environment.stripePublicKey);
@@ -57,10 +60,28 @@ export class StripeService {
     if (!this.addressElement) {
       const elements = await this.initializeStripeElements();
       if (elements) {
+        const user = this.accountService.currentUser();
+        let defaultValues: StripeAddressElementOptions['defaultValues'] = {};
+
+        if (user)
+          defaultValues.name = user.firstName + ' ' + user.lastName;
+
+        if (user?.address) {
+          defaultValues.address = {
+            line1: user.address.line1,
+            line2: user.address.line2,
+            city: user.address.city,
+            state: user.address.state,
+            postal_code: user.address.postalCode,
+            country: user.address.country
+          }
+        }
+
         const options: StripeAddressElementOptions = {
           // when we use shipping, when it gets to payment option, they are ask if they wanna use 
           // the same address for shipping and billing          
           mode: 'shipping',
+          defaultValues: defaultValues
         }
         this.addressElement = elements.create('address', options);
       }
@@ -68,5 +89,10 @@ export class StripeService {
         throw new Error("Stripe Elements is not initialized");
     }
     return this.addressElement
+  }
+
+  disposeElements() {
+    this.addressElement = undefined;
+    this.elements = undefined;
   }
 }

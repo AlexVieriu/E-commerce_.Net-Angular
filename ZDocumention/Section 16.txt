@@ -463,3 +463,55 @@ cycle checks a component's data-bound props, but before any child components are
 -> ideal place to perform one-time initialization tasks that require bound properties to be 
 available
 
+
+167. Populating the address in the address form 
+
+-> check what we have for the current User
+Postman: Section 14 -> get current user
+{{localhost}}/api/account/user-info
+
+-- stripe.service.ts --
+private accountService = inject(AccountService);
+
+async createAddressElement() {
+    ...
+
+    const user = this.accountService.currentUser();
+    let defaultValues: StripeAddressElementOptions['defaultValues'] = {};
+            if (user)
+        defaultValues.name = user.firstName + ' ' + user.lastName;
+
+    if (user?.address) {
+        defaultValues.address = {
+        -> add all fields
+        }
+    }
+}
+
+Test the functionality:
+-> need to populate the address in the /checkout page
+
+!! We need to reset all the elements when another user is logged in !!
+
+-- stripe.service.ts --
+
+ disposeElements() {
+    this.addressElement = undefined;
+    this.elements = undefined;
+}
+
+-- checkout.component.ts --
+ngOnDestroy(): void {
+    this.stripeService.disposeElements();
+}
+
+
+Dictionary:
+
+-- Angular lifecycle --
+https://angular.dev/guide/components/lifecycle
+
+ngOnDestroy()
+-> The ngOnDestroy method runs once just before a component is destroyed
+-> Angular destroys a component when it is no longer shown on the page, 
+such as being hidden by @if or upon navigating to another page
