@@ -414,6 +414,20 @@ createAddressElement()
 -> button for with routerLink   : "Continue shopping"
 -> button for matStepperNext    : "Next"
 
+-- checkout.component.ts --
+private stripeService = inject(StripeService);
+private snackBar = inject(SnackbarService);
+addressElement?: StripeAddressElement
+
+async ngOnInit() 
+try {
+   ->  get the addressElement from stripe: .createAddressElement()
+   ->  mount the addressElement on the DOM
+}
+catch{
+    -> catch the error with the SnackbarService
+}
+
 
 Dictionary:
 
@@ -442,7 +456,6 @@ mount():
 -> you need to create a container DOM element to mount an `Element`
 -> if the container DOM element has a label, the `Element` 
 is automatically focused when its label is clicked.
-
 
 ngOnInit():
 -> a lifecycle hook in Angular that runs exactly once after the first change detection 

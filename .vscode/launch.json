@@ -8,21 +8,28 @@
       "projectPath": "${workspaceFolder}\\skinet\\API\\API.csproj"
     },
     {
-      "name": "Angular",
-      "request": "launch",
+      "name": "Angular Debug",
       "type": "chrome",
-      "url": "http://localhost:4200",
-      "webRoot": "${workspaceFolder}\\skinet\\client",
+      "request": "launch",
       "preLaunchTask": "npm: start",
-      "skipFiles": [
-        "chrome-error:\u002F\u002F*"
-      ],
-      "timeout": 30000,
-      "serverReadyAction": {
-        "pattern": "Compiled successfully",
-        "uriFormat": "http://localhost:4200",
-        "action": "openExternally"
+      "url": "https://localhost:4200/",
+      "webRoot": "${workspaceFolder}\\skinet\\client",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/src/*",
+        "/*": "*",
+        "/./~/*": "${webRoot}/node_modules/*"
       }
-    },
+    }
   ],
+  "compounds": [
+    {
+      "name": "Debug API & Angular",
+      "configurations": [
+        "C#: API Debug",
+        "Angular Debug"
+      ]
+    }
+  ]
 }

@@ -31,7 +31,7 @@ export class StripeService {
     if (!cart)
       throw new Error("Cart is empty");
 
-    return this.http.post<Cart>(this.baseUrl + 'payments/', cart?.id, {}).pipe(
+    return this.http.post<Cart>(this.baseUrl + 'payments/' + cart?.id, {}).pipe(
       map(cart => {
         this.cartService.cart.set(cart);
         return cart;
