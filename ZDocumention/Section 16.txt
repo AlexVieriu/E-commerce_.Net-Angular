@@ -636,3 +636,59 @@ https://material.angular.io/components/radio/overview
 imports: [MatRadioModule, CurrencyPipe]
 
 -- checkout-delivery.component.html --
+
+
+171. Creating the delivery component part3
+
+-> we use signal to change the Delivery fee when we click the radio button
+
+-- cart.service.ts --
+selectedDelivery = signal<DeliveryMethod | null>(null);
+
+total = computed(() => {
+    const delivery = this.selectedDelivery();
+    . . .
+    const shipping = delivery ? delivery.price : 0;
+})
+
+-- checkout-delivery.component.ts --
+ngOnInit(): void {
+    this.checkoutService.getDeliveryMethods().subscribe({
+        next: methods => {
+        if (this.cartService.cart()?.deliveryMethodId) {
+            const method = methods.find(m => m.id === this.cartService.cart()?.deliveryMethodId);
+            if (method) {
+            this.cartService.selectedDelivery.set(method);
+            }
+        };        
+        }
+    });
+}
+
+updateDeliveryMethod(method: DeliveryMethod) {
+    this.cartService.selectedDelivery.set(method);
+    const cart = this.cartService.cart();
+    if (cart) {
+        cart.deliveryMethodId = method.id;
+        this.cartService.setCartAsync(cart); // will update the redis DB also
+    }
+}
+
+-- checkout-delivery.component.html --
+-> update <mat-radio-group>
+
+<mat-radio-group class="grid grid-cols-2 gap-4" [value]="cartService.selectedDelivery()?.id"
+    (change)="updateDeliveryMethod($event.value)">
+. . .
+    <mat-radio-button class="w-full h-full" [value]="method"
+    [checked]="cartService.selectedDelivery()=== method">
+    . . .
+
+-- checkout.component.ts --
+
+async onStepChange(event: StepperSelectionEvent) {
+    . . .
+    if (event.selectedIndex === 2) {
+      await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+    }
+}
