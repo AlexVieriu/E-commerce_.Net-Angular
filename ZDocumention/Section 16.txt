@@ -589,3 +589,39 @@ Purpose      : Transform data
 Behavior     : Takes each value from the source Observable, applies a transformation function, and emits the transformed value
 Use cases    : Converting data formats, extracting specific properties, or calculations based on incoming values
 Return value : New values based on the transformation function
+
+
+169. Creating the delivery component part1 
+
+-- client -> src -> app -> models -> shared -- 
+-- deliveryMethod.ts --
+-> shortName, deliveryTime, description, price, id
+
+-> creating a component for each checkout-step
+
+cd skinet/client
+ng g c features/checkout/checkout-delivery --skip-tests
+
+-- checkout.component.ts --
+baseUrl = environment.apiUrl;
+deliveryMethods: DeliveryMethod[] = [];
+private http = inject(HttpClient);
+
+getDeliveryMethods(){
+    -> if we have deliveryMethods, return them
+    -> else, use http to get them
+        -> use .pipe(map ... ) to sort them by price
+}
+
+-- checkout-delivery.component.ts --
+  checkoutService = inject(CheckoutService);
+
+  ngOnInit(): void {
+    this.checkoutService.getDeliveryMethods().subscribe();
+  }
+
+  -- checkout.component.html --
+<app-checkout-delivery>
+    <button matStepperPrevious mat-stroked-button>Back</button>
+    <button matStepperNext mat-flat-button>Next</button>
+</app-checkout-delivery>

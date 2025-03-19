@@ -15,7 +15,10 @@
                 </div>
             </mat-step>
             <mat-step label="Shipping">
-                Delivery form
+                <app-checkout-delivery>
+                    <button matStepperPrevious mat-stroked-button>Back</button>
+                    <button matStepperNext mat-flat-button>Next</button>
+                </app-checkout-delivery>
             </mat-step>
             <mat-step label="Payment">
                 Payment form
