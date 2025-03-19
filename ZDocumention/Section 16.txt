@@ -515,3 +515,77 @@ ngOnDestroy()
 -> The ngOnDestroy method runs once just before a component is destroyed
 -> Angular destroys a component when it is no longer shown on the page, 
 such as being hidden by @if or upon navigating to another page
+
+
+168. Save the address as default address
+
+https://material.angular.io/components/checkbox/overview
+
+-- account.service.ts --
+
+-> add .pipe to updateAddress()
+-> use tap() instead of map(), for NOT interfere with the Observable, only to have side affects
+
+updateAddress(address: any){
+    . . . .pipe(
+    tap(() => {
+    this.currentUser.update(user => {
+        if (user)
+        user.address = address;
+        return user;
+    });
+}))}
+
+-- checkout.component.ts --
+imports: MatPseudoCheckboxModule
+
+accountService = inject(AccountService);
+saveAddress = false;
+
+onSaveAddressCheckboxChange(event: MatCheckboxChange) {
+    this.saveAddress = event.checked;
+}
+
+  async onStepChange(event: StepperSelectionEvent) {
+    // index = 1 -> i moved to the next step 
+    if (event.previouslySelectedIndex === 1) {
+      if (this.saveAddress) {
+        const address = await this.getAddressFromStripeAddress();
+
+        address && firstValueFrom(this.accountService.updateAddress(address));
+      }
+    }
+  }
+
+async getAddressFromStripeAddress(): Promise<Address | null> {
+    ...
+}
+
+
+-- checkout.component.html --
+<mat-stepper 
+    (selectionChange)="onStepChange($event)"
+    . . .
+    
+    <mat-checkbox [checked]="saveAddress" (change)="onSaveAddressCheckboxChange($event)">
+        Save as default address
+    </mat-checkbox>
+
+
+
+Dictionary: 
+
+tap() vs map():
+-> operators in RxJS
+
+-- tap() --
+Purpose      : Side effects without changing the data
+Behavior     : Intercepts the Observable stream to perform actions but passes the original values unchanged
+Use cases    : Logging, triggering UI updates, or performing operations that don't affect the data flow
+Return value : Same values from the source Observable
+
+-- map() --
+Purpose      : Transform data
+Behavior     : Takes each value from the source Observable, applies a transformation function, and emits the transformed value
+Use cases    : Converting data formats, extracting specific properties, or calculations based on incoming values
+Return value : New values based on the transformation function
