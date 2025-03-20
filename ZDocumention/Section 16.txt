@@ -783,3 +783,14 @@ cartService = inject(CartService);
 
 
 -- checkout-review.component.html --
+
+
+174. Stripe address auto complete functionality
+
+-- checkout.component.html --
+-> use class="z-0" to make sure that the address element is on top
+
+
+Dictionary:
+z-index determines the stacking order of elements on a webpage when they overlap.
+
