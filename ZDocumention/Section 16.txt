@@ -905,3 +905,21 @@ From:
     handleAddressChange(event: StripeAddressElementChangeEvent) { ... }
 To: 
     handleAddressChange = (event: StripeAddressElementChangeEvent) => { ... }
+
+
+175. Validating step completion part 2    
+
+-- checkout.component.html --
+<mat-stepper (selectionChange)="onStepChange($event)" [linear]="true" . . .
+     <mat-step label="Address" [completed]="completionStatus().address">
+        . . .
+        <button [disabled]="!completionStatus().address" mat-flat-button>Next</button>
+     . . .
+     <mat-step label="Shipping" [completed]="completionStatus().delivery">
+        . . . 
+        <button [disabled]="!completionStatus().delivery" class="z-0" matStepperNext mat-flat-button>Next</button>
+     . . .
+     <mat-step label="Payment" [completed]="completionStatus().card">
+        . . .
+        <button [disabled]="!completionStatus().card" matStepperNext mat-flat-button>Next</button>
+
