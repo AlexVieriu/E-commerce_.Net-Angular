@@ -89,7 +89,7 @@ cd API
 dotnet watch
 
 
-Dictionary: 
+-- Dictionary -- 
 
 -- IEntityTypeConfiguration --
 https://learn.microsoft.com/en-us/ef/core/modeling/ 
@@ -338,7 +338,7 @@ initializeStripeElements()
 -> return elements
 
 
-Dictionary:
+-- Dictionary --
 
 export const loadStripe: (
   publishableKey: string,
@@ -429,7 +429,7 @@ catch{
 }
 
 
-Dictionary:
+-- Dictionary --
 
 -- StripeAddressElement --
 -> type StripeAddressElement = StripeElementBase & {
@@ -506,7 +506,7 @@ ngOnDestroy(): void {
 }
 
 
-Dictionary:
+-- Dictionary --
 
 -- Angular lifecycle --
 https://angular.dev/guide/components/lifecycle
@@ -573,7 +573,7 @@ async getAddressFromStripeAddress(): Promise<Address | null> {
 
 
 
-Dictionary: 
+-- Dictionary --
 
 tap() vs map():
 -> operators in RxJS
@@ -736,7 +736,7 @@ suggestions of addresses
 https://support.stripe.com/questions/chrome-third-party-cookie-warnings-for-websites-using-stripe-js
 
 
-Dictionary:
+-- Dictionary --
 
 StripeElement methods:
 update(...)
@@ -791,7 +791,7 @@ cartService = inject(CartService);
 -> use class="z-0" to make sure that the address element is on top
 
 
-Dictionary:
+-- Dictionary --:
 z-index determines the stacking order of elements on a webpage when they overlap.
 
 
@@ -866,7 +866,7 @@ handleDeliveryChange(event: boolean) {
     <app-checkout-delivery (deliveryComplete)="handleDeliveryChange($event)" />
 
 
-Dictionary:
+-- Dictionary --:
 
 <pre>
 -> preserve whitespace and formatting, making the JSON output readable 
@@ -907,7 +907,7 @@ To:
     handleAddressChange = (event: StripeAddressElementChangeEvent) => { ... }
 
 
-175. Validating step completion part 2    
+176. Validating step completion part 2    
 
 -- checkout.component.html --
 <mat-stepper (selectionChange)="onStepChange($event)" [linear]="true" . . .
@@ -923,3 +923,38 @@ To:
         . . .
         <button [disabled]="!completionStatus().card" matStepperNext mat-flat-button>Next</button>
 
+
+177. Creating a Stripe confirmation token
+
+-- stripe.service.ts --
+async createConfirmationToken() {
+-> get stripe
+-> get elements
+-> get result from elements.submit()
+-> if result.error then throw error
+-> if stripe then create confirmation token 
+-> else throw new Error
+}
+
+-- checkout.component.ts --
+confirmationToken?: ConfirmationToken;
+
+async getConfirmationToken() {
+-> put all in a try/catch block 
+-> check if every completionStatus.(address, card, delivery) is true     
+    -> create the token stripeService.createToken();
+    -> get the confirmationToken
+    -> else throw Error
+-> else throw Error
+}
+
+async onStepChange(event: StepperSelectionEvent) {
+   if (event.selectedIndex === 3) 
+      await this.getConfirmationToken();    
+}
+
+-- Dictionary -- 
+
+.submit()
+-> before confirming payment, call elements.submit() to validate the state of the
+Payment Element and collect any data required for wallets

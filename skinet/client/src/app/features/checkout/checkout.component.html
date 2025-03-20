@@ -11,7 +11,7 @@
                 </div>
                 <div class="flex justify-between mt-6">
                     <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
-                    <button [disabled]="!completionStatus().address" mat-flat-button>Next</button>
+                    <button [disabled]="!completionStatus().address" matStepperNext mat-flat-button>Next</button>
                 </div>
             </mat-step>
             <mat-step label="Shipping" [completed]="completionStatus().delivery">
