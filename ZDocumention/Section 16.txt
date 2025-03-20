@@ -757,3 +757,29 @@ create(
   elementType: 'payment',
   options?: StripePaymentElementOptions
 ): StripePaymentElement;
+
+
+173. Creating the review component
+
+cd skinet/client
+ng g c features/checkout/checkout-review --skip-tests
+
+-- checkout.component.ts --
+import: [CurrencyPipe]
+
+cartService = inject(CartService);
+
+
+-- checkout.component.html --
+-> add <app-checkout-review>
+-> back button 
+-> button for: Pay {{cartService.totals()?.total | currency}}
+
+
+-- checkout-review.component.ts --
+import: [CurrencyPipe]
+
+cartService = inject(CartService);
+
+
+-- checkout-review.component.html --
