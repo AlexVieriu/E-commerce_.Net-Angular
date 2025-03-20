@@ -12,9 +12,11 @@ import { AccountService } from './account.service';
 })
 export class StripeService {
   baseUrl = environment.apiUrl;
+
   private cartService = inject(CartService);
   private accountService = inject(AccountService);
   private http = inject(HttpClient);
+
   private stripePromise: Promise<Stripe | null>;
   private elements?: StripeElements;
   private addressElement?: StripeAddressElement;
@@ -35,7 +37,8 @@ export class StripeService {
         const cart = await firstValueFrom(this.createOrUpdatePaymentIntent());
         this.elements = stripe.elements(
           { clientSecret: cart.clientSecret, appearance: { labels: 'floating' } })
-      } else {
+      }
+      else {
         throw new Error('Stripe has not been loaded');
       }
     }
@@ -46,6 +49,7 @@ export class StripeService {
     if (!this.paymentElement) {
       const elements = await this.initializeElements();
       if (elements) {
+        // .create(..) ->  https://docs.stripe.com/payments/payment-element
         this.paymentElement = elements.create('payment');
       } else {
         throw new Error('Elements instance has not been initialized');
@@ -90,7 +94,9 @@ export class StripeService {
 
   createOrUpdatePaymentIntent() {
     const cart = this.cartService.cart();
-    if (!cart) throw new Error('Problem with cart');
+    if (!cart)
+      throw new Error('Problem with cart');
+
     return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
       map(cart => {
         this.cartService.setCartAsync(cart);
@@ -104,5 +110,4 @@ export class StripeService {
     this.addressElement = undefined;
     this.paymentElement = undefined;
   }
-
 }

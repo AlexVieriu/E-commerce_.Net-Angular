@@ -692,3 +692,68 @@ async onStepChange(event: StepperSelectionEvent) {
       await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
     }
 }
+
+
+172. Creating the payment element
+
+-- stripe.service.ts --
+private paymentElement?: StripePaymentElement;
+
+async createPaymentElement() {
+    -> check if any paymentElement is already created
+    -> if not, create one: this.initializeElements()
+        -> if we have element = { clientSecret: cart.clientSecret, appearance: { labels: 'floating' }}
+            -> create a StripePaymentElement(it's payment template): elements.create('payment');
+        -> throw exception
+    -> return paymentElement
+}
+
+disposeElements() {
+    . . .
+    this.paymentElement = undefined;
+}
+
+-- checkout.component.html --
+-> create a payment element
+
+-- checkout.component.ts --
+paymentElement?: StripePaymentElement
+
+async ngOnInit() {
+    . . . 
+    this.paymentElement = await this.stripeService.createPaymentElement();
+    this.paymentElement?.mount('#payment-element');    
+}
+
+-> on the localhost:4200/checkout, on the Address 1, we have support from Google for 
+suggestions of addresses
+
+
+!! We have a lot of warnings in Google Chrome from Stripes !!
+-> use Console -> filter to remove them:
+-utf8 -apple -google -third-party
+
+https://support.stripe.com/questions/chrome-third-party-cookie-warnings-for-websites-using-stripe-js
+
+
+Dictionary:
+
+StripeElement methods:
+update(...)
+on(...)
+fetchUpdates(...)
+submit(...)
+
+Creating other elements from StripeElement:
+
+AddressElement:
+create(
+  elementType: 'address',
+  options: StripeAddressElementOptions
+): StripeAddressElement;
+
+PaymentElement:
+create(
+  elementType: 'payment',
+  options?: StripePaymentElementOptions
+): StripePaymentElement;
