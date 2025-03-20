@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, output } from '@angular/core';
 import { CheckoutService } from '../../../core/services/checkout.service';
 import { MatRadioModule } from '@angular/material/radio';
 import { CurrencyPipe } from '@angular/common';
@@ -15,6 +15,9 @@ export class CheckoutDeliveryComponent implements OnInit {
   checkoutService = inject(CheckoutService);
   cartService = inject(CartService);
 
+  // affect parent component from child component
+  deliveryComplete = output<boolean>();
+
   ngOnInit(): void {
     this.checkoutService.getDeliveryMethods().subscribe({
       next: methods => {
@@ -22,6 +25,7 @@ export class CheckoutDeliveryComponent implements OnInit {
           const method = methods.find(m => m.id === this.cartService.cart()?.deliveryMethodId);
           if (method) {
             this.cartService.selectedDelivery.set(method);
+            this.deliveryComplete.emit(true); // affect parent property from child component
           }
         };
       }
@@ -34,6 +38,7 @@ export class CheckoutDeliveryComponent implements OnInit {
     if (cart) {
       cart.deliveryMethodId = method.id;
       this.cartService.setCartAsync(cart); // will update the redis DB also
+      this.deliveryComplete.emit(true); // affect parent property from child component
     }
   }
 }

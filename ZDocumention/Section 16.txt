@@ -794,3 +794,114 @@ cartService = inject(CartService);
 Dictionary:
 z-index determines the stacking order of elements on a webpage when they overlap.
 
+
+175. Validating step completion part 1
+
+ * Create a `Signal` that can be set or updated directly
+ declare function signal<T>(initialValue: T, options?: CreateSignalOptions<T>): WritableSignal<T>;
+
+-- checkout.component.ts --
+import: [JsonPipe]
+
+completionStatus = signal<{ address: boolean, card: boolean, delivery: boolean }>
+    ({ address: false, card: false, delivery: false });
+
+-> when i change a property of the signal(ex: address), i want to trigger an event
+-> because Angular and Stripe are 2 different frameworks/libraries, 
+we need to create and trigger the events so one knows about the other
+async ngOnInit() {
+    . . .
+    this.addressElement.on('change', this.handleAddressChange);
+    this.paymentElement.on('change', this.handlePaymentChange);
+}
+
+.on(...) the "change" event is triggered when the .address property of the signal is changed
+
+handleAddressChange(event: StripeAddressElementChangeEvent) {
+    this.completionStatus.update(state => {
+        state.address = event.complete;
+        return state;
+    });
+}
+
+handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
+    this.completionStatus.update(state => {
+        state.card = event.complete;
+        return state;
+    });
+}
+
+
+-- checkout.component.html --
+<pre>{{completionStatus | json}}</pre>
+
+
+-- checkout-delivery.component.ts --
+// affect parent component from child component
+deliveryComplete = output<boolean>();
+
+ngOnInit(): void {
+    . . . 
+    this.deliveryComplete.emit(true); // affect parent property from child component
+}
+
+ updateDeliveryMethod(method: DeliveryMethod) {
+    . . . 
+    this.deliveryComplete.emit(true); // affect parent property from child component
+ }
+
+
+-- checkout.component.ts --
+
+handleDeliveryChange(event: boolean) {
+    this.completionStatus.update(state => {
+        state.delivery = event;
+        return state;
+    })
+}
+
+
+-- checkout.component.html --
+<mat-step label="Shipping">
+    <app-checkout-delivery (deliveryComplete)="handleDeliveryChange($event)" />
+
+
+Dictionary:
+
+<pre>
+-> preserve whitespace and formatting, making the JSON output readable 
+with proper indentation and line breaks
+
+{{...}}
+-> Angular's interpolation syntax, which evaluates the expression inside 
+and renders it as text in the DOM
+
+| json
+-> an Angular pipe that takes the signal's value and converts it to a formatted JSON string
+
+output
+-> use it to emit to parent directives and component
+
+.emit
+-> emits a new value to the output
+
+
+!! Important - Problem !!!
+this.addressElement.on('change', this.handleAddressChange); 
+// this.handleAddressChange need to be bound to the class to work
+
+Resolution:
+1. Use a constructor to bind this.handleAddressChange
+2. Use an arrow function that automatically that will be bound to the class
+
+
+1. With constructor
+constructor(){
+    this.handleAddressChange = this.handleAddressChange.bind(this);
+}
+
+2. Arrow function
+From:
+    handleAddressChange(event: StripeAddressElementChangeEvent) { ... }
+To: 
+    handleAddressChange = (event: StripeAddressElementChangeEvent) => { ... }
