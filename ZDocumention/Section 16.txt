@@ -833,7 +833,7 @@ handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
 
 
 -- checkout.component.html --
-<pre>{{completionStatus | json}}</pre>
+<pre>{{completionStatus() | json}}</pre>
 
 
 -- checkout-delivery.component.ts --

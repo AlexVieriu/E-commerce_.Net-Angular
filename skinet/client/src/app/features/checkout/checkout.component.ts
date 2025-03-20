@@ -60,6 +60,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  handleAddressChange = (event: StripeAddressElementChangeEvent) => {
+    this.completionStatus.update(state => { // passing the current Obj (we call it state)
+      state.address = event.complete;
+      return state;
+    });
+  }
+
   handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
     this.completionStatus.update(state => {
       state.card = event.complete;
@@ -67,11 +74,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  handleAddressChange = (event: StripeAddressElementChangeEvent) => {
-    this.completionStatus.update(state => { // passing the current Obj (we call it state)
-      state.address = event.complete;
+  handleDeliveryChange(event: boolean) {
+    this.completionStatus.update(state => {
+      state.delivery = event;
       return state;
-    });
+    })
   }
 
   onSaveAddressCheckboxChange(event: MatCheckboxChange) {
@@ -95,13 +102,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if (event.selectedIndex === 2) {
       await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
     }
-  }
-
-  handleDeliveryChange(event: boolean) {
-    this.completionStatus.update(state => {
-      state.delivery = event;
-      return state;
-    })
   }
 
   ngOnDestroy(): void {
