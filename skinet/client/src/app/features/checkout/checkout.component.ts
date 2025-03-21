@@ -26,8 +26,7 @@ import { CurrencyPipe, JsonPipe } from '@angular/common';
     MatCheckboxModule,
     CheckoutDeliveryComponent,
     CheckoutReviewComponent,
-    CurrencyPipe,
-    JsonPipe
+    CurrencyPipe
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss'
@@ -143,4 +142,3 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return null;
   }
 }
-

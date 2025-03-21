@@ -958,3 +958,74 @@ async onStepChange(event: StepperSelectionEvent) {
 .submit()
 -> before confirming payment, call elements.submit() to validate the state of the
 Payment Element and collect any data required for wallets
+
+
+178. Updating the review component with the token information
+
+-- checkout-review.component.ts --
+@Input() confirmationToken?: ConfirmationToken;
+
+-- checkout.component.html --
+-> we pass the token from parent to child component
+<app-checkout-review [confirmationToken]="confirmationToken" />
+
+!! Create a Angular pipe !!
+ng g pipe shared/pipes/address --skip-tests
+ng g pipe shared/pipes/card --skip-tests
+
+ConfirmationToken['shipping']
+-> we will access the shipping property from the confirmationToken object
+
+-- address.pipe.ts --
+transform(value: ConfirmationToken['shipping'], ...args: unknown[]): unknown {
+    if (value?.address && value.name) {
+        const { line1, line2, city, state, postal_code, country } = value.address;
+        return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
+                ${city}, ${state}, ${postal_code}, ${country}`;
+    } else {
+        return 'Unknown Address';
+    }
+}
+
+-- card.pipe.ts --
+transform(value?: ConfirmationToken['payment_method_preview'], ...args: unknown[]): unknown {
+    if (value?.card) {
+        const { brand, last4, exp_month, exp_year } = value.card;
+        return `${brand.toUpperCase()} **** **** **** ${last4} , Exp: ${exp_month}/${exp_year}`;
+    } else
+        return 'Unknown payment method';
+}
+
+-- checkout-review.component.html --
+-> this code will not work, it will display "object Object"
+<dd class="mt-1 text-gray-500">{{confirmationToken?.shipping?.address}}</dd>
+
+-> this will work
+<dd class="mt-1 text-gray-500">{{confirmationToken?.shipping | address}}</dd>
+<dd class="mt-1 text-gray-500">{{confirmationToken?.payment_method_preview | card}}</dd>
+
+
+-- Dictionary --
+
+Angular Pipes:
+https://angular.dev/guide/templates/pipes
+https://medium.com/@aqeelabbas3972/pipes-in-angular-6a871589299d 
+-> functions you can use in your templates to transform displayed values
+
+Object destructing:
+-> obj destruction != C# tuples 
+
+With 'const' we can also declare Objects and Arrays:
+// Primitive value with const
+const age = 30;
+age = 31; // Error! Cannot reassign a const variable
+
+// Object with const
+const person = { name: "John", age: 30 };
+person.age = 31; // This works! You can modify properties
+person = { name: "Jane", age: 25 }; // Error! Cannot reassign the person variable
+
+// Array with const
+const numbers = [1, 2, 3];
+numbers.push(4); // This works! You can modify array contents
+numbers = [5, 6, 7]; // Error! Cannot reassign the numbers variable
