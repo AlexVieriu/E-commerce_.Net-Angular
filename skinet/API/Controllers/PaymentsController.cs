@@ -14,7 +14,7 @@ public class PaymentsController(IPaymentService payService, IGenericRepository<D
         if (cart == null)
             return BadRequest("Problem with your cart");
 
-        return cart;
+        return Ok(cart);
     }
 
     [HttpGet("delivery-methods")]

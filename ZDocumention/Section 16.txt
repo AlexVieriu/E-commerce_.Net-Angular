@@ -1029,3 +1029,48 @@ person = { name: "Jane", age: 25 }; // Error! Cannot reassign the person variabl
 const numbers = [1, 2, 3];
 numbers.push(4); // This works! You can modify array contents
 numbers = [5, 6, 7]; // Error! Cannot reassign the numbers variable
+
+
+179. Confirming the payment
+
+-- stripe.service.ts --
+async confirmPayment(confirmationToken: ConfirmationToken) {
+-> get stripe instance
+-> initialize stripe elements
+-> submit the elements
+-> get the clientSecret from the cart
+-> throw error if not submit
+-> if stripe and clientSecret then confirm the payment
+    -> return stripe.confirmPayment
+        -> pass clientSecret and confirmation_token.id
+-> else throw error        
+}
+
+-- checkout.component.ts --
+async confirmPayment(stepper: MatStepper) 
+try
+    -> if confirmationToken then confirm the payment
+    -> if result.error then throw new Error
+    -> else 
+        -> delete cart
+        -> set selectedDelivery to null
+        -> navigate to /checkout/success
+catch (error) 
+    -> use snackBar
+    
+-- checkout.component.html --
+At the confirmation:
+<button mat-flat-button (click)="confirmPayment(stepper)">
+
+ng g c features/checkout/checkout-success --skip-tests
+
+-- app.routes.ts --
+{ path: 'checkout/success', component: CheckoutSuccessComponent, canActivate: [authGuard] }
+
+
+-- Dictionary --
+
+#stepper in HTML
+-> # is a Angular Material code for template reference variable
+-> creates a reference to the mat-stepper component that you can use in your template
+-> a way to interact with DOM elements/Angular components
