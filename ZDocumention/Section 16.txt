@@ -1113,3 +1113,8 @@ Test 3D Secure - Always authenticate:
 imports: [RouterLink, MatButton]
 
 -- checkout-success.component.html --
+
+
+182. Summary
+-> accept payments securely globally that complies with EU regulations and PCI DSS regulations
+
