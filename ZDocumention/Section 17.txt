@@ -3,3 +3,22 @@
 -> Aggregate entities
 -> Owned entities
 -> Unit of Work pattern
+
+
+184. Creating the order Aggregate part 1
+
+-- Core -> Entities -> OrderAggregate --
+-- ShippingAddress.cs --
+Name, Line1, Line2, City, State, PostalCode, Country
+
+-- ProductItemOrdered.cs -- 
+ProductId, ProductName, PictureUrl
+
+-- OrderStatus.cs (enum)--
+Pending, PaymentReceived, PaymentFailed
+
+-- OrderItem.cs --
+ItemOrdered, Price, Quantity
+
+-- PaymentSummary.cs --
+Last4, Brand, ExpMonth, ExpYear
