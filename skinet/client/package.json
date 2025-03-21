@@ -6,30 +6,35 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "vite": "vite"
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^19.1.0-next.0",
-    "@angular/cdk": "^19.1.0-next.1",
-    "@angular/common": "^19.1.0-next.0",
-    "@angular/compiler": "^19.1.0-next.0",
-    "@angular/core": "^19.1.0-next.0",
-    "@angular/forms": "^19.1.0-next.0",
-    "@angular/material": "^19.1.0-next.1",
-    "@angular/platform-browser": "^19.1.0-next.0",
-    "@angular/platform-browser-dynamic": "^19.1.0-next.0",
-    "@angular/router": "^19.1.0-next.0",
+    "@angular/animations": "^19.2.2",
+    "@angular/cdk": "^19.2.3",
+    "@angular/common": "^19.2.2",
+    "@angular/compiler": "^19.2.2",
+    "@angular/core": "^19.2.2",
+    "@angular/forms": "^19.2.2",
+    "@angular/material": "^19.2.3",
+    "@angular/platform-browser": "^19.2.2",
+    "@angular/platform-browser-dynamic": "^19.2.2",
+    "@angular/router": "^19.2.2",
+    "@babel/runtime": "^7.26.10",
+    "@stripe/stripe-js": "^6.0.0",
+    "esbuild": "^0.25.1",
     "nanoid": "^5.0.9",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^19.1.0-next.0",
-    "@angular/cli": "^19.1.0-next.0",
-    "@angular/compiler-cli": "^19.1.0-next.0",
+    "@angular-devkit/build-angular": "^19.2.3",
+    "@angular/cli": "^19.2.3",
+    "@angular/compiler-cli": "^19.2.2",
     "@types/jasmine": "~5.1.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "jasmine-core": "~5.5.0",
     "karma": "~6.4.0",
@@ -39,6 +44,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "vite": "^6.2.2"
   }
 }

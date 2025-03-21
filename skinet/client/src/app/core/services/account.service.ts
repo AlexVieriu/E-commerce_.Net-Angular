@@ -3,6 +3,8 @@ import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { User } from '../../shared/models/user';
 import { map } from 'rxjs/internal/operators/map';
+import { tap } from 'rxjs/internal/operators/tap';
+import { Address } from '../../shared/models/address';
 
 @Injectable({
   providedIn: 'root'
@@ -19,16 +21,6 @@ export class AccountService {
     // adding a parameter named 'useCookies' with the value 'true'
     params = params.append('useCookies', true);
 
-    /*
-    post<T>(
-    url: string, 
-    body: any | null, 
-    options?: {
-      params?: HttpParams | {[param: string]: string | number | boolean;
-        };
-      }
-    ): Observable<T>;
-    */
     return this.http.post<User>(this.baseUrl + 'login', values, { params });
   }
 
@@ -49,8 +41,16 @@ export class AccountService {
     return this.http.post(this.baseUrl + 'account/logout', {});
   }
 
-  updateAddress(address: any) {
-    return this.http.put(this.baseUrl + 'account/address', address);
+  updateAddress(address: Address) {
+    return this.http.post(this.baseUrl + 'account/address', address).pipe(
+      tap(() => {
+        this.currentUser.update(user => {
+          if (user)
+            user.address = address;
+          return user;
+        });
+      })
+    );
   }
 
   getAuthState() {

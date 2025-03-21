@@ -1,11 +1,6 @@
 {
   "version": "0.2.0",
-  "configurations": [        
-    {
-      "name": ".NET Core Attach",
-      "type": "coreclr",
-      "request": "attach"      
-    },
+  "configurations": [
     {
       "name": "C#: API Debug",
       "type": "dotnet",
@@ -13,18 +8,28 @@
       "projectPath": "${workspaceFolder}\\skinet\\API\\API.csproj"
     },
     {
-      "name": "Angular",
-      "request": "launch",
+      "name": "Angular Debug",
       "type": "chrome",
-      "url": "http://localhost:4200",
-      "webRoot": "${workspaceFolder}\\skinet\\client", 
-      "preLaunchTask": "npm: start"      
-    },     
-  ]  , 
+      "request": "launch",
+      "preLaunchTask": "npm: start",
+      "url": "https://localhost:4200/",
+      "webRoot": "${workspaceFolder}\\skinet\\client",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/src/*",
+        "/*": "*",
+        "/./~/*": "${webRoot}/node_modules/*"
+      }
+    }
+  ],
   "compounds": [
     {
-      "name": "Compound",
-      "configurations": ["C#: API Debug", "Angular"]
+      "name": "Debug API & Angular",
+      "configurations": [
+        "C#: API Debug",
+        "Angular Debug"
+      ]
     }
   ]
 }

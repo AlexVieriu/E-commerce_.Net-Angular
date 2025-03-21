@@ -168,7 +168,6 @@ IGenericRepository<T>:
 -> a generic repository for CRUD operation from Microsoft
 
 -- Properties & Methods --
-Task<bool> ExistsAsync(int id);
 Task<bool> SaveAllAsync();
 Task<int> CountAsync(ISpecification<T> spec);
 Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec);
@@ -179,6 +178,7 @@ Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
 void Add(T entity);
 void Delete(T entity);
 void Update(T entity);
+bool Exists(int id);
 
 
 ISpecification<T>

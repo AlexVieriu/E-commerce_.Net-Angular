@@ -2,5 +2,8 @@ import { CartItem } from "./cartItem"
 
 export type CartType = {
     id: string,
-    items: CartItem[]
+    items: CartItem[],
+    deliveryMethodId?: number,
+    paymentIntentId?: string,
+    clientSecret?: string,
 }
