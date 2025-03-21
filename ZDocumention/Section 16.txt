@@ -1105,3 +1105,11 @@ Test Insufficient funds decline:
 
 Test 3D Secure - Always authenticate:
 4000002760003184
+
+
+181. Checkout success page
+
+-- checkout-success.component.ts --
+imports: [RouterLink, MatButton]
+
+-- checkout-success.component.html --
