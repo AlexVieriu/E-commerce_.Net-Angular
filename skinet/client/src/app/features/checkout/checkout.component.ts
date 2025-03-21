@@ -14,7 +14,8 @@ import { firstValueFrom } from 'rxjs';
 import { CheckoutDeliveryComponent } from "./checkout-delivery/checkout-delivery.component";
 import { CheckoutReviewComponent } from "./checkout-review/checkout-review.component";
 import { CartService } from '../../core/services/cart.service';
-import { CurrencyPipe, JsonPipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-checkout',
@@ -26,7 +27,8 @@ import { CurrencyPipe, JsonPipe } from '@angular/common';
     MatCheckboxModule,
     CheckoutDeliveryComponent,
     CheckoutReviewComponent,
-    CurrencyPipe
+    CurrencyPipe,
+    MatProgressSpinnerModule
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss'
@@ -42,6 +44,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   addressElement?: StripeAddressElement;
   paymentElement?: StripePaymentElement;
   saveAddress = false;
+  loading = false;
 
   // as the elements get completed we update our signal
   completionStatus = signal<{ address: boolean, card: boolean, delivery: boolean }>
@@ -122,6 +125,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   async confirmPayment(stepper: MatStepper) {
+    this.loading = true;
     // if they have a problem with the credit card, go back to payment page
     try {
       if (this.confirmationToken) {
@@ -138,6 +142,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     catch (error: any) {
       this.snackBar.error(error.message || "Something went wrong");
       stepper.previous(); // go to Step 2, then can go to Step 3 to generate new token
+    }
+    finally {
+      this.loading = false;
     }
   }
 

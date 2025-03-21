@@ -1074,3 +1074,34 @@ ng g c features/checkout/checkout-success --skip-tests
 -> # is a Angular Material code for template reference variable
 -> creates a reference to the mat-stepper component that you can use in your template
 -> a way to interact with DOM elements/Angular components
+
+
+180. Loading and error notifications
+
+Testing declined payments:
+https://docs.stripe.com/testing#declined-payments
+
+
+Use Angular Material spinner: https://material.angular.io/components/progress-spinner/overview
+
+-- checkout.component.ts --
+import: [MatProgressSpinnerModule]
+
+async confirmPayment(stepper: MatStepper) {
+this.loading = true;
+. . . 
+this.loading = false;
+}
+
+-- checkout.component.html --
+-> at Pay button 
+<button [disabled]="!confirmationToken || loading" (click)="confirmPayment(stepper)" mat-flat-button>
+    @if (loading) {<mat-spinner diameter="20"></mat-spinner>}
+    @else {<span>Pay {{cartService.totals()?.total | currency}}</span>}
+</button>
+
+Test Insufficient funds decline:
+4000000000009995
+
+Test 3D Secure - Always authenticate:
+4000002760003184
