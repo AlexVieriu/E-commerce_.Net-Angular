@@ -22,3 +22,11 @@ ItemOrdered, Price, Quantity
 
 -- PaymentSummary.cs --
 Last4, Brand, ExpMonth, ExpYear
+
+
+185. Creating the order Aggregate part 2
+
+-- Core -> Entities -> OrderAggregate --
+-- Order.cs --
+OrderDate, BuyerEmail, ShippingAddress, DeliveryMethod, 
+PaymentSummary, OrderItems, Subtotal, Status, PaymentIntentId
