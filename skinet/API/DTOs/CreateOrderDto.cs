@@ -13,5 +13,4 @@ public class CreateOrderDto
 
     [Required]
     public PaymentSummary PaymentSummary { get; set; } = null!;
-
 }

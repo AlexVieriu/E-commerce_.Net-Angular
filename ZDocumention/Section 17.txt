@@ -198,3 +198,15 @@ HttpContext:
 -> HttpContext is created very early in the request processing pipeline, 
 before the request reaches your controller.
 
+
+191. Debugging the order creation
+
+-> breakpoint at OrderController.cs
+
+Test Order creation in Postman:
+docker-compose up -d
+-> login as tom (section 14)
+-> create a new Folder: Section 17 - Orders
+    -> Update Cart  : {{localhost}}/api/cart
+    -> Create payment intent: {{localhost}}/api/payment
+    -> Create order: {{localhost}}/api/order
