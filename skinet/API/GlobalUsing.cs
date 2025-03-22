@@ -1,10 +1,10 @@
-
 global using API.DTOs;
 global using API.Errors;
 global using API.Extensions;
 global using API.Middleware;
 global using API.RequestHelpers;
 global using Core.Entities;
+global using Core.Entities.OrderAggregate;
 global using Core.Interfaces;
 global using Core.Specifications;
 global using Infrastructure.Data;
@@ -13,6 +13,7 @@ global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
+global using Order = Core.Entities.OrderAggregate.Order;
 global using Scalar.AspNetCore;
 global using StackExchange.Redis;
 global using static System.Console;

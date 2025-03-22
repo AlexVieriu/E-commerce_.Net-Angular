@@ -168,3 +168,33 @@ remove SaveAllAsync();
 -> replace dmRepo with unitOfWork.Repository<DeliveryMethod>()
 
 Test Add, Get, GetAll, Update, Delete product in Postman.
+
+
+190. Creating the order controller
+
+-- API -> DTOs -> OrderDto.cs --
+CartId, DeliveryMethodId, ShippingAddress, PaymentSummary
+
+-- API -> Controllers -> OrdersController.cs --
+
+-> get User.Email (where User = HttpContext?.User)
+-> get the cart using CartService
+-> check cart == null
+-> check cart.PaymentIntentId == null
+-> create a new OrderItem List
+-> get every cart items from the cart with a foreach loop
+    -> create new ProductItemOrdered and OrderItem
+    -> OrderItem = ProductItemOrdered + Price + Quantity
+-> get deliveryMethod  
+-> create new Order with all o the above
+-> .Add(order) to the repository (to DB)
+-> return order
+-> else throw BadRequest
+
+
+Dictionary:
+
+HttpContext:
+-> HttpContext is created very early in the request processing pipeline, 
+before the request reaches your controller.
+
