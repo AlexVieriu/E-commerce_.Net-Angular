@@ -143,3 +143,28 @@ obtain references to existing remote objects
 .CreateInstance(Type type, params object?[]? args)
 -> creates an instance of the specified type using the constructor that best matches 
 the specified parameters
+
+
+189. Using the unit of work
+
+-- IGenericRepository.cs --
+remove SaveAllAsync();
+
+-- IGenericRepository.cs --
+remove SaveAllAsync();
+
+-- ProductsController.cs --
+-> add IUnitOfWork to constructor
+-> replace SaveAllAsync() with unitOfWork.Complete()
+-> replace productRepo with unitOfWork.Repository<Product>()
+
+-- PaymentsController.cs --
+-> add IUnitOfWork to constructor
+-> replace dmRepo with unitOfWork.Repository<DeliveryMethod>()
+
+-- PaymentService.cs --
+-> add IUnitOfWork to constructor
+-> replace productRepo with unitOfWork.Repository<Product>()
+-> replace dmRepo with unitOfWork.Repository<DeliveryMethod>()
+
+Test Add, Get, GetAll, Update, Delete product in Postman.

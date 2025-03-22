@@ -1,7 +1,6 @@
 namespace Core.Interfaces;
 public interface IGenericRepository<T> where T : BaseEntity
 {
-    Task<bool> SaveAllAsync();
     Task<int> CountAsync(ISpecification<T> spec);
     Task<IReadOnlyList<T>> GetAllAsync();
     Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec);
