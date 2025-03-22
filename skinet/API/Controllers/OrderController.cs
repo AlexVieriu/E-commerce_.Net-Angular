@@ -62,4 +62,23 @@ public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) :
         else
             return BadRequest("Problem creating order");
     }
+
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Order>>> GetOrdersForUser()
+    {
+        var spec = new OrderSpecification(User.GetEmail());
+        var orders = await unitOfWork.Repository<Order>().GetAllAsync(spec);
+        return Ok(orders);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Order>> GetOrderById(int id)
+    {
+        var spec = new OrderSpecification(User.GetEmail(), id);
+        var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null)
+            return NotFound();
+        return Ok(order);
+    }
 }

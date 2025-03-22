@@ -210,3 +210,32 @@ docker-compose up -d
     -> Update Cart  : {{localhost}}/api/cart
     -> Create payment intent: {{localhost}}/api/payment
     -> Create order: {{localhost}}/api/order
+
+
+192. Adding the get order methods
+
+-- Core -> Specifications -> OrderSpecification.cs --
+public OrderSpecification(string email) : base(o => o.BuyerEmail == email) {...}
+public OrderSpecification(string email, int id) : base(o => o.BuyerEmail == email && o.Id == id)
+
+-- API -> Controllers -> OrderController.cs --
+
+[HttpPost]
+Task<ActionResult<Order>> CreateOrder(CreateOrderDto orderDto){...}
+
+[HttpGet]
+Task<ActionResult<IReadOnlyList<Order>>> GetOrdersForUser(){...}
+
+[HttpGet("{id:int}")]
+Task<ActionResult<Order>> GetOrderById(int id){...}
+
+Test in Postman:
+Getting Orders from User: {{localhost}}/api/orders
+Getting Order by Id     : {{localhost}}/api/order/1
+
+-> DeliveryMethod is returning null
+-> DeliveryMethod is a related prop, and EF will not return a related prop
+
+Solution:
+-> use projection
+-> use eager loading
