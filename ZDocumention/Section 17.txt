@@ -95,3 +95,12 @@ builder.HasMany(x => x.OrderItems).WithOne().OnDelete(DeleteBehavior.Cascade);
 
 .WithOne() 
 -> specifies that each OrderItem belongs to one Order
+
+
+187. Introducing the unit of work
+
+-> creates repository instances as needed
+-> EF Tracks the entities state(add, update, remove)
+-> at the end of the transaction UoW.Complete()
+-> Dispose the DbContext
+-> uses the same lifetime as repository(scoped)
