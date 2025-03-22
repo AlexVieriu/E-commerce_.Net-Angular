@@ -12,4 +12,5 @@ global using Order = Core.Entities.OrderAggregate.Order;
 global using Product = Core.Entities.Product;
 global using StackExchange.Redis;
 global using Stripe;
+global using System.Collections.Concurrent;
 global using System.Text.Json;
