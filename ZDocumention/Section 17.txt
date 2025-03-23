@@ -391,3 +391,10 @@ decimal Total { get; set; }
 
 -- OrderMappingExtensions.cs --
  Total = order.GetTotal()
+
+
+ 196. Summary
+ -> adding the Order Entity
+ -> Aggregate entities
+ -> Owned Entities
+ -> Unit of Work pattern
