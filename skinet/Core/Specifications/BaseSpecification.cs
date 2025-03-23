@@ -1,6 +1,7 @@
 
 namespace Core.Specifications;
 
+// Class 1
 public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecification<T>
 {
     protected BaseSpecification() : this(null) { } // empty constructor
@@ -19,6 +20,14 @@ public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecif
 
     public bool IsPagingEnabled { get; private set; }
 
+    // Include direct navigation property using lambda
+    // Includes.Add(c => c.Orders);
+    public List<Expression<Func<T, object>>> Includes { get; } = [];
+
+    // Include nested navigation property using string
+    // IncludeStrings.Add("Orders.Items");
+    public List<string> IncludeStrings { get; } = [];
+
     public IQueryable<T> ApplyCriteria(IQueryable<T> query)
     {
         if (Criteria != null)
@@ -27,18 +36,20 @@ public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecif
         return query;
     }
 
+    protected void AddInclude(Expression<Func<T, object>> includeExpression)
+        => Includes.Add(includeExpression);
+
+    protected void AddInclude(string includeString)
+        => IncludeStrings.Add(includeString);
+
     protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
-    {
-        OrderBy = orderByExpression;
-    }
+        => OrderBy = orderByExpression;
+
     protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescendingExpression)
-    {
-        OrderByDescending = orderByDescendingExpression;
-    }
-    protected void ApplyDistinct()
-    {
-        IsDistinct = true;
-    }
+        => OrderByDescending = orderByDescendingExpression;
+
+    protected void ApplyDistinct() => IsDistinct = true;
+
     protected void ApplyPaging(int skip, int take)
     {
         Skip = skip;
@@ -47,6 +58,7 @@ public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecif
     }
 }
 
+// Class 2 
 public class BaseSpecification<T, TResult>(Expression<Func<T, bool>>? criteria)
     : BaseSpecification<T>(criteria), ISpecification<T, TResult>
 {
@@ -54,7 +66,5 @@ public class BaseSpecification<T, TResult>(Expression<Func<T, bool>>? criteria)
     public Expression<Func<T, TResult>>? Select { get; private set; }
 
     protected void AddSelect(Expression<Func<T, TResult>> selectExpression)
-    {
-        Select = selectExpression;
-    }
+        => Select = selectExpression;
 }
