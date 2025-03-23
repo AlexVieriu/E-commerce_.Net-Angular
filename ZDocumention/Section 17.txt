@@ -369,3 +369,25 @@ public static async Task<List<TSource>> ToListAsync<TSource>(this IQueryable<TSo
     return list;
 }
 
+
+195. Shaping the data to return
+
+OrderDto.cs
+OrderItemDto.cs
+OrderMappingExtensions.cs
+    -> static OrderDto ToDto(this Order order)
+    -> static OrderItemDto ToDto(this OrderItem orderItem)
+
+-- OrderController.cs --
+GetOrdersForUser()
+    -> var ordersToReturn = orders.Select(x => x.ToDto()).ToList();
+    -> return Ok(ordersToReturn);
+
+-- Order.cs --
+GetTotal() => Subtotal + DeliveryMethod.Price;
+
+-- OrderDto.cs --
+decimal Total { get; set; }
+
+-- OrderMappingExtensions.cs --
+ Total = order.GetTotal()
