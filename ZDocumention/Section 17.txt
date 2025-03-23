@@ -239,3 +239,75 @@ Getting Order by Id     : {{localhost}}/api/order/1
 Solution:
 -> use projection
 -> use eager loading
+
+
+193. Updating the spec for eager loading
+
+-- ISpecification.cs --
+List<Expression<Func<T, object>>> Includes { get; }
+List<string> IncludeStrings { get; } 
+
+-- Specifications.cs --
+public List<Expression<Func<T, object>>> Includes { get; } = [];
+public List<string> IncludeStrings { get; } = [];
+
+protected void AddInclude(Expression<Func<T, object>> includeExpression)
+    => Includes.Add(includeExpression);
+
+protected void AddInclude(string includeString)
+    => IncludeStrings.Add(includeString);
+
+-- SpecificationEvaluator.cs --
+query = spec.Includes.Aggregate(query, (current, include) => current.Include(include));
+query = spec.IncludeStrings.Aggregate(query, (current, include) => current.Include(include));
+
+
+Dictionary:
+
+IQueryable<T>:
+-> represents a query that hasn't been executed yet
+
+ISpecification<T>:
+-> contains lists of what related data to include
+
+.Aggregate()
+-> chains multiple operations together (in this case, multiple Include() calls)
+
+.Include()
+-> tells Entity Framework to load related entities along with the main entity
+
+
+!! Why use Expression? !!
+-- ISpecification.cs --
+-> so it can work directly with the EF and DB
+
+1. Func<Tin, Tout> 
+-> is a delegate that represents a compiled function that takes a 
+<Tin> object and returns a <Tout> value
+-> it's essentially a reference to a method that can be executed directly in memory
+
+2. Expression<Func<Tin, Tout>> 
+-> is an expression tree representation of a function
+-> instead of being executable code, it's a data structure that represents the code in a 
+form that can be analyzed, modified, or translated to something else (like SQL).
+
+Examples:
+// Example with Expression<Func<Customer, bool>>
+Expression<Func<Customer, bool>> adultExpr = customer => customer.Age > 18;
+
+// This works with Entity Framework - translates to SQL
+var adultsFromDb = dbContext.Customers.Where(adultExpr).ToList();
+
+// You can also compile the expression to get a Func
+Func<Customer, bool> adultFunc = adultExpr.Compile();
+
+// Example with Func<Customer, bool>
+Func<Customer, bool> isAdult = customer => customer.Age > 18;
+
+// This works with in-memory collections
+var inMemoryCustomers = new List<Customer>();
+var adultsInMemory = inMemoryCustomers.Where(isAdult).ToList();
+
+// This WON'T translate to SQL - it forces loading all customers into memory first
+// and then filters in memory (inefficient)
+// var badApproach = dbContext.Customers.Where(isAdult).ToList(); // Not recommended
