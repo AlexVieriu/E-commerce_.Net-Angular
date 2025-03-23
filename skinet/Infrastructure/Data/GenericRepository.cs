@@ -36,6 +36,8 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
 
     public async Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec)
     {
+        // till .ToListAsync(), only constructing the Queries
+        // .ToListAsync() is making the call to the DB and taking the results, 
         return await ApplySpecification(spec).ToListAsync();
     }
 

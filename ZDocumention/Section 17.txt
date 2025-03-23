@@ -311,3 +311,61 @@ var adultsInMemory = inMemoryCustomers.Where(isAdult).ToList();
 // This WON'T translate to SQL - it forces loading all customers into memory first
 // and then filters in memory (inefficient)
 // var badApproach = dbContext.Customers.Where(isAdult).ToList(); // Not recommended
+
+
+194. Updating the controller to eagerly load in the get methods
+
+-- OrderSpecification.cs --
+{
+    AddInclude(x => x.OrderItems);  
+    AddInclude(x => x.DeliveryMethod);  
+    AddOrderByDescending(x => x.OrderDate); 
+}
+{
+    AddInclude("OrderItems");
+    AddInclude("DeliveryMethods");
+}
+
+Test with debugger to see what is going on
+-> put breakpoint at :
+    -> OrderSpecification.cs
+    -> OrderController.cs
+        -> GetOrdersForUser()
+
+Steps:
+-> get spec: OrderSpecification(User.GetEmail())
+    -> ClaimsPrincipal User => HttpContext?.User!;
+    -> ClaimTypes.Email
+    -> OrderSpecification.cs
+    -> OrderSpecification(string email)
+        -> pass the email to base class: BaseSpecification<Order>
+        -> BaseSpecification<Order>.cs
+            -> AddInclude(x => x.OrderItems);  
+                -> Includes.Add(includeExpression);
+            ... and so on  
+            
+-> get orders: 
+    -> get the type of the class: GenericRepository
+    -> GetAllAsync(ISpecification<T> spec) 
+        -> ApplySpecification(spec).ToListAsync();   
+            -> SpecificationEvaluator<T>.GetQuery(context.Set<T>().AsQueryable(), spec);
+            -> SpecificationEvaluator.cs
+                -> Criteria, OrderBy, OrderByDescending, Skip, Take
+                -> query = Aggregate all Queries
+                -> return query
+
+
+.ToListAsync(): 
+-> here we execute the IQueryable to get the data from DB
+-> From EntityFrameworkQueryableExtensions.cs
+
+public static async Task<List<TSource>> ToListAsync<TSource>(this IQueryable<TSource> source,
+    CancellationToken cancellationToken = default)
+{
+    var list = new List<TSource>();
+    await foreach (var element in source.AsAsyncEnumerable().WithCancellation(cancellationToken).ConfigureAwait(false))          
+        list.Add(element);    
+    
+    return list;
+}
+
