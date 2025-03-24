@@ -1,0 +1,28 @@
+197. Introduction 
+-> client side orders 
+    -> then they create a payment, the order will be created    
+
+-> webhooks
+    -> allow Stripe to communicate directly with the API, and notify the API
+    that the payment was successful
+    -> stripe and backend API will share a secret
+
+-> signalR
+    -> we need to notify the client that the payment was successful
+    without the client giving us a request      
+
+
+SignalR
+-> provides  real-time functionality
+-> automated connection management
+
+Supports:
+-> websockets
+-> server-sent events
+-> long-polling
+
+Good for:
+-> dashboards
+-> monitoring apps 
+-> apps that require notifications
+-> chat apps
