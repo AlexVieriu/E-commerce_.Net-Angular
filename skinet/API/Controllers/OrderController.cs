@@ -58,12 +58,12 @@ public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) :
         unitOfWork.Repository<Order>().Add(order);
 
         if (await unitOfWork.Complete())
-            return order;
+            return Created();
         else
             return BadRequest("Problem creating order");
     }
 
-    [HttpGet]
+    [HttpGet("/api/orders")]
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrdersForUser()
     {
         var spec = new OrderSpecification(User.GetEmail());

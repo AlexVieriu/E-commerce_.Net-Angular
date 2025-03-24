@@ -26,3 +26,76 @@ Good for:
 -> monitoring apps 
 -> apps that require notifications
 -> chat apps
+
+
+198. Creating the order components
+
+ng g s core/services/order --skip-tests
+ng g c features/orders/order --skip-tests --flat
+ng g c features/orders/order-detailed --skip-tests
+
+https://transform.tools/json-to-typescript
+
+-> make a call to {{localhost}}/api/order/1   
+-> copy from Postman into the JsonToTs link 
+-> make interfaces for each class
+
+Why interfaces and not types or classes:
+-> it's best practice to use interfaces when working with APIs
+
+-- order.service.ts --
+createOrder(orderToCreate: OrderToCreate){. . .}
+getOrdersForUser(){. . .}
+getOrderDetailed(id: number){. . .}
+
+-- app.routes.ts --
+{ path: 'orders', component: OrderComponent, canActivate: [authGuard] },
+{ path: 'order/:id', component: OrderDetailedComponent, canActivate: [authGuard] },
+
+
+Dictionary:
+
+--flat 
+-> create the 3 files without making a folder
+-> when we create a component, Angular creates a folder and puts the 3 files(.ts, .html, .css) in it
+
+Interfaces, Types, Classes in TypeScript:
+
+1. Interfaces
+-> only exists at compile-time (no JavaScript output)
+-> can be extended with extends
+-> can be merged with other interface declarations (declaration merging)
+-> primarily focused on object 
+
+When to use:
+-> when defining object shapes, especially for public APIs
+-> when you want to benefit from declaration merging
+-> when creating object types that might be extended later
+
+2. Types
+-> only exists at compile-time (no JavaScript output)
+-> can represent any type (unions, intersections, primitives, etc.)
+-> cannot be extended directly (but can use intersection types)
+-> cannot be merged with other declarations
+
+When to use:
+-> when you need union types (type Status = 'pending' | 'shipped')
+-> when you need complex types like mapped types, conditional types
+-> when you don't need declaration merging
+-> when you want to create type aliases for functions, tuples, etc.
+
+3. Classes
+-> exists at runtime (produces JavaScript code)
+-> can have constructors, methods, and property implementations
+-> can be instantiated with new
+-> supports inheritance with extends
+-> can implement interfaces
+
+When to use:
+-> when you need to create instances with new
+-> when you need methods and behavior along with data
+-> when you need inheritance hierarchies
+-> when you need to implement interfaces
+-> when working with object-oriented patterns
+
+
