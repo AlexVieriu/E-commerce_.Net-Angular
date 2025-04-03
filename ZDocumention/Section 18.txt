@@ -99,3 +99,10 @@ When to use:
 -> when working with object-oriented patterns
 
 
+199. Submitting the order
+
+-- checkout.component.ts --
+
+confirmPayment(stepper: MatStepper){
+    
+}

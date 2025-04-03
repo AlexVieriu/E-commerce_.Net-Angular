@@ -166,7 +166,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return null;
   }
 
+  private async createOrderModel() {
+    const cart = this.cartService.cart();
+    const shipping = this.cartService.selectedDelivery.get()?.name || 'Standard Delivery';
+  }
+
   ngOnDestroy(): void {
+
     this.stripeService.disposeElements();
   }
 }
