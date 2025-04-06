@@ -147,3 +147,15 @@ Refactoring:
 
 -- OrderController.cs --
 return Create() -> return Created(uri: $"/api/order/{order.Id}", value: order);
+
+
+200. Designing the order component to display orders
+
+-> get the Orders in the API and display them in the interface
+
+-- order.component.ts --
+imports: [RouterLink, DatePipe, CurrencyPipe]
+
+-> inject the OrderService
+-> implement OnInit
+    -> return the orders from the API
