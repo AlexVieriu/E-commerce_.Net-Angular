@@ -102,7 +102,48 @@ When to use:
 199. Submitting the order
 
 -- checkout.component.ts --
+-> inject the OrderService
 
 confirmPayment(stepper: MatStepper){
-    
+    -> check if confirmationToken exists
+    -> get the payment confirmPayment form Stripes with confirmToken
+    -> if succeeded
+        -> createOrderModel() : return a Promise of OrderToCreate
+            -> get the cart from the cartService
+            -> get shipping address from stripe
+            -> get the card from stripe
+            -> return OrderToCreate mapped from striped 
+        -> create order by passing the OrderToCreate obj to the API
+        -> if Order was created
+            -> delete Cart
+            -> set delivery to null
+            -> go to /checkout/success
+        -> else throw Order creation failed from API
+        -> else throw stripe error
+        -> else throw string Error :" Something went wrong with the payment confirmation"
 }
+
+-> test it
+-> we need to see in the DB, a new Order
+
+Refactoring:
+
+-- appsettings.json --
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Information"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "Data Source=../data/store.db",
+        "Redis": "localhost"
+    },
+    "StripeSettings": {
+        "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf"
+    }
+}
+
+-- OrderController.cs --
+return Create() -> return Created(uri: $"/api/order/{order.Id}", value: order);
