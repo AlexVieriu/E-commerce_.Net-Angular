@@ -159,3 +159,19 @@ imports: [RouterLink, DatePipe, CurrencyPipe]
 -> inject the OrderService
 -> implement OnInit
     -> return the orders from the API
+
+
+201. Creating the order detailed page
+
+-- order-detailed.component.ts --
+-> get the order from the API
+
+imports: [MatCardModule, DatePipe, CurrencyPipe]
+
+-> inject OrderService and ActivatedRoute
+-> implement OnInit
+    -> get the id: this.activatedRoute.snapshot.paramMap.get('id');
+    -> get the order from the API with id
+
+
+-- order-detailed.component.html --
