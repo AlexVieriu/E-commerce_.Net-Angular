@@ -175,3 +175,64 @@ imports: [MatCardModule, DatePipe, CurrencyPipe]
 
 
 -- order-detailed.component.html --
+
+
+202. Updating the address pipe with type guards
+
+-- order-detailed.component.html --
+-> add a button to go back to /orders
+<dt class="mt-1 font-high">{{order.shippingAddress | address }}</dt>
+<dt class="mt-1 font-high">{{order.paymentSummary | paymentCard }}</dt>
+
+-- address.pipe.ts --
+transform(value?: ConfirmationToken['shipping'] | ShippingAddress, ...args: unknown[]): unknown {
+    if (value && 'address' in value && value.name) {
+        const { line1, line2, city, state, postal_code, country } =
+        (value as ConfirmationToken['shipping'])?.address!;
+
+        return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
+                ${city}, ${state}, ${postal_code}, ${country}`;
+    }
+    else if (value && 'line1' in value) {
+        const { line1, line2, city, state, postalCode, country } = (value as ShippingAddress)!;
+
+        return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
+                ${city}, ${state}, ${postalCode}, ${country}`;
+    }
+    else
+        return 'Unknown Address';
+}
+
+
+-- cardPipe.pipe.ts --
+transform(value?: ConfirmationToken['payment_method_preview'] | PaymentSummary, ...args: unknown[]): unknown {
+    if (value && 'card' in value && value.card) {
+        const { brand, last4, exp_month, exp_year } = 
+            (value as ConfirmationToken['payment_method_preview']).card!;
+
+        return `${brand.toUpperCase()} **** **** **** ${last4} , Exp: ${exp_month}/${exp_year}`;
+    }
+    else if (value && 'last4' in value) {
+        const { brand, last4, expMonth, expYear } = value as PaymentSummary;
+
+        return `${brand.toUpperCase()} **** **** **** ${last4} , Exp: ${expMonth}/${expYear}`;
+    }
+    else
+        return 'Unknown payment method';
+}
+
+
+-- Dictionary --
+
+What is a pipe in Angular?
+-> a feature that allows you to transform data before displaying it in the view
+-> take in data as input and transform it to a 
+desired output format without changing the original data
+-> ex: {{order.shippingAddress | address }}
+https://next.angular.dev/guide/templates/pipes
+
+
+What is type guard in Angular?
+-> a technique used to determine the type of an object at runtime
+-> methods: typeof, instanceof, in(for properties)
+https://blog.logrocket.com/how-to-use-type-guards-typescript/
