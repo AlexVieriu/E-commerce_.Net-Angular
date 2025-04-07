@@ -1,3 +1,4 @@
+global using Address = Core.Entities.Address;
 global using API.DTOs;
 global using API.Errors;
 global using API.Extensions;
@@ -14,6 +15,7 @@ global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Order = Core.Entities.OrderAggregate.Order;
+global using Product = Core.Entities.Product;
 global using Scalar.AspNetCore;
 global using StackExchange.Redis;
 global using static System.Console;

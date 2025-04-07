@@ -284,3 +284,39 @@ asynchronously and returns them as one string
 -> method from EventUtility
 -> parses a JSON string from a Stripe webhook into a <see cref="Event"/> object, while
 verifying the <a href="https://stripe.com/docs/webhooks/signatures"> webhook's
+
+
+204. Testing the WebHook using the Stripe CLI
+-> always open VCS as Administrator
+
+https://docs.stripe.com/stripe-cli?install-method=scoop
+-> instal scoop
+-> install stripe CLI
+
+stripe login 
+-> if first time, it will send a code to your email address to login
+stripe listen --forward-to https://localhost:7096/api/payments/webhook -e payment_intent.succeeded
+Your webhook signing secret is whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989 (^C to quit)
+
+-> keep the terminal running 
+
+-- appsettings.json --
+"StripeSettings": {
+    "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
+    "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
+    "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
+}
+
+-- PaymentsController.cs --
+private readonly string _whSecret = config["StripeSettings:WhSecret"]!;
+
+Testing:
+-> run VSC as Administrator
+-> stripe listen --forward-to https://localhost:7096/api/payments/webhook -e payment_intent.succeeded
+-> let the terminal running, don't close it
+-> create a new Order
+-> add products to the cart
+-> go to the cart 
+-> checkout
+-> pay 
+-> go to MyOrders(top-right) to see the status of the payment

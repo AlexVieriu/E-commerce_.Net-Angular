@@ -3,9 +3,10 @@ namespace API.Controllers;
 
 public class PaymentsController(IPaymentService payService,
                                 IUnitOfWork unitOfWork,
-                                ILogger<PaymentsController> logger) : BaseApiController
+                                ILogger<PaymentsController> logger,
+                                IConfiguration config) : BaseApiController
 {
-    private readonly string _whSecret = "";
+    private readonly string _whSecret = config["StripeSettings:WhSecret"]!;
 
     [Authorize]
     [HttpPost("{cartId}")]
