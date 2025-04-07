@@ -17,6 +17,7 @@ global using Order = Core.Entities.OrderAggregate.Order;
 global using Scalar.AspNetCore;
 global using StackExchange.Redis;
 global using static System.Console;
+global using Stripe;
 global using System.ComponentModel.DataAnnotations;
 global using System.Net;
 global using System.Security.Authentication;

@@ -236,3 +236,51 @@ What is type guard in Angular?
 -> a technique used to determine the type of an object at runtime
 -> methods: typeof, instanceof, in(for properties)
 https://blog.logrocket.com/how-to-use-type-guards-typescript/
+
+
+203. Adding a webhook endpoint in the payments controller
+
+https://dashboard.stripe.com/test/dashboard
+-> Developers(bottom left button) -> webhooks
+https://dashboard.stripe.com/test/workbench/webhooks
+
+-- OrderSpecification.cs --
+-> add another constructor with paymentIntentId:
+   public OrderSpecification(string paymentIntentId, bool? isPaymentIntent) {...}
+
+-- PaymentsController.cs --
+-> add logger into constructor for Catch block
+-> add a [HttpPost("webhook")] named StripeWebhook()
+    -> create a StreamReader from the request body: .ReadToEndAsync()
+    -> construct the Stripe event : 
+        EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], _whSecret);
+    -> HandlePaymentIntentSucceeded(intent)    
+
+
+-- Dictionary --
+
+What is a WebHook?
+-> a way for applications to communicate with each other in real-time using HTTP callbacks
+EX: We use Angular, .Net and Stripes
+
+Definition:
+1. Stripe is the source system(the webhook sender)
+2. The .Net is receiver(where the webhook URL points)
+3. Angular communicate with .NET but doesn't directly receive the webhook
+
+WebHook flow:
+1. In your Stripe dashboard, you register a webhook URL that points to an endpoint in .Net app
+2. When something happens in Stripe, Stripe automatically sends a POST request to .Net
+3. .Net receives the POST request, validates it's from Stripe and processes it
+4. .Net notify Angular through SignalR 
+
+
+.ReadToEndAsync() 
+-> method from StreamReader
+-> reads all characters from the current position to the end of the stream 
+asynchronously and returns them as one string
+
+.ConstructEvent()
+-> method from EventUtility
+-> parses a JSON string from a Stripe webhook into a <see cref="Event"/> object, while
+verifying the <a href="https://stripe.com/docs/webhooks/signatures"> webhook's

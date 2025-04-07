@@ -11,7 +11,15 @@ public class OrderSpecification : BaseSpecification<Order>
     }
 
     // an individual user can only request only their own order
-    public OrderSpecification(string email, int id) : base(o => o.BuyerEmail == email && o.Id == id)
+    public OrderSpecification(string email, int id)
+        : base(o => o.BuyerEmail == email && o.Id == id)
+    {
+        AddInclude("OrderItems");
+        AddInclude("DeliveryMethod");
+    }
+
+    public OrderSpecification(string paymentIntentId, bool? isPaymentIntent)
+        : base(x => x.PaymentIntentId == paymentIntentId)
     {
         AddInclude("OrderItems");
         AddInclude("DeliveryMethod");
