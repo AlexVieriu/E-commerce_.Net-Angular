@@ -1,6 +1,22 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Chaining of methods - static methods [Name of Method](this IServiceCollection services)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listenOptions => { });
+
+    options.ListenLocalhost(7096, listenOptions =>
+    {
+        listenOptions.UseHttps();
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2AndHttp3;
+    });
+
+    options.ListenLocalhost(5150, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+    });
+
+});
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
@@ -64,8 +80,7 @@ app.MapControllers();
 // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
 app.MapGroup("api").MapIdentityApi<AppUser>();
 
-app.MapHub<NotificationHub>("/hubs/notifications");
-
+app.MapHub<NotificationHub>("/hub/notifications");
 
 try // Database Migration
 {

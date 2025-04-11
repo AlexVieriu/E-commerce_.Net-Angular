@@ -368,4 +368,43 @@ What is a ConcurrentDictionary?
 -> represents a thread-safe collection of keys and values
 
 Hub:
--> a base class for a SignalR hub
+-> a base class for a SignalR 
+
+
+206. Adding SignalR to the Client
+
+cd skinet/client
+npm install @microsoft/signalr
+ng g s core/services/signalr --skip-tests
+
+
+-- environment.development.ts --
+hubUrl: 'https://localhost:7096/hub/notification',
+
+-- environment.ts --
+hubUrl: 'hub/notification'
+
+
+-- signalr.service.ts --
+-> remove the ctor
+-> createHubConnection()
+-> stopHubConnection()
+
+
+-- init.service.ts --
+-> createHubConnection() adding .pipe to the forkJoin()
+
+
+-- account.service.ts --
+-> add hubConnection to the login method
+-> add stopHubConnection to the logout method
+
+
+Test SignalR:
+-> run projects
+-> in Chrome 
+    -> Console 
+        -> we need to see: "WebSocket connected to wss://localhost:7096/hub/notifications?id=WJ8-PMjIzk95cGGr2L0O6w."
+    -> Network
+        -> look for "notifications?id=WJ8-PMjIzk95cGGr2L0O6w"
+            -> Messages : here will see messages going back and forth

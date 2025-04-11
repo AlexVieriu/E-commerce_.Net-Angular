@@ -5,6 +5,7 @@ import { User } from '../../shared/models/user';
 import { map } from 'rxjs/internal/operators/map';
 import { tap } from 'rxjs/internal/operators/tap';
 import { Address } from '../../shared/models/address';
+import { SignalrService } from './signalr.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ import { Address } from '../../shared/models/address';
 export class AccountService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
+  private signalrService = inject(SignalrService);
   currentUser = signal<User | null>(null);
 
   login(values: any) {
@@ -21,7 +23,9 @@ export class AccountService {
     // adding a parameter named 'useCookies' with the value 'true'
     params = params.append('useCookies', true);
 
-    return this.http.post<User>(this.baseUrl + 'login', values, { params });
+    return this.http.post<User>(this.baseUrl + 'login', values, { params }).pipe(
+      tap(() => this.signalrService.createHubConnection())
+    );
   }
 
   register(values: any) {
@@ -38,7 +42,9 @@ export class AccountService {
   }
 
   logout() {
-    return this.http.post(this.baseUrl + 'account/logout', {});
+    return this.http.post(this.baseUrl + 'account/logout', {}).pipe(
+      tap(() => this.signalrService.stopHubConnection())
+    );
   }
 
   updateAddress(address: Address) {
