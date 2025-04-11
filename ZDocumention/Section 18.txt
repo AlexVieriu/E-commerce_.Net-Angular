@@ -320,3 +320,52 @@ Testing:
 -> checkout
 -> pay 
 -> go to MyOrders(top-right) to see the status of the payment
+
+
+205. Adding SignalR to the API
+
+-- API -> SignalR -> NotificationHub.cs --
+override Task OnConnectedAsync()
+override Task OnDisconnectedAsync(Exception? exception)
+string? GetConnectionId(string email)
+
+-- Program.cs --
+builder.Services.AddSignalR();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
+
+
+-- PaymentsController.cs --
+-> add to constructor: IHubContext<NotificationHub> hub
+-> gives access to our notification hub and we can send notifications outside of the hub 
+
+HandlePaymentIntentSucceeded(PaymentIntent intent){
+    . . .
+    var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
+
+    if (!string.IsNullOrEmpty(connectionId))
+        await hubContext.Clients.Client(connectionId).SendAsync("OrderCompleteNotification", order.Id);
+}
+
+OrderCompleteNotification
+-> will be the method that we will listen on the Client side
+
+
+-- Dictionary --
+Override methods from Hub:
+-> Dispose()
+-> Equals()
+-> GetHashCode()
+-> OnDisconnectedAsync()
+-> OnConnectedAsync(Exception? exception)
+-> OnConnectedAsync()
+-> ToString()
+
+What is a ConcurrentDictionary?
+-> represents a thread-safe collection of keys and values
+
+Hub:
+-> a base class for a SignalR hub

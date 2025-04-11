@@ -1,10 +1,10 @@
-
 namespace API.Controllers;
 
 public class PaymentsController(IPaymentService payService,
                                 IUnitOfWork unitOfWork,
                                 ILogger<PaymentsController> logger,
-                                IConfiguration config) : BaseApiController
+                                IConfiguration config,
+                                IHubContext<NotificationHub> hubContext) : BaseApiController
 {
     private readonly string _whSecret = config["StripeSettings:WhSecret"]!;
 
@@ -89,7 +89,12 @@ public class PaymentsController(IPaymentService payService,
 
             await unitOfWork.Complete();
 
-            // Todo: SignalR
+            // SignalR
+            var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
+
+            if (!string.IsNullOrEmpty(connectionId))
+                await hubContext.Clients.Client(connectionId)
+                    .SendAsync("OrderCompleteNotification", order.ToDto());
         }
     }
 }
