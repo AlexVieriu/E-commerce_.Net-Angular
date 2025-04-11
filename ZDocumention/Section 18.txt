@@ -438,3 +438,35 @@ go to : https://localhost:4200/checkout/success
 
 Create a new Order
 
+
+206. Adding a guard to the checkout success
+
+-- order.service.ts --
+  orderComplete = false;
+
+
+-- checkout.component.ts --
+confirmPayment(){
+    this.orderService.orderComplete = true;
+}  
+
+-- checkout-success.component.ts --
+-> inject SignalRService and OrderService
+-> implement OnDestroy
+    -> set orderComplete to false
+    -> set orderSignal to null
+
+ng g guard core/guards/order-complete --skip-tests
+
+-- order-complete.guard.ts --
+-> inject Route, OrderService
+
+-> return true if .orderComplete
+-> else redirect to /shop and return false
+
+-- app.routes.ts --
+{ path: 'checkout/success', component: CheckoutSuccessComponent, canActivate: [authGuard, orderCompleteGuard] },
+
+Testing:
+-> try access: localhost:4200/checkout/success
+-> create a order and check //localhost:4200/checkout/success
