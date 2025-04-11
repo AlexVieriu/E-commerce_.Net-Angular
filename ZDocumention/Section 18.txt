@@ -470,3 +470,12 @@ ng g guard core/guards/order-complete --skip-tests
 Testing:
 -> try access: localhost:4200/checkout/success
 -> create a order and check //localhost:4200/checkout/success
+
+
+209. Adding the home page component style
+
+-- home.component.ts --
+-> imports: [RouterLink]
+
+-- home.component.html --
+-> add a button and image that goes to the shop page
