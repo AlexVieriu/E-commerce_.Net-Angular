@@ -479,3 +479,10 @@ Testing:
 
 -- home.component.html --
 -> add a button and image that goes to the shop page
+
+
+210. Summary
+
+-> client side orders
+-> webhooks
+-> signalR
