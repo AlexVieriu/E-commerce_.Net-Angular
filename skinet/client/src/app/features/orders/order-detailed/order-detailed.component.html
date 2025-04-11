@@ -1,46 +1,43 @@
-@if(order){
+@if (order) {
 <mat-card class="bg-white py-8 shadow-md max-w-screen-lg mx-auto">
     <div class="px-4 w-full">
         <div class="flex justify-between items-center align-middle">
             <h2 class="text-2xl text-center font-semibold">Order summary for order #{{order.id}}</h2>
-            <button mat-stroked-button routerLink="/orders">Return to orders</button>
+            <button routerLink="/orders" mat-stroked-button>Return to orders</button>
         </div>
-
-        <h2 class="text-2xl text-center font-semibold">Order summary for order #{{order.id}}</h2>
-        <div class="mt-8 py-3 boder-gray-200 flex-gap-16">
-
+        <div class="mt-8 px-12 py-4 border-t border-gray-200 flex gap-16">
             <div class="space-y-2">
                 <h4 class="text-lg font-semibold">Billing and delivery information</h4>
                 <dl>
                     <dt class="font-medium">Shipping address</dt>
-                    <dt class="mt-1 font-high">{{order.shippingAddress | address }}</dt>
+                    <dd class="mt-1 font-light">{{order.shippingAddress | address}}</dd>
                 </dl>
                 <dl>
                     <dt class="font-medium">Payment info</dt>
-                    <dt class="mt-1 font-high">{{order.paymentSummary | paymentCard }}</dt>
+                    <dd class="mt-1 font-light">{{order.paymentSummary | paymentCard}}</dd>
                 </dl>
             </div>
             <div class="space-y-2">
-                <h4 class="text-lg font-semibold">Order details info</h4>
+                <h4 class="text-lg font-semibold">Order details</h4>
                 <dl>
                     <dt class="font-medium">Email address</dt>
-                    <dt class="mt-1 font-high">{{order.buyerEmail}}</dt>
+                    <dd class="mt-1 font-light">{{order.buyerEmail}}</dd>
                 </dl>
                 <dl>
                     <dt class="font-medium">Order status</dt>
-                    <dt class="mt-1 font-high">{{order.status}}</dt>
+                    <dd class="mt-1 font-light">{{order.status}}</dd>
                 </dl>
                 <dl>
                     <dt class="font-medium">Order date</dt>
-                    <dt class="mt-1 font-high">{{order.orderDate | date: 'medium'}}</dt>
+                    <dd class="mt-1 font-light">{{order.orderDate | date: 'medium'}}</dd>
                 </dl>
             </div>
         </div>
 
-        <div class="mt-4">
-            <div class="border-gray-y border-gray-200">
+        <div class="px-12">
+            <div class="border-y border-gray-200">
                 <table class="w-full text-center">
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200">
                         @for (item of order.orderItems; track item.productId) {
                         <tr>
                             <td class="py-4">
@@ -58,7 +55,7 @@
             </div>
         </div>
 
-        <div class="space-y-4 rounded-lg border-y border-gray-200 bg-white shadow-sm p-5">
+        <div class="space-y-4 rounded-lg border-y border-gray-200 p-4 bg-white">
             <p class="text-xl font-semibold">Order summary</p>
             <div class="space-y-4">
                 <div class="space-y-2">
@@ -75,8 +72,7 @@
                         </dd>
                     </dl>
                     <dl class="flex items-center justify-between gap-4">
-                        <dt class="font-medium text-gray-500">Shipping fee
-                        <dt>
+                        <dt class="font-medium text-gray-500">Delivery fee</dt>
                         <dd class="font-medium text-gray-900">
                             {{order.shippingPrice| currency}}
                         </dd>
@@ -86,11 +82,13 @@
                 <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
                     <dt class="font-medium text-gray-500">Total</dt>
                     <dd class="font-medium text-gray-900">
-                        {{order.total| currency}}
+                        {{order.total | currency}}
                     </dd>
                 </dl>
             </div>
+
         </div>
+
     </div>
 </mat-card>
 }

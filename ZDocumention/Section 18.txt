@@ -408,3 +408,33 @@ Test SignalR:
     -> Network
         -> look for "notifications?id=WJ8-PMjIzk95cGGr2L0O6w"
             -> Messages : here will see messages going back and forth
+
+-> implementing Http 1, 2, 3
+
+-- Dictionary --
+https://dev.to/accreditly/http1-vs-http2-vs-http3-2k1c
+https://www.youtube.com/watch?v=UMwQjFzTQXw
+
+
+207. Updating the checkout success page 
+
+go to : https://localhost:4200/checkout/success
+
+-- checkout-success.component.ts --
+-> inject SignalrService
+-> imports: [MatProgressSpinnerModule, DatePipe, AddressPipe, CurrencyPipe, CardPipe, NgIf]
+
+
+-- checkout-success.component.html --
+<section *ngIf="signalrService.orderSignal() as order" class="bg-white py-16">
+-> #{{order.id}}
+-> {{order.orderDate | date:'medium'}}
+-> {{order.paymentSummary | paymentCard}}
+-> {{order.shippingAddress | address}}
+-> {{order.total | currency}}
+-> /order/{{order.id}}
+
+-> add another section for the spinner
+
+Create a new Order
+
