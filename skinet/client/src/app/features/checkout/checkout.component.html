@@ -15,7 +15,7 @@
                     <button [disabled]="!completionStatus().address" class="z-0" matStepperNext
                         mat-flat-button>Next</button>
                 </div>
-            </mat-step>
+            </mat-step>`
             <mat-step label="Shipping" [completed]="completionStatus().delivery">
                 <app-checkout-delivery (deliveryComplete)="handleDeliveryChange($event)" />
                 <div class="flex justify-between mt-6">

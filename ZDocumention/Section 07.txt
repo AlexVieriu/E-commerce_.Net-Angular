@@ -22,6 +22,10 @@ https://next.angular.dev/reference/versions
 -- Install Node.js --
 https://joachim8675309.medium.com/installing-node-js-with-nvm-4dc469c977d9
 
+winget install --id chocolatey.chocolatey --source winget
+
+-> open Visual Studio Code as Administrator
+
 # chose desired node version
 # install nvm w/ cmder
 choco install cmder
@@ -262,8 +266,6 @@ Add Extensions:
 -> set up VS Code for Angular
 -> set up Angular to use HTTPS
 -> added Angular Material and Tailwind CSS
-
-
 
 
 -- Best Practices approach when adding certificates --

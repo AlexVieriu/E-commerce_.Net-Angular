@@ -1,0 +1,488 @@
+197. Introduction 
+-> client side orders 
+    -> then they create a payment, the order will be created    
+
+-> webhooks
+    -> allow Stripe to communicate directly with the API, and notify the API
+    that the payment was successful
+    -> stripe and backend API will share a secret
+
+-> signalR
+    -> we need to notify the client that the payment was successful
+    without the client giving us a request      
+
+
+SignalR
+-> provides  real-time functionality
+-> automated connection management
+
+Supports:
+-> websockets
+-> server-sent events
+-> long-polling
+
+Good for:
+-> dashboards
+-> monitoring apps 
+-> apps that require notifications
+-> chat apps
+
+
+198. Creating the order components
+
+ng g s core/services/order --skip-tests
+ng g c features/orders/order --skip-tests --flat
+ng g c features/orders/order-detailed --skip-tests
+
+https://transform.tools/json-to-typescript
+
+-> make a call to {{localhost}}/api/order/1   
+-> copy from Postman into the JsonToTs link 
+-> make interfaces for each class
+
+Why interfaces and not types or classes:
+-> it's best practice to use interfaces when working with APIs
+
+-- order.service.ts --
+createOrder(orderToCreate: OrderToCreate){. . .}
+getOrdersForUser(){. . .}
+getOrderDetailed(id: number){. . .}
+
+-- app.routes.ts --
+{ path: 'orders', component: OrderComponent, canActivate: [authGuard] },
+{ path: 'order/:id', component: OrderDetailedComponent, canActivate: [authGuard] },
+
+
+Dictionary:
+
+--flat 
+-> create the 3 files without making a folder
+-> when we create a component, Angular creates a folder and puts the 3 files(.ts, .html, .css) in it
+
+Interfaces, Types, Classes in TypeScript:
+
+1. Interfaces
+-> only exists at compile-time (no JavaScript output)
+-> can be extended with extends
+-> can be merged with other interface declarations (declaration merging)
+-> primarily focused on object 
+
+When to use:
+-> when defining object shapes, especially for public APIs
+-> when you want to benefit from declaration merging
+-> when creating object types that might be extended later
+
+2. Types
+-> only exists at compile-time (no JavaScript output)
+-> can represent any type (unions, intersections, primitives, etc.)
+-> cannot be extended directly (but can use intersection types)
+-> cannot be merged with other declarations
+
+When to use:
+-> when you need union types (type Status = 'pending' | 'shipped')
+-> when you need complex types like mapped types, conditional types
+-> when you don't need declaration merging
+-> when you want to create type aliases for functions, tuples, etc.
+
+3. Classes
+-> exists at runtime (produces JavaScript code)
+-> can have constructors, methods, and property implementations
+-> can be instantiated with new
+-> supports inheritance with extends
+-> can implement interfaces
+
+When to use:
+-> when you need to create instances with new
+-> when you need methods and behavior along with data
+-> when you need inheritance hierarchies
+-> when you need to implement interfaces
+-> when working with object-oriented patterns
+
+
+199. Submitting the order
+
+-- checkout.component.ts --
+-> inject the OrderService
+
+confirmPayment(stepper: MatStepper){
+    -> check if confirmationToken exists
+    -> get the payment confirmPayment form Stripes with confirmToken
+    -> if succeeded
+        -> createOrderModel() : return a Promise of OrderToCreate
+            -> get the cart from the cartService
+            -> get shipping address from stripe
+            -> get the card from stripe
+            -> return OrderToCreate mapped from striped 
+        -> create order by passing the OrderToCreate obj to the API
+        -> if Order was created
+            -> delete Cart
+            -> set delivery to null
+            -> go to /checkout/success
+        -> else throw Order creation failed from API
+        -> else throw stripe error
+        -> else throw string Error :" Something went wrong with the payment confirmation"
+}
+
+-> test it
+-> we need to see in the DB, a new Order
+
+Refactoring:
+
+-- appsettings.json --
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Information"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "Data Source=../data/store.db",
+        "Redis": "localhost"
+    },
+    "StripeSettings": {
+        "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf"
+    }
+}
+
+-- OrderController.cs --
+return Create() -> return Created(uri: $"/api/order/{order.Id}", value: order);
+
+
+200. Designing the order component to display orders
+
+-> get the Orders in the API and display them in the interface
+
+-- order.component.ts --
+imports: [RouterLink, DatePipe, CurrencyPipe]
+
+-> inject the OrderService
+-> implement OnInit
+    -> return the orders from the API
+
+
+201. Creating the order detailed page
+
+-- order-detailed.component.ts --
+-> get the order from the API
+
+imports: [MatCardModule, DatePipe, CurrencyPipe]
+
+-> inject OrderService and ActivatedRoute
+-> implement OnInit
+    -> get the id: this.activatedRoute.snapshot.paramMap.get('id');
+    -> get the order from the API with id
+
+
+-- order-detailed.component.html --
+
+
+202. Updating the address pipe with type guards
+
+-- order-detailed.component.html --
+-> add a button to go back to /orders
+<dt class="mt-1 font-high">{{order.shippingAddress | address }}</dt>
+<dt class="mt-1 font-high">{{order.paymentSummary | paymentCard }}</dt>
+
+-- address.pipe.ts --
+transform(value?: ConfirmationToken['shipping'] | ShippingAddress, ...args: unknown[]): unknown {
+    if (value && 'address' in value && value.name) {
+        const { line1, line2, city, state, postal_code, country } =
+        (value as ConfirmationToken['shipping'])?.address!;
+
+        return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
+                ${city}, ${state}, ${postal_code}, ${country}`;
+    }
+    else if (value && 'line1' in value) {
+        const { line1, line2, city, state, postalCode, country } = (value as ShippingAddress)!;
+
+        return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
+                ${city}, ${state}, ${postalCode}, ${country}`;
+    }
+    else
+        return 'Unknown Address';
+}
+
+
+-- cardPipe.pipe.ts --
+transform(value?: ConfirmationToken['payment_method_preview'] | PaymentSummary, ...args: unknown[]): unknown {
+    if (value && 'card' in value && value.card) {
+        const { brand, last4, exp_month, exp_year } = 
+            (value as ConfirmationToken['payment_method_preview']).card!;
+
+        return `${brand.toUpperCase()} **** **** **** ${last4} , Exp: ${exp_month}/${exp_year}`;
+    }
+    else if (value && 'last4' in value) {
+        const { brand, last4, expMonth, expYear } = value as PaymentSummary;
+
+        return `${brand.toUpperCase()} **** **** **** ${last4} , Exp: ${expMonth}/${expYear}`;
+    }
+    else
+        return 'Unknown payment method';
+}
+
+
+-- Dictionary --
+
+What is a pipe in Angular?
+-> a feature that allows you to transform data before displaying it in the view
+-> take in data as input and transform it to a 
+desired output format without changing the original data
+-> ex: {{order.shippingAddress | address }}
+https://next.angular.dev/guide/templates/pipes
+
+
+What is type guard in Angular?
+-> a technique used to determine the type of an object at runtime
+-> methods: typeof, instanceof, in(for properties)
+https://blog.logrocket.com/how-to-use-type-guards-typescript/
+
+
+203. Adding a webhook endpoint in the payments controller
+
+https://dashboard.stripe.com/test/dashboard
+-> Developers(bottom left button) -> webhooks
+https://dashboard.stripe.com/test/workbench/webhooks
+
+-- OrderSpecification.cs --
+-> add another constructor with paymentIntentId:
+   public OrderSpecification(string paymentIntentId, bool? isPaymentIntent) {...}
+
+-- PaymentsController.cs --
+-> add logger into constructor for Catch block
+-> add a [HttpPost("webhook")] named StripeWebhook()
+    -> create a StreamReader from the request body: .ReadToEndAsync()
+    -> construct the Stripe event : 
+        EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], _whSecret);
+    -> HandlePaymentIntentSucceeded(intent)    
+
+
+-- Dictionary --
+
+What is a WebHook?
+-> a way for applications to communicate with each other in real-time using HTTP callbacks
+EX: We use Angular, .Net and Stripes
+
+Definition:
+1. Stripe is the source system(the webhook sender)
+2. The .Net is receiver(where the webhook URL points)
+3. Angular communicate with .NET but doesn't directly receive the webhook
+
+WebHook flow:
+1. In your Stripe dashboard, you register a webhook URL that points to an endpoint in .Net app
+2. When something happens in Stripe, Stripe automatically sends a POST request to .Net
+3. .Net receives the POST request, validates it's from Stripe and processes it
+4. .Net notify Angular through SignalR 
+
+
+.ReadToEndAsync() 
+-> method from StreamReader
+-> reads all characters from the current position to the end of the stream 
+asynchronously and returns them as one string
+
+.ConstructEvent()
+-> method from EventUtility
+-> parses a JSON string from a Stripe webhook into a <see cref="Event"/> object, while
+verifying the <a href="https://stripe.com/docs/webhooks/signatures"> webhook's
+
+
+204. Testing the WebHook using the Stripe CLI
+-> always open VCS as Administrator
+
+https://docs.stripe.com/stripe-cli?install-method=scoop
+-> instal scoop
+-> install stripe CLI
+
+stripe login 
+-> if first time, it will send a code to your email address to login
+stripe listen --forward-to https://localhost:7096/api/payments/webhook -e payment_intent.succeeded
+Your webhook signing secret is whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989 (^C to quit)
+
+-> keep the terminal running 
+
+-- appsettings.json --
+"StripeSettings": {
+    "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
+    "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
+    "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
+}
+
+-- PaymentsController.cs --
+private readonly string _whSecret = config["StripeSettings:WhSecret"]!;
+
+Testing:
+-> run VSC as Administrator
+-> stripe listen --forward-to https://localhost:7096/api/payments/webhook -e payment_intent.succeeded
+-> let the terminal running, don't close it
+-> create a new Order
+-> add products to the cart
+-> go to the cart 
+-> checkout
+-> pay 
+-> go to MyOrders(top-right) to see the status of the payment
+
+
+205. Adding SignalR to the API
+
+-- API -> SignalR -> NotificationHub.cs --
+override Task OnConnectedAsync()
+override Task OnDisconnectedAsync(Exception? exception)
+string? GetConnectionId(string email)
+
+-- Program.cs --
+builder.Services.AddSignalR();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
+
+
+-- PaymentsController.cs --
+-> add to constructor: IHubContext<NotificationHub> hub
+-> gives access to our notification hub and we can send notifications outside of the hub 
+
+HandlePaymentIntentSucceeded(PaymentIntent intent){
+    . . .
+    var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
+
+    if (!string.IsNullOrEmpty(connectionId))
+        await hubContext.Clients.Client(connectionId).SendAsync("OrderCompleteNotification", order.Id);
+}
+
+OrderCompleteNotification
+-> will be the method that we will listen on the Client side
+
+
+-- Dictionary --
+Override methods from Hub:
+-> Dispose()
+-> Equals()
+-> GetHashCode()
+-> OnDisconnectedAsync()
+-> OnConnectedAsync(Exception? exception)
+-> OnConnectedAsync()
+-> ToString()
+
+What is a ConcurrentDictionary?
+-> represents a thread-safe collection of keys and values
+
+Hub:
+-> a base class for a SignalR 
+
+
+206. Adding SignalR to the Client
+
+cd skinet/client
+npm install @microsoft/signalr
+ng g s core/services/signalr --skip-tests
+
+
+-- environment.development.ts --
+hubUrl: 'https://localhost:7096/hub/notification',
+
+-- environment.ts --
+hubUrl: 'hub/notification'
+
+
+-- signalr.service.ts --
+-> remove the ctor
+-> createHubConnection()
+-> stopHubConnection()
+
+
+-- init.service.ts --
+-> createHubConnection() adding .pipe to the forkJoin()
+
+
+-- account.service.ts --
+-> add hubConnection to the login method
+-> add stopHubConnection to the logout method
+
+
+Test SignalR:
+-> run projects
+-> in Chrome 
+    -> Console 
+        -> we need to see: "WebSocket connected to wss://localhost:7096/hub/notifications?id=WJ8-PMjIzk95cGGr2L0O6w."
+    -> Network
+        -> look for "notifications?id=WJ8-PMjIzk95cGGr2L0O6w"
+            -> Messages : here will see messages going back and forth
+
+-> implementing Http 1, 2, 3
+
+-- Dictionary --
+https://dev.to/accreditly/http1-vs-http2-vs-http3-2k1c
+https://www.youtube.com/watch?v=UMwQjFzTQXw
+
+
+207. Updating the checkout success page 
+
+go to : https://localhost:4200/checkout/success
+
+-- checkout-success.component.ts --
+-> inject SignalrService
+-> imports: [MatProgressSpinnerModule, DatePipe, AddressPipe, CurrencyPipe, CardPipe, NgIf]
+
+
+-- checkout-success.component.html --
+<section *ngIf="signalrService.orderSignal() as order" class="bg-white py-16">
+-> #{{order.id}}
+-> {{order.orderDate | date:'medium'}}
+-> {{order.paymentSummary | paymentCard}}
+-> {{order.shippingAddress | address}}
+-> {{order.total | currency}}
+-> /order/{{order.id}}
+
+-> add another section for the spinner
+
+Create a new Order
+
+
+206. Adding a guard to the checkout success
+
+-- order.service.ts --
+  orderComplete = false;
+
+
+-- checkout.component.ts --
+confirmPayment(){
+    this.orderService.orderComplete = true;
+}  
+
+-- checkout-success.component.ts --
+-> inject SignalRService and OrderService
+-> implement OnDestroy
+    -> set orderComplete to false
+    -> set orderSignal to null
+
+ng g guard core/guards/order-complete --skip-tests
+
+-- order-complete.guard.ts --
+-> inject Route, OrderService
+
+-> return true if .orderComplete
+-> else redirect to /shop and return false
+
+-- app.routes.ts --
+{ path: 'checkout/success', component: CheckoutSuccessComponent, canActivate: [authGuard, orderCompleteGuard] },
+
+Testing:
+-> try access: localhost:4200/checkout/success
+-> create a order and check //localhost:4200/checkout/success
+
+
+209. Adding the home page component style
+
+-- home.component.ts --
+-> imports: [RouterLink]
+
+-- home.component.html --
+-> add a button and image that goes to the shop page
+
+
+210. Summary
+
+-> client side orders
+-> webhooks
+-> signalR

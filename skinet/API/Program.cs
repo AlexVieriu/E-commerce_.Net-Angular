@@ -1,15 +1,27 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 // Chaining of methods - static methods [Name of Method](this IServiceCollection services)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listenOptions => { });
+
+    options.ListenLocalhost(7096, listenOptions =>
+    {
+        listenOptions.UseHttps();
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2AndHttp3;
+    });
+
+    options.ListenLocalhost(5150, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+    });
+
+});
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
+
 builder.Services.AddDbContext<StoreContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddCors();
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var conStr = builder.Configuration.GetConnectionString("Redis") ??
@@ -17,11 +29,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
     var conf = ConfigurationOptions.Parse(conStr, true);
     return ConnectionMultiplexer.Connect(conf);
 });
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<ICartService, CartService>();
+
+builder.Services.AddCors();
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
                 .AddEntityFrameworkStores<StoreContext>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddSignalR();
 
 
 var app = builder.Build();
@@ -53,10 +72,15 @@ app.UseCors(options => options.AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowCredentials()
                               .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
 app.MapGroup("api").MapIdentityApi<AppUser>();
+
+app.MapHub<NotificationHub>("/hub/notifications");
 
 try // Database Migration
 {
