@@ -144,3 +144,25 @@ Claude:
 If i put my production Angular in .net in wwwroot folder, how .net can differentiate 
 the .net routes and Angular routes?" 
 Give me an example with a full flow. I don't need the full code or implementation."
+
+
+214. Setting up cloud Redis server
+
+https://console.upstash.com/redis?teamid=0
+
+-> create redis DB
+Name: skinet
+Primary Region: Frankfurt
+
+copy: redis-cli --tls -u redis://default:ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA@teaching-hermit-10559.upstash.io:6379
+
+-- appsettings.Development.json --
+"Redis": "teaching-hermit-10559.upstash.io:6379, password=ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA,ssl=true,abortConnect=false"
+
+-> restart the API
+-> now we are using a different redis DB
+https://localhost:7096/shop
+-> add some items to the create
+-> check the redis DB:
+    -> https://console.upstash.com/redis/a7583534-e074-4f49-a565-f12c49811467?teamid=0
+    -> data browser
