@@ -12,3 +12,52 @@ https://portal.azure.com/#view/Microsoft_Azure_Billing/FreeServicesBlade
 -> we will gonna use:
     -> Azure SQL DB
     -> Azure App Service
+
+
+212. Preparing the client app for publishing
+
+Goal:
+-> we need to get our production Angular app
+-> out Angular app can be hosted anywhere(but we will use our .net Web Server!!)
+-> need to be be hosted by a web Server, because when it gets compile, it will 
+get compile into the static Js files and they need to be served from somewhere 
+to the Client 
+
+Preparation:
+
+-- angular.json --
+"outputPath": {
+    "base": "../API/wwwroot",
+    "browser": ""
+}
+
+-- loading.interceptor.ts --
+(environment.production ? identity : delay(500))
+
+-> don't let hardcoded URL(localhost:5150/...), we will have problems in production
+
+ng build 
+-> we need to find the wwwroot folder after
+
+Change the Raw size of Angular:
+
+-- angular.json --
+"type": "initial",
+"maximumWarning": "1.5Mb",
+"maximumError": "3MB"
+                
+ng build 
+Output location: F:\Programare\E-commerce_.Net-Angular\skinet\API\wwwroot
+
+-- API -> wwwroot --
+main-S6A5GRIC.js
+polyfills-FFHMD2TL.js
+
+-> if we build it again will have a different output hash
+
+
+-- Dictionary --
+
+identity:
+-> takes one parameter and returns it
+-> it's like a 0ms delay function
