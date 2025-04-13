@@ -1,0 +1,14 @@
+211. Introduction
+-> preparing the app for publishing
+-> Angular production build
+-> using cloud Redis server
+-> publishing to Azure
+-> Continuous Integration (CI/CD)
+-> troubleshooting Azure 
+
+Free services from Azure:
+https://portal.azure.com/#view/Microsoft_Azure_Billing/FreeServicesBlade
+
+-> we will gonna use:
+    -> Azure SQL DB
+    -> Azure App Service
