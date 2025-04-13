@@ -166,3 +166,32 @@ https://localhost:7096/shop
 -> check the redis DB:
     -> https://console.upstash.com/redis/a7583534-e074-4f49-a565-f12c49811467?teamid=0
     -> data browser
+
+
+215. Setting up an azure account
+
+https://portal.azure.com/#view/Microsoft_Azure_Billing/FreeServicesBlade
+https://portal.azure.com/#create/Microsoft.SQLDatabase
+
+Pay-as-you-go:
+-> create a subscription
+-> create resource group
+    -> https://portal.azure.com/?quickstart=True#browse/resourcegroups
+    -> go to the resource group after created
+    -> https://portal.azure.com/?quickstart=True#@vieriualexandru25gmail.onmicrosoft.com/resource/subscriptions/cbf01c9b-a5bb-423a-9892-fc49065f6ea6/resourcegroups/skinet-2025-rg/overview 
+    -> search fro "web app"
+        -> create:
+            -> subscription: choose your subscription
+            -> instance details: skinet-alexV89
+            -> uncheck :"try secure unique default hostname"
+            -> publish: "Code"
+            -> runtime: ".Net 9 (STS)"
+            -> Operating system: "Windows"
+            -> region: "Poland Center"
+            -> pricing plan: "Free F1(Shared Infrastructure)"
+            -> Review + Create
+            -> Create (w8 for deployment)
+-> go to resource   : https://portal.azure.com/?quickstart=True#@vieriualexandru25gmail.onmicrosoft.com/resource/subscriptions/cbf01c9b-a5bb-423a-9892-fc49065f6ea6/resourcegroups/skinet-2025-rg/providers/Microsoft.Web/sites/skinet-alexV89/appServices
+-> go to the domain : https://skinet-alexv89.azurewebsites.net/
+-> stop the site from running 
+
