@@ -75,6 +75,12 @@ app.UseCors(options => options.AllowAnyHeader()
 app.UseAuthentication();
 app.UseAuthorization();
 
+// For Angular app
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapFallbackToController("Index", "Fallback"); // Idex(action name), Fallback(controller name)
+
+
 app.MapControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
@@ -91,7 +97,7 @@ try // Database Migration
     var context = services.GetRequiredService<StoreContext>();
     await context.Database.MigrateAsync();
 
-    await StoreContentSeed.SeedAsync(context);
+    await StoreContextSeed.SeedAsync(context);
 }
 catch (Exception ex)
 {

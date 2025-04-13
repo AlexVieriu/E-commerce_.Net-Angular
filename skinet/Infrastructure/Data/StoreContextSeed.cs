@@ -1,12 +1,14 @@
 namespace Infrastructure.Data;
 
-public class StoreContentSeed
+public class StoreContextSeed
 {
     public static async Task SeedAsync(StoreContext context)
     {
+        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
         if (!context.Products.Any())
         {
-            var productsData = await File.ReadAllTextAsync("../Infrastructure/Data/Seed Data/products.json");
+            var productsData = await File.ReadAllTextAsync(path + @"/Data/Seed Data/products.json");
             var products = JsonSerializer.Deserialize<List<Product>>(productsData);
 
             if (products == null)
@@ -19,7 +21,7 @@ public class StoreContentSeed
 
         if (!context.DeliveryMethods.Any())
         {
-            var dmData = await File.ReadAllTextAsync("../Infrastructure/Data/Seed Data/delivery.json");
+            var dmData = await File.ReadAllTextAsync(path + @"/Data/Seed Data//delivery.json");
             var deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(dmData);
 
             if (deliveryMethods == null)

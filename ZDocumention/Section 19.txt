@@ -61,3 +61,86 @@ polyfills-FFHMD2TL.js
 identity:
 -> takes one parameter and returns it
 -> it's like a 0ms delay function
+
+
+213. Preparing the .Net app for publishing
+
+-> we need middleware to serve static files from the wwwroot folder
+
+-- Program.cs --
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+-- FallbackController.cs --
+public IActionResult Index()
+{
+    return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "index.html"),
+        "text/HTML");
+}
+
+-- StoreContentSeed.cs --
+var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+var productsData = await File.ReadAllTextAsync(path + @"/Data/Seed Data/products.json");
+var dmData = await File.ReadAllTextAsync(path + @"/Data/Seed Data//delivery.json");
+
+-- Infrastructure.csproj --
+<ItemGroup>
+     <None Include="Data\Seed Data\**" CopyToOutputDirectory="PreserveNewest"/>
+</ItemGroup>
+
+cd skinet
+dotnet ef database drop -p Infrastructure -s API
+cd API
+dotnet run
+
+-> now our proj is running in production mode
+https://localhost:7096
+
+alex@gmail.com
+Pa$$w0rd
+
+
+-- Dictionary --
+Assembly.GetExecutingAssembly().Location
+-> Gets the full path or UNC location of the loaded file that contains the manifest
+
+app.UseDefaultFiles()
+-> enables default file mapping on the current path
+-> files are served from the path specified in IWebHostEnvironment.WebRootPath, 
+which defaults to the wwwroot subfolder
+-> that's why we configured angular.json to point to the wwwroot folder
+
+app.UseStaticFiles()
+-> enables static file serving for the current request path
+
+app.MapFallbackToController("Index", "Fallback")
+-> Index    : action Name
+-> Fallback : controller name
+-> when a client requests a route that doesn't match any of your defined API endpoints, 
+and doesn't match any physical files in your wwwroot folder, the request is routed to the 
+Index action of the Fallback controller
+
+Ex:
+-> when a user navigates directly to a client-side route(like '/products/5') or refresh the page, 
+the server returns your SPA's main HTML page
+
+Routing System:
+-> ASP.Net has it's own server-side routing system that maps URLs to controller actions
+-> Angular uses a client-side routing system that handles navigation with the browser
+
+Example:
+
+Server-side routes: 
+"/api/products" → ProductsController.GetAll()
+"/api/products/{id}" → ProductsController.GetProduct(5)
+
+Client-side routes:
+"/" -> HomeComponent
+"/products" -> ProductsListComponent
+"/products/{id}" -> ProductDetailsComponent
+
+Claude:
+"How .net and Angular routing work together? 
+If i put my production Angular in .net in wwwroot folder, how .net can differentiate 
+the .net routes and Angular routes?" 
+Give me an example with a full flow. I don't need the full code or implementation."

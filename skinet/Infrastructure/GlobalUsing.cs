@@ -13,4 +13,5 @@ global using Product = Core.Entities.Product;
 global using StackExchange.Redis;
 global using Stripe;
 global using System.Collections.Concurrent;
+global using System.Reflection;
 global using System.Text.Json;
