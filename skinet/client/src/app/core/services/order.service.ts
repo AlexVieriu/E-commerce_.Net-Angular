@@ -10,6 +10,7 @@ import { Order } from '../../shared/models/order/order';
 export class OrderService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient)
+  orderComplete = false;
 
   createOrder(orderToCreate: OrderToCreate) {
     return this.http.post(this.baseUrl + 'order', orderToCreate);

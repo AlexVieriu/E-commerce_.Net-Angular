@@ -58,7 +58,7 @@ public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) :
         unitOfWork.Repository<Order>().Add(order);
 
         if (await unitOfWork.Complete())
-            return Created();
+            return Created(uri: $"/api/order/{order.Id}", value: order);
         else
             return BadRequest("Problem creating order");
     }

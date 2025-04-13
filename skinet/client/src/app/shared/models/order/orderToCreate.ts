@@ -3,7 +3,7 @@ import { ShippingAddress } from "./shippingAddress";
 
 export interface OrderToCreate {
     cartId: string;
-    deliveryMethodId: number;
+    deliveryMethodId?: number;
     shippingAddress: ShippingAddress
     paymentSummary: PaymentSummary
 }
