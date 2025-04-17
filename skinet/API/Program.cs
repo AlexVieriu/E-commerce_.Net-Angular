@@ -27,14 +27,15 @@ builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/op
 
 builder.Services.AddDbContext<StoreContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("SqlServerAzureConnection"),
-        sqlServerOptionsAction: sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null);
-        }));
+        builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
+
+// sqlServerOptionsAction: sqlOptions =>
+// {
+//     sqlOptions.EnableRetryOnFailure(
+//         maxRetryCount: 5,
+//         maxRetryDelay: TimeSpan.FromSeconds(30),
+//         errorNumbersToAdd: null);
+// }));
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
