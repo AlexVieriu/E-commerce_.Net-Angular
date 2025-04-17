@@ -17,6 +17,7 @@ builder.WebHost.ConfigureKestrel(options =>
     });
 
 });
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
@@ -72,13 +73,13 @@ if (app.Environment.IsDevelopment())
     );
 }
 
-app.UseHttpsRedirection();
-
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpsRedirection();
 app.UseCors(options => options.AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowCredentials()
                               .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -86,7 +87,6 @@ app.UseAuthorization();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapFallbackToController("Index", "Fallback"); // Idex(action name), Fallback(controller name)
-
 
 app.MapControllers();
 
