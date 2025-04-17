@@ -420,3 +420,93 @@ https://dashboard.stripe.com/test/workbench/webhooks
 -> we are using API version 2025-03-31.basil, bu tmy API is expecting using version 2025-02-24.acacia
 -> i need to update my Stripe API(in the Infrastructure project)
 
+
+221. Making the empty state component reusable
+
+-- appsettings.development.json --
+"ConnectionStrings": {
+    "DefaultConnection": "Data Source=../data/store.db",
+    "Redis": "localhost"
+}
+
+
+-- empty-state.component.ts --
+busyService = inject(BusyService); 
+message = input.required<string>();
+icon = input.required<string>();
+actionText = input.required<string>();
+action = output<void>();
+
+onAction() {
+    this.action.emit();
+}
+
+
+-- empty-state.component.html --
+@if(busyService.busyRequestCount === 0){
+    // add the input/outputs signals to HTML
+    . . .
+}
+
+-- shop.component.ts --
+resetFilters() {
+    this.shopParams = new ShopParams();
+    this.getProducts(); // will reset the filters and get products again
+}
+
+
+-- shop.component.html --
+@if (products && products.count > 0) {. . . }
+@else {
+    <app-empty-state message="No products match this filter" icon="filter_alt_off" 
+    actionText="Clear filters" (action)="resetFilters()" />
+}
+
+
+-- cart.component.ts --
+private router = inject(Router);
+
+onAction() {
+    this.router.navigateByUrl('/shop');
+}
+
+
+-- cart.component.html --
+@else{
+    <app-empty-state message="Shopping cart is empty" icon="remove_shopping_cart" 
+        actionText="" (action)="onAction()" />
+}
+
+First test it in Development mode
+
+
+
+-- Dictionary --
+
+message = input.required<string>();
+action = output<void>();
+
+
+.input:
+-> introduced in Angular 17
+-> allow data flow from parent to child
+-> 2 types of input:
+    -> Optional inputs with an initial value
+    -> Required inputs that consumers need to set
+-> inputs are signals (by default)
+-> the signal always holds the last value of the input that is bound from parent
+
+Ex:
+export class UserProfileComponent {
+    firstName = input<string>();             // Signal<string|undefined>
+    lastName  = input.required<string>();    // Signal<string>
+    age       = input(0)                     // Signal<number>
+}
+
+HTML:
+ <span>{{firstName()}}</span>
+
+
+output:
+-> event emitters that allow child components to send events to the parent component
+

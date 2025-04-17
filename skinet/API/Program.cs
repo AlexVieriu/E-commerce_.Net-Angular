@@ -22,13 +22,12 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
 
-// builder.Services.AddDbContext<StoreContext>(options =>
-//     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"),
-//     x => x.MigrationsHistoryTable("__EFMigrationsHistorySqlite")));
-
 builder.Services.AddDbContext<StoreContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// builder.Services.AddDbContext<StoreContext>(options =>
+//     options.UseSqlServer(
+//         builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
