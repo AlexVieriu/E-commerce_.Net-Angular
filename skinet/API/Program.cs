@@ -78,7 +78,7 @@ app.UseHttpsRedirection();
 app.UseCors(options => options.AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowCredentials()
-                              .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-alex89.azurewebsites.net"));
 
 app.UseAuthentication();
 app.UseAuthorization();
