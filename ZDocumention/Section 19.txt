@@ -367,3 +367,29 @@ https://dashboard.stripe.com/test/workbench/webhooks/create
     -> Name: StripeSettings__WhSecret
     -> Value: "whsec_20......."
 
+
+219. Adding Continuous Integration (CI/CD)
+
+Go to Azure site -> App Service -> Deployment -> Deployment Center
+Source      : GitHub
+Organization: AlexVieriu (your GitHub account)
+Repository  : E-commerce_.Net-Angular
+Branch      : main
+
+Authentication type: User-assigned identity
+Preview file
+
+-> we need to do some additional steps before this:
+
+-- environment.ts --
+-> update to production key
+export const environment = {
+    production: true,
+    apiUrl: 'api/',
+    hubUrl: 'hub/notifications',
+    stripePublicKey: '....'
+};
+
+ng build 
+-> go to Azure -> App Service -> Deployment -> Deployment Center -> save the changes
+-> GitHub -> Open repository -> Actions -> 
