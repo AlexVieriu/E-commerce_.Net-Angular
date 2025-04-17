@@ -510,3 +510,21 @@ HTML:
 output:
 -> event emitters that allow child components to send events to the parent component
 
+
+222. Update CI to also build the angular app
+
+-> make a pull request to get the workflows .yml file
+
+-- section19_skinet-alexv89.yml --
+
+- name: Set up node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.14'
+
+- name: Install Angular CLI
+  run: npm install -g @angular/cli@19
+
+- name: Install dependencies and build angular app
+  working-directory: ./skinet/client
+  run: npm install ng build
