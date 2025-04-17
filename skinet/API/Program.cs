@@ -29,14 +29,6 @@ builder.Services.AddDbContext<StoreContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
 
-// sqlServerOptionsAction: sqlOptions =>
-// {
-//     sqlOptions.EnableRetryOnFailure(
-//         maxRetryCount: 5,
-//         maxRetryDelay: TimeSpan.FromSeconds(30),
-//         errorNumbersToAdd: null);
-// }));
-
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var conStr = builder.Configuration.GetConnectionString("Redis") ??

@@ -405,3 +405,5 @@ Change .yml file:
 - name: dotnet publish
   working-directory: ./skinet
   run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+  
