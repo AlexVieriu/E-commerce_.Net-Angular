@@ -1,5 +1,3 @@
-using Core.Entities.OrderAggregate;
-
 namespace Infrastructure.Data;
 
 public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)

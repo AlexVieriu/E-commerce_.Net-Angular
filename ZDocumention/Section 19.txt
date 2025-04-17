@@ -199,7 +199,7 @@ Pay-as-you-go:
 216. Configuring the web app on Azure
 
 -> keep development and production Stripe account separate
-->create new Stripe account:
+-> create new Stripe account:
     -> "skinet-prod"
         -> Publishable key: ...
         -> Secret key :  ...
@@ -243,13 +243,12 @@ Pay-as-you-go:
 Subscription    : -> pick the one that you have
 Resource group  : -> pick the one that you have
 
-Server name : skinet-2025a
-Location    : Poland Center
-
-Use SQL authentication: 
-    -> server admin login: appuser
-    -> password: Pa$$w0rd
-    -> confirm password: Pa$$w0rd
+Database name   : skinet
+Server          : -> create: 
+                    Server Name: skinet-2025a
+                    Location: Poland Center
+                    Server admin login: appuser
+                    Password: Pa$$w0rd
 
 Auto-pause the database until next month
 Review + Create
@@ -269,3 +268,102 @@ Review + Create
 
 -> go to Resource Group -> SQL server -> Networking -> Selected Networks -> 
     -> Allow Azure service and resources to access this server -> Save
+
+
+218. Publishing to Azure
+
+If we have SQLite on the Development and SQL Server Azure in Production: 
+
+-- Program.cs --
+// builder.Services.AddDbContext<StoreContext>(options =>
+//     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"),
+//     x => x.MigrationsHistoryTable("__EFMigrationsHistorySqlite")));
+
+builder.Services.AddDbContext<StoreContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("SqlServerAzureConnection"),
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+        }));
+
+-- appsettings.json --
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Information"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "Data Source=../data/store.db",
+        "Redis": "localhost",
+        "SqlServerAzureConnection": ""
+    },
+    "StripeSettings": {
+        "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
+        "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
+        "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
+    }
+}
+
+-- appsettings.development.json --
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Information"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "Data Source=../data/store.db",
+        "Redis": "teaching-hermit-10559.upstash.io:6379, password=ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA,ssl=true,abortConnect=false",
+        "SqlServerAzureConnection": ""
+    }
+}
+
+Check if on every file in Angular project we have: "import { environment } from '../../../environments/environment';"
+-> don't use:"src/environments/environment.development.ts"
+
+Check -- angular.json -- 
+"development": {
+    "optimization": false,
+    "extractLicenses": false,
+    "sourceMap": true,
+    "fileReplacements": [
+        {
+            "replace": "src/environments/environment.ts",
+            "with": "src/environments/environment.development.ts"
+        }
+    ]
+}
+
+Rebuild angular app, so we have the static site on the API proj: 
+ng build
+Output location: F:\Programare\E-commerce_.Net-Angular\skinet\API\wwwroot
+
+
+-> add Azure App Service extension to VSC
+
+// $env:DOTNET_ENVIRONMENT="Production"; dotnet ef migrations add ChangeToSqlDB -s API -p Infrastructure
+dotnet ef migrations add InitialSqlServer -s API -p Infrastructure -o Migrations/SqlServer
+
+cd skinet/API
+dotnet publish -c Release -o ./bin/Publish
+
+Create a permanent Webhook:
+-> to Stripe, the production account -> Developers(left-down corner) -> Webhooks -> Add Destination(endpoint)
+https://dashboard.stripe.com/test/workbench/webhooks/create
+
+1. Search for "payment_intent.succeeded" event -> Next
+2. pick Webhook endpoint -> next
+3. endpoint URL: https://skinet-alexv89.azurewebsites.net/api/payments/webhook
+4. search for "Signing secret" in the redirection page
+5. copy the signing secret: "whsec_20......."
+6. Go to Azure -> App Service -> Settings -> Environment variables :
+    -> Name: StripeSettings__WhSecret
+    -> Value: "whsec_20......."
+

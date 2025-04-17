@@ -8,5 +8,7 @@
   "files.exclude": {
     "**/*.Development.json": false
   },
-  "terminal.integrated.fontSize": 20
+  "terminal.integrated.fontSize": 20,
+  "appService.defaultWebAppToDeploy": "/subscriptions/cbf01c9b-a5bb-423a-9892-fc49065f6ea6/resourceGroups/skinet-2025-rg/providers/Microsoft.Web/sites/skinet-alexV89",
+  "appService.deploySubpath": "skinet\\API\\bin\\Publish"
 }

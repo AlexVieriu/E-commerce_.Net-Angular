@@ -20,8 +20,22 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
+
+// builder.Services.AddDbContext<StoreContext>(options =>
+//     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"),
+//     x => x.MigrationsHistoryTable("__EFMigrationsHistorySqlite")));
+
 builder.Services.AddDbContext<StoreContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("SqlServerAzureConnection"),
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+        }));
+
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var conStr = builder.Configuration.GetConnectionString("Redis") ??

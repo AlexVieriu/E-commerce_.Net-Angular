@@ -8,7 +8,7 @@ public class StoreContextSeed
 
         if (!context.Products.Any())
         {
-            var productsData = await File.ReadAllTextAsync(path + @"/Data/Seed Data/products.json");
+            var productsData = await File.ReadAllTextAsync(path + @"/Data/SeedData/products.json");
             var products = JsonSerializer.Deserialize<List<Product>>(productsData);
 
             if (products == null)
@@ -21,7 +21,7 @@ public class StoreContextSeed
 
         if (!context.DeliveryMethods.Any())
         {
-            var dmData = await File.ReadAllTextAsync(path + @"/Data/Seed Data//delivery.json");
+            var dmData = await File.ReadAllTextAsync(path + @"/Data/SeedData//delivery.json");
             var deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(dmData);
 
             if (deliveryMethods == null)
