@@ -17,11 +17,10 @@ https://portal.azure.com/#view/Microsoft_Azure_Billing/FreeServicesBlade
 212. Preparing the client app for publishing
 
 Goal:
--> we need to get our production Angular app
+-> we need to prepare out Angular app for production
 -> out Angular app can be hosted anywhere(but we will use our .net Web Server!!)
--> need to be be hosted by a web Server, because when it gets compile, it will 
-get compile into the static Js files and they need to be served from somewhere 
-to the Client 
+-> our Angular app need be hosted by a web Server, because when it gets compile, it will 
+get compile into the static Js files(in wwwroot folder - in our case)
 
 Preparation:
 
@@ -58,9 +57,30 @@ polyfills-FFHMD2TL.js
 
 -- Dictionary --
 
+-- loading.interceptor.ts --
 identity:
--> takes one parameter and returns it
+-> it just returns whatever is passed to it
 -> it's like a 0ms delay function
+-> we use identity and delay(500), so the development will simulate the production experience
+
+--app.config.ts --
+provideHttpClient(withInterceptors([errorInterceptor, loadingInterceptor, authInterceptor])),
+
+loadingInterceptor:
+-> manages loading state in Angular app
+
+Key features of Angular interceptors:
+-> transform outgoing requests before they reach the server
+-> transform incoming responses before your application processes them
+-> they run in order for each HTTP request/response
+-> used for cross-cutting concerns like authentication, logging, or error handling
+
+Common use cases of Angular interceptors:
+-> authentication
+-> logging
+-> error handling
+-> caching
+-> request/response transformation
 
 
 213. Preparing the .Net app for publishing
@@ -78,7 +98,13 @@ public IActionResult Index()
         "text/HTML");
 }
 
--- StoreContentSeed.cs --
+-> when a request comes into the app, ASP.NET Core tries to match it with:
+1. Define API routes
+2. Default files
+3. Static files
+-> if none of these match, the request is sent to the FallbackController
+
+-- StoreContextSeed.cs --
 var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 var productsData = await File.ReadAllTextAsync(path + @"/Data/Seed Data/products.json");
 var dmData = await File.ReadAllTextAsync(path + @"/Data/Seed Data//delivery.json");
@@ -99,11 +125,34 @@ https://localhost:7096
 alex@gmail.com
 Pa$$w0rd
 
-
 -- Dictionary --
+return PhysicalFile(Path.Combine(
+            Directory.GetCurrentDirectory(), "wwwroot", "index.html"), "text/HTML");
+
+-> returning the main index.html file from your Angular app
+-> this setup is crucial for SPA apps like Angular, React, Vue because:
+    -> Client-side routing in SPAs apps manages URL changes without server requests
+    -> when users access a deep link(example.com/products/123) or refresh the page,
+        the server returns your SPA's main HTML page
+    -> Angular then initializes the client-side routing system
+-> this approach ensures that regardless of witch URL the user navigates to, 
+the server always returns the main index.html file
+
+Directory.GetCurrentDirectory()
+-> Gets the current working directory of the application
+
+-- StoreContextSeed.cs --
 Assembly.GetExecutingAssembly().Location
 -> Gets the full path or UNC location of the loaded file that contains the manifest
 
+File.ReadAllTextAsync()
+-> opens a text file
+-> reads all the content from the file asynchronously
+-> returns the content as a string
+-> closes the file when done
+
+
+ -- Program.cs --
 app.UseDefaultFiles()
 -> enables default file mapping on the current path
 -> files are served from the path specified in IWebHostEnvironment.WebRootPath, 
@@ -120,7 +169,7 @@ app.MapFallbackToController("Index", "Fallback")
 and doesn't match any physical files in your wwwroot folder, the request is routed to the 
 Index action of the Fallback controller
 
-Ex:
+Example:
 -> when a user navigates directly to a client-side route(like '/products/5') or refresh the page, 
 the server returns your SPA's main HTML page
 
@@ -198,7 +247,7 @@ Pay-as-you-go:
 
 216. Configuring the web app on Azure
 
--> keep development and production Stripe account separate
+-> keep Stripe development and production account separate
 -> create new Stripe account:
     -> "skinet-prod"
         -> Publishable key: ...
@@ -211,19 +260,19 @@ Pay-as-you-go:
         -> App Settings 
             -> Add :
                 -> Name: StripeSettings__PublishableKey (we get the name from appsettings.json)
-                -> Value: ...
+                -> Value: ... (https://dashboard.stripe.com/test/dashboard)
                 -> click "Apply"
             -> Add :
                 -> Name: StripeSettings__SecretKey
-                -> Value: ...
+                -> Value: ...(https://dashboard.stripe.com/test/dashboard)
             -> Add:
                 -> Name: StripeSettings__WhSecret
-                -> Value: TODO
+                -> Value: ...(https://dashboard.stripe.com/test/workbench/webhooks)
 
         -> Connection strings
             -> Add:
                 -> Name: Redis (make sure it mach the one in appsettings.Deployment.json)
-                -> Value: teaching-hermit-10559.upstash.io:6379, password=ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA,ssl=true,abortConnect=false
+                -> Value: ... (https://console.upstash.com/redis?teamid=0) -> go to the created server and construct the connection string
                 -> Type: Custom
                 -> click Apply
 
@@ -275,60 +324,81 @@ Review + Create
 If we have SQLite on the Development and SQL Server Azure in Production: 
 
 -- Program.cs --
-// builder.Services.AddDbContext<StoreContext>(options =>
-//     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"),
-//     x => x.MigrationsHistoryTable("__EFMigrationsHistorySqlite")));
-
-builder.Services.AddDbContext<StoreContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("SqlServerAzureConnection"),
-        sqlServerOptionsAction: sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null);
-        }));
-
--- appsettings.json --
+if (builder.Environment.IsDevelopment())
 {
-    "Logging": {
-        "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Information"
-        }
-    },
-    "ConnectionStrings": {
-        "DefaultConnection": "Data Source=../data/store.db",
-        "Redis": "localhost",
-        "SqlServerAzureConnection": ""
-    },
-    "StripeSettings": {
-        "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
-        "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
-        "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
+    // Register the SQLite context
+    builder.Services.AddDbContext<SqliteStoreContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    // Register the base StoreContext to resolve to SqliteStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqliteStoreContext>());
+}
+else
+{
+    // Register the SQL Server context
+    builder.Services.AddDbContext<SqlServerStoreContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
+
+    // Register the base StoreContext to resolve to SqlServerStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqlServerStoreContext>());
+}
+. . .
+try
+{
+    using var scoped = app.Services.CreateScope();
+    var services = scoped.ServiceProvider;
+
+    if (app.Environment.IsDevelopment())
+    {
+        var context = services.GetRequiredService<SqliteStoreContext>();
+        await context.Database.MigrateAsync();
     }
+    else
+    {
+        var context = services.GetRequiredService<SqlServerStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+
+    var baseContext = services.GetRequiredService<StoreContext>();
+    await StoreContextSeed.SeedAsync(baseContext);
+}
+catch (Exception ex)
+{
+    WriteLine(ex.Message);
+    throw;
 }
 
+
+-- appsettings.json --
+
+"ConnectionStrings": {
+    "Redis": "localhost",
+    "SqlServerAzureConnection": "Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=300;"
+},
+"StripeSettings": {
+    "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
+    "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
+    "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
+} 
+
+-> get the Stripe key from the new created Production account
+-> we only add SqlServerAzureConnection, for testing the production
+-> the connection will be automatically re-written in Azure Connection String when we commit(CI/CD)
+
+
 -- appsettings.development.json --
-{
-    "Logging": {
-        "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Information"
-        }
-    },
-    "ConnectionStrings": {
-        "DefaultConnection": "Data Source=../data/store.db",
-        "Redis": "teaching-hermit-10559.upstash.io:6379, password=ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA,ssl=true,abortConnect=false",
-        "SqlServerAzureConnection": ""
-    }
+"ConnectionStrings": {
+    "DefaultConnection": "Data Source=../data/store.db",
+    "Redis": "localhost"
 }
 
 Check if on every file in Angular project we have: "import { environment } from '../../../environments/environment';"
 -> don't use:"src/environments/environment.development.ts"
 
-Check -- angular.json -- 
+
+-- angular.json -- 
 "development": {
     "optimization": false,
     "extractLicenses": false,
@@ -341,21 +411,22 @@ Check -- angular.json --
     ]
 }
 
-Rebuild angular app, so we have the static site on the API proj: 
+"outputPath": {
+    "base": "../API/wwwroot",
+    "browser": ""
+}
+
+Rebuild angular app, so we have the static site in the API proj: 
 ng build
 Output location: F:\Programare\E-commerce_.Net-Angular\skinet\API\wwwroot
 
 
 -> add Azure App Service extension to VSC
 
-// $env:DOTNET_ENVIRONMENT="Production"; dotnet ef migrations add ChangeToSqlDB -s API -p Infrastructure
-dotnet ef migrations add InitialSqlServer -s API -p Infrastructure -o Migrations/SqlServer
-
-cd skinet/API
-dotnet publish -c Release -o ./bin/Publish
-
 Create a permanent Webhook:
--> to Stripe, the production account -> Developers(left-down corner) -> Webhooks -> Add Destination(endpoint)
+-> check the nuget package stripe.net is up to date(last version)
+-> if is not up to date, will not work , because when we create a stripe endpoint, it will use the latest version
+-> go to Stripe (the production account) -> Developers(left-down corner) -> Webhooks -> Add Destination(endpoint)
 https://dashboard.stripe.com/test/workbench/webhooks/create
 
 1. Search for "payment_intent.succeeded" event -> Next
@@ -370,6 +441,17 @@ https://dashboard.stripe.com/test/workbench/webhooks/create
 
 219. Adding Continuous Integration (CI/CD)
 
+-- environment.ts --
+-> update to production key with the one on the Stripe ProductionAccount
+export const environment = {
+    production: true,
+    apiUrl: 'api/',
+    hubUrl: 'hub/notifications',
+    stripePublicKey: '....'
+};
+
+ng build 
+
 Go to Azure site -> App Service -> Deployment -> Deployment Center
 Source      : GitHub
 Organization: AlexVieriu (your GitHub account)
@@ -379,18 +461,7 @@ Branch      : main
 Authentication type: User-assigned identity
 Preview file
 
--> we need to do some additional steps before this:
 
--- environment.ts --
--> update to production key
-export const environment = {
-    production: true,
-    apiUrl: 'api/',
-    hubUrl: 'hub/notifications',
-    stripePublicKey: '....'
-};
-
-ng build 
 -> go to Azure -> App Service -> Deployment -> Deployment Center -> save the changes
 -> GitHub -> Open repository -> Actions -> click on build step
 
@@ -399,11 +470,11 @@ Change .yml file:
 -> Edit the file
 
 - name: Build with dotnet
-  working-directory: ./skinet
+  working-directory: ./skinet/API
   run: dotnet build --configuration Release
 
 - name: dotnet publish
-  working-directory: ./skinet
+  working-directory: ./skinet/API
   run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
   
@@ -428,7 +499,6 @@ https://dashboard.stripe.com/test/workbench/webhooks
     "DefaultConnection": "Data Source=../data/store.db",
     "Redis": "localhost"
 }
-
 
 -- empty-state.component.ts --
 busyService = inject(BusyService); 
