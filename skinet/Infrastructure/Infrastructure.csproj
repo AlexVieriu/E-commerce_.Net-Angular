@@ -23,4 +23,7 @@
 		<ProjectReference Include="..\Core\Core.csproj" />
 		<None Include="Data\SeedData\**" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
+	</ItemGroup>
 </Project>

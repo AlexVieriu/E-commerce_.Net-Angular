@@ -21,13 +21,27 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
+if (builder.Environment.IsDevelopment())
+{
+    // Register the SQLite context
+    builder.Services.AddDbContext<SqliteStoreContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<StoreContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    // Register the base StoreContext to resolve to SqliteStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqliteStoreContext>());
+}
+else
+{
+    // Register the SQL Server context
+    builder.Services.AddDbContext<SqlServerStoreContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
 
-// builder.Services.AddDbContext<StoreContext>(options =>
-//     options.UseSqlServer(
-//         builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
+    // Register the base StoreContext to resolve to SqlServerStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqlServerStoreContext>());
+}
+
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
@@ -94,16 +108,24 @@ app.MapGroup("api").MapIdentityApi<AppUser>();
 
 app.MapHub<NotificationHub>("/hub/notifications");
 
-try // Database Migration
+try
 {
-    // when we use services inside or outside DI, we need to create a Scoped
-    // once this is executed the framework will dispose the scope    
     using var scoped = app.Services.CreateScope();
     var services = scoped.ServiceProvider;
-    var context = services.GetRequiredService<StoreContext>();
-    await context.Database.MigrateAsync();
 
-    await StoreContextSeed.SeedAsync(context);
+    if (app.Environment.IsDevelopment())
+    {
+        var context = services.GetRequiredService<SqliteStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+    else
+    {
+        var context = services.GetRequiredService<SqlServerStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+
+    var baseContext = services.GetRequiredService<StoreContext>();
+    await StoreContextSeed.SeedAsync(baseContext);
 }
 catch (Exception ex)
 {

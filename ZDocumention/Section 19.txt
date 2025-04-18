@@ -528,3 +528,30 @@ output:
 - name: Install dependencies and build angular app
   working-directory: ./skinet/client
   run: npm install ng build
+
+To see all migrations:
+
+dotnet ef migrations remove --context SqlServerStoreContext -s API -p Infrastructure
+dotnet ef migrations remove --context SqliteStoreContext -s API -p Infrastructure
+
+dotnet ef migrations add InitialSqlite --context SqliteStoreContext -s API -p Infrastructure -o Migrations/SQLite
+dotnet ef migrations add InitialSqlServer --context SqlServerStoreContext -s API -p Infrastructure -o Migrations/SqlServer
+
+cd skinet/API
+dotnet publish -c Release -o ./bin/Publish
+
+Dropping the tables(for SQL Server and SQLite):
+DROP TABLE IF EXISTS AspNetRoleClaims;
+DROP TABLE IF EXISTS AspNetUserClaims;
+DROP TABLE IF EXISTS AspNetUserLogins;
+DROP TABLE IF EXISTS AspNetUserRoles;
+DROP TABLE IF EXISTS AspNetUserTokens;
+DROP TABLE IF EXISTS AspNetUsers;
+DROP TABLE IF EXISTS OrderItems;
+DROP TABLE IF EXISTS Orders;
+DROP TABLE IF EXISTS Products;
+DROP TABLE IF EXISTS __EFMigrationsHistory
+DROP TABLE IF EXISTS __EFMigrationsLock;
+DROP TABLE IF EXISTS Addresses;
+DROP TABLE IF EXISTS DeliveryMethods;
+DROP TABLE IF EXISTS AspNetRoles;
