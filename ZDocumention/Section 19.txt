@@ -540,6 +540,7 @@ dotnet ef migrations add InitialSqlServer --context SqlServerStoreContext -s API
 cd skinet/API
 dotnet publish -c Release -o ./bin/Publish
 
+
 Dropping the tables(for SQL Server and SQLite):
 DROP TABLE IF EXISTS AspNetRoleClaims;
 DROP TABLE IF EXISTS AspNetUserClaims;
@@ -555,3 +556,12 @@ DROP TABLE IF EXISTS __EFMigrationsLock;
 DROP TABLE IF EXISTS Addresses;
 DROP TABLE IF EXISTS DeliveryMethods;
 DROP TABLE IF EXISTS AspNetRoles;
+
+
+223. Summary 
+-> preparing the app for publishing
+-> Angular production build
+-> using cloud Redis server
+-> publishing to Azure
+-> Continuous Integration (CI/CD)
+-> troubleshooting Azure
