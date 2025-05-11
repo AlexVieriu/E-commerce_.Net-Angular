@@ -59,11 +59,19 @@ public bool IsPagingEnabled { get; private set; }
 protected void ApplyPaging(int skip, int take) { ...}
 
 -- Infrastructure -> Data -> BaseSpecification.cs --
-if (spec.IsPagingEnabled)
-    query = query.Skip(spec.Skip).Take(spec.Take);
 
-if (spec.IsPagingEnabled)
-    selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);
+GetQuery(IQueryable<T> query, ISpecification<T> spec){
+    ...
+    if (spec.IsPagingEnabled)
+        query = query.Skip(spec.Skip).Take(spec.Take);
+}
+
+GetQuery<TSpec, TResult>(IQueryable<T> query,ISpecification<T, TResult> spec){
+    ...
+    if (spec.IsPagingEnabled)
+        selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);
+}
+
 
 
 5.45. Adding pagination part 2    

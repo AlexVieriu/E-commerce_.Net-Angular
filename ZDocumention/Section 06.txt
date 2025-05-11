@@ -17,14 +17,33 @@ HttpResponse(most used):
 502 -> Bad Gateway
 503 -> Service Unavailable
 
->= 100 and < 200 => "Informational Responses",
->= 200 and < 300 => "Successful Responses",
->= 300 and < 400 => "Redirection Messages",
->= 400 and < 500 => "Client Error Responses",
->= 500 and < 600 => "Server Error Responses",
+100-199: Informational Responses
+200-299: Successful Responses
+300-399: Redirection Messages
+400-499: Client Error Responses
+500-599: Server Error Responses
 
 
 6.52. Adding a test controller for error handling
+
+Why we need a BuggyController?
+
+1. Test error handling systematically
+-> you can verify how your app handles different errors scenarios without having to trigger
+actual errors in your core business logic 
+
+2. Test middleware and filters
+-> helps test global exception handling, authentication, logging and other cross-cutting concerns
+
+3. Test client-side error handling
+-> Frontend developers can use these endpoints to ensure their client code properly 
+handles different error scenarios
+
+4. Documentation and demonstration
+-> the controller demonstrates the app's error response format from API consumer
+
+This is especially useful during development, testing, and integration phases. 
+In production, you might want to disable or secure these endpoints.
 
 -- API -> Controllers -> BuggyController.cs --
 -> add 4 HttpGet methods
@@ -38,6 +57,7 @@ HttpResponse(most used):
 
 Postman Collection links for all 5 methods:
 -> {{localhost}}/api/buggy/[action name]
+
 
 
 6.52. Exception handling middleware
@@ -63,6 +83,7 @@ Testing with Postman(Internal Error)
 6.53. Validation error Responses
 
 -- Product.cs --
+
 -> because of the "required" attribute, we can't create a JSON file 
 when we handle the POST("validationerror") method
 
@@ -70,8 +91,7 @@ Why we used required attribute in the first place?
 
 What we want to do at this chapter?
 -> we don't want to create e product from our entity class
--> we want to create a different type of object that we can apply validation
-to at the API level
+-> we want to create a different type of object that we can apply validation to, at the API level
 
 -- API -> DTOs -> CreateProductDTO.cs --
 -> use [Required], [Range()] attributes instead of "request"
@@ -89,6 +109,7 @@ Dictionary:
 6.54. Adding CORS support on the API
 
 CORS(Cross Origin Resource Sharing)
+
 ChatGPT: 
 -> give me a complex implementation of CORS in .net 9. 
 Let's say i'm working at a top payment company, what is the implementation?

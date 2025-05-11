@@ -21,6 +21,7 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
+#region Database Configuration
 if (builder.Environment.IsDevelopment())
 {
     // Register the SQLite context
@@ -41,7 +42,7 @@ else
     builder.Services.AddScoped<StoreContext>(provider =>
         provider.GetRequiredService<SqlServerStoreContext>());
 }
-
+#endregion
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
@@ -62,7 +63,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
                 .AddEntityFrameworkStores<StoreContext>();
 builder.Services.AddSignalR();
-
 
 var app = builder.Build();
 
@@ -87,6 +87,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseCors(options => options.AllowAnyHeader()
                               .AllowAnyMethod()
@@ -134,3 +135,5 @@ catch (Exception ex)
 }
 
 app.Run();
+
+

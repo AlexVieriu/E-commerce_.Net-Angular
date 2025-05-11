@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Infrastructure.Config;
 
 public class DeliveryMethodConfiguration : IEntityTypeConfiguration<DeliveryMethod>

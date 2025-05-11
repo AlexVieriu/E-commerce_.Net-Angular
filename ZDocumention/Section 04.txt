@@ -37,6 +37,12 @@ instead of simple version :" context.Update(entity);" and i wanna know why?
 -> returns a IQueryable<T>
 -> generic List method takes specification as parameter
 
+https://medium.com/@ferid.aksahin98/specification-design-pattern-210b5df70252
+
+
+ChatGPT:
+What is Specification pattern in .net? give me and example
+
 
 33. Setting up the specification classes
 

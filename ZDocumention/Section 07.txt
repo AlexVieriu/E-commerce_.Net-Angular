@@ -39,7 +39,7 @@ nvm use $version
 
 -- Install a new Node.js version  --
 # chose desired node version
-$version = "22.14.0"
+$version = "24.0.1"
 # install node
 nvm install $version
 
@@ -49,6 +49,7 @@ https://next.angular.dev/tools/cli/setup-local
 nvm ls    (list of node version)
 node -v   (current node version)
 npm -v    (current Nuget Package Manager version)
+
 
 -- PowerShell --
 Get-ExecutionPolicy -List

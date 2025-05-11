@@ -58,6 +58,9 @@ polyfills-FFHMD2TL.js
 -- Dictionary --
 
 -- loading.interceptor.ts --
+export:
+-> is a TypeScript keyword that makes this function to be imported by other files in the app
+
 identity:
 -> it just returns whatever is passed to it
 -> it's like a 0ms delay function

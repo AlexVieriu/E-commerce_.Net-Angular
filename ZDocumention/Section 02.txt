@@ -1,5 +1,5 @@
 5. Introduction
--> API Basics
+-> API Basics - Having a CRUD endpoints
 -> Create the 3 projects: 
     -> API (receives requests and sends responses)
     -> Infrastructure (communicate with DB and send queries and get data)
@@ -12,7 +12,7 @@
     -> flexibility
     -> reusability
 
--> Clean architecture concepts
+-> Clean architecture concepts(Clean Architecture)
 -> Entity Framework 
 -> Docker/SQL Server
 -> Postman
@@ -54,10 +54,23 @@ dotnet run
 ctrl + ~
 dotnet watch
 
+
+-- Dictionary --
+
+.NET Logging Levels(from highest to lowest):
+1. Trance     : Extremely detailed logs useful only for tracing code execution paths
+2. Debug      : Diagnostic information helpful during development
+3. Information: General information about application flow
+4. Warning    : Abnormal or unexpected events that don't cause the application to fail
+5. Error      : Errors and exceptions that prevent operations from completing
+6. Critical   : Critical failures requiring immediate attention, potentially causing application shutdown
+
+
 8. Creating the Product Entity
 
-Entity  -> Product.cs(Name, Description, Price, PictureUrl, Type, Brand, QuantityInStock)
-        -> BaseEntity.cs(Id)
+Entity  -> Product.cs    (Name, Description, Price, PictureUrl, Type, Brand, QuantityInStock)
+        -> BaseEntity.cs (Id)
+
 
 9. Setting up Entity Framework
 
@@ -83,7 +96,7 @@ builder.Services.AddDbContext<StoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
     
 
-10. Setting up Sql Server
+10. Setting up Sqlite
 
 https://hub.docker.com/r/microsoft/azure-sql-edge
 https://hub.docker.com/r/keinos/sqlite3
@@ -117,11 +130,11 @@ Restart the docker window if the container is not shown
 
 -- API -> appsettings.Development.json ---
 "ConnectionStrings": {
-    "DefaultConnection": "Data Source=./data/store.db"
+    "DefaultConnection": "Data Source=../data/store.db"
   }
 
 File location: 
-Ensure the store.db file exists in the ./data folder on your local system before running 
+Ensure the store.db file exists in the ../data folder on your local system before running 
 your application. If it doesn't exist, SQLite will create it automatically when your application 
 connects.
 
@@ -153,7 +166,7 @@ Terminal:
 dotnet ef migrations add InitialCreate -s API -p Infrastructure
 dotnet ef database update -s API -p Infrastructure
 
-If the SQLite database (store.db) is not in the folder "./data/store.db" it will 
+If the SQLite database (store.db) is not in the folder "../data/store.db" it will 
 automatically be created where we run the "database up" command
 
 Open the current folder explorer command:
@@ -169,6 +182,19 @@ ctrl + shift + p -> SQLite Explorer SQLiteView
 check the _EFMigrationsHistory table in SQLITE EXPLORER(left sidebar):
 MigrationId	                  ProductVersion
 20241109045457_InitialCreate	9.0.0-rc.2.24474.1
+
+-- Dictionary --
+IEntityTypeConfiguration<Product>
+-> define db mappings for your entities
+-> configure relationships between entities
+
+modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
+
+.ApplyConfigurationsFromAssembly :
+-> applies configuration from all IEntityTypeConfiguration instances that are defined in provided assembly
+
+.Assembly
+->  Gets the Assembly in which the type is declared
 
 
 13. Creating the products controller
