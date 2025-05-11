@@ -32,16 +32,12 @@ choco install cmder
 choco install nvm
 refreshenv
 
-# install node
-$version = "23.9.0"
-nvm install $version
-nvm use $version
-
 -- Install a new Node.js version  --
 # chose desired node version
 $version = "24.0.1"
 # install node
 nvm install $version
+nvm use $version
 
 -- Install angular CLI --
 https://next.angular.dev/tools/cli/setup-local
@@ -66,6 +62,7 @@ npm uninstall -g @angular/cli
 npm install -g @angular/cli@next
 ng --version
 
+https://github.com/ReactiveX/rxjs/releases
 
 -- Create angular app --
 ng new client
