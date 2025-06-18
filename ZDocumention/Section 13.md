@@ -23,6 +23,7 @@ ng g c features/cart --skip-tests
 -> add the link to shopping cart
 <a routerLink="/cart" routerLinkActive="active"...
 
+
 echo "" > src/app/shared/models/cartItem.ts
 --cartItem.ts--
 

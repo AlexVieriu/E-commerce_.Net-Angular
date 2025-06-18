@@ -62,9 +62,9 @@ export:
 -> is a TypeScript keyword that makes this function to be imported by other files in the app
 
 identity:
--> it just returns whatever is passed to it
--> it's like a 0ms delay function
--> we use identity and delay(500), so the development will simulate the production experience
+-> identity serves as a "no-op" operator that does nothing to the HTTP response stream
+-> used for clean syntax(so we don't use if/else statement)
+-> we use identity and delay(500), so the development environment will simulate the production experience 
 
 --app.config.ts --
 provideHttpClient(withInterceptors([errorInterceptor, loadingInterceptor, authInterceptor])),

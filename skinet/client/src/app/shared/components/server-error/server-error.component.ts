@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 export class ServerErrorComponent {
   error?: any;
 
+  // Shorthand declaration of the constructor
   constructor(private router: Router) {
     this.error = this.router.getCurrentNavigation()?.extras.state?.['error'];
   }

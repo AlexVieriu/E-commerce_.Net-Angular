@@ -221,8 +221,8 @@ c. Storing Parameters
 
 5. Behind the Scenes of Route Matching 
 -> Angular routing system is powered by a tree-based data structure:
-  -> a trie is used to efficiently match plans
-  -> each segment of the URL is a node in the trie
+  -> a tree is used to efficiently match plans
+  -> each segment of the URL is a node in the tree
   -> dynamic segments like :id are represented as wildcards nodes that match any value
 
 

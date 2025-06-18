@@ -111,6 +111,7 @@ for development tasks, such as managing builds, running scripts, and interacting
 -> in the newer version we use standalone approach
     -> each component is responsible for importing its own dependencies 
 
+// we don't need to write it like this, because they are standalone by default
 @Component({
     standalone: true,
     ...
@@ -133,6 +134,7 @@ tsconfig.json
 
 
 7.59. Using HTTPS with Angular project 
+
 -> get a self trusted certificate 
 https://github.com/FiloSottile/mkcert
 
@@ -197,12 +199,34 @@ module.exports = {
   plugins: [],
 }
 
+content:
+-> specifies where Tailwind should look for class names to include in your final CSS
+-> this configuration wil look for all HTML and TypeScript files in the src directory
+
+**
+-> look on the directory and all nested directories at any depth
+
+/*.{html,ts} 
+-> This matches any files that end with either .html or .ts extensions
+
+theme: allows you to customize Tailwind's default design system 
+  extend: object, where you can add custom colors, spacing etc.
+   -> current is empty, meaning you're using Tailwind's defaults
+
+plugins: an array for adding Tailwind plugins(current empty)
+
+important:
+-> adds !important to all Tailwind CSS classes, which forces them to take precedence over other styles
+-> important when adding Tailwind to existing CSS classes
+
+
 -- client -> src -> app-> app.component.html --
 <h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
 
 ng serve
 
-Dictionary:
+
+-- Dictionary --
 -d (or --save-dev): installs the packages as dev dependencies(not in production)
 
 postcss           : a tool/framework for transforming CSS using JavaScript 

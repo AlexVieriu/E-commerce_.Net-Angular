@@ -1,10 +1,11 @@
 namespace API.SignalR;
-// We need to have the ability to notify the user based on the email address 
-// SignalR itself, doesn't keep track of witch EmailAddresses/User is connected, it just keep track of the
-// client connection id, what a browser uses to maintain the connection with our SignalR service
-// In order for us, to keep track of how is connected by email, we need to store that inside our hub, so
-// it's going to be stored in memory, but for scaling purposes, we need to use Redis Db
-// But for simplicity, we are going to use a ConcurrentDictionary
+// This hub enables sending notifications to users by their email address
+// SignalR natively only tracks client connection IDs 
+// (generated identifiers used by browsers, to maintain WebSocket connections), 
+// not user identities like email addresses
+// To map email addresses to connection IDs, we store this relationship in memory using
+// a thread-safe ConcurrentDictionary 
+// For production scaling across multiple servers, this should be replaced with a distributed cache like Redis
 [Authorize]
 public class NotificationHub : Hub
 {

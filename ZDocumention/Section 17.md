@@ -35,31 +35,10 @@ PaymentSummary, OrderItems, Subtotal, Status, PaymentIntentId
 186. Configuring the order entities
 
 -- Infrastructure -> Config -> OrderConfiguration.cs --
-public class OrderConfiguration : IEntityTypeConfiguration<Order>
-{
-    public void Configure(EntityTypeBuilder<Order> builder)
-    {
-        builder.OwnsOne(o => o.ShippingAddress, a => a.WithOwner());
-        builder.OwnsOne(o => o.PaymentSummary, a => a.WithOwner());
-        builder.Property(o => o.Status).HasConversion(
-            a => a.ToString(),
-            a => (OrderStatus)Enum.Parse(typeof(OrderStatus), a)
-        );
-        builder.Property(x => x.Subtotal).HasColumnType("decimal(18,2)");
-        builder.HasMany(x => x.OrderItems).WithOne().OnDelete(DeleteBehavior.Cascade);
-        builder.Property(x => x.OrderDate).HasConversion(
-            d => d.ToUniversalTime(),
-            d => DateTime.SpecifyKind(d, DateTimeKind.Utc)
-        );
-    }
-}
+public class OrderConfiguration : IEntityTypeConfiguration<Order {. . .}
 
 -- Infrastructure -> Config -> OrderItemConfiguration.cs --
-public void Configure(EntityTypeBuilder<OrderItem> builder)
-{
-    builder.OwnsOne(x => x.ItemOrdered, o => o.WithOwner());
-    builder.Property(x => x.Price).HasColumnType("decimal(18,2)");
-}
+public void Configure(EntityTypeBuilder<OrderItem> builder){. . .}
 
 -- StoreContext.cs --
 public DbSet<Order> Orders { get; set; }
@@ -75,7 +54,7 @@ IEntityTypeConfiguration<T>
 -> allows configuration for an entity type to be factored into a separate class
 
 EntityTypeBuilder
--> Provides a simple API for configuring an <see cref="IMutableEntityType" />
+-> provides a simple API for configuring an <see cref="IMutableEntityType" />
 
 builder.OwnsOne(o => o.ShippingAddress, a => a.WithOwner());
 builder.OwnsOne(o => o.PaymentSummary, a => a.WithOwner());
@@ -175,7 +154,7 @@ Test Add, Get, GetAll, Update, Delete product in Postman.
 -- API -> DTOs -> OrderDto.cs --
 CartId, DeliveryMethodId, ShippingAddress, PaymentSummary
 
--- API -> Controllers -> OrdersController.cs --
+-- API -> Controllers -> OrderController.cs --
 
 -> get User.Email (where User = HttpContext?.User)
 -> get the cart using CartService

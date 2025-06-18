@@ -52,14 +52,44 @@ Strong Customer Authentication:
 
 
 -- Stripe with SCA(Accept payments globally) --
-1. User -> API      : Create payment intent with API(before payment)
-2. API -> Stripe    : API sends payment intent to Stripe
-3. Stripe -> API    : Stripe returns payment intent returns client secret
-4. API -> Client    : API return client secret to client
-5. USer -> Stripe   : Client sends payment ton Stripe using the client secret
-6. Stripe -> User   : Stripe sends confirmation to the client
-7. User -> API      : Client creates order with API
-8. Stripe -> API    : Stripe sends conformation to API that payment was successful
+1.	Client → API	User starts checkout
+2.	API → Stripe	Create PaymentIntent
+3.	Stripe → API	Return PaymentIntent & client_secret
+4.	API → Client	Send client_secret to JavaScript
+5.	Client	        Initialize Stripe Elements; collect input
+6.	Client → Stripe	Call stripe.confirmCardPayment
+7.	Stripe	        Check SCA; prompt 3DS if needed
+8.	Stripe → Client	Return success/failure result
+9.	Client → API	On success, create order
+10.	Stripe → API	Webhook: payment_intent.succeeded
+11.	API	            Fulfill order, update state
+
+
+1. POST /create-payment-intent
+   ↓ 
+2. stripe.paymentIntents.create({
+     amount: 2000,
+     currency: 'eur',
+     customer: customer_id
+   })
+   ↓
+3. Return { client_secret: pi_xxx_secret_xxx }
+   ↓
+4. stripe.confirmCardPayment(client_secret, {
+     payment_method: {
+       card: cardElement,
+       billing_details: { ... }
+     }
+   })
+   ↓
+5. [SCA Authentication if required]
+   ↓
+6. Payment Success/Failure Response
+   ↓
+7. POST /create-order (if successful)
+   ↓
+8. Webhook: payment_intent.succeeded
+
 
 
 160. Creating the delivery methods in the API 
@@ -188,6 +218,7 @@ CreateOrUpdatePaymentIntent(string cartId):
 
 
 163. Creating a payment controller
+-- API -> Controllers -> PaymentsController.cs --
 
 Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent(string cartId)
 -> get the cart by from PaymentService 
@@ -866,7 +897,7 @@ handleDeliveryChange(event: boolean) {
     <app-checkout-delivery (deliveryComplete)="handleDeliveryChange($event)" />
 
 
--- Dictionary --:
+-- Dictionary --
 
 <pre>
 -> preserve whitespace and formatting, making the JSON output readable 
@@ -892,7 +923,7 @@ this.addressElement.on('change', this.handleAddressChange);
 
 Resolution:
 1. Use a constructor to bind this.handleAddressChange
-2. Use an arrow function that automatically that will be bound to the class
+2. Use an arrow function that automatically will be bound to the class
 
 
 1. With constructor

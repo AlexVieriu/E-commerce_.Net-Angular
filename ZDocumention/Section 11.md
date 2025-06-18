@@ -346,4 +346,3 @@ Goal:
 Questions:
 1. Would we create an errors component in a 'real' app?
 A: Probably not, but is helpful for learning purposes
-

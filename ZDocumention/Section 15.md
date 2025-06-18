@@ -174,14 +174,13 @@ HTTP authentication, and client-side SSL certificates to cross-origin requests
 
 Dictionary:
 -> services are public so they can be access by other components
--> if the variable is doesn't give an access modifier(public protected, private), 
+->if the variable doesn't have an access modifier(public protected, private), 
 they are public by default
 
 
 146. Persisting the login
 
--> our Angular app, when the cookies has the HttpOnly flag set, 
-can't access the cookie from 
+-> our Angular app, when the cookies has the HttpOnly flag set, can't access the cookie form 
 
 How we can check if a user is logged in so we can update the header?
 
@@ -379,9 +378,10 @@ ControlValueAccessor
 @Input()
 -> decorator for parent-to-child data passing
 
-@Self()
--> constructor parameter decorator instructing DI to resolve dependencies only from local injector
--> in TextInputComponent, restricts NgControl lookup to component's own injector
+@Self() 
+->  is an Angular dependency injection decorator that tells Angular to only look for the dependency in the current component's injector, not in parent injectors
+-> without @Self(), Angular would search up the injector hierarchy (current component → parent component → parent's parent, etc.) until it finds the dependency
+-> https://angular.dev/api/core/Self
 
 -- FormControl --
 -> core Angular forms building block (with FormGroup, FormArray, FormRecord)
@@ -460,24 +460,24 @@ Dictionary:
 Angular Route Guards 
 https://medium.com/@sehban.alam/everything-you-need-to-know-about-angular-guards-768c21ddbe2b
 
-1. CanActivate 
-    -> determines if a route can be activated(most used)
-    -> determines if a user can access a route
+1. CanActivate: 
+    -> Determines if a route can be activated (most used).
 
-2. CanActivateChild 
-    -> determines if child routes can be activated
+2. CanActivateChild: 
+    -> Determines if child routes of a route can be activated
 
 3. CanDeactivate
-    -> allows users to leave a page if certain conditions are met
-    -> prevent data loss when editing a form
+    -> Allows users to leave a route if certain conditions are met 
 
 4. CanMatch
-    -> prevents lazy-loaded modules from loading until conditions are met
-    ->  can improve performance and security
+    -> Determines if a route can be matched; can be used to control access to routes (introduced in Angular 14).
 
 5. Resolve
-    -> fetches data before the route is activated
-    -> useful for ensuring all necessary data is available before rendering
+    -> Fetches data before the route is activated and makes it available to the component.
+
+6. CanLoad 
+    ->  Controls lazy loading of feature modules
+
 
 Best Practices for Using Guards
 -> Keep Guards Simple: 
@@ -542,7 +542,7 @@ Solution:
  [HttpGet("auth-status")]
 GetAuthState()
 -> check if the user is IsAuthenticated
--> we send an Observable to this endpoint and w8 for it
+-> we send an Observable to this endpoint and wait for it
 
 -- accountService.ts --
 getAuthState() {

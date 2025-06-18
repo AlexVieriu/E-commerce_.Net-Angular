@@ -1,6 +1,6 @@
 197. Introduction 
 -> client side orders 
-    -> then they create a payment, the order will be created    
+    -> when creating a payment, the order will be created    
 
 -> webhooks
     -> allow Stripe to communicate directly with the API, and notify the API
@@ -13,7 +13,7 @@
 
 
 SignalR
--> provides  real-time functionality
+-> provide real-time functionality
 -> automated connection management
 
 Supports:

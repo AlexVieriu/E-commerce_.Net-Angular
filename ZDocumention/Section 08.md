@@ -31,12 +31,14 @@ ng help
 ng generate help 
 ng generate component [name] (aliases: ng c [name])
 ng generate guard [name] (aliases: ng g guard [name])
+
 ng g c layout/header --dry-run 
     -> creates:
         -> header.component.ts
         -> header.component.html
         -> header.component.spec.ts
         -> header.component.scss
+        
 ng g c layout/header --skip-tests
     -> creates 
         -> header.component.ts
@@ -262,6 +264,25 @@ track product.id
 -> optimize DOM updates when rendering a list of items
 
 
+Modern Angular are using more signals and less lifecycle hooks
+
+Relevant Traditional Lifecycle Hooks:
+-> ngOnInit()       : used for initialization logic
+-> ngOnDestroy()    : used for cleanup logic (now replaced by DestroyRef.onDestroy())
+-> ngAfterViewInit(): used when you need to interact with fully initialized DOM elements
+
+Rarely Used Traditional Hooks:
+-> ngOnChanges()
+-> ngDoCheck()
+-> ngAfterContentInit()
+-> ngAfterContentChecked()
+-> ngAfterViewChecked()
+
+New Rendering Hooks in Modern Angular:
+-> afterRender()
+-> afterNextRender()
+
+
 8.68. Observables
 -> a sequence of items that arrive asynchronously over time
 
@@ -306,19 +327,16 @@ for JS objects and arrays
 8.69. Typescript
 
 Pro:
--> strong typing
--> object orientated
--> better intellisense
--> access modifiers (private, public)
--> future JS features
--> catches silly mistakes in development
--> 3rd party support
--> easy to learn if you know JS
+-> Type Safety - Catches errors during development
+-> Better IDE Support - Enhanced autocomplete and refactoring
+-> Code Documentation - Types serve as built-in documentation
+-> Easier Refactoring - Safe large-scale code changes
+-> Team Collaboration - Clearer contracts between developers
 
 Cons:
--> more upfront code 
--> 3rd party libraries (some don't have definition file)
--> strict mode is.. strict!
+-> learning curve and complexity
+-> compilation and build overhead
+-> false Sense of security with types (even if at compile time everything is safe, at runtime can appear bugs)
 
 
 8.70. Typescript demo
@@ -440,9 +458,9 @@ products: Product[] = [];
 
 
 Questions:
-1. Can i use <CssFramework> instead of Angular Material and Tailwind?
+1. Can i use CSS instead of Angular Material and Tailwind?
 -> with great difficulty
 -> this is heavily integrated into the app
 
-2. Are we making a responsive app(desktop, mobile, tablet, web)?
+2. Are we making a responsive app (desktop, mobile, tablet, web)?
 -> No

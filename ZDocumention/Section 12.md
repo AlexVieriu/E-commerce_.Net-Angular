@@ -8,7 +8,7 @@ Goal:
 -> set up/configure Redis to store the customer cart in server memory 
 and create the supporting services and controllers
 
-Where to store the basket?
+Where can we store the basket?
 -> database
 -> local storage
 -> cookies
@@ -114,8 +114,9 @@ Update Cart(Post request):
 Delete Cart:
 {{localhost}}/api/cart?id=cart1
 
-TTL -> time to leave(redis)
-TTL is set in CartService.cs in .StringSetAsync(..., TimeSpan.FromDays(30));
+TTL -> time to live(redis)
+TTL is set in CartService.cs on method SetCartAsync
+_database.StringSetAsync(..., TimeSpan.FromDays(30));
 
 12.111. Summary
 

@@ -1,6 +1,6 @@
 9.73. Introduction
 -> Angular services
-    -> make our http response 
+    -> make http requests/responses 
     -> are singleton in our app         
 
 -> Building the UI for the shop
@@ -17,12 +17,11 @@
 
 
 9.74. Introduction to Angular services
--> to make a http request, we need to make a service 
--> Angular services are singleton
--> when we generate components in our app, and we move around from 
-component to component, the data is created and destroyed when we leave the
-component
--> the only way to persist is to use services 
+
+-> to make a http request we need a service
+-> services are singleton
+-> components are created and destroyed automatically, so the data; 
+    -> we need services for persisting the data
 -> all our services are in the "core" folder
 
 -- open terminal --
@@ -75,7 +74,7 @@ imports: [HeaderComponent, ShopComponent]
 
 -- shop.component.ts --
 imports: [ProductItemComponent, MatButton, MatIcon, MatMenu, 
-MatSelectionList, MatListOption, MatMenuTrigger, MatPaginator, FormsModule]
+          MatSelectionList, MatListOption, MatMenuTrigger, MatPaginator, FormsModule]
 
 -- shop.service.ts --
 -> getProducts()
@@ -100,7 +99,6 @@ export class ProductItemComponent {
 -- shop.component.html
 (passing param to child component)
 <app-product-item [product]="product"></app-product-item>
-
 
 
 9.77. Getting the types and brands lists
@@ -148,10 +146,9 @@ and an optional config object
 the dialog in which they care contained
 
 MAT_DIALOG_DATA:
--> to access the data in your dialog component, inject MAT_DIALOG_DATA
+-> access the data in your dialog component, inject MAT_DIALOG_DATA
 
 https://material.angular.io/components/dialog/overview
-
 
 private dialogService = inject(MatDialog);
 
@@ -165,7 +162,6 @@ openFiltersDialog() {
 <button mat-stroked-button (click)="openFiltersDialog()">
   <mat-icon>filter_list</mat-icon>
 
-
 How can i get a icon in the button?
 -> https://fonts.google.com/icons 
 -> search for the icon: Filter List
@@ -174,7 +170,7 @@ https://fonts.google.com/icons?selected=Material+Symbols+Outlined:filter_list:FI
 
 
 I want to use the MatDialog from Angular(ex: filters)? What are the steps?
--> i need to go to make a Filters  button 
+-> make a Filters button 
 -> i need a event on it: "openFiltersDialog"
 -> i need to inject the (MatDialog) into var so i can use it to open/close event
 -> open event: pass the class(FilterDialogComponent) and the brands, types
@@ -224,6 +220,11 @@ I want to use the MatDialog from Angular(ex: filters)? What are the steps?
   }
 }
 
+Dictionary:
+open(FilterDialogComponent, {...})
+-> creates and display the dialog component FilterDialogComponent
+-> 
+
 
 9.80. Hooking up the filters to the service
 
@@ -234,8 +235,15 @@ Duo-way biding: FormsModule
 
 -- filter-dialog.component.html --
 
-[] -> input values (modify the UI)
-() -> output values (read from UI)
+[] -> **Property binding**
+    -> used for one-way data binding from component to template
+    -> binds a component property to a DOM element property or directive input
+    -> the value flows from the component class to the template
+() -> **Event binding**
+    -> used from event binding from template to component 
+    -> listens from DOM events and calls component methods when they occur
+    -> the event flows from template to the component class
+
 
 [(ngModel)]="selectBrands" [multiple]="true"
 value="{{brand}}"
@@ -379,22 +387,22 @@ Tailwind CSS:
 class="flex flex-col gap-3", 
 class="grid grid-cols-5 gap-4"
 class="flex justify-end gap-3"
--> Tailwind utility classes for styling the layout, grid, gaps, and flexbox properties.
+-> Tailwind utility classes for styling the layout, grid, gaps, and flexbox properties
 
 Angular Material:
 [matMenuTriggerFor]
 <mat-menu>
 <mat-selection-list>
 <mat-list-option>
--> 	Angular Material components for menus and lists with built-in styling and functionality.
+-> 	Angular Material components for menus and lists with built-in styling and functionality
 
 Angular Material:
 mat-stroked-button
--> 	Angular Material directive to style buttons with a stroked appearance.
+-> 	Angular Material directive to style buttons with a stroked appearance
 
 Angular/HTML:
 Angular bindings: property binding ([multiple]) for component attributes and event binding
-                 ((selectionChange)) for responding to events
+                 (selectionChange) for responding to events
 
 Angular:
 (click)="openFiltersDialog()"
@@ -428,7 +436,6 @@ export class ShopParams {
 -- shop.component.ts --
 -> replace selectedSort, selectedBrands, selectedTypes with shopParams
 
-
 Components that need to be modified after the refactoring:
 -- shop.component.html --
 -- shop.service.ts --
@@ -439,6 +446,7 @@ Test to see if it works
 
 
 83. Adding pagination to the client using Material
+
 -- shop.service.ts --
 params = params.append('pageSize', shopParams.pageSize);
 params = params.append('pageIndex', shopParams.pageNumber);
@@ -495,7 +503,7 @@ important: true
 
 -- shop.component.ts --
 import { FormsModule } from '@angular/forms';
-inports: [..., FormsModule]
+imports: [..., FormsModule]
 
 
 onSearchChanged() {
@@ -506,7 +514,7 @@ onSearchChanged() {
 -- shop.component.html --
 <form class="relative flex items-center w-full max-w-md mx-4" #searchFrom="ngForm"
     (ngSubmit)="onSearchChanged()">
-    <input type="search" class="block w-full p-4 text-sm text-gray-900 boder border-gray-300 rounded-lg"
+    <input type="search" class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg"
         placeholder="Search" name="search" [(ngModel)]="shopParams.search" />
     <button mat-icon-button class="absolute inset-y-0 right-8 top-2 flex items-center pl-3">
         <mat-icon>search</mat-icon>
@@ -538,3 +546,5 @@ button.match-input-height {
 -> Pagination (from Material)
 -> Filtering, Sorting & Search
 -> Input properties
+
+-> creating a show 
