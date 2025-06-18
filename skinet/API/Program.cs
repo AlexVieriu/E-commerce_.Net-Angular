@@ -72,8 +72,8 @@ if (app.Environment.IsDevelopment())
     // now u can add any UI for testing: swagger, scalar, etc
     app.MapOpenApi();
 
-    // URL: http://localhost:5150/swagger/index.html
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Demo Api"));
+    // // URL: http://localhost:5150/swagger/index.html
+    // app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Demo Api"));
 
     // URL: http://localhost:5150/scalar/v1
     app.MapScalarApiReference(options =>
