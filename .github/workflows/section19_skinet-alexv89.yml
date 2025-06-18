@@ -21,10 +21,10 @@ jobs:
       - name: Set up node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.14'
+          node-version: '24.x'
 
       - name: Install Angular CLI
-        run: npm install -g @angular/cli@19
+        run: npm install -g @angular/cli@20  # use @angular/cli@latest to prevent the installation from failing.
 
       - name: Install dependencies and build angular app
         working-directory: ./skinet/client
@@ -35,7 +35,7 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+         dotnet-version: '10.0.x-preview.5'            
 
       - name: Build with dotnet
         working-directory: ./skinet/API
