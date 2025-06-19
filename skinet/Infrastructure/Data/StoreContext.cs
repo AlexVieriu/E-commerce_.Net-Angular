@@ -1,5 +1,3 @@
-using Core.Entities.OrderAggregate;
-
 namespace Infrastructure.Data;
 
 public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
@@ -14,6 +12,9 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        // .ApplyConfigurationsFromAssembly : applies configuration from all IEntityTypeConfiguration instances that are defined in provided assembly 
+        // .Assembly : gets the assembly that contains the type of the current instance
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
+
     }
 }

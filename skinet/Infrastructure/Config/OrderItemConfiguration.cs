@@ -1,4 +1,3 @@
-
 namespace Infrastructure.Config;
 
 public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>

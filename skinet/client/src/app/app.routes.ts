@@ -32,4 +32,3 @@ export const routes: Routes = [
     { path: 'server-error', component: ServerErrorComponent },
     { path: '**', redirectTo: 'not-found', pathMatch: 'full' }, // Default redirect for unmatched routes
 ];
-

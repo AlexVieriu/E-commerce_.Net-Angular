@@ -3,7 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { Pagination } from '../../shared/models/pagination';
 import { ShopParams } from '../../shared/models/shopParams';
 import { Product } from '../../shared/models/products';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
+
 
 @Injectable({
   providedIn: 'root'

@@ -18,6 +18,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './filter-dialog.component.html',
   styleUrl: './filter-dialog.component.scss'
 })
+
 export class FiltersDialogComponent {
   shopService = inject(ShopService);
   private dialogRef = inject(MatDialogRef<FiltersDialogComponent>);
@@ -32,5 +33,4 @@ export class FiltersDialogComponent {
       selectedTypes: this.selectedTypes
     })
   }
-
 }

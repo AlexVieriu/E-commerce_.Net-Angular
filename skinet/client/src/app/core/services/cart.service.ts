@@ -10,6 +10,7 @@ import { DeliveryMethod } from '../../shared/models/deliveryMethod';
 @Injectable({
   providedIn: 'root'
 })
+
 export class CartService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);

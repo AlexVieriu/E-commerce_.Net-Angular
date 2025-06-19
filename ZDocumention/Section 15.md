@@ -1,0 +1,608 @@
+141. Introduction
+-> adding an account feature
+-> forms in Angular
+-> reactive forms
+-> reusable form components
+-> client side validation
+
+
+142. Creating the account components
+
+cd skinet/client
+ng g s core/services/account --skip-tests
+ng g c features/account/login --skip-tests
+ng g c features/account/register --skip-tests
+
+-- app.routes.ts --
+{ path: 'login', component: LoginComponent },
+{ path: 'register', component: RegisterComponent }
+
+-- header.component.html --
+-> add routerLink to Login and Register
+
+-- app -> shared -> models --  
+user.ts     : firstName, lastName, email, address
+address.ts  : City, State, Line1, Line2, Country, PostalCode
+
+-- app -> core -> services -> account.service.ts --
+-> login() ...
+-> register() ...
+-> getUserInfo() ...
+-> logout() ...
+-> updateAddress() ...
+
+
+Dictionary:
+
+-- HttpClient --
+
+1. Methods
+
+get<T>(url, options?)           : Makes a GET request
+post<T>(url, body, options?)    : Makes a POST request
+put<T>(url, body, options?)     : Makes a PUT request
+delete<T>(url, options?)        : Makes a DELETE request
+patch<T>(url, body, options?)   : Makes a PATCH request
+request<T>(method, url, options?)   : Generic method for any HTTP request
+request<T>(method: string, url: string, options?: {...})    : Observable<HttpEvent<T>>
+
+2. Request Options
+headers         : For adding HTTP headers
+params          : For adding URL parameters
+observe         : Controls the response type ('body', 'response', 'events')
+responseType    : Specifies the format ('json', 'text', 'blob', 'arraybuffer')
+reportProgress  : Enables progress events for uploads/downloads
+withCredentials : Includes cookies in cross-site requests
+
+3. Related Interfaces
+
+HttpHeaders         : Manage request/response headers
+HttpParams          : Manage URL query parameters
+HttpResponse<T>     : Complete HTTP response with status and headers
+HttpErrorResponse   : Error HTTP response
+HttpEvent<T>        : Base interface for HTTP events
+HttpInterceptor     : Interface for intercepting HTTP requests/responses
+
+4. Interceptors
+HttpInterceptor interface with intercept() method for modifying requests/responses
+
+
+143.Introduction to Angular forms 
+
+https://next.angular.dev/guide/forms/reactive-forms
+
+1. FormsModule (Template-driven) : https://next.angular.dev/guide/forms/template-driven-forms
+-> template driven
+-> easy to use
+-> 2 way binding
+-> NgModel directive
+-> minimal component code
+-> automatic tracking by Angular
+-> testing is difficult
+
+2. ReactiveFormsModule (Reactive) : https://next.angular.dev/guide/forms/reactive-forms
+-> flexible 
+-> Immutable data model 
+-> uses observable operators
+-> more complex component code
+-> easier to test
+-> reactive transformations (debounce)
+
+Building blocks of forms:
+-> FormControl
+-> FormGroup
+-> FormArray
+
+
+144. Creating the login form
+
+-- login.component.ts --
+imports: [ReactiveFormsModule, MatCard, MatFormField, MatInput, MatLabel, MatButton]
+
+onSubmit():
+-> access login(this.loginForm.value) with AccountService    
+
+-> next: this.accountService.getUserInfo();
+         this.router.navigate(['/shop']);
+
+--login.component.html--    
+
+Angular-Specific Elements
+<mat-card>
+<mat-form-field>
+<mat-label>
+
+Angular-Specific Attributes
+[formGroup]
+(ngSubmit)
+formControlName
+matInput
+mat-flat-button
+appearance
+
+HTML Attributes
+class
+type
+placeholder
+
+
+Testing:
+https://localhost:4200/
+
+tom@test.com
+Pa$$w0rd
+
+
+-- account.service.ts --
+-> adding "withCredentials"
+
+login(values: any)
+{
+    ...
+    return this.http.post<User>(this.baseUrl + 'login', values, { params, withCredentials: true });
+}
+
+getUserInfo(){
+    return this.http.get<User>(this.baseUrl + 'account/user-info', { withCredentials: true })
+    .pipe(...)
+}
+
+
+Dictionary:
+
+withCredentials: true
+-> property in your HTTP request enables the browser to send cookies, 
+HTTP authentication, and client-side SSL certificates to cross-origin requests
+
+
+145. Updating the header component
+
+-- header.component.ts --
+-> inject the AccountService
+-> logout(){...};
+
+
+-- header.component.html --
+@if(accountService.currentUser()) {
+<button mat-stroked-button (click)="logout()">Logout</button>
+}
+@else{
+    login button ...
+    register button ...
+}
+
+
+Dictionary:
+-> services are public so they can be access by other components
+->if the variable doesn't have an access modifier(public protected, private), 
+they are public by default
+
+
+146. Persisting the login
+
+-> our Angular app, when the cookies has the HttpOnly flag set, can't access the cookie form 
+
+How we can check if a user is logged in so we can update the header?
+
+-- account.service.ts --
+-> we need to return an observable so we don't .subscribe in the AccountService
+getUserInfo(){
+    return ... .pipe(map(user => {
+        this.currentUser.set(user);
+        return user;
+    }))    
+}
+
+-- init.service.ts --
+-> inject the AccountService
+init(){
+    ...
+    return forkJoin([cart$, this.accountService.getUserInfo()]);
+}
+
+-- login.component.ts --
+-> subscribe to .getUserInfo()
+
+
+Dictionary:
+
+scheduled:
+-> part of RxJS
+-> converts from a common {@link ObservableInput} type to an observable where 
+subscription and emissions are scheduled on the provided scheduler
+
+forkJoin:
+-> allow us for multiple observables to complete and then emits the latest
+values as an array
+
+
+147. Adding an auth interceptor
+
+Interceptor:
+-> special type of service that allows you to intercept and modify HTTP requests
+and responses globally before they're handled by your application code
+
+ng g interceptor core/interceptors/auth --skip-tests
+
+-- auth.interceptor.ts --
+{
+    const clonedRequest = req.clone({
+        withCredentials: true
+    });
+
+    return next(clonedRequest);
+}
+
+-- app.appConfig.ts --
+-> add authInterceptor to provideHttpClient
+
+-> remove { withCredentials: true } from account.service.ts
+
+
+148. Adding an Angular Material Menu
+
+-- header.component.ts --
+-> import MatMenu, MatDivider, MatListItem, MatMenuTrigger 
+https://material.angular.io/components/menu/overview
+
+-- header.component.html --
+-> use [matMenuTriggerFor] from Angular Material to store a HTML block for: 
+    -> cart 
+    -> orders
+    -> logout
+
+MatIcons list:
+https://fonts.google.com/icons
+
+
+149. Adding the register form 
+
+-- register.component.ts --
+-> inject: FormBuilder, AccountService, Router, SnackbarService
+-> create a prop "registerForm" with props: firstName, lastName, email, password
+using FormBuilder with group(): fb.group({...})
+-> onSubmit():
+    -> use register() from AccountService to make a post call to the API
+    -> use next: () => {...} to 
+        -> write a success message
+        -> navigate to the login page
+
+-- register.component.html --
+-> same template as Login.html
+    -> firstName
+    -> lastName
+    -> email
+    -> password
+
+Dictionary:
+
+FormBuilder:
+-> creates an "AbstractControl" from a user-specified configuration
+-> provides syntactic sugar that shortens creating instances of a 
+"FormControl", "FormGroup", or "FormArray"
+-> it reduces the amount of boilerplate needed to build complex forms
+
+
+150. Form validation - server side check
+
+-> check the server side validation first
+-> we need to see some console error validation int he browser
+
+-- register.component.ts --
+validationErrors?: string[];
+
+onSubmit(){
+    ...
+    error: errors => this.validationErrors = errors
+}
+
+-- register.component.html --
+
+@if(validationErrors) {
+    -> create a @for loop that loops through the validationErrors array    
+}
+
+
+151. Form validation - client side check
+
+-- register.component.ts --
+-> add Validators.required for each field
+
+registerForm = this.fb.group({
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    email: ['', Validators.required],
+    password: ['', Validators.required]
+})
+
+-> Material adds * automatic to the each field placeholder
+
+-- register.component.html --
+-> add an error message for each field
+
+@if(registerForm.get('firstName')?.hasError('required')) {
+    <mat-error>First Name is required</mat-error>
+}
+
+-> disable the submit button if the form is invalid
+[disabled]="registerForm.invalid"
+
+
+152. Creating a re-usable text input
+
+cd skinet/client
+ng g c shared/components/text-input --skip-tests
+
+-- text-input.component.ts --
+export class TextInputComponent implements ControlValueAccessor {
+  @Input() label = '';
+  @Input() type = 'text';
+
+  constructor(@Self() public controlDir: NgControl) {
+    this.controlDir.valueAccessor = this; // this = TextInputComponent
+  }
+
+  -> implement the interfaces from ControlValueAccessor: 
+    -> writeValue(), registerOnChange(), registerOnTouched()
+    -> only delete the Throw methods in side, and let it like that
+
+   get control() {
+    return this.controlDir.control as FormControl;
+  }
+}
+
+-- text-input.component.html --
+<mat-form-field appearance="outline" class="w-full mb-4">
+    <mat-label>{{label}}</mat-label>
+    <input [formControl]="control" type={{type}} placeholder={{label}} matInput />
+    @if(control.hasError('required')) {
+    <mat-error>{{label}} is required</mat-error>
+    }
+    @if(control.hasError('email')) {
+    <mat-error>Email is required</mat-error>
+    }
+</mat-form-field>
+
+-- register.component.html --
+-> remove all <mat-form-field> with <app-text-input>
+
+<app-text-input label="First Name" formControlName="firstName" />
+
+
+Dictionary:
+
+ControlValueAccessor
+-> bridge between Angular forms API and DOM elements
+-> used to create custom form control directives
+
+@Input()
+-> decorator for parent-to-child data passing
+
+@Self() 
+->  is an Angular dependency injection decorator that tells Angular to only look for the dependency in the current component's injector, not in parent injectors
+-> without @Self(), Angular would search up the injector hierarchy (current component → parent component → parent's parent, etc.) until it finds the dependency
+-> https://angular.dev/api/core/Self
+
+-- FormControl --
+-> core Angular forms building block (with FormGroup, FormArray, FormRecord)
+-> represents single form input with value and validation tracking
+https://angular.dev/api/forms/FormControl
+
+FormControl properties/Methods:
+Properties  : value, status, errors, valid, invalid
+Methods     : setValue(), patchValue(), reset(), setValidators(), setAsyncValidators(), updateValueAndValidity(), disable(), enable()
+
+-- NgControl --
+-> abstract class extended by FormControl-based directives
+-> binds FormControl to DOM element
+
+Properties  : value, valid, invalid, errors, status, disabled
+Methods     : setValue(), patchValue(), reset(), setErrors(), updateValueAndValidity(), hasError()
+
+Includes .control(), a getter property from AbstractControlDirective parent class, 
+
+export declare abstract class AbstractControlDirective {
+    abstract get control(): AbstractControl | null;
+    ...
+}
+
+AbstractControl Properties:
+-> value, valid, invalid, touched, untouched, dirty, pristine, disabled, enabled, 
+errors, status, valueChanges, statusChanges
+
+AbstractControl Methods:
+-> setValue(), patchValue(), reset(), markAsTouched(), markAsUntouched(), markAsDirty(), 
+markAsPristine(), setValidators(), setAsyncValidators(), clearValidators(), 
+updateValueAndValidity(), hasError(), getError()
+
+[formControl]
+-> Tracks the FormControl instance bound to the directive
+
+
+153. Creating an auth guard
+ng g --help
+ng g guard core/guards/auth --dry-run
+-> pick "CanActivate" from the list
+
+ng g guard core/guards/auth --skip-tests
+
+-- auth.guard.ts --
+-> inject AccountService and Router
+
+-> if accountService.currentUser() is not null, return true
+-> else, navigate to /account/Login and pass the queryParams to redirect 
+the user back to the page they were trying to access
+
+-- app.routes.ts --
+{ path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
+
+
+-- login.component.ts --
+private activatedRoute = inject(ActivatedRoute);
+returnUrl = '/shop'
+
+constructor() {
+  const url = this.activatedRoute.snapshot.queryParams['returnUrl'];
+  if (url) this.returnUrl = url;
+}
+
+.snapshot -> of type ActivatedRouteSnapshot
+
+Why use .snapshot (that has properties: url, params , queryParams, data,...)
+instead of direct use of .activatedRoute(type: ActivatedRoute) that have the same properties 
+(but they are Observables)?
+
+-> snapshot property gives you immediate access to the current values without subscribing to an Observable
+
+
+Dictionary:
+
+Angular Route Guards 
+https://medium.com/@sehban.alam/everything-you-need-to-know-about-angular-guards-768c21ddbe2b
+
+1. CanActivate: 
+    -> Determines if a route can be activated (most used).
+
+2. CanActivateChild: 
+    -> Determines if child routes of a route can be activated
+
+3. CanDeactivate
+    -> Allows users to leave a route if certain conditions are met 
+
+4. CanMatch
+    -> Determines if a route can be matched; can be used to control access to routes (introduced in Angular 14).
+
+5. Resolve
+    -> Fetches data before the route is activated and makes it available to the component.
+
+6. CanLoad 
+    ->  Controls lazy loading of feature modules
+
+
+Best Practices for Using Guards
+-> Keep Guards Simple: 
+    -> Guards should contain simple, declarative checks
+    -> For complex logic, move the code to a service
+-> Avoid Heavy Operations in Guards: 
+    -> Avoid API calls within guards, as it can slow down navigation
+    -> Use Resolve guards for pre-fetching data
+-> Combine Guards Wisely: 
+    -> You can combine multiple guards on a single route to control various aspects of navigation
+    -> User Feedback on Blocked Navigation: 
+        -> For example, if a user is redirected due to lack of permissions, show a message explaining why   
+
+
+Types vs Class
+
+Types:
+-> Compile-time only (erased during compilation)
+-> Define data shape/structure
+-> Cannot use new or contain implementation logic
+-> Used for type checking
+
+Classes:
+-> Both types AND runtime objects
+-> Can use new and contain logic/data
+-> Support inheritance
+-> Exist in compiled JavaScript
+
+ActivatedRoute
+-> gives you information about the currently active route
+-> it lets you access route parameters, query parameters, and data associated with the current route
+
+ActivatedRouteSnapshot Properties:
+url        : UrlSegment[];
+params     : Params;
+queryParams: Params;
+fragment   : string | null;
+data       : Data;
+outlet     : string;
+
+ActivatedRouteSnapshot Methods:
+paramMap        - Provides safe access to route parameters with built-in get/has methods
+queryParamMap   - Same as paramMap but for URL query parameters
+data            - Accesses static and resolved data attached to the route
+params          - Direct access to route parameters as a simple object
+root            - Gets the root node of the route tree hierarchy
+
+
+154. Updating the auth guard to use observables
+
+-- auth.guard.ts --
+-> .currentUser() = signal (it's a synchronous functionality)
+-> we have a timing issues 
+-> when we go to the login page, signal immediate check if the user is logged in
+
+Solution:
+-> we need to work with Observables, they are asynchronous
+-> our route guard will w8 for observables but not for signals
+-> we need to return an Observable
+
+-- AccountController.cs --
+ [HttpGet("auth-status")]
+GetAuthState()
+-> check if the user is IsAuthenticated
+-> we send an Observable to this endpoint and wait for it
+
+-- accountService.ts --
+getAuthState() {
+    return this.http.get<{ isAuthenticated: boolean }>(this.baseUrl + 'account/auth-status');
+}
+
+-- auth.guard.ts --
+
+if (accountService.currentUser()) {
+    return of(true);
+}
+else {
+return accountService.getAuthState().pipe(
+    map(auth => {
+    if (auth.isAuthenticated) {
+        return true;
+    } else
+        router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
+    return false;
+    })
+)
+}
+
+155. Challenge - empty cart guard
+
+ng g g core/guards/emptycart --skip-tests
+
+-> we need a guard that prevent users to get to checkout component
+if they don't have something in there basket
+
+-> when u click on the checkout button, we need to see a red toast message 
+"Your cart is empty" if the cart is empty
+
+
+157. Adding an empty state component
+
+-- empty-state.component.ts --
+MatIcon, MatButton, RouterLink
+
+-- empty-state.component.html --
+-> add shopping_cart icon
+-> add text: "Your shopping cart is empty"
+-> add button: "Go shopping!" with routerLink="/shop">
+
+--empty-state.component.scss --
+.icon-display {
+    transform: scale(3);
+}
+
+-- cart.component.html --
+-> add the new <app-empty-state>
+
+
+158. Summary
+-> adding an Account feature
+-> forms in Angular 
+-> reactive forms
+-> reusable form components
+-> client side validation 
+
+Why didn't you cover template forms?
+-> they don't give us any functionality we can't have in Reactive forms
+-> reactive forms are more powerful

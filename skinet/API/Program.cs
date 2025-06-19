@@ -17,11 +17,33 @@ builder.WebHost.ConfigureKestrel(options =>
     });
 
 });
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
-builder.Services.AddDbContext<StoreContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+#region Database Configuration
+if (builder.Environment.IsDevelopment())
+{
+    // Register the SQLite context
+    builder.Services.AddDbContext<SqliteStoreContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    // Register the base StoreContext to resolve to SqliteStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqliteStoreContext>());
+}
+else
+{
+    // Register the SQL Server context
+    builder.Services.AddDbContext<SqlServerStoreContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
+
+    // Register the base StoreContext to resolve to SqlServerStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqlServerStoreContext>());
+}
+#endregion
+
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var conStr = builder.Configuration.GetConnectionString("Redis") ??
@@ -42,7 +64,6 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
                 .AddEntityFrameworkStores<StoreContext>();
 builder.Services.AddSignalR();
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -51,8 +72,8 @@ if (app.Environment.IsDevelopment())
     // now u can add any UI for testing: swagger, scalar, etc
     app.MapOpenApi();
 
-    // URL: http://localhost:5150/swagger/index.html
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Demo Api"));
+    // // URL: http://localhost:5150/swagger/index.html
+    // app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Demo Api"));
 
     // URL: http://localhost:5150/scalar/v1
     app.MapScalarApiReference(options =>
@@ -65,15 +86,21 @@ if (app.Environment.IsDevelopment())
     );
 }
 
-app.UseHttpsRedirection();
-
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseHttpsRedirection();
 app.UseCors(options => options.AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowCredentials()
-                              .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-alex89.azurewebsites.net"));
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+// For Angular app
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapFallbackToController("Index", "Fallback"); // Idex(action name), Fallback(controller name)
 
 app.MapControllers();
 
@@ -82,16 +109,24 @@ app.MapGroup("api").MapIdentityApi<AppUser>();
 
 app.MapHub<NotificationHub>("/hub/notifications");
 
-try // Database Migration
+try
 {
-    // when we use services inside or outside DI, we need to create a Scoped
-    // once this is executed the framework will dispose the scope    
     using var scoped = app.Services.CreateScope();
     var services = scoped.ServiceProvider;
-    var context = services.GetRequiredService<StoreContext>();
-    await context.Database.MigrateAsync();
 
-    await StoreContentSeed.SeedAsync(context);
+    if (app.Environment.IsDevelopment())
+    {
+        var context = services.GetRequiredService<SqliteStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+    else
+    {
+        var context = services.GetRequiredService<SqlServerStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+
+    var baseContext = services.GetRequiredService<StoreContext>();
+    await StoreContextSeed.SeedAsync(baseContext);
 }
 catch (Exception ex)
 {
@@ -100,3 +135,5 @@ catch (Exception ex)
 }
 
 app.Run();
+
+

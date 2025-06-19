@@ -1,0 +1,640 @@
+211. Introduction
+-> preparing the app for publishing
+-> Angular production build
+-> using cloud Redis server
+-> publishing to Azure
+-> Continuous Integration (CI/CD)
+-> troubleshooting Azure 
+
+Free services from Azure:
+https://portal.azure.com/#view/Microsoft_Azure_Billing/FreeServicesBlade
+
+-> we will gonna use:
+    -> Azure SQL DB
+    -> Azure App Service
+
+
+212. Preparing the client app for publishing
+
+Goal:
+-> we need to prepare out Angular app for production
+-> out Angular app can be hosted anywhere(but we will use our .net Web Server!!)
+-> our Angular app need be hosted by a web Server, because when it gets compile, it will 
+get compile into the static Js files(in wwwroot folder - in our case)
+
+Preparation:
+
+-- angular.json --
+"outputPath": {
+    "base": "../API/wwwroot",
+    "browser": ""
+}
+
+-- loading.interceptor.ts --
+(environment.production ? identity : delay(500))
+
+-> don't let hardcoded URL(localhost:5150/...), we will have problems in production
+
+ng build 
+-> we need to find the wwwroot folder after
+
+Change the Raw size of Angular:
+
+-- angular.json --
+"type": "initial",
+"maximumWarning": "1.5Mb",
+"maximumError": "3MB"
+                
+ng build 
+Output location: F:\Programare\E-commerce_.Net-Angular\skinet\API\wwwroot
+
+-- API -> wwwroot --
+main-S6A5GRIC.js
+polyfills-FFHMD2TL.js
+
+-> if we build it again will have a different output hash
+
+
+-- Dictionary --
+
+-- loading.interceptor.ts --
+export:
+-> is a TypeScript keyword that makes this function to be imported by other files in the app
+
+identity:
+-> identity serves as a "no-op" operator that does nothing to the HTTP response stream
+-> used for clean syntax(so we don't use if/else statement)
+-> we use identity and delay(500), so the development environment will simulate the production experience 
+
+--app.config.ts --
+provideHttpClient(withInterceptors([errorInterceptor, loadingInterceptor, authInterceptor])),
+
+loadingInterceptor:
+-> manages loading state in Angular app
+
+Key features of Angular interceptors:
+-> transform outgoing requests before they reach the server
+-> transform incoming responses before your application processes them
+-> they run in order for each HTTP request/response
+-> used for cross-cutting concerns like authentication, logging, or error handling
+
+Common use cases of Angular interceptors:
+-> authentication
+-> logging
+-> error handling
+-> caching
+-> request/response transformation
+
+
+213. Preparing the .Net app for publishing
+
+-> we need middleware to serve static files from the wwwroot folder
+
+-- Program.cs --
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+-- FallbackController.cs --
+public IActionResult Index()
+{
+    return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "index.html"),
+        "text/HTML");
+}
+
+-> when a request comes into the app, ASP.NET Core tries to match it with:
+1. Define API routes
+2. Default files
+3. Static files
+-> if none of these match, the request is sent to the FallbackController
+
+-- StoreContextSeed.cs --
+var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+var productsData = await File.ReadAllTextAsync(path + @"/Data/Seed Data/products.json");
+var dmData = await File.ReadAllTextAsync(path + @"/Data/Seed Data//delivery.json");
+
+-- Infrastructure.csproj --
+<ItemGroup>
+     <None Include="Data\Seed Data\**" CopyToOutputDirectory="PreserveNewest"/>
+</ItemGroup>
+
+cd skinet
+dotnet ef database drop -p Infrastructure -s API
+cd API
+dotnet run
+
+-> now our proj is running in production mode
+https://localhost:7096
+
+alex@gmail.com
+Pa$$w0rd
+
+-- Dictionary --
+return PhysicalFile(Path.Combine(
+            Directory.GetCurrentDirectory(), "wwwroot", "index.html"), "text/HTML");
+
+-> returning the main index.html file from your Angular app
+-> this setup is crucial for SPA apps like Angular, React, Vue because:
+    -> Client-side routing in SPAs apps manages URL changes without server requests
+    -> when users access a deep link(example.com/products/123) or refresh the page,
+        the server returns your SPA's main HTML page
+    -> Angular then initializes the client-side routing system
+-> this approach ensures that regardless of witch URL the user navigates to, 
+the server always returns the main index.html file
+
+Directory.GetCurrentDirectory()
+-> Gets the current working directory of the application
+
+-- StoreContextSeed.cs --
+Assembly.GetExecutingAssembly().Location
+-> Gets the full path or UNC location of the loaded file that contains the manifest
+
+File.ReadAllTextAsync()
+-> opens a text file
+-> reads all the content from the file asynchronously
+-> returns the content as a string
+-> closes the file when done
+
+
+ -- Program.cs --
+app.UseDefaultFiles()
+-> enables default file mapping on the current path
+-> files are served from the path specified in IWebHostEnvironment.WebRootPath, 
+which defaults to the wwwroot subfolder
+-> that's why we configured angular.json to point to the wwwroot folder
+
+app.UseStaticFiles()
+-> enables static file serving for the current request path
+
+app.MapFallbackToController("Index", "Fallback")
+-> Index    : action Name
+-> Fallback : controller name
+-> when a client requests a route that doesn't match any of your defined API endpoints, 
+and doesn't match any physical files in your wwwroot folder, the request is routed to the 
+Index action of the Fallback controller
+
+Example:
+-> when a user navigates directly to a client-side route(like '/products/5') or refresh the page, 
+the server returns your SPA's main HTML page
+
+Routing System:
+-> ASP.Net has it's own server-side routing system that maps URLs to controller actions
+-> Angular uses a client-side routing system that handles navigation with the browser
+
+Example:
+
+Server-side routes: 
+"/api/products" → ProductsController.GetAll()
+"/api/products/{id}" → ProductsController.GetProduct(5)
+
+Client-side routes:
+"/" -> HomeComponent
+"/products" -> ProductsListComponent
+"/products/{id}" -> ProductDetailsComponent
+
+Claude:
+"How .net and Angular routing work together? 
+If i put my production Angular in .net in wwwroot folder, how .net can differentiate 
+the .net routes and Angular routes?" 
+Give me an example with a full flow. I don't need the full code or implementation."
+
+
+214. Setting up cloud Redis server
+
+https://console.upstash.com/redis?teamid=0
+
+-> create redis DB
+Name: skinet
+Primary Region: Frankfurt
+
+copy: redis-cli --tls -u redis://default:ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA@teaching-hermit-10559.upstash.io:6379
+
+-- appsettings.Development.json --
+"Redis": "teaching-hermit-10559.upstash.io:6379, password=ASk_AAIjcDFmZjczZjU5OWQ2MDg0N2I3YWJmY2RlYmZhY2YxYjI0YXAxMA,ssl=true,abortConnect=false"
+
+-> restart the API
+-> now we are using a different redis DB
+https://localhost:7096/shop
+-> add some items to the create
+-> check the redis DB:
+    -> https://console.upstash.com/redis/a7583534-e074-4f49-a565-f12c49811467?teamid=0
+    -> data browser
+
+
+215. Setting up an azure account
+
+https://portal.azure.com/#view/Microsoft_Azure_Billing/FreeServicesBlade
+https://portal.azure.com/#create/Microsoft.SQLDatabase
+
+Pay-as-you-go:
+-> create a subscription
+-> create resource group
+    -> https://portal.azure.com/?quickstart=True#browse/resourcegroups
+    -> go to the resource group after created
+    -> https://portal.azure.com/?quickstart=True#@vieriualexandru25gmail.onmicrosoft.com/resource/subscriptions/cbf01c9b-a5bb-423a-9892-fc49065f6ea6/resourcegroups/skinet-2025-rg/overview 
+    -> search fro "web app"
+        -> create:
+            -> subscription: choose your subscription
+            -> instance details: skinet-alexV89
+            -> uncheck :"try secure unique default hostname"
+            -> publish: "Code"
+            -> runtime: ".Net 9 (STS)"
+            -> Operating system: "Windows"
+            -> region: "Poland Center"
+            -> pricing plan: "Free F1(Shared Infrastructure)"
+            -> Review + Create
+            -> Create (w8 for deployment)
+-> go to resource   : https://portal.azure.com/?quickstart=True#@vieriualexandru25gmail.onmicrosoft.com/resource/subscriptions/cbf01c9b-a5bb-423a-9892-fc49065f6ea6/resourcegroups/skinet-2025-rg/providers/Microsoft.Web/sites/skinet-alexV89/appServices
+-> go to the domain : https://skinet-alexv89.azurewebsites.net/
+-> stop the site from running 
+
+
+216. Configuring the web app on Azure
+
+-> keep Stripe development and production account separate
+-> create new Stripe account:
+    -> "skinet-prod"
+        -> Publishable key: ...
+        -> Secret key :  ...
+
+-> open Azure portal 
+-> we go to our site resource: skinet-alexV89
+-- Settings --
+    1. Environment variables 
+        -> App Settings 
+            -> Add :
+                -> Name: StripeSettings__PublishableKey (we get the name from appsettings.json)
+                -> Value: ... (https://dashboard.stripe.com/test/dashboard)
+                -> click "Apply"
+            -> Add :
+                -> Name: StripeSettings__SecretKey
+                -> Value: ...(https://dashboard.stripe.com/test/dashboard)
+            -> Add:
+                -> Name: StripeSettings__WhSecret
+                -> Value: ...(https://dashboard.stripe.com/test/workbench/webhooks)
+
+        -> Connection strings
+            -> Add:
+                -> Name: Redis (make sure it mach the one in appsettings.Deployment.json)
+                -> Value: ... (https://console.upstash.com/redis?teamid=0) -> go to the created server and construct the connection string
+                -> Type: Custom
+                -> click Apply
+
+    2. Configuration
+    -> enable Web sockets
+    -> select HTTP 2.0
+    -> save changes
+
+-- Diagnose and solve problems --
+-> Diagnostic Tools -> Application Event Logs
+
+
+217. Creating a Azure DB
+-> go to resource group -> skinet-2025-ng -> +Create
+-> search for "Database" -> choose "SQL Database" -> Create
+
+Subscription    : -> pick the one that you have
+Resource group  : -> pick the one that you have
+
+Database name   : skinet
+Server          : -> create: 
+                    Server Name: skinet-2025a
+                    Location: Poland Center
+                    Server admin login: appuser
+                    Password: Pa$$w0rd
+
+Auto-pause the database until next month
+Review + Create
+
+-> we go to resources and go to the SQL db
+-> go to SQL connection String
+    -> get the ADO.Net (SQL authentication) connection string: 
+        -> Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+
+-> go to the App Service in Azure -> Settings -> Environment variables -> Connection strings -> +Add
+    -> see the appsettings.Deployment.json file and need to match the names from there 
+        -> Name     : DefaultConnection
+        -> Value    : Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+        -> Type     : SQL Server
+
+-> now we have Redis and SQL Server configured
+
+-> go to Resource Group -> SQL server -> Networking -> Selected Networks -> 
+    -> Allow Azure service and resources to access this server -> Save
+
+
+218. Publishing to Azure
+
+If we have SQLite on the Development and SQL Server Azure in Production: 
+
+-- Program.cs --
+if (builder.Environment.IsDevelopment())
+{
+    // Register the SQLite context
+    builder.Services.AddDbContext<SqliteStoreContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    // Register the base StoreContext to resolve to SqliteStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqliteStoreContext>());
+}
+else
+{
+    // Register the SQL Server context
+    builder.Services.AddDbContext<SqlServerStoreContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
+
+    // Register the base StoreContext to resolve to SqlServerStoreContext
+    builder.Services.AddScoped<StoreContext>(provider =>
+        provider.GetRequiredService<SqlServerStoreContext>());
+}
+. . .
+try
+{
+    using var scoped = app.Services.CreateScope();
+    var services = scoped.ServiceProvider;
+
+    if (app.Environment.IsDevelopment())
+    {
+        var context = services.GetRequiredService<SqliteStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+    else
+    {
+        var context = services.GetRequiredService<SqlServerStoreContext>();
+        await context.Database.MigrateAsync();
+    }
+
+    var baseContext = services.GetRequiredService<StoreContext>();
+    await StoreContextSeed.SeedAsync(baseContext);
+}
+catch (Exception ex)
+{
+    WriteLine(ex.Message);
+    throw;
+}
+
+
+-- appsettings.json --
+
+"ConnectionStrings": {
+    "Redis": "localhost",
+    "SqlServerAzureConnection": "Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=300;"
+},
+"StripeSettings": {
+    "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
+    "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
+    "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
+} 
+
+-> get the Stripe key from the new created Production account
+-> we only add SqlServerAzureConnection, for testing the production
+-> the connection will be automatically re-written in Azure Connection String when we commit(CI/CD)
+
+
+-- appsettings.development.json --
+"ConnectionStrings": {
+    "DefaultConnection": "Data Source=../data/store.db",
+    "Redis": "localhost"
+}
+
+Check if on every file in Angular project we have: "import { environment } from '../../../environments/environment';"
+-> don't use:"src/environments/environment.development.ts"
+
+
+-- angular.json -- 
+"development": {
+    "optimization": false,
+    "extractLicenses": false,
+    "sourceMap": true,
+    "fileReplacements": [
+        {
+            "replace": "src/environments/environment.ts",
+            "with": "src/environments/environment.development.ts"
+        }
+    ]
+}
+
+"outputPath": {
+    "base": "../API/wwwroot",
+    "browser": ""
+}
+
+Rebuild angular app, so we have the static site in the API proj: 
+ng build
+Output location: F:\Programare\E-commerce_.Net-Angular\skinet\API\wwwroot
+
+
+-> add Azure App Service extension to VSC
+
+Create a permanent Webhook:
+-> check the nuget package stripe.net is up to date(last version)
+-> if is not up to date, will not work , because when we create a stripe endpoint, it will use the latest version
+-> go to Stripe (the production account) -> Developers(left-down corner) -> Webhooks -> Add Destination(endpoint)
+https://dashboard.stripe.com/test/workbench/webhooks/create
+
+1. Search for "payment_intent.succeeded" event -> Next
+2. pick Webhook endpoint -> next
+3. endpoint URL: https://skinet-alexv89.azurewebsites.net/api/payments/webhook
+4. search for "Signing secret" in the redirection page
+5. copy the signing secret: "whsec_20......."
+6. Go to Azure -> App Service -> Settings -> Environment variables :
+    -> Name: StripeSettings__WhSecret
+    -> Value: "whsec_20......."
+
+
+219. Adding Continuous Integration (CI/CD)
+
+-- environment.ts --
+-> update to production key with the one on the Stripe ProductionAccount
+export const environment = {
+    production: true,
+    apiUrl: 'api/',
+    hubUrl: 'hub/notifications',
+    stripePublicKey: '....'
+};
+
+ng build 
+
+Go to Azure site -> App Service -> Deployment -> Deployment Center
+Source      : GitHub
+Organization: AlexVieriu (your GitHub account)
+Repository  : E-commerce_.Net-Angular
+Branch      : main
+
+Authentication type: User-assigned identity
+Preview file
+
+
+-> go to Azure -> App Service -> Deployment -> Deployment Center -> save the changes
+-> GitHub -> Open repository -> Actions -> click on build step
+
+Change .yml file: 
+-> go to GitHub -> Actions -> Click the Workflow that is running the build -> In the left tab search for Workflow File
+-> Edit the file
+
+- name: Build with dotnet
+  working-directory: ./skinet/API
+  run: dotnet build --configuration Release
+
+- name: dotnet publish
+  working-directory: ./skinet/API
+  run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+  
+220. Troubleshooting Azure issues
+
+https://dashboard.stripe.com/test/payments
+-> click on the Payment
+-> look down to see the errors
+
+To see more about the issues go in Azure -> App Service -> Diagnose and solve problems 
+
+Let's see the version of webhook:
+https://dashboard.stripe.com/test/workbench/webhooks
+-> we are using API version 2025-03-31.basil, bu tmy API is expecting using version 2025-02-24.acacia
+-> i need to update my Stripe API(in the Infrastructure project)
+
+
+221. Making the empty state component reusable
+
+-- appsettings.development.json --
+"ConnectionStrings": {
+    "DefaultConnection": "Data Source=../data/store.db",
+    "Redis": "localhost"
+}
+
+-- empty-state.component.ts --
+busyService = inject(BusyService); 
+message = input.required<string>();
+icon = input.required<string>();
+actionText = input.required<string>();
+action = output<void>();
+
+onAction() {
+    this.action.emit();
+}
+
+
+-- empty-state.component.html --
+@if(busyService.busyRequestCount === 0){
+    // add the input/outputs signals to HTML
+    . . .
+}
+
+-- shop.component.ts --
+resetFilters() {
+    this.shopParams = new ShopParams();
+    this.getProducts(); // will reset the filters and get products again
+}
+
+
+-- shop.component.html --
+@if (products && products.count > 0) {. . . }
+@else {
+    <app-empty-state message="No products match this filter" icon="filter_alt_off" 
+    actionText="Clear filters" (action)="resetFilters()" />
+}
+
+
+-- cart.component.ts --
+private router = inject(Router);
+
+onAction() {
+    this.router.navigateByUrl('/shop');
+}
+
+
+-- cart.component.html --
+@else{
+    <app-empty-state message="Shopping cart is empty" icon="remove_shopping_cart" 
+        actionText="" (action)="onAction()" />
+}
+
+First test it in Development mode
+
+
+
+-- Dictionary --
+
+message = input.required<string>();
+action = output<void>();
+
+
+.input:
+-> introduced in Angular 17
+-> allow data flow from parent to child
+-> 2 types of input:
+    -> Optional inputs with an initial value
+    -> Required inputs that consumers need to set
+-> inputs are signals (by default)
+-> the signal always holds the last value of the input that is bound from parent
+
+Ex:
+export class UserProfileComponent {
+    firstName = input<string>();             // Signal<string|undefined>
+    lastName  = input.required<string>();    // Signal<string>
+    age       = input(0)                     // Signal<number>
+}
+
+HTML:
+ <span>{{firstName()}}</span>
+
+
+output:
+-> event emitters that allow child components to send events to the parent component
+
+
+222. Update CI to also build the angular app
+
+-> make a pull request to get the workflows .yml file
+
+-- section19_skinet-alexv89.yml --
+
+- name: Set up node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.14'
+
+- name: Install Angular CLI
+  run: npm install -g @angular/cli@19
+
+- name: Install dependencies and build angular app
+  working-directory: ./skinet/client
+  run: npm install ng build
+
+To see all migrations:
+
+dotnet ef migrations remove --context SqlServerStoreContext -s API -p Infrastructure
+dotnet ef migrations remove --context SqliteStoreContext -s API -p Infrastructure
+
+dotnet ef migrations add InitialSqlite --context SqliteStoreContext -s API -p Infrastructure -o Migrations/SQLite
+dotnet ef migrations add InitialSqlServer --context SqlServerStoreContext -s API -p Infrastructure -o Migrations/SqlServer
+
+cd skinet/API
+dotnet publish -c Release -o ./bin/Publish
+
+
+Dropping the tables(for SQL Server and SQLite):
+DROP TABLE IF EXISTS AspNetRoleClaims;
+DROP TABLE IF EXISTS AspNetUserClaims;
+DROP TABLE IF EXISTS AspNetUserLogins;
+DROP TABLE IF EXISTS AspNetUserRoles;
+DROP TABLE IF EXISTS AspNetUserTokens;
+DROP TABLE IF EXISTS AspNetUsers;
+DROP TABLE IF EXISTS OrderItems;
+DROP TABLE IF EXISTS Orders;
+DROP TABLE IF EXISTS Products;
+DROP TABLE IF EXISTS __EFMigrationsHistory
+DROP TABLE IF EXISTS __EFMigrationsLock;
+DROP TABLE IF EXISTS Addresses;
+DROP TABLE IF EXISTS DeliveryMethods;
+DROP TABLE IF EXISTS AspNetRoles;
+
+
+223. Summary 
+-> preparing the app for publishing
+-> Angular production build
+-> using cloud Redis server
+-> publishing to Azure
+-> Continuous Integration (CI/CD)
+-> troubleshooting Azure

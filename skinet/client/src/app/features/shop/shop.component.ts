@@ -12,6 +12,7 @@ import { Pagination } from '../../shared/models/pagination';
 import { FormsModule } from '@angular/forms';
 import { Product } from '../../shared/models/products';
 import { ShopService } from '../../core/services/shop.service';
+import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
 
 @Component({
   selector: 'app-shop',
@@ -24,7 +25,8 @@ import { ShopService } from '../../core/services/shop.service';
     MatListOption,
     MatMenuTrigger,
     MatPaginator,
-    FormsModule
+    FormsModule,
+    EmptyStateComponent
   ],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss'
@@ -38,7 +40,7 @@ export class ShopComponent {
     { name: 'Price: Low-High', value: 'priceAsc' },
     { name: 'Price: High-Low', value: 'priceDesc' },
   ]
-  shopParams = new ShopParams();
+  shopParams = new ShopParams(); // for resetting filters
   pageSizeOptions = [5, 10, 15, 20]
 
   ngOnInit() {
@@ -49,6 +51,11 @@ export class ShopComponent {
     this.shopService.getTypes();
     this.shopService.getBrands();
     this.getProducts();
+  }
+
+  resetFilters() {
+    this.shopParams = new ShopParams();
+    this.getProducts(); // will reset the filters and get products again
   }
 
   getProducts() {

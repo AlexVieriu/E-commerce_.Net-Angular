@@ -10,6 +10,7 @@ global using Core.Entities.OrderAggregate;
 global using Core.Interfaces;
 global using Core.Specifications;
 global using Infrastructure.Data;
+global using Infrastructure.Data.Factory;
 global using Infrastructure.Services;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Identity;

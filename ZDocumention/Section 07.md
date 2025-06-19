@@ -1,0 +1,431 @@
+7.56. Introduction
+-> installing the Angular CLI
+-> creating the Angular project
+-> setting up VS Code for Angular
+-> setting up Angular to use HTTPS
+-> adding Angular Material and Tailwind CSS
+
+Neil Cummings text editors(from JetBrains):
+-> Rider for .net
+-> WebStorm for Angular, React
+
+Goal:
+-> have a working Angular app running on HTTPS
+-> understand angular standalone components and how we use them to build an app
+
+
+7.57. Creating the angular project
+
+Check the version compatibility:
+https://next.angular.dev/reference/versions
+
+-- Install Node.js --
+https://joachim8675309.medium.com/installing-node-js-with-nvm-4dc469c977d9
+
+winget install --id chocolatey.chocolatey --source winget
+
+-> open Visual Studio Code as Administrator
+
+# chose desired node version
+# install nvm w/ cmder
+choco install cmder
+choco install nvm
+refreshenv
+
+-- Install a new Node.js version  --
+# chose desired node version
+$version = "24.0.1"
+# install node
+nvm install $version
+nvm use $version
+
+-- Install angular CLI --
+https://next.angular.dev/tools/cli/setup-local
+
+nvm ls    (list of node version)
+node -v   (current node version)
+npm -v    (current Nuget Package Manager version)
+
+
+-- PowerShell --
+Get-ExecutionPolicy -List
+Get-ExecutionPolicy
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+-- Install angular version --
+npm install -g @angular/cli   (will install the last stable version)
+ng --version
+ng version
+
+-- Install Preview angular version --
+npm uninstall -g @angular/cli
+npm install -g @angular/cli@next
+ng --version
+
+https://github.com/ReactiveX/rxjs/releases
+
+-- Create angular app --
+ng new client
+-> select Sass
+-> Enable Server-Side Rendering?: No
+
+-- Check if everything is working --
+cd /skinet/client
+ng serve
+
+-> browse to the http://localhost:4200/
+
+
+Dictionary:
+Install the last version of PowerShell: https://github.com/PowerShell/PowerShell/releases
+-> look for "Assets" -> PowerShell-7.5.0-rc.1-win-x64.msi
+
+Check the PowerShell version:
+$PSVersionTable.PSVersion
+
+Add "onmyposh" to PowerShell:
+https://ohmyposh.dev/docs/installation/windows  (download oh my posh)
+https://ohmyposh.dev/docs/installation/prompt   (configure oh my posh)
+
+Windows PowerShell vs PowerShell vs Visual Studio 2022 Developer PowerShell v17.13.0-pre.1.0
+1. Windows PowerShell
+-> this is the older, built-in version of PowerShell that comes with Windows.
+-> based on the .NET Framework 
+
+2. PowerShell (PowerShell Core)
+-> PowerShell 7.x and beyond are the cross-platform, modern versions of PowerShell
+-> PowerShell Core (now just called PowerShell) is cross-platform,
+
+3. Visual Studio 2022 Developer PowerShell
+-> PowerShell environment that comes integrated into Visual Studio 2022, specifically for developer tasks
+-> customized instance of PowerShell that is designed to provide PowerShell support within Visual Studio 
+for development tasks, such as managing builds, running scripts, and interacting with the IDE
+
+
+7.56. Reviewing the Angular project files
+-- client -> scr ->  index.html --
+<title>Skinet</title>
+
+-- app.component.ts --
+-> in the older version we used modular approach
+-> in the newer version we use standalone approach
+    -> each component is responsible for importing its own dependencies 
+
+// we don't need to write it like this, because they are standalone by default
+@Component({
+    standalone: true,
+    ...
+})
+
+-- app.component.html --
+<title>Welcome to {{title}}</title>
+
+{{title}} is a property from AppComponent
+
+-- Other important files --
+app.config.ts
+app.routes.ts 
+main.ts 
+angular.json
+package.json 
+    -> when we install packages, they are added into: client-> node_modules
+tsconfig.json
+    -> "strict": true (strict typescript code)
+
+
+7.59. Using HTTPS with Angular project 
+
+-> get a self trusted certificate 
+https://github.com/FiloSottile/mkcert
+
+Install on Windows(run as admin):
+choco install mkcert
+
+Terminal:
+mkcert -install
+
+Create a new certificate for localhost:
+cd ..//skinet//client
+mkdir ssl
+cd ssl
+mkcert localhost
+
+To use this certificate, we need to configure Angular
+
+-- client -> angular.json --
+-> look for "serve" and add :
+"options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+}
+
+cd/client  (start the Angular app)
+ng serve
+https://localhost:4200/ 
+
+We put https because, when we will use Strips, we will get some errors
+
+
+60. Adding Angular Material and Tailwind CSS
+
+-- Angular Material --
+https://material.angular.io/
+
+cd /skinet/client
+ng add @angular/material@next
+Yes
+Azure/Blue
+Global Angular Material Typography: N
+Include and Enable animations
+cls
+
+-- Tailwind CSS --
+https://tailwindcss.com/docs/guides/angular
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+
+
+-> configure the tailwind.config.js file:
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+content:
+-> specifies where Tailwind should look for class names to include in your final CSS
+-> this configuration wil look for all HTML and TypeScript files in the src directory
+
+**
+-> look on the directory and all nested directories at any depth
+
+/*.{html,ts} 
+-> This matches any files that end with either .html or .ts extensions
+
+theme: allows you to customize Tailwind's default design system 
+  extend: object, where you can add custom colors, spacing etc.
+   -> current is empty, meaning you're using Tailwind's defaults
+
+plugins: an array for adding Tailwind plugins(current empty)
+
+important:
+-> adds !important to all Tailwind CSS classes, which forces them to take precedence over other styles
+-> important when adding Tailwind to existing CSS classes
+
+
+-- client -> src -> app-> app.component.html --
+<h1 class="text-3xl font-bold underline">Welcome to {{title}}</h1>
+
+ng serve
+
+
+-- Dictionary --
+-d (or --save-dev): installs the packages as dev dependencies(not in production)
+
+postcss           : a tool/framework for transforming CSS using JavaScript 
+                    relies on plugins to perform specific tasks
+                    Without plugins, PostCSS does not modify CSS
+                    https://postcss.org/
+
+                    Parsing CSS: Reads and analyzes raw CSS files.
+                    AST (Abstract Syntax Tree): Converts CSS into a tree structure, which plugins use to make transformations.
+                    Rewriting CSS: Writes the transformed AST back into CSS.
+
+autoprefixer      : installs a PostCSS plugin that automatically adds vendor prefixes
+                    (e.g., -webkit-, -moz-) to ensure compatibility with older browsers
+
+npx:              : Executes a package binary without globally installing it
+                    It runs the tailwindcss CLI tool that was installed earlier
+
+init              : initializes a default tailwind.config.js file in your project
+
+
+
+-- PstCSS examples: 
+CSS input:
+:fullscreen {
+}
+
+CSS output:
+:-webkit-full-screen {
+}
+:-ms-fullscreen {
+}
+:fullscreen {
+}
+
+-- Autoprefixer:
+Css input:
+.example {
+  display: flex;
+}
+
+Css output:
+.example {
+  display: -webkit-box; /* for older Safari */
+  display: -ms-flexbox; /* for older IE */
+  display: flex;        /* standard */
+}
+
+
+7.61. Adding VS Code extensions for Angular and Tailwind
+Add Extensions:
+-> Angular Language Service
+-> Tailwind CSS IntelliSense
+-> Auto Rename Tag
+
+
+7.62. Summary
+-> installed the Angular CLI
+-> created the Angular project
+-> set up VS Code for Angular
+-> set up Angular to use HTTPS
+-> added Angular Material and Tailwind CSS
+
+
+-- Best Practices approach when adding certificates --
+1. Use a Trusted Certificate for Production
+-> always use certificates issued by a trusted Certificate Authority (CA)
+-> ensure the certificate includes proper domain names (SANs) and is not just for "localhost"
+
+2. Store Certificates Securely
+Development:
+a. Secure Directory for Certificates
+-> Place your .pem or .pfx files in a directory that is not under source control
+or use .gitignore to exclude them
+~/ssl/localhost-key.pem
+~/ssl/localhost.pem
+
+Even if you later remove the certificate and add it to .gitignore, 
+Git tracks the file in the repository history 
+Anyone with access can still retrieve older commits to access the certificate
+
+b. Add an entry in .gitignore
+-> client/src/ssl/*
+
+c. Angular Setup
+-> Modify your angular.json to point to the local certificate
+"serve": {
+    "options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+    }
+}
+
+d. Backend Configuration
+-> For .NET development, load the certificate locally
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps("ssl/localhost.pfx", "your-cert-password");
+    });
+});
+
+Production:
+-> store certificates in a dedicated secret management solution 
+(e.g., Azure Key Vault, AWS Secrets Manager)
+
+-> keep your .pem files in a secure directory outside the source control 
+-> use .gitignore to exclude them
+ChatGpt: "Give me and example of how to store certificates in a secure way, outside the source control for a .net with Angular project"
+
+a. Upload the Certificate to Azure Key Vault
+Export your certificate in .pfx format.
+Go to Azure Portal → Key Vault → Certificates → Generate/Import → Import.
+Upload your certificate and provide a name.
+
+b. Access Certificate in Your .NET 9 Backend
+-> Add the Azure Key Vault NuGet package to your .NET project:
+dotnet add package Azure.Extensions.AspNetCore.Configuration.Secrets
+
+-> Configure your appsettings.json to include Key Vault settings:
+{
+  "AzureKeyVault": {
+    "VaultUri": "https://<your-key-vault-name>.vault.azure.net/"
+  }
+}
+
+-> Retrieve the certificate in your Program.cs or Startup.cs:
+builder.Configuration.AddAzureKeyVault(
+    new Uri(builder.Configuration["AzureKeyVault:VaultUri"]),
+    new DefaultAzureCredential()
+);
+
+var certificateClient = new CertificateClient(
+    new Uri(builder.Configuration["AzureKeyVault:VaultUri"]),
+    new DefaultAzureCredential()
+);
+
+var certificate = certificateClient.GetCertificate("Your-Certificate-Name");
+var keyVaultSecret = certificateClient.GetSecret(certificate.Value.SecretId.AbsoluteUri);
+var cert = new X509Certificate2(Convert.FromBase64String(keyVaultSecret.Value));
+
+Use the certificate in Kestrel:
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Any, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps(cert);
+    });
+});
+
+
+3. Enable HTTPS for the Backend API
+-> your .NET 9 API must also use HTTPS, configure the Kestrel server in appsettings.json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Https": {
+        "Url": "https://localhost:5001",
+        "Certificate": {
+          "Path": "ssl/localhost.pfx",
+          "Password": "your-cert-password"
+        }
+      }
+    }
+  }
+}
+-> replace the localhost.pfx with your certificate file and ensure 
+the password is securely managed
+
+4. Set Up Angular's Development Server
+"serve": {
+    "builder": "@angular-devkit/build-angular:dev-server",
+    "options": {
+    "ssl": true,
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem"
+    }}
+
+5. Browser Compatibility
+-> add the certificate to the browser’s trusted root certificate store to 
+avoid warnings during local development
+
+6. Enforce HTTPS in 
+-> using reverse proxy (e.g., Nginx, Apache) or middleware in your .NET app
+app.UseHttpsRedirection();
+
+7. Enable HSTS(STTP Strict Transport Security)
+app.UseHsts();
+
+8. Secure Communication Between Angular and .NET
+-> use relative URLs for API calls in Angular and ensure the Angular app 
+communicates with the HTTPS backend only
+-> set up CORS in your .NET application to only allow requests from your Angular app's domain
+
+9. CI/CD 
+-> for production deployments, automate certificate renewal using tools like 
+Certbot(for Let's Encrypt) or through your cloud provider's services
+
+10. Monitoring and Alerts
+-> set up monitoring for certificate expiry and HTTPS health using 
+tools like Nagios, Pingdom, or cloud-native solutions
