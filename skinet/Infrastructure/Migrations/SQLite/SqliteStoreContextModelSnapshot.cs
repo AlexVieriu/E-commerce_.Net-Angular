@@ -15,7 +15,7 @@ namespace Infrastructure.Migrations.SQLite
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114");
 
             modelBuilder.Entity("Core.Entities.Address", b =>
                 {
@@ -49,6 +49,32 @@ namespace Infrastructure.Migrations.SQLite
                     b.HasKey("Id");
 
                     b.ToTable("Addresses");
+                });
+
+            modelBuilder.Entity("Core.Entities.AppCoupon", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("AmountOff")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("PercentOff")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("PromotionCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppCoupon");
                 });
 
             modelBuilder.Entity("Core.Entities.AppUser", b =>
@@ -141,7 +167,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("REAL");
 
                     b.Property<string>("ShortName")
                         .IsRequired()
@@ -165,6 +191,9 @@ namespace Infrastructure.Migrations.SQLite
                     b.Property<int>("DeliveryMethodId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("REAL");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("TEXT");
 
@@ -177,7 +206,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("REAL");
 
                     b.HasKey("Id");
 
@@ -196,7 +225,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("REAL");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");

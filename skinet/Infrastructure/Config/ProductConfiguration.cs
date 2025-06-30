@@ -7,6 +7,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        builder.Property(x => x.Price).HasColumnType("REAL");
+        // builder.Property(x => x.Price).HasColumnType("REAL");
     }
 }
