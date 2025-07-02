@@ -23,15 +23,18 @@ export class CartService {
 
   selectedDelivery = signal<DeliveryMethod | null>(null);
   couponCode = signal<Coupon | null>(null);
+  couponCode = signal<Coupon | null>(null);
 
   totals = computed(() => {
     const cart = this.cart();
     const delivery = this.selectedDelivery();
 
 
+
     if (!cart) return null;
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = delivery ? delivery.price : 0;
+    const discount = this.couponCode()?.amountOff ?? 0;
     const discount = this.couponCode()?.amountOff ?? 0;
 
     return {
@@ -101,6 +104,10 @@ export class CartService {
     return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code);
   }
 
+  applyDiscount(code: string) {
+    return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code);
+  }
+
   // private methods
   private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {
     const idex = items.findIndex(i => i.productId === item.productId);
@@ -135,4 +142,5 @@ export class CartService {
       price: product.price
     };
   }
+
 }
