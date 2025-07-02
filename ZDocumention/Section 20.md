@@ -104,3 +104,56 @@ This function will will ensure that the amounts are using the same rounding meth
 
 -- API/Controllers/PaymentsController.cs --
 var orderTotalInCents = (long)Math.Round(order.GetTotal() * 100, MidpointRounding.AwayFromZero); 
+
+
+Client project
+
+1. Create a type for the Coupon in the cart.ts file
+2. In the cart.service.ts use the coupon from the cart to update the totals signal
+-> check if it is amount or percentage discount 
+
+3. In the cart.service.ts add an applyDiscount(code:string):Observable<Coupon> method to validate the coupon
+
+4. In the order-summary.component.ts create and implement the following 2 methods:
+
+applyDiscountCode(): void{
+    // if valid, set the cart with the coupon 
+    // if in checkout, update the payment intent
+}
+
+removeCouponCode(): void{
+    // remove coupon from cart
+    // if in checkout, update the payment intent
+}
+
+5. -- stripe.service.ts --
+ -> change createOrUpdatePaymentIntent()
+ -> what can we do to prevent the cart being updated if we already have the clientSecret and paymentIntentId?
+    -> we just return
+    -> else we away to set the cart and w8 till the cart is set and the total is calculated
+    -> without coupon/discount, with don't need to await 
+
+Scenario:
+Without coupon:
+// Simple cart total calculation
+cart.items.forEach(item => total += item.price * item.quantity);
+// This is just math - no need to wait
+
+With coupon:
+a. Validate the coupon (database/API call)
+b. Calculate discount (might involve complex rules)
+c. Save the updated cart (database operation)
+
+-- order-summary.component.html --
+-> add the coupon button and text
+
+6. Use the ngSubmit function from the FormsModule in the form to call the applyCouponCode() from the template
+
+7. Disable the input if we have a coupon in the cart
+8. Disable the button if we have a coupon in the cart
+9. Disable the name of the coupon that has been applied above the input
+Provide an icon button to remove the applied coupon that calls the removeCouponCode method
+10. update order.ts and orderToCreate.ts with discount? 
+property(decimal)
+11. Update the order-detailed.component.html to display this
+12. In the checkout.component.ts update the createOrderModel method to include the discount when creating the order
