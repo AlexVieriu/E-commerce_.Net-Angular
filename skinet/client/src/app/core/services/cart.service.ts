@@ -6,6 +6,8 @@ import { CartItem } from '../../shared/models/cartItem';
 import { Product } from '../../shared/models/products';
 import { map } from 'rxjs/internal/operators/map';
 import { DeliveryMethod } from '../../shared/models/deliveryMethod';
+import { Coupon } from '../../shared/models/coupon';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -20,15 +22,17 @@ export class CartService {
   })
 
   selectedDelivery = signal<DeliveryMethod | null>(null);
+  couponCode = signal<Coupon | null>(null);
 
   totals = computed(() => {
     const cart = this.cart();
     const delivery = this.selectedDelivery();
 
+
     if (!cart) return null;
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = delivery ? delivery.price : 0;
-    const discount = 0;
+    const discount = this.couponCode()?.amountOff ?? 0;
 
     return {
       subtotal,
@@ -47,10 +51,12 @@ export class CartService {
     )
   }
 
-  setCartAsync(cart: Cart) {
-    return this.http.post<Cart>(this.baseUrl + 'cart', cart).subscribe({
-      next: cart => this.cart.set(cart),
-    });
+  setCartAsync(cart: Cart) { // save cart in redis DB
+    return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
+      tap(cart => {
+        this.cart.set(cart)
+      })
+    )
   }
 
   removeItemFromCart(productId: number, quantity = 1) {
@@ -93,6 +99,10 @@ export class CartService {
     this.setCartAsync(cart);
   }
 
+  applyDiscount(code: string) {
+    return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code);
+  }
+
   // private methods
   private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {
     const idex = items.findIndex(i => i.productId === item.productId);
@@ -127,4 +137,5 @@ export class CartService {
       price: product.price
     };
   }
+
 }
