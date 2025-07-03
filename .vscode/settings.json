@@ -1,3 +1,4 @@
+
 {
   "editor.fontSize": 14,
   "explorer.fileNesting.enabled": true,
@@ -13,5 +14,9 @@
   "appService.deploySubpath": "skinet\\API\\bin\\Publish",
   "cSpell.words": [
     "Paymentintent"
-  ]
+  ],
+  "debug.javascript.usePreview": true,
+  "debug.javascript.autoAttachFilter": "smart",
+  "debug.chrome.runtimeExecutable": "C:\\Users\\Alex\\Downloads\\chrome-win64\\chrome.exe",
+  "terminal.integrated.defaultProfile.windows": "PowerShell"
 }

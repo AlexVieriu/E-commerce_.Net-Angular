@@ -1,3 +1,12 @@
+1. Start your Angular dev server (in PowerShell)
+cd skinet\client
+npm start
+
+2. Launch Chrome for Testing with debugging (in another PowerShell window)
+.\Launch-Chrome-Debug.ps1
+
+3. Start debugging in VS Code: Select "Debug API & Angular (Manual Chrome)" from the debug dropdown (F5)
+
 {
   "version": "0.2.0",
   "configurations": [
@@ -24,32 +33,36 @@
     },
     {
       "name": "Angular Debug (Auto Launch Chrome)",
-      "type": "msedge",
+      "type": "chrome",
       "request": "launch",
       "preLaunchTask": "npm: start",
       "url": "https://localhost:4200/",
       "webRoot": "${workspaceFolder}\\skinet\\client",
       "userDataDir": "${workspaceFolder}\\.vscode\\chrome-debug-profile",
+      "runtimeArgs": [
+        "--remote-debugging-port=9222",
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor"
+      ],
       "sourceMapPathOverrides": {
         "webpack:/*": "${webRoot}/*",
         "/./*": "${webRoot}/*",
         "/src/*": "${webRoot}/src/*",
         "/*": "*",
         "/./~/*": "${webRoot}/node_modules/*"
-      },
-    },
+      }
+    }
   ],
   "compounds": [
     {
-      "name": "🚀 Debug API & Angular (Manual Chrome)",
+      "name": "Debug API & Angular (Manual Chrome)",
       "configurations": [
         "C#: API Debug",
         "Angular Debug (Manual Chrome)"
       ],
-      "stopAll": true
     },
     {
-      "name": "🚀 Debug API & Angular (Auto Edge)",
+      "name": "Debug API & Angular (Auto Chrome)",
       "configurations": [
         "C#: API Debug",
         "Angular Debug (Auto Launch Chrome)"
