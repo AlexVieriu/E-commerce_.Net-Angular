@@ -23,7 +23,6 @@ export class CartService {
 
   selectedDelivery = signal<DeliveryMethod | null>(null);
   couponCode = signal<Coupon | null>(null);
-  couponCode = signal<Coupon | null>(null);
 
   totals = computed(() => {
     const cart = this.cart();
@@ -34,7 +33,6 @@ export class CartService {
     if (!cart) return null;
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = delivery ? delivery.price : 0;
-    const discount = this.couponCode()?.amountOff ?? 0;
     const discount = this.couponCode()?.amountOff ?? 0;
 
     return {
@@ -98,10 +96,6 @@ export class CartService {
     }
     cart.items = this.addOrUpdateItem(cart.items, item, quantity);
     this.setCartAsync(cart);
-  }
-
-  applyDiscount(code: string) {
-    return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code);
   }
 
   applyDiscount(code: string) {
