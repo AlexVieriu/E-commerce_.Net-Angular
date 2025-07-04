@@ -7,7 +7,7 @@ import { Product } from '../../shared/models/products';
 import { map } from 'rxjs/internal/operators/map';
 import { DeliveryMethod } from '../../shared/models/deliveryMethod';
 import { Coupon } from '../../shared/models/coupon';
-import { tap } from 'rxjs';
+import { catchError, tap, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -27,8 +27,6 @@ export class CartService {
   totals = computed(() => {
     const cart = this.cart();
     const delivery = this.selectedDelivery();
-
-
 
     if (!cart) return null;
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -52,10 +50,13 @@ export class CartService {
     )
   }
 
-  setCartAsync(cart: Cart) { // save cart in redis DB
+  setCartAsync(cart: Cart) {
+
     return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
-      tap(cart => this.cart.set(cart))
-    )
+      tap(response => {
+        this.cart.set(response);
+      }),
+    );
   }
 
   removeItemFromCart(productId: number, quantity = 1) {

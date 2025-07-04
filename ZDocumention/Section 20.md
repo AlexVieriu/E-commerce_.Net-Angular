@@ -66,10 +66,12 @@ CreateUpdatePaymentIntentAsync(cart, total)
 5. Create a new EF migration at this point to update the DB schema. 
 
 dotnet ef migrations add FixDecimalPrecision2 --context SqliteStoreContext -s API -p Infrastructure -o Migrations/SQLite
+cd API
 dotnet watch
     -> database will update automatically when we start the program 
 
 dotnet ef migrations add FixDecimalPrecision --context SqlServerStoreContext -s API -p Infrastructure -o Migrations/SqlServer
+cd API
 dotnet publish -c Release
     -> database will update automatically when we start the program
 

@@ -59,10 +59,8 @@ namespace Infrastructure.Migrations.SQLite
                     b.Property<decimal?>("AmountOff")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("Currency")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("PercentOff")

@@ -23,13 +23,14 @@
       }
     },
     {
-      "name": "Angular Debug (Auto Launch Chrome)",
+      "name": "Angular Debug (Auto Launch Edge)",
       "type": "msedge",
       "request": "launch",
       "preLaunchTask": "npm: start",
       "url": "https://localhost:4200/",
       "webRoot": "${workspaceFolder}\\skinet\\client",
-      "userDataDir": "${workspaceFolder}\\.vscode\\chrome-debug-profile",
+      "runtimeExecutable": "C:\\Program Files (x86)\\Microsoft\\Edge Dev\\Application\\msedge.exe",
+      "userDataDir": "${workspaceFolder}\\.vscode\\edge-debug-profile",
       "sourceMapPathOverrides": {
         "webpack:/*": "${webRoot}/*",
         "/./*": "${webRoot}/*",
@@ -52,7 +53,7 @@
       "name": "🚀 Debug API & Angular (Auto Edge)",
       "configurations": [
         "C#: API Debug",
-        "Angular Debug (Auto Launch Chrome)"
+        "Angular Debug (Auto Launch Edge)"
       ]
     }
   ]

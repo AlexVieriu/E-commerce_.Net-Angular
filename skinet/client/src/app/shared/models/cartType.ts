@@ -1,4 +1,5 @@
 import { CartItem } from "./cartItem"
+import { Coupon } from "./coupon";
 
 export type CartType = {
     id: string,
@@ -6,4 +7,5 @@ export type CartType = {
     deliveryMethodId?: number,
     paymentIntentId?: string,
     clientSecret?: string,
+    coupon?: Coupon;
 }

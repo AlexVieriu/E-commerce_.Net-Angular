@@ -28,8 +28,7 @@ public class CouponService : ICouponService
                 AmountOff = promotionCode.Coupon.AmountOff,
                 PercentOff = promotionCode.Coupon.PercentOff,
                 PromotionCode = promotionCode.Code,
-                Id = promotionCode.Coupon.Id,
-                Currency = promotionCode.Coupon.Currency
+                Id = promotionCode.Coupon.Id
             };
         }
         return null;
