@@ -63,7 +63,7 @@ public class PaymentService(IConfiguration config, ICartService cartService, IUn
         var coupon = await couponService.GetAsync(appCoupon.Id);
 
         if (coupon.AmountOff.HasValue)
-            amount -= (long)coupon.AmountOff * 100; // Stripe uses cents, so we multiply by 100
+            amount -= (long)coupon.AmountOff * 100; // Stripe uses cents, so we divide it by 100
         if (coupon.PercentOff.HasValue)
             amount -= (long)(amount * (coupon.PercentOff.Value / 100));
 
@@ -72,7 +72,7 @@ public class PaymentService(IConfiguration config, ICartService cartService, IUn
 
     private long CalculateSubtotal(ShoppingCart cart)
     {
-        var itemTotal = cart.Items.Sum(i => i.Quantity * (i.Price * 100));
+        var itemTotal = cart.Items.Sum(i => i.Quantity * i.Price * 100);
         return (long)itemTotal;
     }
 

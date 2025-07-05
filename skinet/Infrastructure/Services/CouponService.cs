@@ -25,7 +25,7 @@ public class CouponService : ICouponService
             return new AppCoupon
             {
                 Name = promotionCode.Coupon.Name,
-                AmountOff = promotionCode.Coupon.AmountOff,
+                AmountOff = promotionCode.Coupon.AmountOff, // Stripe uses cents, so we divide it by 100
                 PercentOff = promotionCode.Coupon.PercentOff,
                 PromotionCode = promotionCode.Code,
                 Id = promotionCode.Coupon.Id

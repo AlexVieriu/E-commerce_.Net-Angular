@@ -17,6 +17,7 @@ export class CartService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
   cart = signal<Cart | null>(null);
+
   itemCount = computed(() => {
     return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0)
   })
@@ -30,14 +31,24 @@ export class CartService {
 
     if (!cart) return null;
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shipping = delivery ? delivery.price : 0;
-    const discount = this.couponCode()?.amountOff ?? 0;
+
+    let discountValue = 0;
+
+    if (cart.coupon) {
+      if (cart.coupon.amountOff) {
+        discountValue = cart.coupon.amountOff; // Convert cents to dollars
+      } else if (cart.coupon.percentOff) {
+        discountValue = subtotal * (cart.coupon.percentOff / 100);
+      }
+    }
+
+    const shipping = delivery ? delivery.price : 0;    
 
     return {
       subtotal,
       shipping,
-      discount,
-      total: subtotal + shipping - discount
+      discount: discountValue,
+      total: subtotal + shipping - discountValue
     }
   })
 

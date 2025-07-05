@@ -10,4 +10,3 @@ public class CouponsController(ICouponService couponService) : BaseApiController
         return coupon != null ? coupon : BadRequest("Invalid voucher code");
     }
 }
-

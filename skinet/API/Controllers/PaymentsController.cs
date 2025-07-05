@@ -81,7 +81,7 @@ public class PaymentsController(IPaymentService payService,
                 ?? throw new Exception("Order not found");
 
 
-            var orderTotalInCents = (long)Math.Round(order.GetTotal() * 100, MidpointRounding.AwayFromZero);
+            var orderTotalInCents = (long)order.GetTotal();
 
             if (orderTotalInCents != intent.Amount)
                 order.Status = OrderStatus.PaymentMismatch;

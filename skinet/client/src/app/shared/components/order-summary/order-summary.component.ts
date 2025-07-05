@@ -34,7 +34,7 @@ export class OrderSummaryComponent {
 
   applyCouponCode() {
     // set the cart with the coupon if valid
-    // if in checkout update the payment intent (hint: this returns an observable so
+    // if in checkout update the payment intent (hint: this returns an observable)
 
     if (!this.couponCode) return;
 

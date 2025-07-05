@@ -13,5 +13,5 @@ public class Order : BaseEntity
     public required string PaymentIntentId { get; set; }
     public decimal Discount { get; set; }
 
-    public decimal GetTotal() => (Subtotal + DeliveryMethod.Price) * (1 - Discount / 100);
+    public decimal GetTotal() => Subtotal - Discount + DeliveryMethod.Price;
 }
