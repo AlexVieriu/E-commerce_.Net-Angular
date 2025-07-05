@@ -7,7 +7,7 @@ import { Product } from '../../shared/models/products';
 import { map } from 'rxjs/internal/operators/map';
 import { DeliveryMethod } from '../../shared/models/deliveryMethod';
 import { Coupon } from '../../shared/models/coupon';
-import { catchError, tap, throwError } from 'rxjs';
+import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -50,8 +50,7 @@ export class CartService {
     )
   }
 
-  setCartAsync(cart: Cart) {
-
+  setCart(cart: Cart) {
     return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
       tap(response => {
         this.cart.set(response);
@@ -59,7 +58,7 @@ export class CartService {
     );
   }
 
-  removeItemFromCart(productId: number, quantity = 1) {
+  async removeItemFromCart(productId: number, quantity = 1) {
     const cart = this.cart();
     if (!cart) return;
 
@@ -75,7 +74,7 @@ export class CartService {
         this.deleteCart();
       }
       else {
-        this.setCartAsync(cart)
+        await firstValueFrom(this.setCart(cart))
       }
     }
   }
@@ -89,14 +88,14 @@ export class CartService {
     })
   }
 
-  addItemToCart(item: CartItem | Product, quantity = 1) {
+  async addItemToCart(item: CartItem | Product, quantity = 1) {
     const cart = this.cart() ?? this.createCart();
 
-    if (this.isProduct(item)) {
+    if (this.isProduct(item)) 
       item = this.mapProductToCartItem(item);
-    }
+
     cart.items = this.addOrUpdateItem(cart.items, item, quantity);
-    this.setCartAsync(cart);
+    await firstValueFrom(this.setCart(cart));
   }
 
   applyDiscount(code: string) {
@@ -137,5 +136,4 @@ export class CartService {
       price: product.price
     };
   }
-
 }

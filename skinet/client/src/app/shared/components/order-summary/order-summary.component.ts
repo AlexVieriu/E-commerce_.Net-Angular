@@ -43,7 +43,7 @@ export class OrderSummaryComponent {
         const cart = this.cartService.cart();
         if (cart) {
           cart.coupon = coupon;
-          await firstValueFrom(this.cartService.setCartAsync(cart)); // save cart in redis DB
+          await firstValueFrom(this.cartService.setCart(cart)); 
           this.couponCode = undefined;// remove the coupon code
           if (this.location.path() === '/checkout') {
             await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
@@ -61,7 +61,7 @@ export class OrderSummaryComponent {
     if (!cart) return;
 
     if (cart.coupon) cart.coupon = undefined;
-    await firstValueFrom(this.cartService.setCartAsync(cart)); // save cart in redis DB
+    await firstValueFrom(this.cartService.setCart(cart)); // save cart in redis DB
     if (this.location.path() === '/checkout') {
       await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
     }
