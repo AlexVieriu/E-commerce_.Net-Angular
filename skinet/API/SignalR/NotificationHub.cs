@@ -3,8 +3,8 @@ namespace API.SignalR;
 // SignalR natively only tracks client connection IDs 
 // (generated identifiers used by browsers, to maintain WebSocket connections), 
 // not user identities like email addresses
-// To map email addresses to connection IDs, we store this relationship in memory using
-// a thread-safe ConcurrentDictionary 
+// To map email addresses to connection IDs, we store this relationship in memory,
+// using a thread-safe ConcurrentDictionary 
 // For production scaling across multiple servers, this should be replaced with a distributed cache like Redis
 [Authorize]
 public class NotificationHub : Hub
@@ -19,7 +19,6 @@ public class NotificationHub : Hub
 
         return base.OnConnectedAsync();
     }
-
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {

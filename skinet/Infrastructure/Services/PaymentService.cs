@@ -63,7 +63,7 @@ public class PaymentService(IConfiguration config, ICartService cartService, IUn
         var coupon = await couponService.GetAsync(appCoupon.Id);
 
         if (coupon.AmountOff.HasValue)
-            amount -= (long)coupon.AmountOff * 100; // Stripe uses cents, so we divide it by 100
+            amount -= (long)coupon.AmountOff;
         if (coupon.PercentOff.HasValue)
             amount -= (long)(amount * (coupon.PercentOff.Value / 100));
 

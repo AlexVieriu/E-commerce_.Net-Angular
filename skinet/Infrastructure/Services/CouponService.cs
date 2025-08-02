@@ -11,8 +11,8 @@ public class CouponService : ICouponService
     public async Task<AppCoupon?> GetCouponFromPromoCode(string code)
     {
         // From here - Stripe code
-        var promotionService = new Stripe.PromotionCodeService();
-        var options = new Stripe.PromotionCodeListOptions { Code = code };
+        var promotionService = new PromotionCodeService();
+        var options = new PromotionCodeListOptions { Code = code };
 
         var promotionCodes = await promotionService.ListAsync(options);
 
@@ -25,7 +25,7 @@ public class CouponService : ICouponService
             return new AppCoupon
             {
                 Name = promotionCode.Coupon.Name,
-                AmountOff = promotionCode.Coupon.AmountOff, // Stripe uses cents, so we divide it by 100
+                AmountOff = promotionCode.Coupon.AmountOff / 100,  // Stripe uses cents, so we divide it by 100
                 PercentOff = promotionCode.Coupon.PercentOff,
                 PromotionCode = promotionCode.Code,
                 Id = promotionCode.Coupon.Id
