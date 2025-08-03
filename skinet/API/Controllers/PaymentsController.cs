@@ -62,7 +62,7 @@ public class PaymentsController(IPaymentService payService,
         try
         {
             return EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"],
-            _whSecret);
+            _whSecret, throwOnApiVersionMismatch: false);
         }
         catch (Exception ex)
         {
@@ -80,8 +80,7 @@ public class PaymentsController(IPaymentService payService,
             var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec)
                 ?? throw new Exception("Order not found");
 
-
-            var orderTotalInCents = (long)order.GetTotal();
+            var orderTotalInCents = (long)Math.Round(order.GetTotal() * 100, MidpointRounding.AwayFromZero);
 
             if (orderTotalInCents != intent.Amount)
                 order.Status = OrderStatus.PaymentMismatch;

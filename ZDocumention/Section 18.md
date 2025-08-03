@@ -298,6 +298,8 @@ stripe login
 stripe listen --forward-to https://localhost:7096/api/payments/webhook -e payment_intent.succeeded
 Your webhook signing secret is whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989 (^C to quit)
 
+
+
 -> keep the terminal running 
 
 -- appsettings.json --

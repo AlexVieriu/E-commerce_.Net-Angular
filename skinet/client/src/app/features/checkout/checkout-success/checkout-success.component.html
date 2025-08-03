@@ -12,32 +12,32 @@
         <dd class="font-medium text-gray-900 text-end">
           {{order.orderDate | date: 'medium'}}
         </dd>
-        </dl>
-        <dl class="flex items-center justify-between gap-4">
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
         <dt class="font-normal text-gray-500">Payment method</dt>
         <dd class="font-medium text-gray-900 text-end">
           {{order.paymentSummary | paymentCard}}
         </dd>
-        </dl>
-        <dl class="flex items-center justify-between gap-4">
-          <dt class="font-normal text-gray-500">Address</dt>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Address</dt>
         <dd class="font-medium text-gray-900 text-end">
           {{order.shippingAddress | address}}
         </dd>
-        </dl>
-        <dl class="flex items-center justify-between gap-4">
-          <dt class="font-normal text-gray-500">Amount</dt>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Amount</dt>
         <dd class="font-medium text-gray-900 text-end">
           {{order.total | currency}}
         </dd>
-        </dl>
-        </div>
-        <div class="flex items-center space-x-4">
-      <button routerLink="/orders/{{order.id}}" mat-flat-button>View your order</button>
+      </dl>
+      </div>
+      <div class="flex items-center space-x-4">
+      <button routerLink="/order/{{order.id}}" mat-flat-button>View your order</button>
       <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
-      </div>
-      </div>
-      </section>
+    </div>
+    </div>
+    </section>
 
 <section *ngIf="!signalrService.orderSignal()" class="bg-white py-16">
   <div class="mx-auto max-w-2xl px-4">
@@ -47,10 +47,10 @@
         <mat-spinner diameter="30"></mat-spinner>
         <p class="text-xl">Loading order...</p>
         <span>Your payment has been received. We are creating the order</span>
-        </div>
-        </div>
-        <div class="flex items-center space-x-4">
-          <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
-        </div>
-        </div>
-        </section>
+      </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
+      </div>
+      </div>
+      </section>
