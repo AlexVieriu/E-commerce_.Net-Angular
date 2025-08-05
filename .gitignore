@@ -479,12 +479,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-appsettings.json
-appsettings.Development.json
-appsettings.Production.json
-appsettings.*.json
-skinet/API/appsettings.json
-skinet/API/appsettings.Development.json
 
 # User secrets
 secrets.json
