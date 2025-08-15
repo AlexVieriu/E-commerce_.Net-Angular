@@ -554,7 +554,7 @@ output:
 - name: Set up node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.14'
+          node-version: '24.x'
 
 - name: Install Angular CLI
   run: npm install -g @angular/cli@19
