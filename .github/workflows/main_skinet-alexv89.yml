@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - skinet-alexV89
 on:
   push:
     branches:
-      - main
+      - Section20
   workflow_dispatch:
 
 jobs:
