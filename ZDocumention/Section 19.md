@@ -427,11 +427,11 @@ Preview file
 
 (min 2:30)
 -> go to Azure -> App Service -> Deployment -> Deployment Center -> save the changes
--> go to GitHub -> Open repository -> Actions -> click on build step
+
 
 Change .yml file: 
 -> go to GitHub -> Actions -> Click the Workflow that is running the build -> In the left tab search for Workflow File
--> Edit the file
+-> Edit the file and add the additional steps:
 
 - name: Build with dotnet
   working-directory: ./skinet/API
