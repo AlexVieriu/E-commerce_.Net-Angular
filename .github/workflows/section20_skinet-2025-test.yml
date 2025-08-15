@@ -17,16 +17,32 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24.x'
 
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli@20  # use @angular/cli@latest to prevent the installation from failing.
+
+      - name: Install dependencies and build angular app
+        working-directory: ./skinet/client
+        run: |
+         npm install 
+         ng build     
+         
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '10.0.x-preview.6'
 
       - name: Build with dotnet
+        working-directory: ./skinet/API   
         run: dotnet build --configuration Release
 
       - name: dotnet publish
+        working-directory: ./skinet/API      
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
@@ -62,4 +78,5 @@ jobs:
           app-name: 'skinet-2025-test'
           slot-name: 'Production'
           package: .
+
           
