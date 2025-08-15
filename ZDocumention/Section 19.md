@@ -439,7 +439,7 @@ Change .yml file:
 
 - name: dotnet publish
   working-directory: ./skinet/API
-  run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+  run: dotnet publish -c Release -o ../../publish_output
 
   
 220. Troubleshooting Azure issues
