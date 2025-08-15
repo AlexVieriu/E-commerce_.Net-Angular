@@ -452,7 +452,7 @@ To see more about the issues go in Azure -> App Service -> Diagnose and solve pr
 
 Let's see the version of webhook:
 https://dashboard.stripe.com/test/workbench/webhooks
--> we are using API version 2025-03-31.basil, bu tmy API is expecting using version 2025-02-24.acacia
+-> we are using API version 2025-03-31.basil, but my API is expecting using version 2025-02-24.acacia
 -> i need to update my Stripe API(in the Infrastructure project)
 
 
