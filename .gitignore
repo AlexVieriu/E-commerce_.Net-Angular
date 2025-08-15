@@ -479,8 +479,16 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-# skinet/API/appsettings.json
+
+# User secrets
+secrets.json
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
 
 # Ignore the SSL Angular Client for security in Development
-# skinet/client/ssl/*.pem
-# skinet/client/ssl/*.key
+skinet/client/ssl/*.pem
+skinet/client/ssl/*.key

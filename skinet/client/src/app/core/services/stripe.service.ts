@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from './cart.service';
 import { Cart } from '../../shared/models/cart';
-import { firstValueFrom, map } from 'rxjs';
+import { first, firstValueFrom, map } from 'rxjs';
 import { AccountService } from './account.service';
 
 @Injectable({
@@ -128,12 +128,17 @@ export class StripeService {
 
   createOrUpdatePaymentIntent() {
     const cart = this.cartService.cart();
+    const hasClientSecret = cart?.clientSecret ? true : false;
+
     if (!cart)
       throw new Error('Problem with cart');
 
     return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
-      map(cart => {
-        this.cartService.setCartAsync(cart);
+      map(async cart => {
+        if (!hasClientSecret) {
+          await firstValueFrom(this.cartService.setCart(cart));
+          return cart;
+        }
         return cart;
       })
     )
@@ -145,3 +150,7 @@ export class StripeService {
     this.paymentElement = undefined;
   }
 }
+
+// firstValueFrom
+// converts an Observable to a Promise by waiting for the Observable to emit
+// its first value, then resolving the Promise with that value.

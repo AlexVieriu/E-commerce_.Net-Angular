@@ -1,8 +1,8 @@
-export type Address = {
+export type Address = {    
     line1: string;
     line2?: string;
     city: string;
-    state: string;
-    country: string;
+    state: string;    
     postalCode: string;
+    country: string;
 }

@@ -7,7 +7,8 @@ public static class AddressMappingExtensions
         if (address == null)
             return null;
 
-        return new AddressDto
+
+        AddressDto addressDto = new AddressDto
         {
             City = address.City,
             State = address.State,
@@ -16,6 +17,8 @@ public static class AddressMappingExtensions
             Country = address.Country,
             PostalCode = address.PostalCode
         };
+
+        return addressDto;
     }
 
     public static Address toEntity(this AddressDto addressDto)

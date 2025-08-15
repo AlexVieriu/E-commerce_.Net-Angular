@@ -8,10 +8,10 @@
       "projectPath": "${workspaceFolder}\\skinet\\API\\API.csproj"
     },
     {
-      "name": "Angular Debug",
+      "name": "Angular Debug (Manual Chrome)",
       "type": "chrome",
-      "request": "launch",
-      "preLaunchTask": "npm: start",
+      "request": "attach",
+      "port": 9222,
       "url": "https://localhost:4200/",
       "webRoot": "${workspaceFolder}\\skinet\\client",
       "sourceMapPathOverrides": {
@@ -21,14 +21,39 @@
         "/*": "*",
         "/./~/*": "${webRoot}/node_modules/*"
       }
-    }
+    },
+    {
+      "name": "Angular Debug (Auto Launch Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "npm: start",
+      "url": "https://localhost:4200/",
+      "webRoot": "${workspaceFolder}\\skinet\\client",
+      "runtimeExecutable": "C:\\Program Files (x86)\\Microsoft\\Edge Dev\\Application\\msedge.exe",
+      "userDataDir": "${workspaceFolder}\\.vscode\\edge-debug-profile",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/src/*",
+        "/*": "*",
+        "/./~/*": "${webRoot}/node_modules/*"
+      },
+    },
   ],
   "compounds": [
     {
-      "name": "Debug API & Angular",
+      "name": "🚀 Debug API & Angular (Manual Chrome)",
       "configurations": [
         "C#: API Debug",
-        "Angular Debug"
+        "Angular Debug (Manual Chrome)"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "🚀 Debug API & Angular (Auto Edge)",
+      "configurations": [
+        "C#: API Debug",
+        "Angular Debug (Auto Launch Edge)"
       ]
     }
   ]

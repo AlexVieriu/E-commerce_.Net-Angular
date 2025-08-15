@@ -1,9 +1,11 @@
+import { Coupon } from "./coupon";
+
 export type CartItem = {
     productId: number;
     productName: string;
-    pictureUrl: string;
-    quantity: number;
-    type: string;
-    brand: string;
     price: number;
+    quantity: number;
+    pictureUrl: string;
+    brand: string;
+    type: string;
 }

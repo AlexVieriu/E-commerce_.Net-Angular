@@ -4,6 +4,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { CurrencyPipe } from '@angular/common';
 import { CartService } from '../../../core/services/cart.service';
 import { DeliveryMethod } from '../../../shared/models/deliveryMethod';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-checkout-delivery',
@@ -32,12 +33,12 @@ export class CheckoutDeliveryComponent implements OnInit {
     });
   }
 
-  updateDeliveryMethod(method: DeliveryMethod) {
+  async updateDeliveryMethod(method: DeliveryMethod) {
     this.cartService.selectedDelivery.set(method);
     const cart = this.cartService.cart();
     if (cart) {
       cart.deliveryMethodId = method.id;
-      this.cartService.setCartAsync(cart); // will update the redis DB also
+      await firstValueFrom(this.cartService.setCart(cart));
       this.deliveryComplete.emit(true); // affect parent property from child component
     }
   }

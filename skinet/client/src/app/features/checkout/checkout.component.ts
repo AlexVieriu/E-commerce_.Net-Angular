@@ -51,6 +51,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   loading = false;
 
   // as the elements get completed we update our signal
+  // inline type annotation - Angular signal (we use it instead of interface)
   completionStatus = signal<{ address: boolean, card: boolean, delivery: boolean }>
     ({ address: false, card: false, delivery: false });
 
@@ -198,7 +199,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         expYear: card.exp_year
       },
       deliveryMethodId: cart.deliveryMethodId,
-      shippingAddress
+      shippingAddress,
+      discount: this.cartService.totals()?.discount || 0,
     }
   }
 

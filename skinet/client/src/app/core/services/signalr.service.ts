@@ -21,7 +21,7 @@ export class SignalrService {
     this.hubConnection.start()
       .catch(err => console.log(err));
 
-    // Listen for messages from the server: PaymentController -> HandlePaymentIntentSucceeded()
+    // Listen for messages from the server: PaymentController.cs -> HandlePaymentIntentSucceeded()
     this.hubConnection.on('OrderCompleteNotification', (order: Order) => {
       this.orderSignal.set(order);
     });

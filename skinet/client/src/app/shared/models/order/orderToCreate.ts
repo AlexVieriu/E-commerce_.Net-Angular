@@ -6,4 +6,5 @@ export interface OrderToCreate {
     deliveryMethodId?: number;
     shippingAddress: ShippingAddress
     paymentSummary: PaymentSummary
+    discount?: number
 }

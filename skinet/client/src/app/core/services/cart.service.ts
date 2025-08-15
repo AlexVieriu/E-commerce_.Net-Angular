@@ -6,6 +6,8 @@ import { CartItem } from '../../shared/models/cartItem';
 import { Product } from '../../shared/models/products';
 import { map } from 'rxjs/internal/operators/map';
 import { DeliveryMethod } from '../../shared/models/deliveryMethod';
+import { Coupon } from '../../shared/models/coupon';
+import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +17,13 @@ export class CartService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
   cart = signal<Cart | null>(null);
+
   itemCount = computed(() => {
     return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0)
   })
 
   selectedDelivery = signal<DeliveryMethod | null>(null);
+  couponCode = signal<Coupon | null>(null);
 
   totals = computed(() => {
     const cart = this.cart();
@@ -27,14 +31,24 @@ export class CartService {
 
     if (!cart) return null;
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shipping = delivery ? delivery.price : 0;
-    const discount = 0;
+
+    let discountValue = 0;
+
+    if (cart.coupon) {
+      if (cart.coupon.amountOff) {
+        discountValue = cart.coupon.amountOff; // Convert cents to dollars
+      } else if (cart.coupon.percentOff) {
+        discountValue = subtotal * (cart.coupon.percentOff / 100);
+      }
+    }
+
+    const shipping = delivery ? delivery.price : 0;    
 
     return {
       subtotal,
       shipping,
-      discount,
-      total: subtotal + shipping - discount
+      discount: discountValue,
+      total: subtotal + shipping - discountValue
     }
   })
 
@@ -47,13 +61,15 @@ export class CartService {
     )
   }
 
-  setCartAsync(cart: Cart) {
-    return this.http.post<Cart>(this.baseUrl + 'cart', cart).subscribe({
-      next: cart => this.cart.set(cart),
-    });
+  setCart(cart: Cart) {
+    return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
+      tap(response => {
+        this.cart.set(response);
+      }),
+    );
   }
 
-  removeItemFromCart(productId: number, quantity = 1) {
+  async removeItemFromCart(productId: number, quantity = 1) {
     const cart = this.cart();
     if (!cart) return;
 
@@ -69,7 +85,7 @@ export class CartService {
         this.deleteCart();
       }
       else {
-        this.setCartAsync(cart)
+        await firstValueFrom(this.setCart(cart))
       }
     }
   }
@@ -83,14 +99,18 @@ export class CartService {
     })
   }
 
-  addItemToCart(item: CartItem | Product, quantity = 1) {
+  async addItemToCart(item: CartItem | Product, quantity = 1) {
     const cart = this.cart() ?? this.createCart();
 
-    if (this.isProduct(item)) {
+    if (this.isProduct(item)) 
       item = this.mapProductToCartItem(item);
-    }
+
     cart.items = this.addOrUpdateItem(cart.items, item, quantity);
-    this.setCartAsync(cart);
+    await firstValueFrom(this.setCart(cart));
+  }
+
+  applyDiscount(code: string) {
+    return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code);
   }
 
   // private methods

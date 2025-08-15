@@ -12,9 +12,30 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
+
+        // Apply common configurations
+        ApplyCommonConfigurations(modelBuilder);
+
+        // Apply database-specific configurations (to be overridden in derived classes)
+        ApplyDatabaseSpecificConfigurations(modelBuilder);
+
+        // -- Old code --
         // .ApplyConfigurationsFromAssembly : applies configuration from all IEntityTypeConfiguration instances that are defined in provided assembly 
         // .Assembly : gets the assembly that contains the type of the current instance
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
+        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
 
+    }
+
+    protected virtual void ApplyCommonConfigurations(ModelBuilder modelBuilder)
+    {
+        // Common configurations are now handled by IEntityTypeConfiguration classes
+        // loaded via ApplyConfigurationsFromAssembly (OrderConfiguration, ProductConfiguration, etc.)
+        // This method can be used for any additional common configurations if needed
+    }
+
+    protected virtual void ApplyDatabaseSpecificConfigurations(ModelBuilder modelBuilder)
+    {
+        // Default implementation - can be overridden in derived classes
     }
 }

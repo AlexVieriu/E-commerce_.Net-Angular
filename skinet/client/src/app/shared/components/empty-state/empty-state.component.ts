@@ -9,6 +9,9 @@ import { BusyService } from '../../../core/services/busy.service';
   templateUrl: './empty-state.component.html',
   styleUrl: './empty-state.component.scss'
 })
+
+  // Inside Cart component
+  // Displayed when the cart is empty
 export class EmptyStateComponent {
   busyService = inject(BusyService); // to not display the empty cart before all products are loaded
   message = input.required<string>();

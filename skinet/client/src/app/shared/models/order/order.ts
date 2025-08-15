@@ -15,4 +15,5 @@ export interface Order {
     status: string
     paymentIntentId: string
     total: number
+    discount?: number
 }

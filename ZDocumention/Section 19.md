@@ -258,6 +258,7 @@ Pay-as-you-go:
 
 -> open Azure portal 
 -> we go to our site resource: skinet-alexV89
+
 -- Settings --
     1. Environment variables 
         -> App Settings 
@@ -280,7 +281,7 @@ Pay-as-you-go:
                 -> click Apply
 
     2. Configuration
-    -> enable Web sockets
+    -> enable Web sockets (really important)
     -> select HTTP 2.0
     -> save changes
 
@@ -311,7 +312,7 @@ Review + Create
         -> Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
 
 -> go to the App Service in Azure -> Settings -> Environment variables -> Connection strings -> +Add
-    -> see the appsettings.Deployment.json file and need to match the names from there 
+    -> see the appsettings.json file and need to match the names from there 
         -> Name     : DefaultConnection
         -> Value    : Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
         -> Type     : SQL Server
@@ -319,7 +320,7 @@ Review + Create
 -> now we have Redis and SQL Server configured
 
 -> go to Resource Group -> SQL server -> Networking -> Selected Networks -> 
-    -> Allow Azure service and resources to access this server -> Save
+    -> check the box : "Allow Azure service and resources to access this server" -> Save
 
 
 218. Publishing to Azure
@@ -327,68 +328,13 @@ Review + Create
 If we have SQLite on the Development and SQL Server Azure in Production: 
 
 -- Program.cs --
-if (builder.Environment.IsDevelopment())
-{
-    // Register the SQLite context
-    builder.Services.AddDbContext<SqliteStoreContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-    // Register the base StoreContext to resolve to SqliteStoreContext
-    builder.Services.AddScoped<StoreContext>(provider =>
-        provider.GetRequiredService<SqliteStoreContext>());
-}
-else
-{
-    // Register the SQL Server context
-    builder.Services.AddDbContext<SqlServerStoreContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerAzureConnection")));
-
-    // Register the base StoreContext to resolve to SqlServerStoreContext
-    builder.Services.AddScoped<StoreContext>(provider =>
-        provider.GetRequiredService<SqlServerStoreContext>());
-}
-. . .
-try
-{
-    using var scoped = app.Services.CreateScope();
-    var services = scoped.ServiceProvider;
-
-    if (app.Environment.IsDevelopment())
-    {
-        var context = services.GetRequiredService<SqliteStoreContext>();
-        await context.Database.MigrateAsync();
-    }
-    else
-    {
-        var context = services.GetRequiredService<SqlServerStoreContext>();
-        await context.Database.MigrateAsync();
-    }
-
-    var baseContext = services.GetRequiredService<StoreContext>();
-    await StoreContextSeed.SeedAsync(baseContext);
-}
-catch (Exception ex)
-{
-    WriteLine(ex.Message);
-    throw;
-}
-
+-> check the file to see the changes
 
 -- appsettings.json --
-
-"ConnectionStrings": {
-    "Redis": "localhost",
-    "SqlServerAzureConnection": "Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=300;"
-},
-"StripeSettings": {
-    "PublishableKey": "pk_test_51R3BtWGMOucV11LePsep5xmR9QwIsan35gwZsAMjXx0abJFLNfaoh85sGAc0NE1iY90fvVhvCEzt7lxO64EA9cqB00IxxJHAl4",
-    "SecretKey": "sk_test_51R3BtWGMOucV11LeOaDO00p6Ffd5e02R1j5xYUhcNejDA2TJOskB7saG2S2AtI5CaOq1mC1dpSNMkTJMntEP3qVe0053pPawgf",
-    "WhSecret": "whsec_557c17248eed478b7b118fb002bd8838d0e7a68a891c65d16ae0a59d48fbf989"
-} 
+-> check the file to see the changes
 
 -> get the Stripe key from the new created Production account
--> we only add SqlServerAzureConnection, for testing the production
--> the connection will be automatically re-written in Azure Connection String when we commit(CI/CD)
+-> the connectionString will be automatically re-written in Azure Connection String when we commit(CI/CD)
 
 
 -- appsettings.development.json --
@@ -419,12 +365,23 @@ Check if on every file in Angular project we have: "import { environment } from 
     "browser": ""
 }
 
+-> add Azure App Service extension to VSC
+
 Rebuild angular app, so we have the static site in the API proj: 
 ng build
+
 Output location: F:\Programare\E-commerce_.Net-Angular\skinet\API\wwwroot
 
+cd skinet/API
+dotnet publish -c Release -o ./bin/publish
 
--> add Azure App Service extension to VSC
+-> right click on the Publish folder -> Deploy to Web App (Azure) -> select skinet-alexv89-test
+
+!!! This is a manual Publish; later in the course we will do it with CI/CD with GitHub Actions !!!
+
+Azure domain name:
+"skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"
+
 
 Create a permanent Webhook:
 -> check the nuget package stripe.net is up to date(last version)
@@ -434,7 +391,7 @@ https://dashboard.stripe.com/test/workbench/webhooks/create
 
 1. Search for "payment_intent.succeeded" event -> Next
 2. pick Webhook endpoint -> next
-3. endpoint URL: https://skinet-alexv89.azurewebsites.net/api/payments/webhook
+3. endpoint URL: https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net/api/payments/webhook
 4. search for "Signing secret" in the redirection page
 5. copy the signing secret: "whsec_20......."
 6. Go to Azure -> App Service -> Settings -> Environment variables :
@@ -444,6 +401,7 @@ https://dashboard.stripe.com/test/workbench/webhooks/create
 
 219. Adding Continuous Integration (CI/CD)
 
+(udemy video - min 3:00)
 -- environment.ts --
 -> update to production key with the one on the Stripe ProductionAccount
 export const environment = {
@@ -455,6 +413,8 @@ export const environment = {
 
 ng build 
 
+
+(udemy video - min 0:00)
 Go to Azure site -> App Service -> Deployment -> Deployment Center
 Source      : GitHub
 Organization: AlexVieriu (your GitHub account)
@@ -465,12 +425,13 @@ Authentication type: User-assigned identity
 Preview file
 
 
+(min 2:30)
 -> go to Azure -> App Service -> Deployment -> Deployment Center -> save the changes
--> GitHub -> Open repository -> Actions -> click on build step
+
 
 Change .yml file: 
 -> go to GitHub -> Actions -> Click the Workflow that is running the build -> In the left tab search for Workflow File
--> Edit the file
+-> Edit the file and add the additional steps:
 
 - name: Build with dotnet
   working-directory: ./skinet/API
@@ -478,7 +439,7 @@ Change .yml file:
 
 - name: dotnet publish
   working-directory: ./skinet/API
-  run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+  run: dotnet publish -c Release -o ../../publish_output
 
   
 220. Troubleshooting Azure issues
@@ -491,7 +452,7 @@ To see more about the issues go in Azure -> App Service -> Diagnose and solve pr
 
 Let's see the version of webhook:
 https://dashboard.stripe.com/test/workbench/webhooks
--> we are using API version 2025-03-31.basil, bu tmy API is expecting using version 2025-02-24.acacia
+-> we are using API version 2025-03-31.basil, but my API is expecting using version 2025-02-24.acacia
 -> i need to update my Stripe API(in the Infrastructure project)
 
 
@@ -593,7 +554,7 @@ output:
 - name: Set up node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.14'
+          node-version: '24.x'
 
 - name: Install Angular CLI
   run: npm install -g @angular/cli@19
