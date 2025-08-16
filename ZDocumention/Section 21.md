@@ -73,3 +73,45 @@ Test with Postman
 
 -> login as Tom
 -> get admin secrets (Return code 403 - Forbidden)
+
+
+228. Using roles
+
+-- Core -> Specifications --  
+
+-- PagingParams.cs --
+private const int MaxPageSize = 50;
+public int PageIndex { get; set; } = 1;
+public int _pageSize { get; set; } = 6;
+public int PageSize
+{
+    get => _pageSize;
+    set => _pageSize = value > MaxPageSize ? MaxPageSize : value;
+}
+
+
+-- ProductsSpecParams.cs --
+-> remove the code with pagination
+-> derive from PagingParams.cs
+
+
+-- OrderSpecParams.cs --
+-> derive from PagingParams.cs
+public string? Status { get; set; }
+
+
+-- OrderSpecification.cs --
+Add:
+-> public OrderSpecification(int id)
+-> public OrderSpecification(OrderSpecParams specParams)
+-> private static OrderStatus? ParseStatus(string status) 
+
+-- AdminController.cs --
+-> add the method GetOrders()
+
+
+Test in postman:
+-> dotnet watch
+-> "login as admin"
+-> "get admin secrets"
+-> "get orders"

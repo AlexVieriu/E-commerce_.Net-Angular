@@ -51,7 +51,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
             user.LastName,
             user.Email,
             Address = user.Address?.toDto(),
-            Roles = User.FindFirstValue(ClaimTypes.Role)
+            Role = User.FindFirstValue(ClaimTypes.Role)
         });
     }
 
