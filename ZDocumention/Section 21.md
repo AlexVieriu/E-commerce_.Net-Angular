@@ -115,3 +115,30 @@ Test in postman:
 -> "login as admin"
 -> "get admin secrets"
 -> "get orders"
+
+
+229. Updating the Base controller CreatePageResult method
+
+-- Core.Interfaces -> IDtoConvertible.cs --
+
+
+-- Core.Entities.OrderAggregate -> Order.cs --
+-> add to inherit from IDtoConvertible
+
+
+-- API.Controllers -> BaseApiController.cs --
+-> add a new method overload 
+    
+Task<ActionResult> CreatePagedResult<T, TDto>{
+    ...
+    var pagination = new Pagination<TDto>(pageIndex, pageSize, count, dtoItems);
+}
+
+
+-- AdminController.cs --
+-> add the "x => x.ToDto()" to the CreatePagedResult
+
+-> create a new endpoint GetOrderById(int id){ ... }
+
+Test in Postman:
+-> 
