@@ -2,6 +2,7 @@ namespace API.Controllers;
 
 public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
 {
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         [FromQuery] ProductSpecParams specParams)
@@ -12,6 +13,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             unitOfWork.Repository<Product>(), spec, specParams.PageIndex, specParams.PageSize);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProductById(int id)
     {
@@ -23,6 +25,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
         return Ok(product);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
     {
@@ -33,6 +36,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Product>> UpdateProduct(int id, Product product)
     {
@@ -48,6 +52,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest("Problem updating the product");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteProduct(int id)
     {

@@ -49,3 +49,27 @@ Update Database with the new migrations:
 
 
 Test/See and see the tables in Development and Production
+
+
+227. Using the roles
+
+-- AccountController.cs --
+public async Task<ActionResult> GetUserInfo(){    
+    Roles = User.FindFirstValue(ClaimTypes.Role)    
+    ...
+}
+
+-- BuggyController.cs --
+-> add the method GetAdminSecret()
+    -> get the name, id, isAdmin and roles from the User obj= ClaimsPrincipal
+
+-- ProductsController.cs --
+-> add the [Authorize(Roles = "Admin")] to: 
+    GetProducts(), GetProductById(), CreateProduct(), UpdateProduct(), DeleteProduct()
+
+Test with Postman
+-> login as admin
+-> get admin secrets (Return code 200 - Ok)
+
+-> login as Tom
+-> get admin secrets (Return code 403 - Forbidden)
