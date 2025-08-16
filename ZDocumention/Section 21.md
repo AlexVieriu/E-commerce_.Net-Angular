@@ -141,4 +141,4 @@ Task<ActionResult> CreatePagedResult<T, TDto>{
 -> create a new endpoint GetOrderById(int id){ ... }
 
 Test in Postman:
--> 
+-> Get order by Id : "{{localhost}}/api/admin/orders/1"
