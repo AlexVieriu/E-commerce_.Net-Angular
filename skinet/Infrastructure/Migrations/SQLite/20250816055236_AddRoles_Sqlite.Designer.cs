@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations.SQLite
 {
     [DbContext(typeof(SqliteStoreContext))]
-    [Migration("20250630074053_FixDecimalPrecision")]
-    partial class FixDecimalPrecision
+    [Migration("20250816055236_AddRoles_Sqlite")]
+    partial class AddRoles_Sqlite
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.6.25358.103");
 
             modelBuilder.Entity("Core.Entities.Address", b =>
                 {
@@ -62,10 +62,8 @@ namespace Infrastructure.Migrations.SQLite
                     b.Property<decimal?>("AmountOff")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("Currency")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("PercentOff")
@@ -170,7 +168,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("REAL");
 
                     b.Property<string>("ShortName")
                         .IsRequired()
@@ -195,7 +193,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Discount")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("TEXT");
@@ -209,7 +207,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Subtotal")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("REAL");
 
                     b.HasKey("Id");
 
@@ -228,7 +226,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("REAL");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
@@ -301,6 +299,22 @@ namespace Infrastructure.Migrations.SQLite
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "admin-id",
+                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "customer-id",
+                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            Name = "Customer",
+                            NormalizedName = "CUSTOMER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

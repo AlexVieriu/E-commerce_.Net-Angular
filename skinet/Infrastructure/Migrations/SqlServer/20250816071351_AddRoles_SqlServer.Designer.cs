@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations.SqlServer
 {
     [DbContext(typeof(SqlServerStoreContext))]
-    [Migration("20250704080917_FixingTables")]
-    partial class FixingTables
+    [Migration("20250816071351_AddRoles_SqlServer")]
+    partial class AddRoles_SqlServer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114")
+                .HasAnnotation("ProductVersion", "10.0.0-preview.6.25358.103")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -316,6 +316,22 @@ namespace Infrastructure.Migrations.SqlServer
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "admin-id",
+                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "customer-id",
+                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            Name = "Customer",
+                            NormalizedName = "CUSTOMER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
