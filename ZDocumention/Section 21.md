@@ -142,3 +142,29 @@ Task<ActionResult> CreatePagedResult<T, TDto>{
 
 Test in Postman:
 -> Get order by Id : "{{localhost}}/api/admin/orders/1"
+
+
+230. Adding refund functionality
+
+-- IPaymentService.cs --
+Task<string> RefundPayment(string paymentIntentId);
+
+-- PaymentService.cs --
+-> implement the RefundPayment method
+    -> create refund options
+    -> create new service
+    -> get the refund (if fails, it will throw an exception that we will manage on the middleware)
+    -> return refund status 
+
+-- AdminController.cs --
+-> create a new endpoint RefundOrder
+    -> get the specification with the order id
+    -> get the order
+    -> check if order is : null or Pending
+    -> check the refund status: access the RefundPayment method from the PaymentService
+    -> update order status
+    -> w8 for the database to update
+    -> return the orderDto
+
+-- OrderStatus.cs -- (enum) 
+-> add Refunded property
