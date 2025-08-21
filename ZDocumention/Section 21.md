@@ -197,3 +197,17 @@ roles: string | string[];  // for single and multiple roles
 -- account.service.ts --
 return Array.isArray(roles) ? roles.includes('Admin') : roles === 'Admin';
 
+
+232. Creating an angular directive
+
+cd skinet/client
+ng g --help 
+ng g d shared/directives/is-admin --dry-run
+ng g d shared/directives/is-admin --skip-tests
+
+-- is-admin.directive.ts --
+-> inject the AccountService, ViewContainerRef and TemplateRef
+-> implement the onInit() method
+
+-- header.component.html --
+-> add *appIsAdmin to Admin link

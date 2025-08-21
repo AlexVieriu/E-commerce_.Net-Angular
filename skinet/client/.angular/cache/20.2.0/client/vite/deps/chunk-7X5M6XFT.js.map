@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../../node_modules/rxjs/dist/esm5/internal/util/identity.js"],
+  "sourcesContent": ["export function identity(x) {\n    return x;\n}\n"],
+  "mappings": ";AAAO,SAAS,SAAS,GAAG;AACxB,SAAO;AACX;",
+  "names": []
+}
