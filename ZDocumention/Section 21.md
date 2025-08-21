@@ -168,3 +168,32 @@ Task<string> RefundPayment(string paymentIntentId);
 
 -- OrderStatus.cs -- (enum) 
 -> add Refunded property
+
+
+231. Creating the admin components 
+
+cd skinet/client
+ng g s core/services/admin --skip-tests
+ng g c features/admin/admin --skip-tests --flat
+
+-- app.routes.ts --
+{ path: 'admin', component: AdminComponent, canActivate: [authGuard] }
+
+ ng g g core/guards/admin --skip-tests
+
+
+-- header.component.html --
+<a routerLink="/admin" routerLinkActive="active">Admin</a>
+
+
+-- error.interceptor.ts --
+-> add 403 error
+
+
+-- user.ts --
+roles: string | string[];  // for single and multiple roles
+
+
+-- account.service.ts --
+return Array.isArray(roles) ? roles.includes('Admin') : roles === 'Admin';
+

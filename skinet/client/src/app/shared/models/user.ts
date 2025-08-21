@@ -5,4 +5,5 @@ export type User = {
     lastName: string;
     email: string;
     address: Address;
+    roles: string | string[];
 }
