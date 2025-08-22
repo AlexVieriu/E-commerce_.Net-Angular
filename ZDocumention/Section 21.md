@@ -246,3 +246,44 @@ https://claude.ai/chat/c0e4185c-560e-40ff-a53f-d048f2bef4f5
 
 
 234. Adding the admin service methods
+
+-- client -> src -> shared -> models -> order --
+-- orderParams.ts --
+-> pageNumber, pageSize, filter
+
+
+-- admin.service.ts --
+baseUrl = environment.apiUrl;
+private http = inject(HttpClient);
+
+-> getOrders( orderParams: OrderParams )
+-> getOrder( id: number )
+-> refundOrder( id: number )
+
+
+Dictionary:
+1. What is the purpose of export keyword when declaring a class, type, or interface?
+-> to export a class, type, or interface so that it can be used in other files, 
+otherwise it is only visible inside the current file 
+
+2. What is the difference between let and var in .ts? 
+-> let: block-scoped
+-> var: function-scoped
+
+
+Example:
+function example() {
+  if (true) {
+    var x = 1;
+    let y = 2;
+  }
+  console.log("x value:", x); // This will work
+  
+  try {
+    console.log("y value:", y); // This will throw an error
+  } catch (error) {
+    console.log("Error accessing y:", error.message);
+  }
+}
+
+example();
