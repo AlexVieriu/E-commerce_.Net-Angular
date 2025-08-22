@@ -368,3 +368,54 @@ refundOrder(id:number){}
 
 -- admin.component.html --
 -> add click event to refund button
+
+
+239. Adding a confirmation prompt
+
+ng g c shared/components/confirmation-dialog --skip-tests
+ng g s core/services/dialog --skip-tests
+
+
+-- confirmation-dialog.component.ts --
+dialogReg = inject(MatDialogRef<ConfirmationDialogComponent>);
+data = inject(MAT_DIALOG_DATA)
+
+onConfirm() {
+    this.dialogReg.close(true);
+}
+
+onCancel() {
+    this.dialogReg.close(false);
+}
+
+
+-- confirmation-dialog.component.html --
+data.title
+data.message
+2 buttons:
+    -> Confirm
+    -> Cancel
+
+
+-- dialog.service.ts --
+private dialog = inject(MatDialog);
+
+confirm(title: string, message: string) {
+
+// returns an observable
+const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+    data: { title, message },
+    width: '400px'
+    }).afterClosed();
+
+    return firstValueFrom(dialogRef); // returns true or nothing
+}
+
+
+-- admin.component.ts --
+async openConfirmDialog(id: number)
+
+
+-- admin.component.html --
+-> replace refundOrder() with openConfirmDialog()
+

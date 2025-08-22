@@ -1,6 +1,7 @@
 import { AdminService } from '../../core/services/admin.service';
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DialogService } from '../../core/services/dialog.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
@@ -19,7 +20,7 @@ import { RouterLink } from '@angular/router';
     DatePipe,
     MatFormFieldModule,
     MatIcon,
-    MatIconButton, 
+    MatIconButton,
     MatLabel,
     MatPaginatorModule,
     MatSelectModule,
@@ -37,6 +38,7 @@ export class AdminComponent implements OnInit {
   dataSource = new MatTableDataSource<Order>([]);
 
   private adminService = inject(AdminService);
+  private dialogService = inject(DialogService);
   orderParams = new OrderParams();
   totalItems = 0;
 
@@ -74,5 +76,14 @@ export class AdminComponent implements OnInit {
         this.dataSource.data = this.dataSource.data.map(o => o.id === id ? order : o)
       }
     })
+  }
+
+  async openConfirmDialog(id: number) {
+    const confirmed = await this.dialogService.confirm(
+      'Confirm Refund', 'Are you sure you want to refund this order?');
+
+    if (confirmed)
+      this.refundOrder(id);
+
   }
 }
