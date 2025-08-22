@@ -15,7 +15,7 @@ export class AdminService {
   getOrders(orderParams: OrderParams) {
     let params = new HttpParams();
     if (orderParams.filter && orderParams.filter !== 'All') {
-      params = params.append('filter', orderParams.filter);
+      params = params.append('status', orderParams.filter);
     }
     params = params.append('pageNumber', orderParams.pageNumber);
     params = params.append('pageSize', orderParams.pageSize);

@@ -342,3 +342,8 @@ imports: [
   ]
 
 -- admin.component.html --
+
+
+237. Populating th orders table
+refactoring + editing -- admin.component.html --
+
