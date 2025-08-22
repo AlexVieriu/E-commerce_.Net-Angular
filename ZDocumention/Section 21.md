@@ -347,3 +347,24 @@ imports: [
 237. Populating th orders table
 refactoring + editing -- admin.component.html --
 
+
+238. Adding the order table action button functionality
+
+-- order-detailed.component.ts --
+loadOrder()
+-> load order data base on isAdmin flag
+
+onReturnClick()
+-> return to admin or orders page
+
+
+-- order-detailed.component.html --
+<button (click)="onReturnClick()" mat-stroked-button>{{buttonText}}</button>
+
+
+-- admin.component.ts --
+refundOrder(id:number){}
+
+
+-- admin.component.html --
+-> add click event to refund button

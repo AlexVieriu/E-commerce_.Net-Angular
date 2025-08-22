@@ -1,7 +1,9 @@
 import { AdminService } from '../../core/services/admin.service';
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
 import { MatLabel, MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -15,14 +17,16 @@ import { RouterLink } from '@angular/router';
   imports: [
     CurrencyPipe,
     DatePipe,
+    MatFormFieldModule,
     MatIcon,
+    MatIconButton, 
     MatLabel,
     MatPaginatorModule,
     MatSelectModule,
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss'
@@ -62,5 +66,13 @@ export class AdminComponent implements OnInit {
     this.orderParams.filter = event.value;
     this.orderParams.pageNumber = 1;
     this.loadOrders();
+  }
+
+  refundOrder(id: number) {
+    this.adminService.refundOrder(id).subscribe({
+      next: order => {
+        this.dataSource.data = this.dataSource.data.map(o => o.id === id ? order : o)
+      }
+    })
   }
 }
