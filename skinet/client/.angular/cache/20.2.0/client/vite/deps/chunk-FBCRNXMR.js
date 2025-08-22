@@ -134,9 +134,11 @@ var _RecycleViewRepeaterStrategy = class {
 };
 
 export {
+  DataSource,
   isDataSource,
   ArrayDataSource,
+  _ViewRepeaterOperation,
   _VIEW_REPEATER_STRATEGY,
   _RecycleViewRepeaterStrategy
 };
-//# sourceMappingURL=chunk-KTHWN43S.js.map
+//# sourceMappingURL=chunk-FBCRNXMR.js.map

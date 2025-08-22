@@ -1,14 +1,3 @@
-// node_modules/@angular/cdk/fesm2022/test-environment.mjs
-function _isTestEnvironment() {
-  return (
-    // @ts-ignore
-    typeof __karma__ !== "undefined" && !!__karma__ || // @ts-ignore
-    typeof jasmine !== "undefined" && !!jasmine || // @ts-ignore
-    typeof jest !== "undefined" && !!jest || // @ts-ignore
-    typeof Mocha !== "undefined" && !!Mocha
-  );
-}
-
 // node_modules/@angular/cdk/fesm2022/scrolling2.mjs
 var RtlScrollAxisType;
 (function(RtlScrollAxisType2) {
@@ -67,9 +56,8 @@ function getRtlScrollAxisType() {
 }
 
 export {
-  _isTestEnvironment,
   RtlScrollAxisType,
   supportsScrollBehavior,
   getRtlScrollAxisType
 };
-//# sourceMappingURL=chunk-GTWI6NND.js.map
+//# sourceMappingURL=chunk-7UJZXIJQ.js.map

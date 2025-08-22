@@ -3425,8 +3425,10 @@ export {
   Platform,
   normalizePassiveListenerOptions,
   coerceNumberProperty,
+  _isNumberValue,
   coerceElement,
   FocusMonitor,
+  CdkMonitorFocus,
   _CdkPrivateStyleLoader,
   _VisuallyHiddenLoader,
   coerceArray,
@@ -3449,4 +3451,4 @@ export {
   BidiModule,
   MatCommonModule
 };
-//# sourceMappingURL=chunk-C7UNVLN5.js.map
+//# sourceMappingURL=chunk-6CGNRYA6.js.map

@@ -1,13 +1,29 @@
-import { AfterViewInit, Component, inject, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { Order } from '../../shared/models/order/order';
-import { MatPaginator } from '@angular/material/paginator';
 import { AdminService } from '../../core/services/admin.service';
+import { AfterViewInit, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatLabel, MatSelectModule } from '@angular/material/select';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Order } from '../../shared/models/order/order';
 import { OrderParams } from '../../shared/models/order/orderParams';
 
 @Component({
-  selector: 'app-admin',
-  imports: [MatTableModule],
+  imports: [
+    CurrencyPipe,
+    DatePipe,
+    MatButton,
+    MatIcon,
+    MatLabel,
+    MatPaginatorModule,
+    MatSelectModule,
+    MatTableModule,
+    MatTabsModule,
+    MatTooltipModule,
+  ],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss'
 })

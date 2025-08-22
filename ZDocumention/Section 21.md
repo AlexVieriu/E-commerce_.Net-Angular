@@ -323,3 +323,22 @@ paginator!: MatPaginator
 How it works:
 -> when Angular initializes the component, it automatically finds the MatPaginator in the template and assigns it to this paginator property
 -> this gives you programmatic access to the paginator instance from your component class
+
+
+236. Designing the admin component template 
+
+-- admin.component.ts --
+imports: [
+    CurrencyPipe,
+    DatePipe,
+    MatButton,
+    MatIcon,
+    MatLabel,
+    MatPaginatorModule,
+    MatSelectModule,
+    MatTableModule,
+    MatTabsModule,
+    MatTooltipModule
+  ]
+
+-- admin.component.html --

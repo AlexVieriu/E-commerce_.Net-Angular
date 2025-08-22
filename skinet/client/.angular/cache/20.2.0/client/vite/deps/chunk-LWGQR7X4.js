@@ -6,7 +6,7 @@ import {
 } from "./chunk-CSMPAA6Y.js";
 import {
   MatCommonModule
-} from "./chunk-C7UNVLN5.js";
+} from "./chunk-6CGNRYA6.js";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -977,4 +977,4 @@ export {
   MatIcon,
   MatIconModule
 };
-//# sourceMappingURL=chunk-OEYSIAL2.js.map
+//# sourceMappingURL=chunk-LWGQR7X4.js.map
