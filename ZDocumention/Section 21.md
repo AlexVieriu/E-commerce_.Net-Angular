@@ -287,3 +287,39 @@ function example() {
 }
 
 example();
+
+
+235. Adding the admin component code 
+
+https://material.angular.dev/components/table/overview#pagination
+
+-- admin.component.ts -- 
+Properties: 
+displayedColumn 
+statusOptions
+dataSource
+adminService
+orderParams
+totalItems
+paginator
+
+Methods:
+ngOnInit()
+ngAfterViewInit()
+loadOrders()
+onPageChanged(event: any)
+onFilterSelect(event: any)
+
+
+Dictionary:
+@ViewChild(MatPaginator) 
+-> this is an Angular decorator that queries the component's template to find a child component or element
+-> in this case, it's looking for a MatPaginator component (Angular Material's pagination component)
+
+paginator!: MatPaginator 
+-> this declares a property called paginator with the type MatPaginator
+-> the exclamation mark (!) is TypeScript's definite assignment assertion operator, which tells TypeScript "I know this will be assigned a value, even though you can't tell from the code analysis."
+
+How it works:
+-> when Angular initializes the component, it automatically finds the MatPaginator in the template and assigns it to this paginator property
+-> this gives you programmatic access to the paginator instance from your component class

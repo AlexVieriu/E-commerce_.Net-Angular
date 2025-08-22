@@ -20,7 +20,7 @@ export class AdminService {
     params = params.append('pageNumber', orderParams.pageNumber);
     params = params.append('pageSize', orderParams.pageSize);
 
-    return this.http.get<Pagination<Order[]>>(this.baseUrl + 'admin/orders', { params })
+    return this.http.get<Pagination<Order>>(this.baseUrl + 'admin/orders', { params })
   }
 
   getOrder(id: number) {
