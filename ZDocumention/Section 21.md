@@ -232,3 +232,17 @@ Types of effects:
     -> the effect runs for the entire application lifetime
 
 https://claude.ai/chat/c0e4185c-560e-40ff-a53f-d048f2bef4f5
+
+
+233. Creating an admin guard
+
+-- admin.guard.ts --
+-> inject AccountService, Router, SnackbarService
+-> if isAdmin, return true
+-> else snackbar error, router.navigateByUrl('/shop'), return false
+
+-- app.routes.ts --
+-> add admin guard to the admin route
+
+
+234. Adding the admin service methods
