@@ -40,14 +40,14 @@ public class BuggyController : BaseApiController
         var name = User.FindFirst(ClaimTypes.Name)?.Value;
         var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isAdmin = User.IsInRole("Admin");
-        var role = User.FindFirstValue(ClaimTypes.Role);
+        var roles = User.FindFirstValue(ClaimTypes.Role);
 
         return Ok(new
         {
             name,
             id,
             isAdmin,
-            role
+            roles
         });
     }
 }

@@ -17,9 +17,9 @@ export class AccountService {
   currentUser = signal<User | null>(null);
   isAdmin = computed(() => {
     const roles = this.currentUser()?.roles;
+    var result = Array.isArray(roles) ? roles.includes('Admin') : roles === 'Admin'
 
-    // condition ? valueIfTrue : valueIfFalse
-    return Array.isArray(roles) ? roles.includes('Admin') : roles === 'Admin';
+    return result;
   });
 
   login(values: any) {

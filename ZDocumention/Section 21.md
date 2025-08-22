@@ -207,7 +207,28 @@ ng g d shared/directives/is-admin --skip-tests
 
 -- is-admin.directive.ts --
 -> inject the AccountService, ViewContainerRef and TemplateRef
--> implement the onInit() method
+-> add effect() signal to the constructor
+    -> if isAdmin, createEmbeddedView
+    -> else clear
 
 -- header.component.html --
 -> add *appIsAdmin to Admin link
+
+
+Dictionary:
+What is effect()?
+-> register an "effect" that will be scheduled & executed whenever the signals that is reads changes
+
+https://next.angular.dev/api/core/effect
+
+Types of effects:
+-> component effects
+    -> created when effect() is called from a component, directive, 
+    or within a service of a component/directive
+    -> the effect dies when the component is destroyed
+
+-> root effects
+    -> created when effect() is called from outside the component tree, such as in a root service
+    -> the effect runs for the entire application lifetime
+
+https://claude.ai/chat/c0e4185c-560e-40ff-a53f-d048f2bef4f5

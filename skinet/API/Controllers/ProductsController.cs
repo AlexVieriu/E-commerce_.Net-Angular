@@ -2,7 +2,6 @@ namespace API.Controllers;
 
 public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
 {
-    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         [FromQuery] ProductSpecParams specParams)
@@ -13,7 +12,6 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             unitOfWork.Repository<Product>(), spec, specParams.PageIndex, specParams.PageSize);
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProductById(int id)
     {
