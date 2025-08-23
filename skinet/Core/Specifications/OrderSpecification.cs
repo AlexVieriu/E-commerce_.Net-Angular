@@ -2,7 +2,8 @@ namespace Core.Specifications;
 
 public class OrderSpecification : BaseSpecification<Order>
 {
-    public OrderSpecification(int id) : base(o => o.Id == id)
+    public OrderSpecification(int id) : base(o =>
+        o.Id == id)
     {
         AddInclude("OrderItems");
         AddInclude("DeliveryMethod");
@@ -32,8 +33,8 @@ public class OrderSpecification : BaseSpecification<Order>
         AddInclude("DeliveryMethod");
     }
 
-    public OrderSpecification(OrderSpecParams specParams) : base(x
-        => string.IsNullOrEmpty(specParams.Status) || x.Status == ParseStatus(specParams.Status))
+    public OrderSpecification(OrderSpecParams specParams) : base(o =>
+        string.IsNullOrEmpty(specParams.Status) || o.Status == ParseStatus(specParams.Status))
     {
         AddInclude("OrderItems");
         AddInclude("DeliveryMethod");
@@ -41,9 +42,11 @@ public class OrderSpecification : BaseSpecification<Order>
         AddOrderByDescending(x => x.OrderDate);
     }
 
+
     private static OrderStatus? ParseStatus(string status)
     {
         var orderStatus = Enum.TryParse<OrderStatus>(status, true, out var result) ? result : (OrderStatus?)null;
+
         return orderStatus;
     }
 

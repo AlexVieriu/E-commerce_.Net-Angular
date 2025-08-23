@@ -27,7 +27,7 @@ import { RouterLink } from '@angular/router';
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
-    RouterLink,
+    RouterLink
   ],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss'

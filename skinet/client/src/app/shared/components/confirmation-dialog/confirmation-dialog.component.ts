@@ -9,14 +9,14 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   styleUrl: './confirmation-dialog.component.scss'
 })
 export class ConfirmationDialogComponent {
-  dialogReg = inject(MatDialogRef<ConfirmationDialogComponent>);
+  dialogRef = inject(MatDialogRef<ConfirmationDialogComponent>);
   data = inject(MAT_DIALOG_DATA)
 
   onConfirm() {
-    this.dialogReg.close(true);
+    this.dialogRef.close(true);
   }
 
   onCancel() {
-    this.dialogReg.close(false);
+    this.dialogRef.close(false);
   }
 }

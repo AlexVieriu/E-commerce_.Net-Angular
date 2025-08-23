@@ -3,6 +3,28 @@ namespace API.Controllers;
 [Authorize]
 public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) : BaseApiController
 {
+    [HttpGet("/api/orders")]
+    public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrdersForUser()
+    {
+        var spec = new OrderSpecification(User.GetEmail());
+        var orders = await unitOfWork.Repository<Order>().GetAllAsync(spec);
+        var ordersToReturn = orders.Select(x => x.ToDto()).ToList();
+
+        return Ok(ordersToReturn);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<OrderDto>> GetOrderById(int id)
+    {
+        var spec = new OrderSpecification(User.GetEmail(), id);
+        var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null)
+            return NotFound();
+
+        return Ok(order.ToDto());
+    }
+
     [HttpPost]
     public async Task<ActionResult<Order>> CreateOrder(CreateOrderDto orderDto)
     {
@@ -38,6 +60,7 @@ public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) :
             };
             items.Add(OrderItem);
         }
+
         var deliveryMethod = await unitOfWork.Repository<DeliveryMethod>()
                                              .GetByIdAsync(orderDto.DeliveryMethodId);
 
@@ -64,24 +87,5 @@ public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) :
             return BadRequest("Problem creating order");
     }
 
-    [HttpGet("/api/orders")]
-    public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrdersForUser()
-    {
-        var spec = new OrderSpecification(User.GetEmail());
-        var orders = await unitOfWork.Repository<Order>().GetAllAsync(spec);
-        var ordersToReturn = orders.Select(x => x.ToDto()).ToList();
-        return Ok(ordersToReturn);
-    }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<OrderDto>> GetOrderById(int id)
-    {
-        var spec = new OrderSpecification(User.GetEmail(), id);
-        var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
-
-        if (order == null)
-            return NotFound();
-
-        return Ok(order.ToDto());
-    }
 }

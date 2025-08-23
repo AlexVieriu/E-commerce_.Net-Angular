@@ -42,12 +42,6 @@ public class BuggyController : BaseApiController
         var isAdmin = User.IsInRole("Admin");
         var roles = User.FindFirstValue(ClaimTypes.Role);
 
-        return Ok(new
-        {
-            name,
-            id,
-            isAdmin,
-            roles
-        });
+        return Ok(new { name, id, isAdmin, roles });
     }
 }
