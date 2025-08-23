@@ -1,5 +1,3 @@
-import { Coupon } from "./coupon";
-
 export type CartItem = {
     productId: number;
     productName: string;

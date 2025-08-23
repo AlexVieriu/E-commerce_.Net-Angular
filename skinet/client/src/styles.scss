@@ -5,7 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-// https://angular-material.dev/courses/m2-ng-components/m2-ng-components/create-custom-theme
 // creates a new Angular Material theme object
 $customTheme: mat.define-theme();
 
@@ -13,12 +12,13 @@ $customTheme: mat.define-theme();
 @include mat.elevation-classes();
 @include mat.app-background();
 
+// Apply theme globally instead of just to .custom-theme class
+@include mat.all-component-themes($customTheme);
 // .MDC - Material Design Components
 // https://v15.material.angular.io/guide/mdc-migration
 // https://www.youtube.com/watch?v=DpCwKpZlcbg
 .custom-theme {
-    @include mat.all-component-themes($customTheme);
-
+    // You can keep this for any custom overrides if needed
     // override the button styles
     .mdc-button,
     .mdc-raised-button,
@@ -28,6 +28,7 @@ $customTheme: mat.define-theme();
     }
 }
 
+// Rest of your styles...
 .container {
     @apply mx-auto max-w-screen-2xl
 }

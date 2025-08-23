@@ -15,9 +15,11 @@ public class SqlServerStoreContext : StoreContext
 
         // Configure AppCoupon decimal properties for SQL Server
         var couponEntity = modelBuilder.Entity<AppCoupon>();
+
         // AmountOff in cents, so no decimal places needed
         couponEntity.Property(x => x.AmountOff)
             .HasColumnType("decimal(18,0)");
+
         // PercentOff with 2 decimal places for precision (e.g., 25.50%)
         couponEntity.Property(x => x.PercentOff)
             .HasColumnType("decimal(5,2)");

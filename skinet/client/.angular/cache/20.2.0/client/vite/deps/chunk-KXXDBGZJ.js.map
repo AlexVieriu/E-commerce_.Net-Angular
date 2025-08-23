@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../../node_modules/rxjs/dist/esm5/internal/operators/map.js"],
+  "sourcesContent": ["import { operate } from '../util/lift';\nimport { createOperatorSubscriber } from './OperatorSubscriber';\nexport function map(project, thisArg) {\n    return operate(function (source, subscriber) {\n        var index = 0;\n        source.subscribe(createOperatorSubscriber(subscriber, function (value) {\n            subscriber.next(project.call(thisArg, value, index++));\n        }));\n    });\n}\n"],
+  "mappings": ";;;;;;AAEO,SAAS,IAAI,SAAS,SAAS;AAClC,SAAO,QAAQ,SAAU,QAAQ,YAAY;AACzC,QAAI,QAAQ;AACZ,WAAO,UAAU,yBAAyB,YAAY,SAAU,OAAO;AACnE,iBAAW,KAAK,QAAQ,KAAK,SAAS,OAAO,OAAO,CAAC;AAAA,IACzD,CAAC,CAAC;AAAA,EACN,CAAC;AACL;",
+  "names": []
+}

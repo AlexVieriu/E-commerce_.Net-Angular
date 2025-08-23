@@ -15,7 +15,7 @@ namespace Infrastructure.Migrations.SQLite
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.6.25358.103");
 
             modelBuilder.Entity("Core.Entities.Address", b =>
                 {
@@ -296,6 +296,22 @@ namespace Infrastructure.Migrations.SQLite
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "admin-id",
+                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "customer-id",
+                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            Name = "Customer",
+                            NormalizedName = "CUSTOMER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

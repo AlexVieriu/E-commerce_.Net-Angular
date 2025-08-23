@@ -15,7 +15,6 @@ builder.WebHost.ConfigureKestrel(options =>
     {
         listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
     });
-
 });
 
 builder.Services.AddControllers();
@@ -62,6 +61,7 @@ builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddCors();
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<StoreContext>();
 builder.Services.AddSignalR();
 
@@ -128,7 +128,8 @@ try
     }
 
     var baseContext = services.GetRequiredService<StoreContext>();
-    await StoreContextSeed.SeedAsync(baseContext);
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    await StoreContextSeed.SeedAsync(baseContext, userManager);
 }
 catch (Exception ex)
 {

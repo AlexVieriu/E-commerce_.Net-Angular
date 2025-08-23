@@ -4,6 +4,7 @@ global using Core.Entities.OrderAggregate;
 global using Core.Interfaces;
 global using File = System.IO.File;
 global using Infrastructure.Config;
+global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Design;
