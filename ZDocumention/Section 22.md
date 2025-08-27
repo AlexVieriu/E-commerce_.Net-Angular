@@ -74,3 +74,35 @@ https://localhost:4200/
 -> all this need to be in the second redis DB
 
 
+245. Invalidating the cache
+
+-> solution for when we add a new product but we can't see the new product in the redis DB
+
+-- ResponseCacheService.cs --
+-> implementing RemoveCacheByPattern()
+
+-- API.RequestHelpers -> InvalidateCache.cs --
+-> inherit from Attribute, IAsyncActionFilter
+-> override OnActionExecutionAsync()
+    -> await next();
+    -> get cache service from DI container
+    -> call RemoveCacheByPattern()
+
+-- ProductController.cs --
+-> put InvalidateCache on CreateProduct(), UpdateProduct(), DeleteProduct():
+[InvalidateCache("api/products|")]
+
+Test in Postman:
+-> add a folder with 4 requests
+{{localhost}}/api/products?pageSize=3&pageIndex=1
+{{localhost}}/api/products?brands=Angular,React&types=Boots,Gloves
+{{localhost}}/api/products?brands=Angular,React
+{{localhost}}/api/products?search=red
+
+-> go to folder press run (delete all in the redis DB to be clean)
+-> run it again (should see a much smaller request time)
+
+-> add a new product to see if they are deleted from redis DB
+    -> login as admin 
+    -> add a new product: {{localhost}}/api/products
+    -> check the redis DB: we only need to see the types and the brands 
