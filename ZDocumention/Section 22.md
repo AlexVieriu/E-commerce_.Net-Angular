@@ -62,3 +62,15 @@ IAsyncActionFilter:
 -> a filter that asynchronously surrounds execution of the action, 
 after the model biding is complete
 
+
+244. Testing the caching
+
+-- ProductController.cs --
+-> put cache on GetProducts(), GetProductById(), GetBrands(), GetTypes(): [Cache(10)]
+
+Test it
+https://localhost:4200/
+-> add products, sort products, search products
+-> all this need to be in the second redis DB
+
+

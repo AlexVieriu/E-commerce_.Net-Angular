@@ -37,7 +37,7 @@ public class CacheAttribute(int timeToLiveInSeconds) : Attribute, IAsyncActionFi
         {
             if (okObjectResult.Value != null) 
                 await cacheService.CreateCacheResponseAsync(
-                    cacheKey, okObjectResult.Value, TimeSpan.FromSeconds(timeToLiveInSeconds));
+                    cacheKey, okObjectResult.Value, TimeSpan.FromMinutes(timeToLiveInSeconds));
         }
     }
 
