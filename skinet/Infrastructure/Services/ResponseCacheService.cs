@@ -5,7 +5,7 @@ public class ResponseCacheService(IConnectionMultiplexer redis) : IResponseCache
 {
     private readonly IDatabase _redisDB = redis.GetDatabase(1); // 0 is for our cart
 
-    public async Task CacheResponseAsync(string cacheKey, object response, TimeSpan timeToLive)
+    public async Task CreateCacheResponseAsync(string cacheKey, object response, TimeSpan timeToLive)
     {
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
