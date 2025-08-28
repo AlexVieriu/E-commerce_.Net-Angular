@@ -1,6 +1,6 @@
-
 {
   "editor.fontSize": 14,
+  "editor.fontFamily": "Consolas, 'Courier New', monospace",
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.json": "${capture}.*.json",

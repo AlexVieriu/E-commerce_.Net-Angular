@@ -13,7 +13,7 @@ export class OrderService {
   orderComplete = false;
 
   createOrder(orderToCreate: OrderToCreate) {
-    return this.http.post(this.baseUrl + 'order', orderToCreate);
+    return this.http.post(this.baseUrl + 'orders', orderToCreate);
   }
 
   getOrdersForUser() {
@@ -21,6 +21,6 @@ export class OrderService {
   }
 
   getOrderDetailed(id: number) {
-    return this.http.get<Order>(this.baseUrl + 'order/' + id);
+    return this.http.get<Order>(this.baseUrl + 'orders/' + id);
   }
 }

@@ -20,6 +20,15 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();      // new with .net 9: https://aka.ms/aspnet/openapi
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+{
+    var conStr = builder.Configuration.GetConnectionString("Redis") ??
+            throw new Exception("Redis connection string not found");
+    var conf = ConfigurationOptions.Parse(conStr, true);
+    return ConnectionMultiplexer.Connect(conf);
+});
+builder.Services.AddSingleton<IResponseCacheService, ResponseCacheService>();
+
 #region Database Configuration
 if (builder.Environment.IsDevelopment())
 {
@@ -42,14 +51,6 @@ else
         provider.GetRequiredService<SqlServerStoreContext>());
 }
 #endregion
-
-builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
-{
-    var conStr = builder.Configuration.GetConnectionString("Redis") ??
-            throw new Exception("Redis connection string not found");
-    var conf = ConfigurationOptions.Parse(conStr, true);
-    return ConnectionMultiplexer.Connect(conf);
-});
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

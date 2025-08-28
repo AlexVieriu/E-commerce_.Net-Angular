@@ -1,9 +1,9 @@
 namespace API.Controllers;
 
 [Authorize]
-public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) : BaseApiController
+public class OrdersController(ICartService cartService, IUnitOfWork unitOfWork) : BaseApiController
 {
-    [HttpGet("/api/orders")]
+    [HttpGet()]
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrdersForUser()
     {
         var spec = new OrderSpecification(User.GetEmail());
@@ -82,10 +82,8 @@ public class OrderController(ICartService cartService, IUnitOfWork unitOfWork) :
         unitOfWork.Repository<Order>().Add(order);
 
         if (await unitOfWork.Complete())
-            return Created(uri: $"/api/order/{order.Id}", value: order);
+            return Created(uri: $"/api/orders/{order.Id}", value: order);
         else
             return BadRequest("Problem creating order");
     }
-
-
 }

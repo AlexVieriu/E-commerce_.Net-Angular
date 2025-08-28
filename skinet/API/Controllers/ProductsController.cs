@@ -2,6 +2,7 @@ namespace API.Controllers;
 
 public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
 {
+    [Cache(10)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         [FromQuery] ProductSpecParams specParams)
@@ -12,6 +13,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             unitOfWork.Repository<Product>(), spec, specParams.PageIndex, specParams.PageSize);
     }
 
+    [Cache(10)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProductById(int id)
     {
@@ -23,6 +25,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
         return Ok(product);
     }
 
+    [InvalidateCache("api/products|")]
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
@@ -34,6 +37,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest();
     }
 
+    [InvalidateCache("api/products|")]
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Product>> UpdateProduct(int id, Product product)
@@ -50,6 +54,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest("Problem updating the product");
     }
 
+    [InvalidateCache("api/products|")]
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteProduct(int id)
@@ -66,6 +71,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest();
     }
 
+    [Cache(180)]
     [HttpGet("brands")]
     public async Task<ActionResult<IEnumerable<string>>> GetBrands()
     {
@@ -73,7 +79,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
 
         return Ok(await unitOfWork.Repository<Product>().GetAllAsync(spec));
     }
-
+    [Cache(180)]
     [HttpGet("types")]
     public async Task<ActionResult<IEnumerable<string>>> GetTypes()
     {
