@@ -1,4 +1,3 @@
-
 namespace API.RequestHelpers;   
 
 [AttributeUsage(AttributeTargets.Method)]
