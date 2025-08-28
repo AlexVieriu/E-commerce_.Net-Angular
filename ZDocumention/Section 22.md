@@ -192,3 +192,44 @@ loadComponent:
   path: 'products',
   loadComponent: () => import('./about/about.component').then(c => c.AboutComponent)
 }
+
+
+247. End of course summary
+
+What theologies we learned in this course?
+API:
+-> dotnet CLI 
+-> EF Migrations
+-> Stripe
+-> Redis
+-> Caching
+-> Generic Repository
+-> Unit of Work
+-> Roles
+-> Specification pattern
+-> Entities
+
+Angular:
+-> Stripe
+-> Auth
+-> Routing
+-> Lazy loading
+-> Tailwind
+-> Observables
+-> Services
+-> Signals
+-> Error handling 
+-> Material 
+-> TypeScript
+
+
+What to do next?
+-> extend this app
+    -> inventory : https://www.trycatchlearn.com/tutorials
+    -> email service(Resend)
+    -> product review system
+    
+Inspiration site:
+flowbite.com/blocks/e-commerce/
+-> favorite system
+-> review system
