@@ -1,6 +1,11 @@
 import {
   MatRippleModule
-} from "./chunk-VQWZ5ZQC.js";
+} from "./chunk-JVJNYFG3.js";
+import {
+  MatRipple,
+  _StructuralStylesLoader
+} from "./chunk-IKHIFB4Y.js";
+import "./chunk-6MK4DVQT.js";
 import {
   OverlayConfig,
   OverlayModule,
@@ -18,11 +23,6 @@ import {
   ViewportRuler
 } from "./chunk-2WTT7GHL.js";
 import "./chunk-FBCRNXMR.js";
-import {
-  MatRipple,
-  _StructuralStylesLoader
-} from "./chunk-SYZMPMCC.js";
-import "./chunk-6MK4DVQT.js";
 import "./chunk-VENV3F3G.js";
 import "./chunk-7UJZXIJQ.js";
 import "./chunk-46HAYV32.js";

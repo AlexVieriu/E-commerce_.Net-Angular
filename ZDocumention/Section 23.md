@@ -40,3 +40,71 @@ Write like this:
     <section class="bg-white py-16">
     ...
 }
+
+
+250. Update to Tailwind 4 and Angular Material 20
+
+-- package.json --
+-> when we run the update of tailwindcss, it doesn't remove the 
+tailwindcss and postcss from the package.json, so we will remove them manually:
+ "devDependencies": {
+"tailwindcss": "^3.4.17",
+"postcss": "^8.5.6"
+...
+ }
+
+Docs:
+https://tailwindcss.com/docs/installation/framework-guides/angular
+
+1. 
+cd skinet/client
+npm install tailwindcss @tailwindcss/postcss
+
+-- package.json --
+"@tailwindcss/postcss": "^4.1.12",
+"tailwindcss": "^4.1.12"
+
+2. client -> .postcssrc.json
+{
+  "plugins": {
+    "@tailwindcss/postcss": {}
+  }
+}
+
+3.  
+-> we don't have .css, we have .scss
+-> we create a new file:
+-- src -> styles.css --
+@import "tailwindcss";
+
+-> we have "important: true" on tailwind.config.json.js
+-> to replicate that in our style.css:
+@import "tailwindcss" important;
+-> tailwind.config.json.js
+
+4. we need to tell angular about our tailwind.css file
+
+-- angular.json --
+"styles": [
+    "@angular/material/prebuilt-themes/azure-blue.css",
+    "src/tailwind.css",
+    "src/styles.scss"
+],
+
+Test it:
+ng s
+-> make modifications on styles.scss
+
+Take in consideration VSC don't know Tailwind commands 
+
+Angular Material:
+https://material.angular.dev/components/button/styling
+https://material.angular.dev/components/snack-bar/styling
+
+
+-> change color in .html
+there is not "warn" color now:  <mat-icon color="warn">undo</mat-icon>
+
+How to find where a package is used:
+npm ls [name of the package]
+nmp ls cross-spawn
