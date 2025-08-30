@@ -2,6 +2,12 @@ import {
   SharedResizeObserver
 } from "./chunk-3USVFZIX.js";
 import {
+  MAT_RIPPLE_GLOBAL_OPTIONS,
+  MatRipple,
+  _StructuralStylesLoader
+} from "./chunk-IKHIFB4Y.js";
+import "./chunk-6MK4DVQT.js";
+import {
   CdkPortal,
   CdkPortalOutlet,
   TemplatePortal
@@ -11,12 +17,6 @@ import {
   ViewportRuler
 } from "./chunk-2WTT7GHL.js";
 import "./chunk-FBCRNXMR.js";
-import {
-  MAT_RIPPLE_GLOBAL_OPTIONS,
-  MatRipple,
-  _StructuralStylesLoader
-} from "./chunk-SYZMPMCC.js";
-import "./chunk-6MK4DVQT.js";
 import "./chunk-VENV3F3G.js";
 import "./chunk-7UJZXIJQ.js";
 import "./chunk-46HAYV32.js";
