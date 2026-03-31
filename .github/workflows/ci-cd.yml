@@ -1,0 +1,126 @@
+name: CI / CD
+
+on:
+  # CI: runs on every PR targeting main or development (tests only, no deploy)
+  pull_request:
+    branches: [main, development]
+  # CD: runs when a PR is merged into main (deploys to Azure)
+  push:
+    branches: [main]
+
+jobs:
+  # ── CI: .NET ────────────────────────────────────────────────────────────────
+  # Restores, builds and runs all test projects via the solution file.
+  # Runs at solution level so all 4 test projects are picked up automatically.
+  test-backend:
+    name: .NET Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+          dotnet-quality: 'preview'   # .NET 11 is still in preview
+
+      - name: Restore
+        working-directory: ./skinet
+        run: dotnet restore
+
+      - name: Build
+        working-directory: ./skinet
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        working-directory: ./skinet
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+  # ── CI: Angular ─────────────────────────────────────────────────────────────
+  # npm ci installs exactly what is in package-lock.json (reproducible builds).
+  # npm run build calls ng build via the local node_modules — no global CLI needed.
+  test-frontend:
+    name: Angular Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'        # Angular 22 requires >=24.13.1
+          cache: 'npm'
+          cache-dependency-path: skinet/client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./skinet/client
+        run: npm ci
+
+      - name: Build
+        working-directory: ./skinet/client
+        run: npm run build
+
+  # ── CD: Deploy to Azure ──────────────────────────────────────────────────────
+  # Only runs on push to main (i.e. after a PR is merged).
+  # Blocked until both CI jobs pass (needs).
+  # Publishes only the API project — tests are not deployed.
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write   # required for Azure OIDC login
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'        # Angular 22 requires >=24.13.1
+          cache: 'npm'
+          cache-dependency-path: skinet/client/package-lock.json
+
+      - name: Install and build Angular
+        working-directory: ./skinet/client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+          dotnet-quality: 'preview'
+
+      # Publish only the API project (not the solution).
+      # Angular build output is copied into wwwroot by the .csproj before publish.
+      - name: Publish API
+        working-directory: ./skinet/src/API
+        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{ env.DOTNET_ROOT }}/myapp
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'skinet-2025-test'
+          slot-name: 'Production'
+          package: ${{ env.DOTNET_ROOT }}/myapp
