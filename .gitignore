@@ -496,5 +496,12 @@ skinet/client/ssl/*.key
 # Angular build cache
 skinet/client/.angular/
 
+# Angular build output (CI rebuilds this on every deploy)
+skinet/API/wwwroot/*.js
+skinet/API/wwwroot/*.css
+skinet/API/wwwroot/*.txt
+skinet/API/wwwroot/*.json
+skinet/API/wwwroot/index.html
+
 # Claude Code local settings
 .claude/settings.local.json

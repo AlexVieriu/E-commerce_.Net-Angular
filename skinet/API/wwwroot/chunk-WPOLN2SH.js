@@ -1,1 +1,0 @@
-import{ca as e}from"./chunk-GOQXTYVK.js";var s=class t{loading=!1;busyRequestCount=0;busy(){this.busyRequestCount++,this.loading=!0}idle(){this.busyRequestCount--,this.busyRequestCount<=0&&(this.busyRequestCount=0,this.loading=!1)}static \u0275fac=function(o){return new(o||t)};static \u0275prov=e({token:t,factory:t.\u0275fac,providedIn:"root"})};export{s as a};
