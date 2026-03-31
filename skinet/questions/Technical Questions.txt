@@ -1,0 +1,390 @@
+
+=== EXERCISE: Cart Cleanup After Order ===
+
+PROBLEM:
+OrderService.CreateOrderAsync saves the order but never deletes the cart from Redis.
+The Angular frontend calls deleteCart() after order creation, but this is unreliable
+(browser crash, network drop). Should cart deletion failure prevent the order from returning?
+
+SOLUTION:
+
+// After unitOfWork.Complete():
+await cartService.DeleteCartAsync(orderDto.CartId);
+return order;
+
+Should failure prevent returning the order? NO.
+Reason: the order is already committed to the DB. The cart is a temporary scratch pad —
+its only purpose was to build the order. Failing to delete it doesn't make the order invalid.
+If Redis is down, the user still paid and should get their order.
+The frontend's deleteCart() call becomes a safe redundant cleanup — if Redis already
+deleted the cart, the DELETE is a no-op.
+
+Without server-side deletion risk:
+- Browser crashes after POST /api/orders but before DELETE /api/cart
+  → cart stays in Redis with stale PaymentIntentId
+  → user could POST /api/orders again with same cart = duplicate order
+  (full prevention also requires unique index on Order.PaymentIntentId — issue #23)
+
+
+=== EXERCISE: Model Validation vs Identity Validation ===
+
+PROBLEM:
+RegisterDTO has [Required] on FirstName and LastName but NOT on Email or Password.
+What happens when someone POSTs { "firstName": "John", "lastName": "Doe" }?
+Why is [Required] not redundant even though ASP.NET Identity already validates passwords?
+
+SOLUTION:
+
+Without [Required] on Email/Password:
+- Email defaults to string.Empty ("")
+- ASP.NET Identity tries to create a user with email "" and password ""
+- Identity returns errors like "Email '' is invalid" and "Passwords must be at least 6 chars"
+- These get added to ModelState and returned as ValidationProblem()
+- It works... but Identity is doing validation it shouldn't need to do
+
+Why [Required] is NOT redundant:
+1. Fail fast — [Required] rejects the request at model binding, before hitting the DB
+2. Separation of concerns — Identity shouldn't validate "is email present?", only "is email valid format?"
+3. [EmailAddress] validates format (test@test.com) at the DTO level, before Identity even sees it
+4. Consistent error format — model validation returns 400 with errors[], Identity returns 400 with different structure
+
+// Fix:
+[Required]
+[EmailAddress]
+public string Email { get; set; } = string.Empty;
+[Required]
+public string Password { get; set; } = string.Empty;
+
+
+=== EXERCISE: Rate Limiting vs Authentication ===
+
+PROBLEM:
+CouponsController has [EnableRateLimiting("strict")] but no [Authorize].
+Explain what each attribute prevents, and why you need both.
+
+- [EnableRateLimiting("strict")] prevents ___?
+- [Authorize] prevents ___?
+
+SOLUTION:
+
+[EnableRateLimiting("strict")] — slows down brute force.
+  An attacker who IS logged in could still try SUMMER1, SUMMER2... SUMMER9999.
+  Rate limiting gives them only 10 tries/min, making enumeration impractical.
+
+[Authorize] — blocks unauthenticated enumeration entirely.
+  Without it, anyone (bots, scrapers) can hit the endpoint with no session.
+  Rate limiting by IP is easy to bypass with a botnet (many IPs).
+  Auth requires a valid account — much harder to scale.
+
+WHY YOU NEED BOTH:
+- Auth alone: a malicious logged-in user can still enumerate (slowly, but can)
+  → rate limiting caps their attempts per minute
+- Rate limiting alone: unauthenticated bots from many IPs bypass per-IP limits
+  → auth forces them to have valid accounts first
+
+[Authorize]
+[EnableRateLimiting("strict")]
+public class CouponsController ...
+
+
+=== EXERCISE: Cart Authentication ===
+
+PROBLEM:
+CartController has no [Authorize] — any anonymous user can read/modify/delete carts.
+The app requires users to be logged in to use the cart.
+1. What do you add to CartController?
+2. In error.interceptor.ts, 401 currently shows a snackbar. What should happen instead
+   when an unauthenticated user tries to add to cart?
+
+SOLUTION:
+
+// 1. Backend — CartController.cs
+[Authorize]
+public class CartController(ICartService cartService) : BaseApiController
+
+// 2. Frontend — error.interceptor.ts
+// Before (shows snackbar — user has no idea why it failed):
+if (err.status === 401) {
+  if (!req.url.includes('account/user-info'))
+    snackbar.error(err.error.title || err.error.message || err.error);
+}
+
+// After (redirects to login, returns user to original page after):
+if (err.status === 401) {
+  if (!req.url.includes('account/user-info'))
+    router.navigate(['/account/login'], { queryParams: { returnUrl: router.url } });
+}
+
+WHY THIS MATTERS:
+Without [Authorize], a logged-in attacker can POST a fake cart with
+{ "coupon": { "amountOff": 99999 } } and bypass coupon validation entirely.
+The 401 redirect is consistent with authGuard — both use returnUrl so the user
+lands back on the page they were trying to reach after logging in.
+
+
+=== EXERCISE: Rate Limiting ===
+
+PROBLEM:
+Your API has no rate limiting. An attacker can brute-force /api/login or enumerate
+coupon codes by making thousands of requests. Add rate limiting to Program.cs with:
+- A global fallback: 100 requests/min per IP for all endpoints
+- A "strict" policy: 10 requests/min per IP for auth + coupon endpoints
+
+1. Where in Program.cs do you register the rate limiter?
+2. Where in the middleware pipeline does UseRateLimiter() go?
+3. How do you apply "strict" to a controller vs a MapGroup endpoint?
+
+SOLUTION:
+
+// 1. Register — before var app = builder.Build()
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+
+    options.AddPolicy("strict", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
+// 2. Middleware pipeline — after UseCors, before UseAuthentication
+app.UseRateLimiter();
+
+// 3a. On a controller class
+[EnableRateLimiting("strict")]
+public class CouponsController ...
+
+// 3b. On a MapGroup endpoint (Identity login/register)
+app.MapGroup("api").MapIdentityApi<AppUser>().RequireRateLimiting("strict");
+
+WHY THIS MATTERS:
+Without rate limiting, an attacker can try thousands of passwords/minute (brute force)
+or enumerate coupon codes (SUMMER1, SUMMER2... SUMMER9999).
+Auth and coupon endpoints need stricter limits than product browsing.
+Global fallback protects everything else from DoS.
+
+
+=== EXERCISE: Stock Validation ===
+
+PROBLEM:
+In OrderService.CreateOrderAsync, inside the foreach loop after fetching productItem,
+write:
+1. A stock check — what condition, what do you do if insufficient?
+2. The stock decrement — how do you persist it via unitOfWork?
+
+var productItem = await unitOfWork.Repository<Product>().GetByIdAsync(item.ProductId);
+if (productItem == null) return null;
+
+// 1. Stock check — your code here
+
+// 2. Stock decrement — your code here
+
+SOLUTION:
+
+if (productItem.QuantityInStock < item.Quantity)
+    throw new InvalidOperationException(
+        $"Insufficient stock for '{productItem.Name}'. Available: {productItem.QuantityInStock}, requested: {item.Quantity}.");
+
+productItem.QuantityInStock -= item.Quantity;
+unitOfWork.Repository<Product>().Update(productItem);
+
+// Both the order creation and stock decrement are saved in the same unitOfWork.Complete() call below.
+// This means they're in one DB transaction: either both succeed or both are rolled back.
+
+WHY THIS MATTERS:
+Without this, you can sell items you don't have (overselling).
+The InvalidOperationException is caught by ExceptionMiddleware and returned as 400 Bad Request
+with the specific message — the user sees which product is out of stock.
+Race condition note: two simultaneous orders for the last item can still both pass
+the stock check. Full fix requires optimistic concurrency on QuantityInStock (EF ConcurrencyToken).
+
+
+=== EXERCISE: Server-Side Discount Calculation ===
+
+PROBLEM:
+In OrderService.CreateOrderAsync, you have access to cart.Coupon (an AppCoupon?).
+Write a method to calculate the discount server-side, given:
+- subtotal = sum of item.Price * item.Quantity (decimal)
+- AppCoupon has AmountOff (in dollars, e.g. 10.00m) and PercentOff (e.g. 25.5m)
+- Only one of AmountOff or PercentOff will have a value
+- If no coupon, discount = 0
+
+// Your code here:
+private static decimal CalculateDiscount(AppCoupon? coupon, decimal subtotal)
+{
+    // ???
+}
+
+SOLUTION:
+
+private static decimal CalculateDiscount(AppCoupon? coupon, decimal subtotal)
+{
+    if (coupon == null) return 0;
+
+    if (coupon.AmountOff.HasValue)
+        return coupon.AmountOff.Value;
+
+    if (coupon.PercentOff.HasValue)
+        return subtotal * (coupon.PercentOff.Value / 100);
+
+    return 0;
+}
+
+WHY THIS MATTERS:
+Before this fix, OrderService took discount from CreateOrderDto (client-side).
+An attacker could POST { "discount": 99999 } and get items for free.
+Now the discount is calculated server-side from the cart's coupon,
+which was already validated against Stripe in PaymentService.
+
+
+=== EXERCISE: Cart Validation in OrderService ===
+
+PROBLEM:
+OrderService.CreateOrderAsync checks cart != null and PaymentIntentId != null,
+but doesn't validate the cart's contents. What two checks are missing?
+Explain what an attacker can achieve by exploiting each gap.
+
+1. Missing check before the foreach loop:
+2. Missing check inside the foreach loop (before the stock check):
+
+SOLUTION:
+
+// 1. Empty cart check — before foreach
+if (!cart.Items.Any())
+    throw new InvalidOperationException("Cannot create order from an empty cart.");
+
+// 2. Non-positive quantity — inside foreach, before stock check
+if (item.Quantity <= 0)
+    throw new InvalidOperationException(
+        $"Invalid quantity ({item.Quantity}) for product ID {item.ProductId}.");
+
+WHY THIS MATTERS:
+- Empty cart: subtotal = 0 → order created with no payment owed
+- Quantity <= 0: stock check passes (0 < stock), order item has zero/negative qty,
+  subtotal could be 0 or negative, payment amount wrong
+Both exploits require only direct Redis manipulation (no frontend needed).
+
+
+=== EXERCISE: Stripe Webhook — Event Type Check + Hardening ===
+
+PROBLEM:
+PaymentsController.StripeWebhook has three issues:
+
+1. No stripeEvent.Type check. Stripe sends many event types
+   (payment_intent.created, payment_intent.processing, payment_intent.succeeded,
+   payment_intent.payment_failed) — all have a PaymentIntent as Data.Object.
+   What's the risk of skipping the type check? What's the fix?
+
+2. No [AllowAnonymous] on the webhook action. Why is this a problem
+   even though BaseApiController has no [Authorize]?
+
+3. _whSecret = config["StripeSettings:WhSecret"]! uses null-forgiving (!).
+   What happens at runtime if the config key is missing? What's the correct pattern?
+
+SOLUTION:
+
+// 1. Guard on event type — return Ok() for unknown events (Stripe expects 200)
+if (stripeEvent.Type != EventTypes.PaymentIntentSucceeded)
+    return Ok();
+
+if (stripeEvent.Data.Object is not PaymentIntent intent)
+    return BadRequest("Invalid event data");
+
+// Without this: HandlePaymentIntentSucceeded is called for every event whose
+// Data.Object is a PaymentIntent. The inner intent.Status == "succeeded" check
+// saves correctness today, but future handlers won't have that protection.
+
+// 2. [AllowAnonymous] — explicit intent
+[AllowAnonymous]
+[HttpPost("webhook")]
+// BaseApiController has no [Authorize] now, but if class-level auth is added
+// later, the webhook silently breaks. [AllowAnonymous] makes the intent explicit
+// and protects against future regressions.
+
+// 3. Fail fast at startup instead of null at runtime
+private readonly string _whSecret = config["StripeSettings:WhSecret"]
+    ?? throw new InvalidOperationException("StripeSettings:WhSecret is not configured.");
+
+// With !: null is passed to EventUtility.ConstructEvent → StripeException at
+// request time → 500 returned to Stripe → Stripe retries forever.
+// With ??: app fails to start → immediately visible during deployment.
+
+
+=== EXERCISE: Seeding in All Environments ===
+
+PROBLEM:
+StoreContextSeed.SeedAsync is called unconditionally in Program.cs — it runs
+in both Development and Production. What's the risk? What's the fix?
+
+The seed does two things:
+1. Creates admin user admin@test.com with password Pa$$w0rd
+2. Seeds products and delivery methods from JSON files (idempotent: only if tables empty)
+
+SOLUTION:
+
+// Wrap in IsDevelopment() — seed only in dev
+if (app.Environment.IsDevelopment())
+{
+    var baseContext = services.GetRequiredService<StoreContext>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    await StoreContextSeed.SeedAsync(baseContext, userManager);
+}
+
+WHY THIS MATTERS:
+- The idempotent guard (!userManager.Users.Any()) means it only fires once.
+  BUT: if the production DB is ever wiped and redeployed, the admin account with
+  a well-known password (Pa$$w0rd) is recreated automatically.
+- An attacker who knows this codebase (open source, leaked repo, ex-employee)
+  can immediately log in as admin.
+- Products/delivery methods should be managed via the admin panel in production,
+  not re-seeded from static JSON on every cold start.
+
+
+=== EXERCISE: StripeConfiguration.ApiKey — Global Static Side-Effect ===
+
+PROBLEM:
+PaymentService has this field:
+    private readonly string _stripeKey = StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"]!;
+
+CouponService constructor has:
+    StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"];
+
+1. What are three problems with this pattern?
+2. Where should StripeConfiguration.ApiKey be set and why?
+
+SOLUTION:
+
+Problems:
+1. Side-effect in field initializer — setting a global static during object construction
+   is hidden and order-dependent. If PaymentService is never instantiated on a given
+   request, the key is never set.
+2. Dead code — _stripeKey is assigned but never referenced; all Stripe SDK calls
+   pick up StripeConfiguration.ApiKey globally. The field is pointless.
+3. Null-forgiving ! / no null check — if the config key is missing, null is silently
+   assigned to StripeConfiguration.ApiKey; every Stripe API call then fails at runtime
+   with a confusing auth error instead of a clear startup failure.
+4. Duplicate — both PaymentService and CouponService set the same global. Last-one-wins,
+   no guarantee of order.
+
+Fix — set once at startup in Program.cs, before builder.Build():
+    StripeConfiguration.ApiKey = builder.Configuration["StripeSettings:SecretKey"]
+        ?? throw new InvalidOperationException("StripeSettings:SecretKey is not configured.");
+
+WHY THIS MATTERS:
+A global static should be set exactly once, at the application entry point, with a
+fail-fast null check. Service constructors are the wrong place — they run lazily on
+first request, not at startup, making misconfiguration invisible until runtime.

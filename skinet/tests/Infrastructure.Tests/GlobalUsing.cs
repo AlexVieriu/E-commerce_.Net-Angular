@@ -1,0 +1,9 @@
+global using Application.Common.Interfaces;
+global using Core.Entities;
+global using Core.Interfaces;
+global using FluentAssertions;
+global using Infrastructure.Services;
+global using Microsoft.Extensions.Configuration;
+global using Moq;
+global using StackExchange.Redis;
+global using System.Text.Json;
