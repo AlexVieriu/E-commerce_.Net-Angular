@@ -1,3 +1,5 @@
+claude --resume dbc7a4f4-df3b-4f9f-880f-e344aee3a522
+
 # Task 1 — GitHub Actions CI/CD
 
 ## Why this approach

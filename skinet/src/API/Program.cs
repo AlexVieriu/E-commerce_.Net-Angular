@@ -1,5 +1,6 @@
 using API.Conventions;
 using API.Controllers;
+using Azure.Identity;
 using CouponService = Infrastructure.Services.CouponService;
 using OrderService = Infrastructure.Services.OrderService;
 using Infrastructure.Data;
@@ -8,6 +9,13 @@ using Infrastructure.Services;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUrl = builder.Configuration["KeyVaultUrl"]
+        ?? throw new InvalidOperationException("KeyVaultUrl app setting is missing.");
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+}
 
 // Chaining of methods - static methods [Name of Method](this IServiceCollection services)
 builder.WebHost.ConfigureKestrel(options =>
