@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCard } from '@angular/material/card';
 import { AccountService } from '../../../core/services/account.service';
+import { RegisterCredentials } from '../../../shared/models/registerCredentials';
 import { Router } from '@angular/router';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { ValidationError } from '../../../shared/models/validationError';
@@ -36,7 +37,7 @@ export class RegisterComponent {
   })
 
   onSubmit() {
-    this.accountService.register(this.registerForm.value).subscribe({
+    this.accountService.register(this.registerForm.getRawValue() as RegisterCredentials).subscribe({
       next: () => {
         this.snackBar.success('Registration successful');
         this.router.navigateByUrl('/account/login');

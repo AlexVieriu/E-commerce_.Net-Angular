@@ -5,6 +5,7 @@ import { MatCard } from '@angular/material/card';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { AccountService } from '../../../core/services/account.service';
+import { LoginCredentials } from '../../../shared/models/loginCredentials';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
 
@@ -35,7 +36,7 @@ export class LoginComponent {
   // the .login endpoint to the backend is provided by :"app.MapGroup("api").MapIdentityApi<AppUser>()" in Program.cs
   // MapIdentityApi: Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity
   onSubmit() {
-    this.accountService.login(this.loginForm.value).pipe(
+    this.accountService.login(this.loginForm.getRawValue() as LoginCredentials).pipe(
       switchMap(() => this.accountService.getUserInfo())
     ).subscribe({
       next: () => this.router.navigateByUrl(this.returnUrl)
