@@ -112,6 +112,15 @@ public class ProductSpecification_Tests
                 Type = "Hats",
                 Brand = "NetCore",
                 QuantityInStock = 20
+            },
+            new() {
+                Name = "Angular Gloves",
+                Description = "Warm gloves",
+                Price = 50,
+                PictureUrl = "/test4.png",
+                Type = "Gloves",
+                Brand = "Angular",
+                QuantityInStock = 15
             }
         };
     }
