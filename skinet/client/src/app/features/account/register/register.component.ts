@@ -3,7 +3,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCard } from '@angular/material/card';
 import { AccountService } from '../../../core/services/account.service';
-import { RegisterCredentials } from '../../../shared/models/registerCredentials';
 import { Router } from '@angular/router';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { ValidationError } from '../../../shared/models/validationError';
@@ -29,7 +28,7 @@ export class RegisterComponent {
   private snackBar = inject(SnackbarService);
   validationErrors = signal<string[] | undefined>(undefined);
 
-  registerForm = this.fb.group({
+  registerForm = this.fb.nonNullable.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     email: ['', Validators.required],
@@ -37,7 +36,7 @@ export class RegisterComponent {
   })
 
   onSubmit() {
-    this.accountService.register(this.registerForm.getRawValue() as RegisterCredentials).subscribe({
+    this.accountService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
         this.snackBar.success('Registration successful');
         this.router.navigateByUrl('/account/login');
