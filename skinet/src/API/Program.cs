@@ -1,13 +1,11 @@
-using API.Conventions;
-using API.Controllers;
-using CouponService = Infrastructure.Services.CouponService;
-using OrderService = Infrastructure.Services.OrderService;
-using Infrastructure.Data;
-using Infrastructure.Data.Factory;
-using Infrastructure.Services;
-using System.Threading.RateLimiting;
-
 var builder = WebApplication.CreateBuilder(args);
+
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUrl = builder.Configuration["KeyVaultUrl"]
+        ?? throw new InvalidOperationException("KeyVaultUrl app setting is missing.");
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+}
 
 // Chaining of methods - static methods [Name of Method](this IServiceCollection services)
 builder.WebHost.ConfigureKestrel(options =>
@@ -78,23 +76,23 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Global fallback: 100 requests/min per IP for all endpoints
+    // Global fallback: 10 requests/min per IP for all endpoints
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 100,
+                PermitLimit = 10,
                 Window = TimeSpan.FromMinutes(1)
             }));
 
-    // Strict: 10 requests/min per IP — for auth and coupon endpoints
+    // Strict: 2 requests/min per IP — for auth and coupon endpoints
     options.AddPolicy("strict", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = 2,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
@@ -109,6 +107,8 @@ builder.Services.AddSignalR();
 
 StripeConfiguration.ApiKey = builder.Configuration["StripeSettings:SecretKey"]
     ?? throw new InvalidOperationException("StripeSettings:SecretKey is not configured.");
+
+
 
 var app = builder.Build();
 
@@ -188,5 +188,3 @@ catch (Exception ex)
 }
 
 app.Run();
-
-

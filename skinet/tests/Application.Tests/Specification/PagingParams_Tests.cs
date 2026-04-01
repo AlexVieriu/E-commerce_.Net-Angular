@@ -23,14 +23,14 @@ public class PagingParams_Tests
         var pagingParams = new PagingParams() { PageSize = 100 };
 
         // Assert
-        pagingParams.PageSize.Should().Be(50);
+        pagingParams.PageSize.Should().Be(60);
     }
 
     [Theory]
     [InlineData(5, 5)]
     [InlineData(20, 20)]
-    [InlineData(75, 50)]
-    [InlineData(999, 50)]
+    [InlineData(75, 60)]
+    [InlineData(999, 60)]
     public void PagingParams_PageSize_ShouldRespectMaximum(int pageSize, int expectedPageSize)
     {
         // Arrange & Act

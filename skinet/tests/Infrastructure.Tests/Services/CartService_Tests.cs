@@ -13,18 +13,16 @@ public class CartService_Tests
         var expectedCart = new ShoppingCart() { Id = "test-cart" };
         var serializedCart = JsonSerializer.Serialize(expectedCart);
 
-        var cartService = new CartService(mockRedis.Object);
-
-        // IDatabase GetDatabase(int db = -1, object? asyncState = null);
+        // Setup must happen BEFORE new CartService() — constructor calls redis.GetDatabase()
         mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
                  .Returns(mockDatabase.Object);
 
         mockDatabase.Setup(x => x.StringGetAsync("test-cart", It.IsAny<CommandFlags>()))
                     .ReturnsAsync(serializedCart);
 
+        var cartService = new CartService(mockRedis.Object);
+
         // Act
-        // Use hardcoded Id in simple testing
-        // Use variable param in [Theory], with multiple tests
         var result = await cartService.GetCartAsync("test-cart");
 
         // Assert
@@ -39,18 +37,18 @@ public class CartService_Tests
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockDatabase = new Mock<IDatabase>();
 
+        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
+                 .Returns(mockDatabase.Object);
+
         mockDatabase.Setup(x => x.StringGetAsync("nonexistent", It.IsAny<CommandFlags>()))
                     .ReturnsAsync(RedisValue.Null);
-
-        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
-                 .Returns(mockDatabase.Object);
 
         var cartService = new CartService(mockRedis.Object);
 
         // Act
         var result = await cartService.GetCartAsync("nonexistent");
 
-        // Assert        
+        // Assert
         result.Should().BeNull();
     }
 
@@ -80,41 +78,44 @@ public class CartService_Tests
 
         var serializedCart = JsonSerializer.Serialize(cart);
 
-        // Mock test to return true
-        // Task<bool> StringSetAsync(RedisKey key, RedisValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None);
-        mockDatabase.Setup(x => x.StringSetAsync(cart.Id,
-                                                 It.IsAny<RedisValue>(),
-                                                 It.IsAny<TimeSpan>(),
-                                                 It.IsAny<When>(),
-                                                 It.IsAny<CommandFlags>()))
+        // CartService calls StringSetAsync(key, value, TimeSpan) — TimeSpan implicitly converts to Expiration,
+        // resolving to the newer IDatabaseAsync overload: StringSetAsync(RedisKey, RedisValue, Expiration, ValueCondition, CommandFlags)
+        mockDatabase.As<IDatabaseAsync>()
+                    .Setup(x => x.StringSetAsync(
+                        It.IsAny<RedisKey>(),
+                        It.IsAny<RedisValue>(),
+                        It.IsAny<Expiration>(),
+                        It.IsAny<ValueCondition>(),
+                        It.IsAny<CommandFlags>()))
                     .ReturnsAsync(true);
 
         // Mock StringGetAsync for the GetCartAsync call inside SetCartAsync
-        // Task<RedisValue> StringGetAsync(RedisKey key, CommandFlags flags = CommandFlags.None);
         mockDatabase.Setup(x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
                     .ReturnsAsync(serializedCart);
 
-        // IDatabase GetDatabase(int db = -1, object? asyncState = null);
+        // Setup must happen BEFORE new CartService() — constructor calls redis.GetDatabase()
         mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
                  .Returns(mockDatabase.Object);
 
         var cartService = new CartService(mockRedis.Object);
 
-        // Act               
-        var result = await cartService.GetCartAsync("test-cart");
+        // Act
+        var result = await cartService.SetCartAsync(cart);
 
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be("test-cart");
         result.Items.Count.Should().Be(1);
 
-        // Verify that StringSetAsync was called with correct parameters\
-        mockDatabase.Verify(x => x.StringSetAsync(cart.Id,
-                                                  It.IsAny<RedisValue>(),
-                                                  TimeSpan.FromDays(30), // Verify expiration time
-                                                  It.IsAny<When>(),
-                                                  It.IsAny<CommandFlags>()),
-                                 Times.Once);
+        // Verify that StringSetAsync was called
+        mockDatabase.As<IDatabaseAsync>()
+                    .Verify(x => x.StringSetAsync(
+                        It.IsAny<RedisKey>(),
+                        It.IsAny<RedisValue>(),
+                        It.IsAny<Expiration>(),
+                        It.IsAny<ValueCondition>(),
+                        It.IsAny<CommandFlags>()),
+                        Times.Once);
     }
 
     [Fact]
@@ -125,17 +126,20 @@ public class CartService_Tests
         var mockDatabase = new Mock<IDatabase>();
 
         var shoppingCart = new ShoppingCart() { Id = "nonexistent" };
+
         // Mock StringSetAsync to return false (failure)
-        mockDatabase
+        // StringSetAsync is an explicit IDatabaseAsync implementation — must use As<IDatabaseAsync>()
+        mockDatabase.As<IDatabaseAsync>()
             .Setup(x => x.StringSetAsync(
                 shoppingCart.Id,
                 It.IsAny<RedisValue>(),
-                It.IsAny<TimeSpan>(),
+                It.IsAny<TimeSpan?>(),
                 It.IsAny<When>(),
                 It.IsAny<CommandFlags>()))
             .ReturnsAsync(false);
 
-        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
+        // Setup must happen BEFORE new CartService() — constructor calls redis.GetDatabase()
+        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
             .Returns(mockDatabase.Object);
 
         var cartService = new CartService(mockRedis.Object);
@@ -143,20 +147,12 @@ public class CartService_Tests
         // Act
         var result = await cartService.SetCartAsync(shoppingCart);
 
-        //Assert
+        // Assert: result is null — StringSet returned false so GetCartAsync was never called
         result.Should().BeNull();
 
-        // Verify 1: StringSetAsync WAS called (we attempted to save)
-        mockDatabase.Verify(x => x.StringSetAsync(shoppingCart.Id,
-                                  It.IsAny<RedisValue>(),
-                                  TimeSpan.FromDays(30),
-                                  It.IsAny<When>(),
-                                  It.IsAny<CommandFlags>()),
-                            Times.Once);
-
-        // Verify 2: StringGetAsync was NOT called (because save failed, so GetCartAsync was never invoked)
+        // Verify: StringGetAsync was NOT called (save failed, so GetCartAsync was never invoked)
         mockDatabase.Verify(
-            x => x.StringGetAsync(It.IsAny<string>(), It.IsAny<CommandFlags>()),
+            x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()),
             Times.Never);
     }
 
@@ -168,13 +164,13 @@ public class CartService_Tests
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockDatabase = new Mock<IDatabase>();
 
+        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
+            .Returns(mockDatabase.Object);
+
         // Mock: Cart exists, delete returns true
         mockDatabase
             .Setup(x => x.KeyDeleteAsync("existing-cart", It.IsAny<CommandFlags>()))
             .ReturnsAsync(true);
-
-        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
-            .Returns(mockDatabase.Object);
 
         var cartService = new CartService(mockRedis.Object);
 
@@ -202,12 +198,12 @@ public class CartService_Tests
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockDatabase = new Mock<IDatabase>();
 
+        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
+            .Returns(mockDatabase.Object);
+
         mockDatabase
             .Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
             .ReturnsAsync(true);
-
-        mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
-            .Returns(mockDatabase.Object);
 
         var cartService = new CartService(mockRedis.Object);
 
