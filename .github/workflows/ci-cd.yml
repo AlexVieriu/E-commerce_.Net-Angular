@@ -100,10 +100,11 @@ jobs:
           dotnet-quality: 'preview'
 
       # Publish only the API project (not the solution).
+      # Self-contained: bundles .NET 11 runtime so Azure doesn't need it installed.
       # Angular build output is copied into wwwroot by the .csproj before publish.
       - name: Publish API
         working-directory: ./skinet/src/API
-        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
+        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp" --self-contained true -r linux-x64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
