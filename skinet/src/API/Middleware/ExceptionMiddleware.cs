@@ -35,9 +35,7 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
             logger.LogError(ex, "Unhandled exception for {Method} {Path}",
                 context.Request.Method, context.Request.Path);
 
-            response = env.IsDevelopment()
-                ? new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace)
-                : new ApiErrorResponse(context.Response.StatusCode, "An unexpected error occurred", null);
+            response = new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace);
         }
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
