@@ -16,22 +16,25 @@ if (!builder.Environment.IsDevelopment())
     }
 }
 
-// Chaining of methods - static methods [Name of Method](this IServiceCollection services)
-builder.WebHost.ConfigureKestrel(options =>
+// Kestrel localhost config for dev only — Azure handles HTTPS termination in prod
+if (builder.Environment.IsDevelopment())
 {
-    options.ConfigureEndpointDefaults(listenOptions => { });
-
-    options.ListenLocalhost(7096, listenOptions =>
+    builder.WebHost.ConfigureKestrel(options =>
     {
-        listenOptions.UseHttps();
-        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2AndHttp3;
-    });
+        options.ConfigureEndpointDefaults(listenOptions => { });
 
-    options.ListenLocalhost(5150, listenOptions =>
-    {
-        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+        options.ListenLocalhost(7096, listenOptions =>
+        {
+            listenOptions.UseHttps();
+            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2AndHttp3;
+        });
+
+        options.ListenLocalhost(5150, listenOptions =>
+        {
+            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+        });
     });
-});
+}
 
 builder.Services.AddControllers(options =>
 {
