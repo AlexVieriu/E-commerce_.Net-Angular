@@ -11,6 +11,7 @@ Create the following to-do list immediately.
 - Once the user accepts, create revised todo items.
 - Start work on the task.
 - Keep the docs as short as possible
+- After task is done, update any affected docs in `skinet/docs/`
 # TASK KICKOFF
 Before starting any task, list:
 - Required knowledge (critical only)
