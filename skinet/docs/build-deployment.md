@@ -41,7 +41,33 @@ Run SqlServer migrations before first deploy:
 dotnet ef database update --context SqlServerStoreContext
 ```
 
+## Secrets Management
+
+| Secret | Dev | Prod |
+|---|---|---|
+| `StripeSettings:SecretKey` | User Secrets | Azure Key Vault |
+| `StripeSettings:WhSecret` | User Secrets (update each Stripe CLI session) | Azure Key Vault |
+| `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | Azure Key Vault |
+| `ConnectionStrings:SqlServerAzureConnection` | not used in dev | Azure Key Vault |
+| `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
+
+Key Vault URL stored in `appsettings.json` as `KeyVaultUrl` (not a credential).
+App Service reads Key Vault via System Managed Identity — no credentials stored anywhere.
+
+### Dev setup (first time)
+```bash
+cd src/API
+dotnet user-secrets set "StripeSettings:SecretKey" "<sk_test_...>"
+dotnet user-secrets set "StripeSettings:WhSecret" "<whsec_...>"
+```
+
+### Update WhSecret each Stripe CLI session
+```bash
+stripe listen --forward-to https://localhost:7096/api/payments/webhook
+dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
+```
+
 ## Rules / Constraints
 
 - SQLite for Development, SqlServer for Production — set by `ASPNETCORE_ENVIRONMENT`.
-- Stripe keys and connection strings go in user secrets / env vars — never in `appsettings.json`.
+- Never put secrets in `appsettings.json` or `appsettings.Development.json`.
