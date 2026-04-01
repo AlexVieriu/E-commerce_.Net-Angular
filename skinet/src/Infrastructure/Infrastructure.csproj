@@ -1,23 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net11.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<NoWarn>CS8618</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0-preview.2.26159.112" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-preview.2.26159.112">
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.2.26159.112" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-preview.2.26159.112" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="11.0.0-preview.2.26159.112" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="11.0.0-preview.2.26159.112" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-preview.2.26159.112" />
-		<PackageReference Include="StackExchange.Redis" Version="2.12.4" />
-		<PackageReference Include="Stripe.net" Version="50.5.0-beta.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+		<PackageReference Include="StackExchange.Redis" Version="2.12.8" />
+		<PackageReference Include="Stripe.net" Version="51.0.0" />
 	</ItemGroup>
 	<ItemGroup>		
 		<ProjectReference Include="..\Application\Application.csproj" />
