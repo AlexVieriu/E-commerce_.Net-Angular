@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations.SQLite
 {
     [DbContext(typeof(SqliteStoreContext))]
-    [Migration("20250816055236_AddRoles_Sqlite")]
-    partial class AddRoles_Sqlite
+    [Migration("20260401173620_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.6.25358.103");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
             modelBuilder.Entity("Core.Entities.Address", b =>
                 {

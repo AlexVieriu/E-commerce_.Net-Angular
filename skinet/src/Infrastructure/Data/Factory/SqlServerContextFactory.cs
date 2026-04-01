@@ -25,9 +25,6 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStor
         if (string.IsNullOrEmpty(connectionString))
             throw new InvalidOperationException("Connection string 'SqlServerAzureConnection' not found in configuration.");
 
-        // Test the connection before creating the context
-        TestConnection(connectionString);
-
         var optionsBuilder = new DbContextOptionsBuilder<SqlServerStoreContext>();
         optionsBuilder.UseSqlServer(connectionString);
 
