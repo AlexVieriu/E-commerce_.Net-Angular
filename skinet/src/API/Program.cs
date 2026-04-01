@@ -151,16 +151,18 @@ if (!app.Environment.IsDevelopment())
 app.UseCors(options => options.AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowCredentials()
-                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-alex89.azurewebsites.net"));
+                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"));
+
+// Static files served before rate limiter so Angular chunks are never throttled
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseRateLimiter();
 
 // For SignalR
 app.UseAuthentication();
 app.UseAuthorization();
 
-// For Angular app
-app.UseDefaultFiles();
-app.UseStaticFiles();
 app.MapFallbackToController("Index", "Fallback"); // Idex(action name), Fallback(controller name)
 
 app.MapControllers();
