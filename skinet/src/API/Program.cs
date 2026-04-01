@@ -2,9 +2,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (!builder.Environment.IsDevelopment())
 {
-    var keyVaultUrl = builder.Configuration["KeyVaultUrl"]
-        ?? throw new InvalidOperationException("KeyVaultUrl app setting is missing.");
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+    var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
+    if (!string.IsNullOrEmpty(keyVaultUrl))
+    {
+        try
+        {
+            builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Key Vault unavailable, falling back to App Service settings: {ex.Message}");
+        }
+    }
 }
 
 // Chaining of methods - static methods [Name of Method](this IServiceCollection services)
