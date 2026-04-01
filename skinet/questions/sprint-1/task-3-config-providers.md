@@ -1,3 +1,5 @@
+claude --resume deff6f44-f61f-4683-84bc-1d3cdc62ff51
+
 # Task 3 — Config Provider Chain & Secrets Management
 
 ## Why this approach
@@ -62,6 +64,51 @@ In Azure App Service: enable System Managed Identity → grant it **Key Vault Se
 - Logging config
 - `KeyVaultUrl` (not a credential)
 - `StripeSettings:PublishableKey` (intentionally public)
+
+## Key flows
+
+### Config provider chain (last wins)
+
+```
+Dev:
+appsettings.json → appsettings.Development.json → User Secrets
+                                                        ↑
+                                          StripeSettings:SecretKey
+                                          StripeSettings:WhSecret
+
+Prod:
+appsettings.json → Environment variables → Azure Key Vault
+                                                  ↑
+                                     ConnectionStrings:Redis
+                                     ConnectionStrings:SqlServer
+                                     StripeSettings:SecretKey
+                                     StripeSettings:WhSecret
+```
+
+`builder.Configuration["key"]` returns the last provider that has the key. One call, source is transparent.
+
+---
+
+### Stripe 3-key flow
+
+```
+Browser                         Stripe servers            Your server
+  |                                    |                       |
+  |── card data ──────────────────────>|                       |
+  |<── token (safe) ──────────────────|                       |
+  |                                    |                       |
+  |── token ──────────────────────────────────────────────────>|
+  |                              SecretKey + token ────────────>|
+  |                              payment confirmed <────────────|
+  |                                    |                       |
+  |                         webhook: "payment_succeeded" ──────>|
+  |                                    |   verify WhSecret sig  |
+  |                                    |   → trust event        |
+```
+
+- **PublishableKey** — browser authenticates to Stripe to tokenize card
+- **SecretKey** — server charges the token (never in browser)
+- **WhSecret** — server verifies webhook signature (proves event is from Stripe)
 
 ## Exercise
 
