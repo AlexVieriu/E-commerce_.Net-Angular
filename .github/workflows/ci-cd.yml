@@ -24,8 +24,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '11.0.x'
-          dotnet-quality: 'preview'   # .NET 11 is still in preview
+          dotnet-version: '10.0.x'
 
       - name: Restore
         working-directory: ./skinet
@@ -104,7 +103,7 @@ jobs:
       # Angular build output is copied into wwwroot by the .csproj before publish.
       - name: Publish API
         working-directory: ./skinet/src/API
-        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp" --self-contained true -r win-x86
+        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
