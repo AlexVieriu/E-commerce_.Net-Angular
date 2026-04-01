@@ -31,7 +31,7 @@ Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Custome
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
 | 1 | GitHub Actions: PR trigger, `dotnet test`, `npm ci`, .NET 11 + Angular 22 | S | -- | Pipeline validates all future work |
-| 3 | Secrets -> User Secrets (dev) + Azure Key Vault (prod). Deploy config BEFORE rotating keys | M | -- | LEARN: Config provider chain. CRITICAL: keys in git history |
+| 3 | Secrets -> User Secrets (dev) + Azure Key Vault (prod). Deploy config BEFORE rotating keys | M | -- | LEARN: Config provider chain. CRITICAL: keys in git history — rotate after deploy verified |
 | 4 | Admin seed password -> env var / Key Vault | S | 3 | Hardcoded Pa$$w0rd |
 | 5 | Identity password: min 12, upper+number+special | S | -- | Batch 5+6+7 |
 | 6 | Account lockout: 5 attempts, 15 min | S | -- | |

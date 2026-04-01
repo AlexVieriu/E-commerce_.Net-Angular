@@ -28,7 +28,7 @@ export class RegisterComponent {
   private snackBar = inject(SnackbarService);
   validationErrors = signal<string[] | undefined>(undefined);
 
-  registerForm = this.fb.group({
+  registerForm = this.fb.nonNullable.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     email: ['', Validators.required],
@@ -36,7 +36,7 @@ export class RegisterComponent {
   })
 
   onSubmit() {
-    this.accountService.register(this.registerForm.value).subscribe({
+    this.accountService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
         this.snackBar.success('Registration successful');
         this.router.navigateByUrl('/account/login');

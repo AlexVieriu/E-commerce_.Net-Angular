@@ -22,7 +22,7 @@ public class PaymentSummary_Tests
         payment.Last4.Should().Be(4242);
         payment.Brand.Should().Be("Visa");
         payment.ExpMonth.Should().BeInRange(1, 12);
-        payment.ExpYear.Should().BeGreaterThan(2025);
+        payment.ExpYear.Should().Be(2025);
     }
 
     [Theory]

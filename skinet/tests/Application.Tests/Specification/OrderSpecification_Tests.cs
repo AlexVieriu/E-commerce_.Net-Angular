@@ -51,8 +51,8 @@ public class OrderSpecification_Tests
 
         var spec = OrderSpecification.ByEmail(email);
 
-        // Act
-        var result = spec.ApplyCriteria(orders).ToList();
+        // Act — ApplyFullSpec applies criteria + ordering (ApplyCriteria applies WHERE only)
+        var result = ApplyFullSpec(spec, orders).ToList();
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -142,8 +142,8 @@ public class OrderSpecification_Tests
         var newerOrder = CreateOrder(2, "test@test.com", orderDate: DateTime.UtcNow.AddDays(-1));
         var orders = new List<Order> { olderOrder, newerOrder }.AsQueryable();
 
-        // Act
-        var result = spec.ApplyCriteria(orders).ToList();
+        // Act — ApplyFullSpec applies criteria + ordering (ApplyCriteria applies WHERE only)
+        var result = ApplyFullSpec(spec, orders).ToList();
 
         // Assert
         Assert.Equal(2, result[0].Id); // Newer order first
@@ -165,8 +165,8 @@ public class OrderSpecification_Tests
             CreateOrder(5, "test@test.com", orderDate: DateTime.UtcNow)
         }.AsQueryable();
 
-        // Act
-        var result = spec.ApplyCriteria(orders).ToList();
+        // Act — ApplyFullSpec applies criteria + ordering + paging (ApplyCriteria applies WHERE only)
+        var result = ApplyFullSpec(spec, orders).ToList();
 
         // Assert
         Assert.Equal(2, result.Count);
@@ -289,4 +289,23 @@ public class OrderSpecification_Tests
         Description = "Fast",
         Price = 10
     };
+
+    // Applies criteria + ordering + paging.
+    // ApplyCriteria() only applies WHERE — ordering and paging are applied by
+    // SpecificationEvaluator in production. Use this helper for tests that assert on ordering/paging.
+    private static IQueryable<T> ApplyFullSpec<T>(BaseSpecification<T> spec, IQueryable<T> query)
+    {
+        if (spec.Criteria != null)
+            query = query.Where(spec.Criteria);
+
+        if (spec.OrderByDesc != null)
+            query = query.OrderByDescending(spec.OrderByDesc);
+        else if (spec.OrderByAsc != null)
+            query = query.OrderBy(spec.OrderByAsc);
+
+        if (spec.IsPagingEnabled)
+            query = query.Skip(spec.Skip).Take(spec.Take);
+
+        return query;
+    }
 }
