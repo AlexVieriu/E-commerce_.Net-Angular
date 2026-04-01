@@ -88,13 +88,13 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Global fallback: 10 requests/min per IP for all endpoints
+    // Global fallback: 100 requests/min per IP for all API endpoints
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = 100,
                 Window = TimeSpan.FromMinutes(1)
             }));
 
@@ -188,12 +188,9 @@ try
         await context.Database.MigrateAsync();
     }
 
-    if (app.Environment.IsDevelopment())
-    {
-        var baseContext = services.GetRequiredService<StoreContext>();
-        var userManager = services.GetRequiredService<UserManager<AppUser>>();
-        await StoreContextSeed.SeedAsync(baseContext, userManager);
-    }
+    var baseContext = services.GetRequiredService<StoreContext>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    await StoreContextSeed.SeedAsync(baseContext, userManager);
 }
 catch (Exception ex)
 {
