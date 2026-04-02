@@ -28,7 +28,7 @@ Before starting any task, list:
   2. Append one line to `skinet/questions/interview-prep.md`:
      `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
 
-  **After task is done and merged to `development`**:
+  **After task is done and before merged to `development`**:
   3. Fill in the scaffold: explanation, exercise, solution, interview Q&A.
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
