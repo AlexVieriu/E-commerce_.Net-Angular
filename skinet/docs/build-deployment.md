@@ -50,9 +50,30 @@ dotnet ef database update --context SqlServerStoreContext
 | `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | Azure Key Vault |
 | `ConnectionStrings:SqlServerAzureConnection` | not used in dev | Azure Key Vault |
 | `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
+| `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
 
 Key Vault URL stored in `appsettings.json` as `KeyVaultUrl` (not a credential).
 App Service reads Key Vault via System Managed Identity — no credentials stored anywhere.
+
+### Azure config map
+
+| Where | What lives there |
+|---|---|
+| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey`, `AdminSettings--Password` |
+| **App Service → Connection Strings** | `Redis` (Custom), `SqlServerAzureConnection` (SQLServer) |
+| **App Service → App Settings** | `KeyVaultUrl`, AppInsights vars (Azure-managed) |
+| **`appsettings.json`** | `KeyVaultUrl`, Logging config only — nothing sensitive |
+
+### Azure roles
+
+| Identity | Resource | Role | Purpose |
+|---|---|---|---|
+| Your user | Key Vault | Secrets Officer | Manage secrets manually |
+| `skinet-2025-test` (managed identity) | Key Vault | Secrets User | App reads secrets at runtime |
+| `oidc-msi-aef5` | App Service | Website Contributor | CI/CD deploys code |
+
+- Permission model: **Vault access policy** (not Azure RBAC)
+- If Key Vault is unavailable at startup, app falls back to App Service settings (`try/catch` in `Program.cs`)
 
 ### Dev setup (first time)
 ```bash
@@ -71,3 +92,5 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 
 - SQLite for Development, SqlServer for Production — set by `ASPNETCORE_ENVIRONMENT`.
 - Never put secrets in `appsettings.json` or `appsettings.Development.json`.
+- `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
+- Seeding runs in all environments; idempotent by design — checks for existing data before inserting.

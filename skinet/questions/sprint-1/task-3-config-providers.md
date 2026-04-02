@@ -17,10 +17,28 @@ In prod: Key Vault overrides everything. In dev: User Secrets override `appsetti
 
 ## What confused me
 
-- **Why not just use environment variables for everything?** You can, but Key Vault centralises rotation, audit logs, and access control. One place to revoke a secret.
-- **Why is `KeyVaultUrl` not itself in Key Vault?** Chicken-and-egg: you need the URL to connect to Key Vault. It's not a credential — it's a public endpoint address.
-- **Why `--` in Key Vault secret names?** Azure Key Vault doesn't allow `:` in secret names. The .NET provider maps `ConnectionStrings--Redis` → `ConnectionStrings:Redis` automatically.
-- **Why is `PublishableKey` still in appsettings.json?** It's intentionally public (sent to browsers). Putting it in Key Vault would be wasteful and wrong.
+**Why not just use environment variables for everything?**  
+You can, but Key Vault centralises rotation, audit logs, and access control. One place to revoke a secret.
+
+**Why is `KeyVaultUrl` not itself in Key Vault?**  
+Chicken-and-egg: you need the URL to connect to Key Vault. It's not a credential — it's a public endpoint address.
+
+**Why `--` in Key Vault secret names?**  
+Azure Key Vault doesn't allow `:` in secret names. The .NET provider maps `ConnectionStrings--Redis` → `ConnectionStrings:Redis` automatically.
+
+**Why is `PublishableKey` still in appsettings.json?**  
+It's intentionally public (sent to browsers). Putting it in Key Vault would be wasteful and wrong.
+
+**Why is config split across Key Vault, Connection Strings tab, and App Settings?**  
+Each location has a different purpose:
+
+| Where | What | Why |
+|---|---|---|
+| Key Vault | Stripe keys | True secrets — need audit trail, rotation, vault-level protection |
+| Connection Strings tab | Redis, SQL Server | Azure treats these specially — masked in portal, type-aware |
+| App Settings | `KeyVaultUrl`, AppInsights | Non-sensitive config — needed to bootstrap everything else |
+
+Connection strings don't go in Key Vault because Azure's Connection Strings tab already masks them and maps them correctly. Putting them in both places creates duplication with no benefit.
 
 ## Explanation
 
