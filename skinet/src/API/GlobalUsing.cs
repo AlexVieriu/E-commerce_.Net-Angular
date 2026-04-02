@@ -22,6 +22,7 @@ global using Infrastructure.Services;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.ApplicationModels;
 global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.AspNetCore.RateLimiting;
 global using Microsoft.AspNetCore.SignalR;

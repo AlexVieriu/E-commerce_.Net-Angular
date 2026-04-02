@@ -50,6 +50,7 @@ dotnet ef database update --context SqlServerStoreContext
 | `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | Azure Key Vault |
 | `ConnectionStrings:SqlServerAzureConnection` | not used in dev | Azure Key Vault |
 | `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
+| `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
 
 Key Vault URL stored in `appsettings.json` as `KeyVaultUrl` (not a credential).
 App Service reads Key Vault via System Managed Identity — no credentials stored anywhere.
@@ -91,5 +92,7 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 
 - SQLite for Development, SqlServer for Production — set by `ASPNETCORE_ENVIRONMENT`.
 - Never put secrets in `appsettings.json` or `appsettings.Development.json`.
+- `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
+- Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
 - `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
 - Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
