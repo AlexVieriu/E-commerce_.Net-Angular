@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { CartService } from './cart.service';
-import { asyncScheduler, catchError, forkJoin, of, scheduled, tap } from 'rxjs';
+import { asyncScheduler, catchError, map, of, scheduled, switchMap, tap } from 'rxjs';
 import { AccountService } from './account.service';
 import { SignalrService } from './signalr.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -15,20 +15,28 @@ export class InitService {
 
   init() {
     const cartId = localStorage.getItem('cart_id');
-    const cart$ = cartId ? this.cartService.getCartAsync(cartId)
-      : scheduled([null], asyncScheduler);
 
-    return forkJoin({
-      cart: cart$,
-      user: this.accountService.getUserInfo().pipe(
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 401) return of(null);
-          throw err;
-        }),
-        tap(user => {
-          if (user) this.signalrService.createHubConnection();
-        })
-      )
-    });
+    // Step 1: check auth first — cart requires authentication
+    return this.accountService.getUserInfo().pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 401) return of(null);
+        throw err;
+      }),
+      tap(user => {
+        if (user) this.signalrService.createHubConnection();
+      }),
+      // Step 2: only fetch cart if authenticated and cart_id exists
+      switchMap(user => {
+        if (!user || !cartId)
+          return of({ user, cart: null });
+        return this.cartService.getCartAsync(cartId).pipe(
+          map(cart => ({ user, cart })),
+          catchError(() => {
+            localStorage.removeItem('cart_id');
+            return of({ user, cart: null });
+          })
+        );
+      })
+    );
   }
 }

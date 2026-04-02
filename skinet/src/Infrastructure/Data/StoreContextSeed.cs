@@ -2,7 +2,8 @@ namespace Infrastructure.Data;
 
 public class StoreContextSeed
 {
-    public static async Task SeedAsync(StoreContext context, UserManager<AppUser> userManager)
+    public static async Task SeedAsync(StoreContext context, UserManager<AppUser> userManager,
+        string adminPassword)
     {
         if (!userManager.Users.Any(x => x.UserName == "admin@test.com"))
         {
@@ -12,7 +13,7 @@ public class StoreContextSeed
                 Email = "admin@test.com"
             };
 
-            await userManager.CreateAsync(user, "Pa$$w0rd");
+            await userManager.CreateAsync(user, adminPassword);
             await userManager.AddToRoleAsync(user, "Admin");
         }
 

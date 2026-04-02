@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Infrastructure.Data;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
