@@ -73,7 +73,9 @@ app.UseAuthorization();
 
 app.MapFallbackToController("Index", "Fallback");
 app.MapControllers();
-app.MapGroup("api").MapIdentityApi<AppUser>().RequireRateLimiting("strict");
+var identityGroup = app.MapGroup("api").MapIdentityApi<AppUser>();
+if (!app.Environment.IsDevelopment())
+    identityGroup.RequireRateLimiting("strict");
 app.MapHub<NotificationHub>("/hub/notifications");
 
 await app.SeedDatabaseAsync();

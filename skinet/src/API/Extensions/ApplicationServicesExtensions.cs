@@ -52,7 +52,7 @@ public static class ApplicationServicesExtensions
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 100,
+                        PermitLimit = 200,
                         Window = TimeSpan.FromMinutes(1)
                     }));
 
@@ -61,7 +61,7 @@ public static class ApplicationServicesExtensions
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 2,
+                        PermitLimit = 30,
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0
                     }));
