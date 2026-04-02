@@ -50,6 +50,7 @@ dotnet ef database update --context SqlServerStoreContext
 | `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | Azure Key Vault |
 | `ConnectionStrings:SqlServerAzureConnection` | not used in dev | Azure Key Vault |
 | `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
+| `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
 
 Key Vault URL stored in `appsettings.json` as `KeyVaultUrl` (not a credential).
 App Service reads Key Vault via System Managed Identity — no credentials stored anywhere.
@@ -58,7 +59,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 
 | Where | What lives there |
 |---|---|
-| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey` |
+| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey`, `AdminSettings--Password` |
 | **App Service → Connection Strings** | `Redis` (Custom), `SqlServerAzureConnection` (SQLServer) |
 | **App Service → App Settings** | `KeyVaultUrl`, AppInsights vars (Azure-managed) |
 | **`appsettings.json`** | `KeyVaultUrl`, Logging config only — nothing sensitive |
