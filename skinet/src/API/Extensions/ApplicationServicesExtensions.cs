@@ -69,9 +69,28 @@ public static class ApplicationServicesExtensions
 
         services.AddCors();
         services.AddAuthorization();
-        services.AddIdentityApiEndpoints<AppUser>()
+        services.AddIdentityApiEndpoints<AppUser>(options =>
+                {
+                    options.Password.RequiredLength = 12;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequireDigit = true;
+                    options.Password.RequireNonAlphanumeric = true;
+
+                    options.Lockout.MaxFailedAccessAttempts = 5;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                    options.Lockout.AllowedForNewUsers = true;
+                })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<StoreContext>();
+
+        services.ConfigureApplicationCookie(options =>
+        {
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.ExpireTimeSpan = TimeSpan.FromHours(24);
+            options.SlidingExpiration = false;
+        });
         services.AddSignalR();
 
         StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"]

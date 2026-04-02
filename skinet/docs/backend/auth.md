@@ -39,11 +39,39 @@ app.MapGroup("api").MapIdentityApi<AppUser>();
 | `Admin` | `[Authorize(Roles = "Admin")]` on `AdminController` |
 | `Customer` | Seeded but not enforced |
 
+## Password Policy
+
+| Setting | Value |
+|---|---|
+| `RequiredLength` | 12 |
+| `RequireUppercase` | true |
+| `RequireDigit` | true |
+| `RequireNonAlphanumeric` | true |
+
+## Lockout
+
+| Setting | Value |
+|---|---|
+| `MaxFailedAccessAttempts` | 5 |
+| `DefaultLockoutTimeSpan` | 15 min |
+| `AllowedForNewUsers` | true |
+
+## Cookie
+
+| Setting | Value |
+|---|---|
+| `HttpOnly` | true |
+| `SecurePolicy` | Always |
+| `SameSite` | Strict |
+| `ExpireTimeSpan` | 24h |
+| `SlidingExpiration` | false |
+
 ## Rules / Constraints
 
 - Cookie-only auth — never add JWT config.
 - Always use `ClaimsPrincipalExtensions` to load users.
 - `user-info` returns 204 (not 401) when unauthenticated — frontend polls this on startup.
+- `SlidingExpiration = false` — 24h absolute, forces re-login daily.
 
 ## Common Mistakes
 
