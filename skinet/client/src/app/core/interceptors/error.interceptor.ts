@@ -26,7 +26,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
       if (err.status === 401) {
-        if (!req.url.includes('account/user-info'))
+        const alreadyOnLogin = router.url.includes('/account/login');
+        if (!req.url.includes('account/user-info') && !alreadyOnLogin)
           router.navigate(['/account/login'], { queryParams: { returnUrl: router.url } });
       }
       if (err.status === 403) {

@@ -1,5 +1,3 @@
-using Microsoft.Data.SqlClient;
-
 namespace Infrastructure.Data.Factory;
 
 public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStoreContext>

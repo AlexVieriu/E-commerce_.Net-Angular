@@ -505,3 +505,8 @@ skinet/API/wwwroot/index.html
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# SQLite dev database
+*.db
+*.db-shm
+*.db-wal
