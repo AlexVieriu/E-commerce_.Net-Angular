@@ -1,3 +1,5 @@
+claude --resume 5b910fd9-a4b1-4c3c-91d8-036c9c42f908
+
 # Task 4 — Admin Seed Password → Env Var / Key Vault
 
 ## Plan
