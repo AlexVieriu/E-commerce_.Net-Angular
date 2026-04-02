@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-
 namespace API.Conventions;
 
 // IApplicationModelConvention runs once at app startup, before any request is handled.
