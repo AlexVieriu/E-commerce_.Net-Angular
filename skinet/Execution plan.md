@@ -1,6 +1,6 @@
 claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
 
-# Execution Plan — Skinet (v5)
+# Execution Plan
 
 > .NET 11 + Angular 22 | Azure-only | Solo dev | B2C physical goods
 > **47 tasks | 6 sprints (2 wk each) | Deadline: June 2026**
@@ -23,7 +23,7 @@ Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Custome
 
 ---
 
-## Sprint 1 — Security + CI/CD
+## Sprint 1 — Security + CI/CD *(deadline: Apr 4)*
 
 > Hardened app + working CI. Mostly .NET config warm-up.
 > Order: CI(1) -> Secrets(3,4) -> Identity(5,6,7) -> FluentValidation(8) -> CORS/CSP(9) -> Cart ownership(12) -> Pagination(11) -> Health(10) -> Docker(2)
@@ -52,7 +52,7 @@ Sprint end: verify local + Azure deploy. Update README.
 
 ---
 
-## Sprint 2 — Testing + Data Integrity
+## Sprint 2 — Testing + Data Integrity *(deadline: Apr 18)*
 
 > Fix race condition + idempotency + coverage. All C#. TDD: failing test first.
 > Order: Race condition(13-15) -> Idempotency(16,18) -> Price detection(17) -> Tests(19-21)
@@ -78,7 +78,7 @@ Sprint end: full test suite green. Verify Azure. Update README.
 
 ---
 
-## Sprint 3 — Admin Panel + Observability
+## Sprint 3 — Admin Panel + Observability *(deadline: May 2)*
 
 > Most clickable CV feature. Backend first, then Angular.
 > Pattern: copy ShopComponent's httpResource + Material table. Don't break existing orders/refund.
@@ -105,7 +105,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint 4 — Frontend Quality + UX
+## Sprint 4 — Frontend Quality + UX *(deadline: May 16)*
 
 > Polish existing features. Isolated Angular tasks, easiest first.
 > Order: Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> A11y(36) -> Playwright(37) -> README(38)
@@ -129,7 +129,7 @@ Sprint end: Playwright + backend tests green. Verify deploy. axe score on 3 page
 
 ---
 
-## Sprint 5 — Domain Expansion
+## Sprint 5 — Domain Expansion *(deadline: May 30)*
 
 > Domain modeling depth. Backend comfort zone.
 > Order: Status(40) -> Cancel(41) -> Email(39) -> Soft delete(42) -> Indexes(43) -> Images(44) -> CancToken(45) -> Tests(46)
@@ -154,7 +154,7 @@ Sprint end: full test suite. Test cancel, soft delete, status history. Verify Az
 
 ---
 
-## Sprint 6 — Polish + Standout
+## Sprint 6 — Polish + Standout *(deadline: Jun 13)*
 
 > Recruiter spends 30 seconds on your repo. README day 1 = highest ROI.
 > Order: README(47) -> Security fix(52) -> Diagram(48) -> API docs(50) -> Docker(49) -> Email confirm(51) -> Smoke test(53) -> Reviews if ahead(54)

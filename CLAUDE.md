@@ -17,8 +17,8 @@ Before starting any task, list:
 - Required knowledge (critical only)
 - Knowledge gaps to address first
 # QUESTIONS & EXERCISES
-  When I ask about a concept or code or say "add this":
-  1. Create `skinet/questions/sprint-N/task-N-concept-name.md` using this template:
+  **At task start** (new session + new task, non-trivial concepts only):
+  1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with empty scaffold:
      - ## Why this approach
      - ## What confused me
      - ## Explanation
@@ -27,8 +27,9 @@ Before starting any task, list:
      - ## Interview Q&A
   2. Append one line to `skinet/questions/interview-prep.md`:
      `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
-  3. Only create exercises for non-trivial concepts.
-  4. Exercises are created AFTER the sprint is done, not during.
+
+  **After task is done and merged to `development`**:
+  3. Fill in the scaffold: explanation, exercise, solution, interview Q&A.
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
   - PR to `development` when task is done
