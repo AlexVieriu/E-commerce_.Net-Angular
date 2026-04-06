@@ -14,3 +14,4 @@ One-liner per concept. Click the link for full explanation + Q&A.
 ## Sprint 2
 
 - [Task 9 — CORS explicit + CSP security headers](sprint-2/task-9-cors-csp-security-headers.md) — named CorsPolicy with origin whitelist + NetEscapades for CSP/X-Frame/X-Content-Type/Referrer-Policy; unsafe-inline tradeoff for Angular Material
+- [BUG-1 — Angular signals + reference equality](sprint-2/bug-1-signal-reference-equality.md) — mutating a signal object returns same reference → no re-render; fix with spread operator to create new object

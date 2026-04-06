@@ -76,24 +76,15 @@ export class CheckoutComponent {
   }
 
   handleAddressChange = (event: StripeAddressElementChangeEvent) => {
-    this.completionStatus.update(state => { // passing the current Obj (we call it state)
-      state.address = event.complete;
-      return state;
-    });
+    this.completionStatus.update(state => ({ ...state, address: event.complete }));
   }
 
   handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
-    this.completionStatus.update(state => {
-      state.card = event.complete;
-      return state;
-    });
+    this.completionStatus.update(state => ({ ...state, card: event.complete }));
   }
 
   handleDeliveryChange(event: boolean) {
-    this.completionStatus.update(state => {
-      state.delivery = event;
-      return state;
-    })
+    this.completionStatus.update(state => ({ ...state, delivery: event }));
   }
 
   onSaveAddressCheckboxChange(event: MatCheckboxChange) {
