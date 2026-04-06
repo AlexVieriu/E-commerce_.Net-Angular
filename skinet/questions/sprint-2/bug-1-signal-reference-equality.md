@@ -213,3 +213,56 @@ Zone.js monkey-patches async APIs globally and triggers change detection after e
 
 **Q: When would `signal.update(v => v)` trigger a re-render?**
 Only if `v` is a primitive with a different value, or a different object reference. If `v` is the same primitive or same object reference, Angular skips re-render. For primitives: `signal(0).update(v => v)` → no re-render. For objects: `signal({}).update(v => v)` → no re-render.
+
+---
+
+## Related incident — Checkout success spinner
+
+### What happened
+
+After completing a payment, the checkout success page showed a spinner forever:
+```
+Order processing... please wait
+Loading order...
+Your payment has been received. We are creating the order
+```
+
+### Root cause
+
+The success page template waits for `signalrService.orderSignal()` to be set:
+
+```html
+@if(signalrService.orderSignal(); as order) { ... show order ... }
+@if(!signalrService.orderSignal()) { ... show spinner ... }
+```
+
+`orderSignal` is set by the SignalR service when it receives an `OrderCompleteNotification` from the backend. That notification is sent by `HandlePaymentIntentSucceeded` in `PaymentsController` when the Stripe webhook fires.
+
+The full chain:
+```
+Stripe payment succeeds
+  → Stripe sends payment_intent.succeeded to /api/payments/webhook
+  → HandlePaymentIntentSucceeded runs
+  → Finds order by PaymentIntentId
+  → Updates order status to PaymentReceived
+  → Sends SignalR notification to buyer's connection
+  → Angular sets orderSignal()
+  → Spinner resolves, order displayed
+```
+
+### Why it was broken
+
+The webhook was returning 500 (`Invalid signature`) because the `StripeSettings:WhSecret` in user secrets was stale — it was set before `stripe listen` was restarted, so the secret didn't match what the CLI was using to sign events.
+
+**User secrets are loaded at startup only.** Hot reload (`dotnet watch`) does NOT reload user secrets. So after updating the secret, the API must be fully restarted (Ctrl+C → `dotnet watch`) for the new value to take effect.
+
+### Fix
+
+1. Copy the `whsec_...` from the `stripe listen` terminal output
+2. `dotnet user-secrets set "StripeSettings:WhSecret" "<whsec_>" --project src/API`
+3. Fully restart the API (not just hot reload)
+4. Webhook returns 200 → SignalR fires → spinner resolves
+
+### Key lesson
+
+Always restart the API (not hot reload) after changing user secrets. The config provider chain loads once at startup — `IConfiguration` is not live-reloaded.
