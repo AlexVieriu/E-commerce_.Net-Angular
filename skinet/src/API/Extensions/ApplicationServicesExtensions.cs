@@ -67,7 +67,21 @@ public static class ApplicationServicesExtensions
                     }));
         });
 
-        services.AddCors();
+        services.AddCors(opt =>
+        {
+            opt.AddPolicy("CorsPolicy", policy =>
+            {
+                policy
+                    .WithOrigins(
+                        "http://localhost:4200",
+                        "https://localhost:4200",
+                        "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"
+                    )
+                    .WithHeaders("Content-Type", "Accept")
+                    .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .AllowCredentials();
+            });
+        });
         services.AddAuthorization();
         services.AddIdentityApiEndpoints<AppUser>(options =>
                 {

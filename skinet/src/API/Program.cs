@@ -56,10 +56,21 @@ app.UseMiddleware<ExceptionMiddleware>();
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
-app.UseCors(options => options.AllowAnyHeader()
-                              .AllowAnyMethod()
-                              .AllowCredentials()
-                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"));
+app.UseCors("CorsPolicy");
+
+app.UseSecurityHeaders(policies => policies
+    .AddDefaultSecurityHeaders()
+    .AddContentSecurityPolicy(csp =>
+    {
+        csp.AddDefaultSrc().Self();
+        csp.AddStyleSrc().Self().UnsafeInline();
+        csp.AddScriptSrc().Self().UnsafeInline();
+        csp.AddImgSrc().Self().Data().OverHttps();
+        csp.AddFontSrc().Self().Data();
+        csp.AddConnectSrc().Self().From("wss:").OverHttps();
+    })
+    .AddPermissionsPolicy(p => p.AddAccelerometer().None())
+);
 
 // Static files served before rate limiter so Angular chunks are never throttled
 app.UseDefaultFiles();
