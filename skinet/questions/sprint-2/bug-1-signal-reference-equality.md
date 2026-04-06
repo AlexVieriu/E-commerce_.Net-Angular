@@ -1,4 +1,6 @@
----
+claude --resume 995fca5a-6c08-4805-abbf-e8e860fc5616
+
+--- 
 name: BUG-1 — Angular signals + reference equality
 description: Why mutating a signal object doesn't trigger re-render, and how spread operator fixes it
 type: feedback

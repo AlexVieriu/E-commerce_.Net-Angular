@@ -1,3 +1,5 @@
+claude --resume 995fca5a-6c08-4805-abbf-e8e860fc5616
+
 ---
 ## Why this approach
 
