@@ -41,6 +41,15 @@ public class ApiErrorResponse(int statusCode, string message, string? details)
 
 Returned by `ExceptionMiddleware`. See `backend/error-handling.md`.
 
+## Rate Limiting
+
+Two policies — see `controllers.md` for which endpoints use each.
+
+| Policy | Limit | Applied to |
+|---|---|---|
+| Global | 200 req/min per IP | All endpoints |
+| `strict` | 30 req/min per IP | Identity + Coupons |
+
 ## Rules / Constraints
 
 - Controllers reference only Core/Application interfaces — never Infrastructure types.

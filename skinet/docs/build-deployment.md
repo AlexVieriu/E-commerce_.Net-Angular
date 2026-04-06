@@ -59,7 +59,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 
 | Where | What lives there |
 |---|---|
-| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey` |
+| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey`, `AdminSettings--Password` |
 | **App Service → Connection Strings** | `Redis` (Custom), `SqlServerAzureConnection` (SQLServer) |
 | **App Service → App Settings** | `KeyVaultUrl`, AppInsights vars (Azure-managed) |
 | **`appsettings.json`** | `KeyVaultUrl`, Logging config only — nothing sensitive |
