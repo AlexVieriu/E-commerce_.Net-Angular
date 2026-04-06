@@ -1,0 +1,83 @@
+var builder = WebApplication.CreateBuilder(args);
+
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
+    if (!string.IsNullOrEmpty(keyVaultUrl))
+    {
+        try
+        {
+            builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Key Vault unavailable, falling back to App Service settings: {ex.Message}");
+        }
+    }
+}
+
+// Kestrel localhost config for dev only — Azure handles HTTPS termination in prod
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ConfigureEndpointDefaults(listenOptions => { });
+
+        options.ListenLocalhost(7096, listenOptions =>
+        {
+            listenOptions.UseHttps();
+            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2AndHttp3;
+        });
+
+        options.ListenLocalhost(5150, listenOptions =>
+        {
+            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+        });
+    });
+}
+
+builder.Services.AddApplicationServices(builder.Configuration, builder.Environment);
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+        options
+            .WithTitle("Demo Api")
+            .WithTheme(ScalarTheme.Moon)
+            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+    );
+}
+
+app.UseMiddleware<ExceptionMiddleware>();
+
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
+
+app.UseCors(options => options.AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowCredentials()
+                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"));
+
+// Static files served before rate limiter so Angular chunks are never throttled
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.UseRateLimiter();
+
+// For SignalR
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapFallbackToController("Index", "Fallback");
+app.MapControllers();
+var identityGroup = app.MapGroup("api").MapIdentityApi<AppUser>();
+if (!app.Environment.IsDevelopment())
+    identityGroup.RequireRateLimiting("strict");
+app.MapHub<NotificationHub>("/hub/notifications");
+
+await app.SeedDatabaseAsync();
+
+app.Run();

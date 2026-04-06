@@ -1,0 +1,48 @@
+# Caching
+
+Response caching via Redis. Cache keyed by request path + sorted query params.
+
+## Redis Databases
+
+| DB | Purpose |
+|---|---|
+| `0` | Shopping cart (`CartService`) |
+| `1` | Response cache (`ResponseCacheService`) |
+
+## Cache Key Format
+
+```
+/api/products|brandId-2|typeId-1
+```
+
+## [Cache] Attribute
+
+```csharp
+[Cache(180)]  // cache for 180 minutes
+```
+
+1. Key exists → return cached JSON (skips controller + DB).
+2. Key missing → execute action, store `OkObjectResult` in Redis with TTL.
+
+Services can't be injected into attributes — resolved via `context.HttpContext.RequestServices`.
+
+## [InvalidateCache] Attribute
+
+```csharp
+[InvalidateCache("api/products|")]
+```
+
+Runs the action first, then deletes all Redis keys matching the pattern. Only invalidates on success.
+
+## IResponseCacheService
+
+| Method | What it does |
+|---|---|
+| `GetCachedResponseAsync(key)` | Returns cached JSON or empty string |
+| `CreateCacheResponseAsync(key, obj, ttl)` | Serializes camelCase JSON, stores with TTL |
+| `RemoveCacheByPattern(pattern)` | SCAN + bulk delete matching keys |
+
+## Rules / Constraints
+
+- `[Cache]` only caches `OkObjectResult` — errors are never cached.
+- `[InvalidateCache]` pattern must match the cache key prefix (`"api/products|"` clears all product keys).
