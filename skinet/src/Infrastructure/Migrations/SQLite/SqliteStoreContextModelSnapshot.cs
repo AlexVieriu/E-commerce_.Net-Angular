@@ -260,6 +260,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("REAL");
 
                     b.Property<int>("QuantityInStock")
+                        .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Type")
