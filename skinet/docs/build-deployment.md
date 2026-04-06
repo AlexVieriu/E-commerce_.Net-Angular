@@ -94,3 +94,5 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 - Never put secrets in `appsettings.json` or `appsettings.Development.json`.
 - `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
 - Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
+- `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
+- Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
