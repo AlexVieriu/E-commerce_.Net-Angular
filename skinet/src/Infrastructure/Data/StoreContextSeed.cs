@@ -13,7 +13,10 @@ public class StoreContextSeed
                 Email = "admin@test.com"
             };
 
-            await userManager.CreateAsync(user, adminPassword);
+            var result = await userManager.CreateAsync(user, adminPassword);
+            if (!result.Succeeded)
+                throw new Exception($"Failed to create admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+
             await userManager.AddToRoleAsync(user, "Admin");
         }
 
