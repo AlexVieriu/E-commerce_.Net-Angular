@@ -1,10 +1,4 @@
-claude --resume 995fca5a-6c08-4805-abbf-e8e860fc5616
-
---- 
-name: BUG-1 — Angular signals + reference equality
-description: Why mutating a signal object doesn't trigger re-render, and how spread operator fixes it
-type: feedback
----
+# BUG-1 — Angular signals + reference equality
 
 ## Why this approach
 
@@ -268,3 +262,7 @@ The webhook was returning 500 (`Invalid signature`) because the `StripeSettings:
 ### Key lesson
 
 Always restart the API (not hot reload) after changing user secrets. The config provider chain loads once at startup — `IConfiguration` is not live-reloaded.
+
+---
+
+claude --resume 995fca5a-6c08-4805-abbf-e8e860fc5616

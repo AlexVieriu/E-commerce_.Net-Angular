@@ -1,5 +1,3 @@
-claude --resume 5b910fd9-a4b1-4c3c-91d8-036c9c42f908
-
 # Task 4 — Admin Seed Password → Env Var / Key Vault
 
 ## Plan
@@ -111,3 +109,7 @@ A: `map` transforms a value into another value. `switchMap` transforms a value i
 
 **Q: What is `forkJoin` and when does it fail?**
 A: `forkJoin` runs multiple Observables in parallel and emits when all complete. It fails if any source errors — it doesn't emit partial results. Use it only when all parallel operations are guaranteed to succeed or have their own error handling.
+
+---
+
+claude --resume 5b910fd9-a4b1-4c3c-91d8-036c9c42f908

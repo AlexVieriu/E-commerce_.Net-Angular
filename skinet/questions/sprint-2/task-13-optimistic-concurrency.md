@@ -1,7 +1,22 @@
----
-name: Task 13 — Optimistic Concurrency
-description: Why ConcurrencyCheck beats locks for stock decrement, and how EF Core detects stale writes
-type: user
+# Task 13 — Optimistic Concurrency
+
+## Plan
+
+- Write a failing test that proves the race condition (TDD — red first)
+- Add `[ConcurrencyCheck]` to `Product.QuantityInStock`
+- Catch `DbUpdateConcurrencyException` in `OrderService` → rethrow as `InvalidOperationException`
+- Generate migrations for SqlServer + SQLite (empty DDL, snapshot only)
+
+## Todo
+
+- [x] Create `questions/sprint-2/task-13-optimistic-concurrency.md`
+- [x] Write failing test in `Infrastructure.Tests/Services/OrderService_Tests.cs`
+- [x] Add `[ConcurrencyCheck]` to `Product.QuantityInStock`
+- [x] Catch `DbUpdateConcurrencyException` in `OrderService.CreateOrderAsync`
+- [x] Generate SqlServer migration
+- [x] Generate SQLite migration
+- [x] Verify all tests green
+
 ---
 
 ## Why this approach
@@ -232,3 +247,7 @@ It adds the original property value to the UPDATE's WHERE clause. If 0 rows are 
 
 **Q: What should you do when you catch DbUpdateConcurrencyException?**
 Options: (1) retry by re-reading the entity and reapplying changes — good for background jobs; (2) return a user-facing error and let them retry — better for user-driven writes where intent may have changed.
+
+---
+
+claude --resume 04a3b7d6-357c-4e67-a341-9326dfff6552
