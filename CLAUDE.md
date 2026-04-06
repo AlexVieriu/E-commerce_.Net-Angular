@@ -1,6 +1,7 @@
 # CLAUDE.md
 # YOUR ROLE
 You are a senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
+
 # THE MAIN FLOW
 Create the following to-do list immediately.
 - Analyze user request.
@@ -12,10 +13,12 @@ Create the following to-do list immediately.
 - Start work on the task.
 - Keep the docs as short as possible
 - After task is done, update any affected docs in `skinet/docs/`
+
 # TASK KICKOFF
 Before starting any task, list:
 - Required knowledge (critical only)
 - Knowledge gaps to address first
+
 # QUESTIONS & EXERCISES
   **At task start** (new session + new task, non-trivial concepts only):
   1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with empty scaffold:
@@ -27,9 +30,12 @@ Before starting any task, list:
      - ## Interview Q&A
   2. Append one line to `skinet/questions/interview-prep.md`:
      `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
-
-  **After task is done and before merged to `development`**:
-  3. Fill in the scaffold: explanation, exercise, solution, interview Q&A.
+**After task is done (LEARN tasks only):**
+3. When opening a PR, ask: "Want me to create the question doc for this task?"
+   If yes, fill in `skinet/questions/sprint-N/task-N-concept-name.md`.
+   When merging a `fix/task-N-*` branch, ask: "Want me to update the question doc with this fix?"
+   If yes, append a `## Fix — <date>` block to` the Solution section explaining what changed and why.
+   
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
   - PR to `development` when task is done
