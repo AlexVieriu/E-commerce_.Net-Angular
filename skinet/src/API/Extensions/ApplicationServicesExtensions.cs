@@ -77,7 +77,7 @@ public static class ApplicationServicesExtensions
                         "https://localhost:4200",
                         "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"
                     )
-                    .WithHeaders("Content-Type", "Accept", "X-Requested-With")
+                    .AllowAnyHeader()
                     .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .AllowCredentials();
             });

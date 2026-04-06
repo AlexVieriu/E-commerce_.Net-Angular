@@ -131,6 +131,6 @@ Separate header that disables browser hardware/sensor APIs you don't use.
 Named policy applied via `UseCors("CorsPolicy")`.
 
 - Allowed origins: `localhost:4200` (http+https), Azure app URL
-- Allowed headers: `Content-Type`, `Accept`, `X-Requested-With` (SignalR negotiate)
+- Allowed headers: any (`AllowAnyHeader`) — SignalR sends multiple custom headers; origin whitelist is the real protection
 - Allowed methods: `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`
 - Credentials: allowed (required for cookie auth)
