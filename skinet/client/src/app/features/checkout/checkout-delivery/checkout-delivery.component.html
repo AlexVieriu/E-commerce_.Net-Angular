@@ -1,7 +1,7 @@
 <div class="w-full">
     <mat-radio-group class="grid grid-cols-2 gap-4" [value]="cartService.selectedDelivery()?.id"
         (change)="updateDeliveryMethod($event.value)">
-        @for (method of checkoutService.deliveryMethods; track method.id) {
+        @for (method of checkoutService.deliveryMethods(); track method.id) {
         <label class="p-3 border-gray-200 cursor-pointer w-full h-full hover:bg-purple-100">
             <mat-radio-button class="w-full h-full" [value]="method"
                 [checked]="cartService.selectedDelivery()=== method">
