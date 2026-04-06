@@ -33,7 +33,7 @@ Before starting any task, list:
 3. When opening a PR, ask: "Want me to create the question doc for this task?"
    If yes, fill in `skinet/questions/sprint-N/task-N-concept-name.md`.
    When merging a `fix/task-N-*` branch, ask: "Want me to update the question doc with this fix?"
-   If yes, append a `## Fix — <date>` block to` the Solution section explaining what changed and why.
+   If yes, append a `## Fix — <date>` block to the Solution section explaining what changed and why.
    
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
