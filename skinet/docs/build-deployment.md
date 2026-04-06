@@ -94,5 +94,43 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 - Never put secrets in `appsettings.json` or `appsettings.Development.json`.
 - `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
 - Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
-- `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
-- Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
+
+## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
+
+Added via `UseSecurityHeaders()` in `Program.cs`. Applies to all responses.
+
+### What is CSP?
+
+Content-Security-Policy is an HTTP header that tells the browser which sources it is allowed to load resources from. It is the main defense against XSS: even if an attacker injects a `<script>` tag, the browser refuses to execute it if the source is not in the whitelist.
+
+### Directives
+
+| Directive | Value | Why |
+|---|---|---|
+| `default-src` | `'self'` | Fallback — block everything not explicitly listed |
+| `style-src` | `'self' 'unsafe-inline'` | Angular Material injects styles into the DOM at runtime |
+| `script-src` | `'self' 'unsafe-inline'` | Angular bootstrap uses inline scripts |
+| `img-src` | `'self' data: https:` | `data:` for Material icons; `https:` for product images from external URLs |
+| `font-src` | `'self' data:` | Material embeds fonts as data URIs |
+| `connect-src` | `'self' wss: https:` | API calls (`self`), SignalR WebSocket (`wss:`), Stripe SDK (`https:`) |
+
+### Permissions-Policy
+
+Separate header that disables browser hardware/sensor APIs you don't use.
+`accelerometer=()` disables the Device Accelerometer API — a browser API that exposes physical motion/tilt data from the device sensor. A shop app has no use for it; disabling it prevents any injected third-party script from silently reading it.
+
+| Header | Value |
+|---|---|
+| `X-Content-Type-Options` | `nosniff` — browser won't MIME-sniff responses |
+| `X-Frame-Options` | `DENY` — blocks clickjacking via iframes |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` — limits referrer data sent to third parties |
+| `Permissions-Policy` | `accelerometer=()` — disables accelerometer sensor API |
+
+## CORS Policy (`CorsPolicy`)
+
+Named policy applied via `UseCors("CorsPolicy")`.
+
+- Allowed origins: `localhost:4200` (http+https), Azure app URL
+- Allowed headers: any (`AllowAnyHeader`) — SignalR sends multiple custom headers; origin whitelist is the real protection
+- Allowed methods: `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`
+- Credentials: allowed (required for cookie auth)

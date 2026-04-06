@@ -50,7 +50,6 @@ namespace Infrastructure.Migrations.SqlServer
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

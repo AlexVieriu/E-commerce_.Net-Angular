@@ -43,7 +43,6 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("TEXT");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
