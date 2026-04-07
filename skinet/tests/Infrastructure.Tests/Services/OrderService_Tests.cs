@@ -7,10 +7,10 @@ public class OrderService_ConcurrencyTests
             .UseInMemoryDatabase("ConcurrencyTest_" + Guid.NewGuid())
             .Options;
 
-    private static ShoppingCart MakeCart(int productId, int deliveryMethodId) => new()
+    private static ShoppingCart MakeCart(int productId, int deliveryMethodId, string paymentIntentId = "pi_test_123") => new()
     {
         Id = "test-cart",
-        PaymentIntentId = "pi_test_123",
+        PaymentIntentId = paymentIntentId,
         DeliveryMethodId = deliveryMethodId,
         Items =
         [
@@ -82,7 +82,7 @@ public class OrderService_ConcurrencyTests
         cart1.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1));
 
         var cart2 = new Mock<ICartService>();
-        cart2.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1));
+        cart2.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1, "pi_test_456"));
 
         var service1 = new OrderService(new UnitOfWork(ctx1), cart1.Object);
         var service2 = new OrderService(new UnitOfWork(ctx2), cart2.Object);
