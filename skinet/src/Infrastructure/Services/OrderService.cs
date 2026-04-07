@@ -65,7 +65,15 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
 
         unitOfWork.Repository<Order>().Add(order);
 
-        if (!await unitOfWork.Complete()) return null;
+        try
+        {
+            if (!await unitOfWork.Complete()) return null;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new InvalidOperationException(
+                "Stock changed during checkout due to a concurrent order. Please try again.");
+        }
 
         // Cart is no longer needed — delete it from Redis.
         // Fire-and-forget: cart deletion failure doesn't invalidate an already-saved order.
