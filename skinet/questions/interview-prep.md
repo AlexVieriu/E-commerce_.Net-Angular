@@ -18,4 +18,7 @@ One-liner per concept. Click the link for full explanation + Q&A.
 - [BUG-1 — Angular signals + reference equality](sprint-2/bug-1-signal-reference-equality.md) — mutating a signal object returns same reference → no re-render; fix with spread operator to create new object
 - [Task 13 — Optimistic concurrency](sprint-2/task-13-optimistic-concurrency.md) — [ConcurrencyCheck] adds original value to WHERE on UPDATE; DbUpdateConcurrencyException when another write beat you to it
 - [Task 14 — Transaction isolation levels](sprint-2/task-14-transaction-isolation.md) — BeginTransactionAsync wraps order creation; explicit rollback on failure; isolation levels control what concurrent reads see
+- [Task 15 — Cart delete post-commit](sprint-2/task-15-cart-delete-post-commit.md) — Redis and SQL don't share a transaction; delete cart after commit so a failed order doesn't lose the cart
+- [Task 16 — Stripe idempotency key](sprint-2/task-16-stripe-idempotency.md) — IdempotencyKey = cart.Id prevents duplicate PaymentIntents on network retry; uniqueness ≠ idempotency
+- [Task 18 — Order idempotency](sprint-2/task-18-order-idempotency.md) — unique DB constraint on PaymentIntentId + pre-insert check returns existing order instead of duplicate
 - **[Sprint 2 Practice Exam](sprint-2/sprint-2-practice.md)** — 30 questions: recall + scenario + practical + senior stretch. Will expand when sprint completes.

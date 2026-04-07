@@ -209,6 +209,9 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.HasIndex("DeliveryMethodId");
 
+                    b.HasIndex("PaymentIntentId")
+                        .IsUnique();
+
                     b.ToTable("Orders");
                 });
 
