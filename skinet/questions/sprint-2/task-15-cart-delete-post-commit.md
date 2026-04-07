@@ -1,5 +1,3 @@
-claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
-
 # Task 15 — Cart Delete Must Be After Commit
 
 ## Why this approach
@@ -78,3 +76,7 @@ A: Redis and SQL Server don't share a transaction — there's no distributed tra
 **Q: Is "fire-and-forget" on the cart deletion safe here?**
 
 A: Yes. The cart is non-critical after the order commits. The worst case of a failed delete is a stale Redis key that expires naturally or gets overwritten next time the user creates a cart. I wouldn't retry it synchronously in the checkout path — that would degrade checkout reliability for a cleanup operation.
+
+---
+
+claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5

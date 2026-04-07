@@ -1,5 +1,3 @@
-claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
-
 # Task 16 — Stripe Idempotency Key
 
 ## Why this approach
@@ -103,3 +101,7 @@ A: Uniqueness and idempotency solve different problems. Stripe's unique IDs prev
 **Q: What's the scope of a Stripe idempotency key?**
 
 A: Per API key, per endpoint. Stripe stores it for 24 hours. Within that window, any request with the same key returns the cached response without creating a new resource. After 24 hours the key expires and a new call creates a fresh resource.
+
+---
+
+claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5

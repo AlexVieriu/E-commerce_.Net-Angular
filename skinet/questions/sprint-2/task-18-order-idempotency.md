@@ -1,5 +1,3 @@
-claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
-
 # Task 18 — Order Idempotency (Unique Constraint on PaymentIntentId)
 
 ## Why this approach
@@ -94,3 +92,7 @@ A: You could, but it's worse UX — the second request gets a 500 instead of a c
 **Q: Why did the `PaymentIntentId` column type change from `nvarchar(max)` to `nvarchar(450)` on SQL Server?**
 
 A: SQL Server can't build indexes on `nvarchar(max)` columns — the column is unbounded and SQL Server needs a fixed size to build a B-tree. EF automatically narrows it to `nvarchar(450)`, which is the maximum indexable `nvarchar` length (900-byte index key limit ÷ 2 bytes per Unicode char). A Stripe PaymentIntent ID is around 27 characters, so 450 is more than sufficient.
+
+---
+
+claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
