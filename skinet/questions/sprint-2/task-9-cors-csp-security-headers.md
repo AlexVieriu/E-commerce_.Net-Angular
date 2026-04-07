@@ -1,4 +1,22 @@
+# Task 9 — CORS explicit + CSP security headers
+
+## Plan
+
+- Add named CORS policy with explicit origin whitelist
+- Install `NetEscapades.AspNetCore.SecurityHeaders`
+- Configure CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- Test visually after CSP (Material must not break)
+
+## Todo
+
+- [x] Add `CorsPolicy` in `ApplicationServicesExtensions.cs`
+- [x] Install `NetEscapades.AspNetCore.SecurityHeaders`
+- [x] Configure security headers in `WebApplicationExtensions.cs`
+- [x] Add `wss:` to `connect-src` for SignalR WebSocket
+- [x] Verify headers in DevTools → Network
+
 ---
+
 ## Why this approach
 
 CORS and security headers are server-enforced browser policies. CORS controls cross-origin requests; security headers tell the browser what it's allowed to load and how to handle your content. Both are set at the HTTP response level, not in application logic.
@@ -93,3 +111,7 @@ Yes, it weakens the script and style directives. It's a deliberate tradeoff — 
 
 **Q: What's the difference between CORS and CSP?**
 CORS controls which origins are allowed to make requests *to* your server. CSP controls which sources your browser is allowed to load resources *from*. CORS is enforced by the browser on outgoing requests; CSP is enforced by the browser on incoming content.
+
+---
+
+claude --resume 995fca5a-6c08-4805-abbf-e8e860fc5616

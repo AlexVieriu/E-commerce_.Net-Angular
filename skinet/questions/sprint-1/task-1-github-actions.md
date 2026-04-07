@@ -1,5 +1,3 @@
-claude --resume dbc7a4f4-df3b-4f9f-880f-e344aee3a522
-
 # Task 1 — GitHub Actions CI/CD
 
 ## Plan
@@ -125,3 +123,7 @@ setup order, wrong overload matched, `string` vs `RedisKey` type mismatch in Moq
 A: StackExchange.Redis implements some async methods as explicit interface implementations
 on `IDatabaseAsync`. Moq doesn't expose those directly on `Mock<IDatabase>`.
 `As<IDatabaseAsync>()` lets you set up and verify the explicit interface members.
+
+---
+
+claude --resume dbc7a4f4-df3b-4f9f-880f-e344aee3a522

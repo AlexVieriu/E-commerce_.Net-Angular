@@ -276,6 +276,7 @@ namespace Infrastructure.Migrations.SqlServer
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("QuantityInStock")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("Type")

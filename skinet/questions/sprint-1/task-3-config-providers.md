@@ -1,5 +1,3 @@
-claude --resume deff6f44-f61f-4683-84bc-1d3cdc62ff51
-
 # Task 3 — Config Provider Chain & Secrets Management
 
 ## Plan
@@ -149,3 +147,7 @@ Secrets are the .NET-idiomatic choice for dev because they don't pollute the she
 A: Key Vault doesn't allow `:` in secret names. The `AddAzureKeyVault` provider maps `--`
 back to `:` automatically, so `StripeSettings--SecretKey` in Key Vault becomes
 `StripeSettings:SecretKey` in `IConfiguration`.
+
+---
+
+claude --resume deff6f44-f61f-4683-84bc-1d3cdc62ff51
