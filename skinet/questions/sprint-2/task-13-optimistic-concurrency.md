@@ -105,15 +105,60 @@ catch (DbUpdateConcurrencyException ex)
 }
 ```
 
-This gives you three resolution strategies:
+This gives you four resolution strategies:
 
 | Strategy | What you do | When to use |
 |---|---|---|
-| **Client wins** | Overwrite DB with your values anyway | Admin force-update, data migration |
-| **Store wins** | Discard your changes, reload from DB | Background job that can silently retry |
-| **Merge** | Combine both — e.g. sum the differences | Complex inventory reconciliation |
+| **Client wins** | Overwrite DB with your values anyway | Admin force-update, low-impact data |
+| **Store wins** | Discard your changes, reload from DB | Background jobs, idempotent operations |
+| **Merge** | Combine both changes field by field | Collaborative editing of independent fields |
+| **Fail-and-Notify** | Rethrow, tell the user to retry manually | User-driven writes where accuracy > smoothness |
 
-For checkout, none of these fit. We don't want to silently retry or blindly overwrite. We want to **tell the user** and let them try again. So we rethrow as `InvalidOperationException`.
+---
+
+**Client wins — "I'm the Boss"**
+
+Your write always goes through, regardless of what changed in the DB.
+
+The scenario: Admin A changes a user's bio to "I love .NET." Admin B changes it to "I love Angular." Admin A saves first. Admin B saves a second later — overwrites silently. Admin A's change is simply lost.
+
+When to use: when the data isn't critical. If the bio is slightly wrong for a second, no one loses money.
+
+> **Drawback:** The "Lost Update" problem. You silently overwrite someone else's work without them knowing. Fine for low-impact data, dangerous for inventory or financial data.
+
+---
+
+**Store wins — "First Come, First Served"**
+
+Discard your changes, accept what's already in the DB, move on.
+
+The scenario: Two background jobs both read Order status = "Pending" and try to update it to "Processing." Job A saves first. Job B catches the exception, sees the status is already "Processing," and just gives up. No duplicate work done.
+
+When to use: when the operation is idempotent — if it's already done, no need to do it again. Great for background tasks where only the first worker should succeed.
+
+---
+
+**Merge — "Smart Collaboration"**
+
+Combine both changes field by field — each user's edit survives on the fields they touched.
+
+The scenario: Admin A changes Price to $12. Admin B changes Description to "Blue Shirt." Both click save at the same time. Result: Price $12 and Description "Blue Shirt" — both changes survive.
+
+When to use: collaborative tools where users edit independent fields.
+
+> **Drawback:** Can produce inconsistent state. If Admin A sets Category to "Electronics" and Admin B adds Property "Washable," you end up with a Washable Laptop. Logically linked fields should never be merged blindly.
+
+---
+
+**Fail-and-Notify — "Safe Abort" (what we do)**
+
+Don't resolve the conflict — surface it to the user and let them decide.
+
+The scenario: Alice and Bob both see stock = 1 and click Pay. Alice's transaction commits, stock = 0. Bob's save sees the stock is no longer 1 — EF Core throws `DbUpdateConcurrencyException`. We catch it and rethrow as `InvalidOperationException`. Bob sees: "Stock changed. Please try again."
+
+When to use: when accuracy matters more than smoothness. You can't merge a sale. You can't let the client win (that's overselling). You stop and ask the human.
+
+> **Interview answer for Task 13:** "I didn't just add a try-catch. I identified a race condition, evaluated all four strategies, and chose Fail-and-Notify because it's the only one that guarantees inventory integrity — you can't take a customer's money without them re-confirming the current state."
 
 ### 5. [ConcurrencyCheck] vs [Timestamp] — which to use when
 
@@ -138,16 +183,28 @@ public byte[] RowVersion { get; set; }
 
 **For this project**: `[ConcurrencyCheck]` is correct. We only care about stock conflicts, and we target both SQL Server (Azure) and SQLite (local dev).
 
-### 6. Why InMemory works for the test
+### 6. InMemory vs SQLite — which to use for tests
 
-EF Core's InMemory provider (v5+) simulates concurrency tokens using an in-memory dictionary. When ctx2 tries to save:
+**InMemory** stores data in a plain .NET dictionary. No SQL engine, no schema, zero setup. EF Core handles everything directly in RAM. Since EF Core 5, it also simulates concurrency tokens — which is exactly why it works for this test:
 
 ```
 ctx2 says:   "I read QuantityInStock=1, trying to write 0"
 InMemory:    "Current value in store is 0, not 1" → DbUpdateConcurrencyException
 ```
 
-No real SQL involved, but EF Core's concurrency detection logic is identical.
+The downside: InMemory doesn't enforce FK constraints, doesn't run real transactions, and ignores `UNIQUE`/`CHECK` constraints. Tests can pass even when your SQL would fail in production.
+
+**SQLite in-memory** is a real SQL engine running in-process (`Data Source=:memory:`). It executes actual SQL, enforces constraints, and runs real transactions. The tradeoff: you need to open a persistent connection and call `EnsureCreated()` to build the schema before each test.
+
+**When to pick which:**
+
+| Use InMemory when... | Use SQLite in-memory when... |
+|---|---|
+| Testing EF Core behavior (concurrency, change tracking) | Testing FK constraints, cascade deletes |
+| Speed matters and SQL accuracy doesn't | Testing that a transaction actually rolls back |
+| Test is narrow and isolated | Your test could silently pass on InMemory but fail on a real DB |
+
+**For this test:** InMemory is the right call. We're testing whether EF Core throws on a concurrency conflict — that's EF Core behavior, not SQL behavior. SQLite would also work but adds schema setup for no extra coverage.
 
 ### 7. Full error chain to the client
 
@@ -235,18 +292,32 @@ product!.QuantityInStock.Should().Be(0);  // only decremented once
 
 ## Interview Q&A
 
-**Q: What's the difference between optimistic and pessimistic concurrency?**
+**1. What's the difference between optimistic and pessimistic concurrency?**
+
 Pessimistic: lock the row on read, block all other writers until you release. Good when conflicts are frequent. Bad for high-read scenarios.
+
 Optimistic: no lock. On save, verify the row hasn't changed. Throw on conflict. Good when conflicts are rare (most e-commerce scenarios).
 
-**Q: How does EF Core implement [ConcurrencyCheck]?**
+**2. How does EF Core implement [ConcurrencyCheck]?**
+
 It adds the original property value to the UPDATE's WHERE clause. If 0 rows are affected, EF throws `DbUpdateConcurrencyException`. No extra column needed.
 
-**Q: What's the alternative to [ConcurrencyCheck] in SQL Server?**
-`rowversion` / `timestamp` — a binary column auto-incremented by SQL Server on every write. More robust (covers all columns, not just the one you annotate), but requires a column addition. Use `[Timestamp]` attribute in EF Core.
+**3. What's the alternative to [ConcurrencyCheck] in SQL Server?**
+`[Timestamp]` / `rowversion` — a binary column SQL Server auto-increments on every write. Covers all columns, not just one. Requires adding a column. SQL Server only — breaks SQLite.
 
-**Q: What should you do when you catch DbUpdateConcurrencyException?**
-Options: (1) retry by re-reading the entity and reapplying changes — good for background jobs; (2) return a user-facing error and let them retry — better for user-driven writes where intent may have changed.
+**4. What are the four strategies for handling DbUpdateConcurrencyException?**
+
+- **Client wins** — overwrite DB anyway. Use for low-impact data (e.g. profile bio) where a lost update is acceptable.
+
+- **Store wins** — discard your changes, accept what's in DB. Use for idempotent background jobs where the first writer wins.
+
+- **Merge** — combine changes field by field. Use for collaborative editing of independent fields. Risk: inconsistent state if fields are logically linked.
+
+- **Fail-and-Notify** — rethrow, tell the user. Use when accuracy matters more than smoothness (e.g. checkout — you can't merge a sale).
+
+**5. Why did you choose Fail-and-Notify for checkout instead of retrying automatically?**
+
+Retrying silently (Store Wins) would be bad UX. If stock dropped or price changed between the user's read and save, I shouldn't take their money without re-confirmation. Fail-and-Notify protects inventory integrity and customer trust.
 
 ---
 
