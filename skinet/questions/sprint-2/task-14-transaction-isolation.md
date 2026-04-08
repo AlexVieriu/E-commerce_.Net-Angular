@@ -1,5 +1,3 @@
-claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
-
 # Task 14 — Transaction Isolation Levels
 
 ## Why this approach
@@ -136,3 +134,7 @@ a SQL commit because a Redis delete failed. The correct design is: commit the or
 (the critical operation), then clean up the cart (non-critical). If cart deletion fails,
 the user has a stale cart in Redis — a minor UX issue, not a data integrity problem.
 I'd handle it with a background cleanup job rather than blocking the checkout flow.
+
+---
+
+claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
