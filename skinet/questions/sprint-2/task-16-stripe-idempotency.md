@@ -37,10 +37,15 @@ The webhook (Leg 3) fires after the user pays and updates order status.
 
 ### Without the key (network blip scenario)
 
+"Network blip" = Stripe created pi_abc123 and sent the response back, but it died on the
+way to the server. Server times out → client sees error → clicks "Next" again.
+Stripe on retry has no memory of pi_abc123 — it just sees a new `CreateAsync` request.
+
 ```
-Call 1 → Stripe creates pi_abc123 → network blip → server gets no response
-Call 2 → Stripe creates pi_xyz456 → server stores this one
-pi_abc123 is now orphaned on Stripe — open forever, never confirmed, never cancelled
+Call 1 → server → Stripe: pi_abc123 created ✓ → response dies → server times out
+Call 2 → server → Stripe: no key → Stripe creates pi_xyz456 (brand new)
+         → server stores pi_xyz456 in Redis
+         → pi_abc123 orphaned on Stripe forever
 ```
 
 ### With the key

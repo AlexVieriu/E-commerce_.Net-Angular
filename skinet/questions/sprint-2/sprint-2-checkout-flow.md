@@ -72,14 +72,17 @@ YOU: Click "Next" → move to TAB 3 (Payment)
   ┌────────────────────────────────────────────────────────┐
   │ TASK 16 FAILURE ZONE                                   │
   │                                                        │
+  │ "Network blip" = Stripe created pi_abc123 and sent     │
+  │ the response back, but it died on the way to server.   │
+  │ Server times out → client sees error → clicks again.   │
+  │ Stripe on retry has no memory of pi_abc123 — it just   │
+  │ sees a new CreateAsync request.                        │
+  │                                                        │
   │ WITHOUT IdempotencyKey:                                │
-  │   network blip → server retries                        │
-  │   → Stripe creates 2nd PaymentIntent                   │
-  │   → 1st is orphaned on Stripe forever                  │
+  │   Stripe creates pi_xyz456 (new) → pi_abc123 orphaned  │
   │                                                        │
   │ WITH IdempotencyKey = "cart-999":                      │
-  │   network blip → server retries with same key          │
-  │   → Stripe returns same pi_abc123 [OK]                 │
+  │   Stripe sees key already processed → returns pi_abc123│
   └────────────────────────────────────────────────────────┘
 
   → Stripe creates PaymentIntent pi_abc123
