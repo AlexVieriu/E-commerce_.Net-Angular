@@ -51,7 +51,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
                 PaymentMethodTypes = ["card"]
             };
 
-            var intent = await serviceIntent.CreateAsync(options);
+            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = cart.Id });
             cart.PaymentIntentId = intent.Id;
             cart.ClientSecret = intent.ClientSecret;
         }

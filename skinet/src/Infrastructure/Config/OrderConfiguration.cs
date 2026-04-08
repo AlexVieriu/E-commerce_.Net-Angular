@@ -19,6 +19,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.HasMany(x => x.OrderItems).WithOne().OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasIndex(o => o.PaymentIntentId).IsUnique();
+
         builder.Property(x => x.OrderDate).HasConversion(
             d => d.ToUniversalTime(),
             d => DateTime.SpecifyKind(d, DateTimeKind.Utc)

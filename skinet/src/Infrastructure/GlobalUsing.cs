@@ -1,6 +1,7 @@
 global using Address = Core.Entities.Address;
 global using Application.Common.DTOs;
 global using Application.Common.Interfaces;
+global using Application.Specifications;
 global using Microsoft.Data.SqlClient;
 global using Core.Entities;
 global using Core.Entities.OrderAggregate;
