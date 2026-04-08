@@ -68,6 +68,11 @@ var intent = await serviceIntent.CreateAsync(
 `RequestOptions` is a Stripe SDK class. `IdempotencyKey` maps to the `Idempotency-Key` HTTP
 header Stripe reads on every request. Stripe caches the response for 24 hours.
 
+### With the key — two-tab scenario
+
+Two tabs call `POST /api/payments/cart-999` at the same time. Same key → Stripe returns
+the same `pi_abc123` to both. Both tabs end up in sync. No orphaned intent.
+
 ### Why cart.Id is the right key
 
 One cart = one PaymentIntent. Cart ID is stable, unique per session, already in scope.
