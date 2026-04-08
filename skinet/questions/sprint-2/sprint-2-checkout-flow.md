@@ -69,18 +69,18 @@ YOU: Click "Next" → move to TAB 3 (Payment)
   onStepChange(selectedIndex === 2)
   → POST /api/payments/cart-999  ← PaymentIntent created HERE
 
-  ┌──────────────────────────────────────────────────┐
-  │ TASK 16 FAILURE ZONE                             │
-  │                                                  │
-  │ WITHOUT IdempotencyKey:                          │
-  │   network blip → server retries                  │
-  │   → Stripe creates 2nd PaymentIntent             │
-  │   → 1st is orphaned on Stripe forever            │
-  │                                                  │
-  │ WITH IdempotencyKey = "cart-999":                │
-  │   network blip → server retries with same key    │
-  │   → Stripe returns same pi_abc123 ✓              │
-  └──────────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────────────────┐
+  │ TASK 16 FAILURE ZONE                                   │
+  │                                                        │
+  │ WITHOUT IdempotencyKey:                                │
+  │   network blip → server retries                        │
+  │   → Stripe creates 2nd PaymentIntent                   │
+  │   → 1st is orphaned on Stripe forever                  │
+  │                                                        │
+  │ WITH IdempotencyKey = "cart-999":                      │
+  │   network blip → server retries with same key          │
+  │   → Stripe returns same pi_abc123 [OK]                 │
+  └────────────────────────────────────────────────────────┘
 
   → Stripe creates PaymentIntent pi_abc123
   → Redis updated with PaymentIntentId + ClientSecret
@@ -139,22 +139,22 @@ YOU: Click "Pay $341"
 
   [2] POST /api/orders → orderService.createOrder()
 
-  ┌──────────────────────────────────────────────────┐
-  │ TASK 18 FAILURE ZONE                             │
-  │                                                  │
-  │ WITHOUT check + index:                           │
-  │   double-click "Pay $341" → 2 requests           │
-  │   Request A → inserts Order #1 (pi_abc123) ✓    │
-  │   Request B → inserts Order #2 (pi_abc123) ✗    │
-  │   Webhook updates only one → other stays Pending │
-  │                                                  │
-  │ WITH app-level check:                            │
-  │   Request A → inserts Order #1 ✓                │
-  │   Request B → finds Order #1 → returns it ✓     │
-  │                                                  │
-  │ WITH unique DB index (last resort):              │
-  │   true race → 2nd insert rejected by SQLite ✓   │
-  └──────────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────────────────┐
+  │ TASK 18 FAILURE ZONE                                   │
+  │                                                        │
+  │ WITHOUT check + index:                                 │
+  │   double-click "Pay $341" → 2 requests                 │
+  │   Request A → inserts Order #1 (pi_abc123) [OK]        │
+  │   Request B → inserts Order #2 (pi_abc123) [!]         │
+  │   Webhook updates only one → other stays Pending       │
+  │                                                        │
+  │ WITH app-level check:                                  │
+  │   Request A → inserts Order #1 [OK]                    │
+  │   Request B → finds Order #1 → returns it [OK]         │
+  │                                                        │
+  │ WITH unique DB index (last resort):                    │
+  │   true race → 2nd insert rejected by SQLite [OK]       │
+  └────────────────────────────────────────────────────────┘
 
   → OrderService reads cart from Redis → gets pi_abc123
   → Checks SQLite: order with pi_abc123 exists? No → insert
