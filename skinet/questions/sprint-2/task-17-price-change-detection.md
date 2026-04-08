@@ -1,3 +1,5 @@
+# Task 17 — Price Change Detection
+
 ## Why this approach
 
 Cart prices are stored in Redis and can become stale — a product price can change in the DB between the time the user adds it to cart and the time they pay. We need to catch this **at order creation time** (the last gate before stock is decremented and the order is written to DB) and reject the order rather than silently charging the wrong amount.
