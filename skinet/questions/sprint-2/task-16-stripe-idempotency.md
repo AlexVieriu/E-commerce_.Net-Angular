@@ -68,7 +68,15 @@ var intent = await serviceIntent.CreateAsync(
 );
 ```
 
+`RequestOptions` is a Stripe SDK class. `IdempotencyKey` is a property defined by Stripe — it maps directly to the `Idempotency-Key` HTTP header that Stripe's API reads on every request.
+
 Stripe stores the idempotency key + response for 24 hours. Requests with the same key within that window return the cached response.
+
+### Why Stripe doesn't enforce this by default
+
+Stripe can't know what "the same request" means for your business. Two calls to `CreateAsync` with different amounts are legitimately different requests — both should create new intents. Two calls with the same amount could be a retry or two separate purchases. Stripe has no way to distinguish them without you providing a key.
+
+Making it opt-in also keeps the API simple for the common case (one-shot scripts, server-side renders, admin tools) where retries never happen and the overhead of tracking keys is unnecessary. The responsibility is on the developer to define the idempotency boundary — in our case, `cart.Id`.
 
 ## Exercise
 
