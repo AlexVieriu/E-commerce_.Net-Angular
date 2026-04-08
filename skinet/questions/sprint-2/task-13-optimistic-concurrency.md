@@ -1,24 +1,5 @@
 # Task 13 — Optimistic Concurrency
 
-## Plan
-
-- Write a failing test that proves the race condition (TDD — red first)
-- Add `[ConcurrencyCheck]` to `Product.QuantityInStock`
-- Catch `DbUpdateConcurrencyException` in `OrderService` → rethrow as `InvalidOperationException`
-- Generate migrations for SqlServer + SQLite (empty DDL, snapshot only)
-
-## Todo
-
-- [x] Create `questions/sprint-2/task-13-optimistic-concurrency.md`
-- [x] Write failing test in `Infrastructure.Tests/Services/OrderService_Tests.cs`
-- [x] Add `[ConcurrencyCheck]` to `Product.QuantityInStock`
-- [x] Catch `DbUpdateConcurrencyException` in `OrderService.CreateOrderAsync`
-- [x] Generate SqlServer migration
-- [x] Generate SQLite migration
-- [x] Verify all tests green
-
----
-
 ## Why this approach
 
 Two simultaneous checkouts read `QuantityInStock = 1`. Both pass the stock check. Both decrement to 0. Both save. Result: 2 orders created for 1 item — oversell.
@@ -236,42 +217,12 @@ If C retries after B: reads stock=0, fails "Insufficient stock" check → clear 
 
 Final stock: 1 (only A succeeded without retry). Each retry has a fair chance.
 
-## Implementation
+## Tests
 
-**Branch:** `feature/13-stock-race-condition`
+TDD — test written first (RED), then `[ConcurrencyCheck]` added (GREEN).
 
-### 1. `Core/Entities/Product.cs`
-Added the attribute — one line:
-```csharp
-[ConcurrencyCheck]
-public int QuantityInStock { get; set; }
-```
+File: `Infrastructure.Tests/Services/OrderService_Tests.cs`
 
-### 2. `Infrastructure/Services/OrderService.cs`
-Wrapped `unitOfWork.Complete()` in a try/catch:
-```csharp
-try
-{
-    if (!await unitOfWork.Complete()) return null;
-}
-catch (DbUpdateConcurrencyException)
-{
-    throw new InvalidOperationException(
-        "Stock changed during checkout due to a concurrent order. Please try again.");
-}
-```
-`InvalidOperationException` is caught by `ExceptionMiddleware` → 400 with the message → snackbar on the client.
-
-### 3. Migrations
-Empty body (no DDL) — `[ConcurrencyCheck]` only updates the EF model snapshot, not the column.
-The snapshot now has `.IsConcurrencyToken()` on `QuantityInStock`, which is what EF reads to generate the `WHERE stock = @original` clause.
-
-Generated for both providers:
-- `Migrations/SqlServer/..._AddConcurrencyTokenToProduct.cs`
-- `Migrations/SQLite/..._AddConcurrencyTokenToProduct.cs`
-
-### 4. `Infrastructure.Tests/Services/OrderService_Tests.cs`
-TDD test — was RED before the fix, GREEN after:
 ```csharp
 // Pre-load into both contexts before either saves — simulates the race
 await ctx1.Products.FindAsync(1);
@@ -284,11 +235,7 @@ await act2.Should().ThrowAsync<InvalidOperationException>().WithMessage("*concur
 product!.QuantityInStock.Should().Be(0);  // only decremented once
 ```
 
-### 5. Housekeeping
-- `Core/GlobalUsing.cs` — added `System.ComponentModel.DataAnnotations`
-- `Infrastructure.Tests/GlobalUsing.cs` — added DTOs, EF Core, Infrastructure.Data namespaces
-- `Infrastructure/Data/Factory/SqlServerContextFactory.cs` — added `AddEnvironmentVariables()` so migrations work locally without Azure
-- `Infrastructure/Infrastructure.csproj` — added `Microsoft.Extensions.Configuration.EnvironmentVariables`
+Uses EF Core **InMemory** provider — since EF Core 5 it enforces concurrency tokens. When `ctx2` tries to save, InMemory compares the original tracked value against the current store value → mismatch → `DbUpdateConcurrencyException`.
 
 ## Interview Q&A
 

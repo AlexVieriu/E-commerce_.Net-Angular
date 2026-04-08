@@ -98,6 +98,26 @@ confirmPayment()
 
 ---
 
+## Tests
+
+Manual tests — no unit test written for this task.
+
+**Test 1 — Price change detected (happy path for the feature):**
+1. Add item to cart, go through checkout steps 1 → 2 → 3 → reach step 4 (review)
+2. Change product price in DB + commit
+3. Click Pay
+4. Expected: snackbar with `"Prices have changed: <Name> ($X → $Y). Your cart has been updated."` + redirect to `/cart` + cart shows updated price
+
+**Test 2 — Happy path still works:**
+1. Go through checkout with no DB price change
+2. Expected: order completes, redirect to `/checkout/success`
+
+**Test 3 — Retry after rejection works:**
+1. After 409 rejection, go back to checkout
+2. Expected: new PaymentIntent created (no Stripe "already succeeded" error), order completes
+
+**Key timing note:** Changing the price BEFORE reaching step 3 won't trigger the 409 — `PaymentService.ValidateCartItemsInCartAsync()` silently corrects cart prices when `createOrUpdatePaymentIntent()` runs at step 3. The detection window is between step 3 entry and the Pay click.
+
 ## Interview Q&A
 
 **Q: Why 409 instead of 400 for a price change?**
