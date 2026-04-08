@@ -75,6 +75,12 @@ SQL Server can't index `nvarchar(max)` columns. EF automatically narrows it to `
 
 4. Before the index, `WHERE PaymentIntentId = 'pi_abc123'` could return multiple rows. The webhook might update the wrong one or update both. With the unique index, the query always returns exactly one row — deterministic, correct.
 
+## Known Limitation
+
+The order is created **after** Stripe confirms payment. The webhook can fire before the order exists in SQLite — order stays `Pending` forever. The user also sees the success page before the webhook fires, so "View My Order" may show `Pending` on a paid order.
+
+See full analysis + correct fix in [sprint-2-checkout-flow.md](sprint-2-checkout-flow.md#known-limitation--order-created-after-payment).
+
 ## Interview Q&A
 
 **Q: How did you prevent duplicate orders on double-click?**

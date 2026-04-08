@@ -21,4 +21,5 @@ One-liner per concept. Click the link for full explanation + Q&A.
 - [Task 15 — Cart delete post-commit](sprint-2/task-15-cart-delete-post-commit.md) — Redis and SQL don't share a transaction; delete cart after commit so a failed order doesn't lose the cart
 - [Task 16 — Stripe idempotency key](sprint-2/task-16-stripe-idempotency.md) — IdempotencyKey = cart.Id prevents duplicate PaymentIntents on network retry; uniqueness ≠ idempotency
 - [Task 18 — Order idempotency](sprint-2/task-18-order-idempotency.md) — unique DB constraint on PaymentIntentId + pre-insert check returns existing order instead of duplicate
+- **[Sprint 2 Checkout Flow](sprint-2/sprint-2-checkout-flow.md)** — full Redis/SQLite/Stripe/Angular flow with Task 16 + 18 failure zones and known limitation marked
 - **[Sprint 2 Practice Exam](sprint-2/sprint-2-practice.md)** — 30 questions: recall + scenario + practical + senior stretch. Will expand when sprint completes.
