@@ -1,63 +1,55 @@
 # Task 16 — Stripe Idempotency Key
 
+> Big picture: see [sprint-2-checkout-flow.md](sprint-2-checkout-flow.md) — Task 16 failure zone is at "Tab 2 → Tab 3".
+
 ## Why this approach
 
-Stripe's `PaymentIntent` creation is not idempotent by default. If the HTTP call to Stripe succeeds but your server never receives the response (network blip, timeout), a retry creates a second PaymentIntent for the same cart — potential duplicate charge.
+When the user moves from Shipping to the Payment tab, Angular calls `POST /api/payments/{cartId}`.
+Your server calls Stripe `CreateAsync` to create a PaymentIntent. If the network blips between
+Stripe creating the intent and your server receiving the response, a retry creates a **second**
+PaymentIntent for the same cart — potential orphaned payment.
 
-Passing `IdempotencyKey = cart.Id` tells Stripe: "if you've already processed a request with this key, return the same response — don't create a new resource."
+`IdempotencyKey = cart.Id` tells Stripe: "if you've already processed a request with this key,
+return the same response — don't create a new resource."
 
 ## What confused me
 
 Stripe creates unique PaymentIntent IDs automatically (`pi_abc123`). So why would you get duplicates?
 
-The answer: uniqueness and idempotency are different things. Stripe will happily create two *unique* PaymentIntents for the same cart if you call `CreateAsync` twice — they each get a unique ID. The idempotency key prevents the second call from creating a new intent at all.
+**Uniqueness and idempotency are different things.**
+Stripe will happily create two *unique* PaymentIntents for the same cart if you call `CreateAsync`
+twice. The idempotency key prevents the second call from creating anything new at all.
 
 ## Explanation
 
-### The full Stripe payment flow (3 legs)
+### Where this fits in the checkout flow
 
 ```
-Leg 1 — Your server → Stripe
-  POST /api/payments/{cartId}
-    └── PaymentService.CreateOrUpdatePaymentIntent()
-          └── Stripe CreateAsync() ← IdempotencyKey = cart.Id
-                → returns PaymentIntentId + ClientSecret
-                → stored in Redis cart
-
-Leg 2 — User → Stripe directly
-  Angular uses ClientSecret + Stripe.js to collect card details
-  Card data never touches your server
-  Stripe processes the payment
-
-Leg 3 — Stripe → Your server (webhook)
-  POST /api/payments/webhook
-    └── Finds order by PaymentIntentId
-          └── Sets OrderStatus.PaymentReceived
-                └── SignalR push to buyer
+Tab 2 → Tab 3 click
+  → POST /api/payments/cart-999
+      → Stripe CreateAsync(IdempotencyKey = "cart-999")  ← HERE
+          → returns PaymentIntentId + ClientSecret
+          → stored in Redis cart
 ```
 
-### Where IdempotencyKey fits
+Card data never touches your server — that happens in Leg 2 (Stripe.js directly).
+The webhook (Leg 3) fires after the user pays and updates order status.
 
-Only Leg 1. Once you have a `PaymentIntentId`, Legs 2 and 3 reference it by ID — already idempotent by nature.
-
-### What happens without the key on a retry
+### Without the key (network blip scenario)
 
 ```
-Call 1 → Stripe creates pi_abc123 → network blip → your server gets no response
-Call 2 → Stripe creates pi_xyz456 → your server stores this one
-Result: pi_abc123 is an orphaned open PaymentIntent
+Call 1 → Stripe creates pi_abc123 → network blip → server gets no response
+Call 2 → Stripe creates pi_xyz456 → server stores this one
+pi_abc123 is now orphaned on Stripe — open forever, never confirmed, never cancelled
 ```
 
-With `IdempotencyKey = cart.Id`:
-```
-Call 1 → Stripe creates pi_abc123, stores response under key "cart-id-999" → network blip
-Call 2 → Stripe sees "cart-id-999" already processed → returns pi_abc123 again
-Result: one PaymentIntent, correct behaviour
-```
+### With the key
 
-### Why cart.Id is the right key
-
-One cart should produce exactly one PaymentIntent. Cart ID is stable, unique per user session, and already in scope. It's the natural idempotency boundary.
+```
+Call 1 → Stripe creates pi_abc123, stores response under "cart-999" → network blip
+Call 2 → Stripe sees "cart-999" already processed → returns pi_abc123 again
+One PaymentIntent, correct behaviour
+```
 
 ### Implementation
 
@@ -68,47 +60,55 @@ var intent = await serviceIntent.CreateAsync(
 );
 ```
 
-`RequestOptions` is a Stripe SDK class. `IdempotencyKey` is a property defined by Stripe — it maps directly to the `Idempotency-Key` HTTP header that Stripe's API reads on every request.
+`RequestOptions` is a Stripe SDK class. `IdempotencyKey` maps to the `Idempotency-Key` HTTP
+header Stripe reads on every request. Stripe caches the response for 24 hours.
 
-Stripe stores the idempotency key + response for 24 hours. Requests with the same key within that window return the cached response.
+### Why cart.Id is the right key
+
+One cart = one PaymentIntent. Cart ID is stable, unique per session, already in scope.
 
 ### Why Stripe doesn't enforce this by default
 
-Stripe can't know what "the same request" means for your business. Two calls to `CreateAsync` with different amounts are legitimately different requests — both should create new intents. Two calls with the same amount could be a retry or two separate purchases. Stripe has no way to distinguish them without you providing a key.
-
-Making it opt-in also keeps the API simple for the common case (one-shot scripts, server-side renders, admin tools) where retries never happen and the overhead of tracking keys is unnecessary. The responsibility is on the developer to define the idempotency boundary — in our case, `cart.Id`.
+Stripe can't know your business boundary. Two `CreateAsync` calls with different amounts are
+legitimately different requests. Opt-in keeps the API simple for scripts and one-shot tools
+where retries never happen.
 
 ## Exercise
 
-1. A user opens checkout on two browser tabs simultaneously. Both tabs call `POST /api/payments/{cartId}`. What happens without the idempotency key? What happens with it?
-2. Why is the idempotency key only on `CreateAsync` and not on `UpdateAsync`?
-3. Stripe stores idempotency keys for 24 hours. What happens if a cart is abandoned for 25 hours and the user returns?
+1. User opens checkout on two browser tabs simultaneously. Both call `POST /api/payments/{cartId}`.
+   What happens without the key? With it?
+2. Why is the key only on `CreateAsync` and not `UpdateAsync`?
 
 ## Solution
 
-1. **Without key:** two calls to Stripe create two PaymentIntents. Both tabs store different `PaymentIntentId`s — one gets orphaned. Potential confusion at webhook time. **With key:** second call returns the same PaymentIntent. Both tabs end up with the same `pi_abc123`. Safe.
+1. **Without key:** Stripe creates two PaymentIntents. One gets orphaned. Webhook confusion.
+   **With key:** Second call returns the same `pi_abc123`. One intent, both tabs in sync.
 
-2. `UpdateAsync` takes an existing `PaymentIntentId` as its first argument — it targets a specific resource. Calling it twice with the same ID and same amount is already safe (idempotent by design — updating a value to itself is a no-op). `CreateAsync` has no target resource yet, so without a key Stripe can't know it's a duplicate request.
-
-3. After 24 hours Stripe's cached response expires. A new `CreateAsync` call with the same `cart.Id` creates a fresh PaymentIntent. This is correct behaviour — the old intent would have expired or been cancelled anyway.
+2. `UpdateAsync` targets a specific `PaymentIntentId` — already idempotent by nature.
+   `CreateAsync` has no target resource yet, so Stripe needs the key to identify duplicates.
 
 ## Interview Q&A
 
-**Q: Why did you add an idempotency key to the Stripe PaymentIntent creation?**
+**Q: Why did you add an idempotency key to Stripe PaymentIntent creation?**
 
-A: Without it, a network failure between my server and Stripe on a retry creates a second PaymentIntent for the same cart — a potential duplicate charge. The idempotency key tells Stripe to return the same response if it's seen that key before. I used `cart.Id` as the key because one cart should map to exactly one PaymentIntent, and it's already in scope at that point in the code.
+A: Without it, a network failure on retry creates a second PaymentIntent for the same cart —
+a potential duplicate charge. `IdempotencyKey = cart.Id` tells Stripe to return the same
+response if it's seen that key before. One cart should always map to exactly one PaymentIntent.
 
 ---
 
-**Q: Stripe already assigns unique IDs to PaymentIntents. Why do you still need idempotency?**
+**Q: Stripe already assigns unique IDs. Why do you still need idempotency?**
 
-A: Uniqueness and idempotency solve different problems. Stripe's unique IDs prevent two intents from having the same ID. But without an idempotency key, Stripe will create two *different* unique intents if you call `CreateAsync` twice — it has no way to know they're for the same logical operation. The idempotency key provides that business-level identity: "this is the same request, give me the same result."
+A: Uniqueness prevents two intents from having the same ID. Idempotency prevents two intents
+from being created for the same logical operation. Without the key, Stripe creates two *different*
+unique intents — it has no way to know the second call is a retry, not a new purchase.
 
 ---
 
 **Q: What's the scope of a Stripe idempotency key?**
 
-A: Per API key, per endpoint. Stripe stores it for 24 hours. Within that window, any request with the same key returns the cached response without creating a new resource. After 24 hours the key expires and a new call creates a fresh resource.
+A: Per API key, per endpoint. Cached for 24 hours. After that, a new call creates a fresh resource —
+correct behaviour since the old intent would have expired anyway.
 
 ---
 
