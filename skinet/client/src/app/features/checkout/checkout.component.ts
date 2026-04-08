@@ -2,6 +2,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, inject
 import { OrderSummaryComponent } from "../../shared/components/order-summary/order-summary.component";
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButton } from '@angular/material/button';
 import { StripeService } from '../../core/services/stripe.service';
 import { ConfirmationToken, StripeAddressElement, StripeAddressElementChangeEvent, StripePaymentElement, StripePaymentElementChangeEvent } from '@stripe/stripe-js';
@@ -150,6 +151,7 @@ export class CheckoutComponent {
       }
     }
     catch (error: any) {
+      if (error instanceof HttpErrorResponse && error.status === 409) return;
       this.snackBar.error(error.message || "Something went wrong");
       stepper.previous(); // go to Step 2, then can go to Step 3 to generate new token
     }

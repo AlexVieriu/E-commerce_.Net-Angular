@@ -497,11 +497,9 @@ skinet/client/ssl/*.key
 skinet/client/.angular/
 
 # Angular build output (CI rebuilds this on every deploy)
-skinet/API/wwwroot/*.js
-skinet/API/wwwroot/*.css
-skinet/API/wwwroot/*.txt
-skinet/API/wwwroot/*.json
-skinet/API/wwwroot/index.html
+skinet/API/wwwroot/
+!skinet/API/wwwroot/favicon.ico
+!skinet/API/wwwroot/images/
 
 # Claude Code local settings
 .claude/settings.local.json

@@ -16,6 +16,7 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
             throw new InvalidOperationException("Cannot create order from an empty cart.");
 
         var items = new List<OrderItem>();
+        var priceChanges = new List<string>();
 
         foreach (var item in cart.Items)
         {
@@ -25,6 +26,12 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
 
             var productItem = await unitOfWork.Repository<Product>().GetByIdAsync(item.ProductId);
             if (productItem == null) return null;
+
+            if (item.Price != productItem.Price)
+            {
+                priceChanges.Add($"{productItem.Name} (${item.Price:F2} → ${productItem.Price:F2})");
+                item.Price = productItem.Price;
+            }
 
             if (productItem.QuantityInStock < item.Quantity)
                 throw new InvalidOperationException(
@@ -51,6 +58,18 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
         var deliveryMethod = await unitOfWork.Repository<DeliveryMethod>()
                                              .GetByIdAsync(orderDto.DeliveryMethodId);
         if (deliveryMethod == null) return null;
+
+        if (cart.DeliveryMethodId.HasValue && cart.DeliveryMethodId != deliveryMethod.Id)
+            priceChanges.Add($"Delivery method changed");
+
+        if (priceChanges.Count > 0)
+        {
+            cart.PaymentIntentId = null;
+            cart.ClientSecret = null;
+            await cartService.SetCartAsync(cart);
+            throw new PriceChangedException(
+                $"Prices have changed: {string.Join(", ", priceChanges)}. Your cart has been updated.");
+        }
 
         var subtotal = items.Sum(x => x.Price * x.Quantity);
         var discount = CalculateDiscount(cart.Coupon, subtotal);
