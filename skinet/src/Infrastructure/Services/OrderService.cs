@@ -8,6 +8,10 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
         if (cart == null) return null;
         if (cart.PaymentIntentId == null) return null;
 
+        var existingOrder = await unitOfWork.Repository<Order>()
+            .GetEntityWithSpec(OrderSpecification.ByPaymentIntent(cart.PaymentIntentId));
+        if (existingOrder != null) return existingOrder;
+
         if (!cart.Items.Any())
             throw new InvalidOperationException("Cannot create order from an empty cart.");
 

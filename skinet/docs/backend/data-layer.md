@@ -52,3 +52,4 @@ Applied automatically on startup via `context.Database.MigrateAsync()`.
 
 - Forgetting migration for one provider after a schema change.
 - Not checking `Complete()` return value — `false` means nothing was saved.
+- Adding a unique index on `nvarchar(max)` on SqlServer — EF narrows it to `nvarchar(450)` automatically, but the migration must include the `AlterColumn` step.
