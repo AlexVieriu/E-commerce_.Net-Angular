@@ -1,22 +1,5 @@
 # Task 9 — CORS explicit + CSP security headers
 
-## Plan
-
-- Add named CORS policy with explicit origin whitelist
-- Install `NetEscapades.AspNetCore.SecurityHeaders`
-- Configure CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
-- Test visually after CSP (Material must not break)
-
-## Todo
-
-- [x] Add `CorsPolicy` in `ApplicationServicesExtensions.cs`
-- [x] Install `NetEscapades.AspNetCore.SecurityHeaders`
-- [x] Configure security headers in `WebApplicationExtensions.cs`
-- [x] Add `wss:` to `connect-src` for SignalR WebSocket
-- [x] Verify headers in DevTools → Network
-
----
-
 ## Why this approach
 
 CORS and security headers are server-enforced browser policies. CORS controls cross-origin requests; security headers tell the browser what it's allowed to load and how to handle your content. Both are set at the HTTP response level, not in application logic.

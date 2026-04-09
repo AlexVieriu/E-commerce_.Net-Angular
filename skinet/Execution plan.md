@@ -1,5 +1,3 @@
-claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
-
 # Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
@@ -241,3 +239,7 @@ Domain events (M, backend) | Category hierarchy (M) | Wishlist (M) | SEO slugs (
 ## Skipped
 
 OAuth2/JWT, multi-currency, i18n, K8s, GitOps, CSRF, Prometheus/Grafana/Jaeger/OTel, Outbox, Service Bus, CQRS, Domain events, PWA, SSR, file upload, Angular unit tests, and more.
+
+---
+
+claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5

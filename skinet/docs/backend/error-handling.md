@@ -14,7 +14,7 @@ Catches any unhandled exception and returns:
 - **Development:** `{ statusCode, message, stackTrace }`
 - **Production:** `{ statusCode, message, "Internal Server Error" }`
 
-Always returns `500`. Always sets `Content-Type: application/json`.
+Returns `500` by default. Maps specific exception types to other status codes (see below). Always sets `Content-Type: application/json`.
 
 ## ApiErrorResponse
 
@@ -23,6 +23,16 @@ public class ApiErrorResponse(int statusCode, string message, string? details)
 ```
 
 Used by `ExceptionMiddleware`. Also used directly in controllers via `BadRequest(...)`, `NotFound(...)` etc. — ASP.NET wraps those in its own problem details format automatically via `[ApiController]`.
+
+## Exception → Status Code Mapping
+
+| Exception | Status Code |
+|-----------|-------------|
+| `PriceChangedException` | 409 Conflict |
+| `InvalidOperationException` | 400 Bad Request |
+| Everything else | 500 Internal Server Error |
+
+`PriceChangedException` lives in `Core/Exceptions/` — thrown by `OrderService` when cart prices differ from DB prices at order creation time.
 
 ## Error Flow
 

@@ -6,7 +6,7 @@ import { DialogService } from '../../core/services/dialog.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
-import { MatLabel, MatSelectModule } from '@angular/material/select';
+import { MatLabel, MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -59,7 +59,7 @@ export class AdminComponent {
     this.orderParams.update(p => ({ ...p, pageNumber: event.pageIndex + 1, pageSize: event.pageSize }));
   }
 
-  onFilterSelect(event: any) {
+  onFilterSelect(event: MatSelectChange) {
     this.orderParams.update(p => ({ ...p, filter: event.value, pageNumber: 1 }));
   }
 

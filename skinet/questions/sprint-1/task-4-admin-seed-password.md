@@ -1,22 +1,5 @@
 # Task 4 — Admin Seed Password → Env Var / Key Vault
 
-## Plan
-
-- `SeedAsync` receives `adminPassword` as a parameter (from `IConfiguration`)
-- `Program.cs` reads `AdminSettings:Password` from config and passes it in
-- Dev: store in User Secrets
-- Prod: store in Key Vault as `AdminSettings--Password`
-- Update `build-deployment.md` secrets table
-
-## Todo
-
-- [x] Update `SeedAsync` signature to accept `adminPassword`
-- [x] Update `Program.cs` to read `AdminSettings:Password` from config and pass it
-- [x] Add `AdminSettings:Password` to User Secrets (dev)
-- [x] Add `AdminSettings--Password` to Key Vault (prod) + update `build-deployment.md`
-
----
-
 ## Why this approach
 
 The hardcoded `"Pa$$w0rd"` in `StoreContextSeed.cs` was visible to anyone viewing the GitHub repo. Moving it to config follows the .NET config provider chain: User Secrets (dev) → Azure Key Vault (prod). The app reads `AdminSettings:Password` at startup — the source changes per environment, the code doesn't.

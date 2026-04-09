@@ -1,23 +1,5 @@
 # Task 3 — Config Provider Chain & Secrets Management
 
-## Plan
-
-- Move Stripe keys + connection strings out of `appsettings.json`
-- Dev: User Secrets via `dotnet user-secrets set`
-- Prod: Azure Key Vault via `AddAzureKeyVault` + `DefaultAzureCredential`
-- Deploy and verify before rotating any keys (keys are in git history)
-
-## Todo
-
-- [x] Init User Secrets on API project
-- [x] Move `StripeSettings:SecretKey`, `StripeSettings:WhSecret` to User Secrets (dev)
-- [x] Create Azure Key Vault, add secrets with `--` separator naming
-- [x] Add `AddAzureKeyVault` to `Program.cs` (non-Development only)
-- [x] Enable Managed Identity on App Service, grant Key Vault Secrets User role
-- [x] Verify Azure deploy works, then rotate any keys that were in git history
-
----
-
 ## Why this approach
 
 .NET's configuration system is layered — each provider overrides the previous one. This lets

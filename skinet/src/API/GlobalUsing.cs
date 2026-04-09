@@ -14,6 +14,7 @@ global using Application.Specifications;
 global using Azure.Identity;
 global using Core.Entities;
 global using Core.Entities.OrderAggregate;
+global using Core.Exceptions;
 global using Core.Interfaces;
 global using CouponService = Infrastructure.Services.CouponService;
 global using Infrastructure.Data;

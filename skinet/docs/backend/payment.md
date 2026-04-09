@@ -39,5 +39,5 @@ Only `PaymentIntent` events with `status == "succeeded"` are processed — all o
 - Never trust client-side prices — always re-fetch from DB before creating the intent.
 - Webhook endpoint must not have `[Authorize]` — verified by Stripe signature only.
 - Stripe amounts always in cents (multiply by 100).
-- `PaymentIntent` creation uses `IdempotencyKey = cart.Id` — prevents duplicate intents if the request is retried.
+- `PaymentIntent` creation uses `IdempotencyKey = $"{cart.Id}-{Guid.NewGuid()}"` — cart prefix for Stripe log traceability, Guid suffix ensures a new intent can be created for the same cart after a price change rejection.
 
