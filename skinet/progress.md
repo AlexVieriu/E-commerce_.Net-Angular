@@ -9,6 +9,7 @@
 | Apr 7 | T15, T16, T18 | Cart delete ordering, Stripe idempotency, order unique constraint |
 | Apr 8 | docs | Refactored + updated all affected docs |
 | Apr 8 | T17 | Price change detection: 409 + snackbar + redirect. Also fixed order detail routing (/order → /orders) |
+| Apr 9 | T19 | Unit tests: 128 tests, Core 90%, Application 89.3%, Infrastructure services ~85%. Fixed broken CartService mock, added OrderService happy path + idempotency, discount edges, search/sort specs, mapping tests, DTO validators, coupon tests. [ExcludeFromCodeCoverage] on Stripe services. |
 
 ---
 
@@ -31,7 +32,7 @@
 - [x] T18 — Order idempotency: unique constraint on PaymentIntentId
 - [x] BUG-1 — Checkout: Address tab "Next" button stays disabled
 - [x] T17 — Price change detection: cart vs DB, 409 + snackbar + redirect
-- [ ] T19 — Expand unit tests: specs, discount edges, validators. Target 80%
+- [x] T19 — Expand unit tests: specs, discount edges, validators. Target 80% → achieved 90% Core, 89.3% Application
 
 ## Sprint 3 — Admin Panel *(Apr 20 – May 3)*
 

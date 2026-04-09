@@ -127,14 +127,14 @@ public class CartService_Tests
 
         var shoppingCart = new ShoppingCart() { Id = "nonexistent" };
 
-        // Mock StringSetAsync to return false (failure)
-        // StringSetAsync is an explicit IDatabaseAsync implementation — must use As<IDatabaseAsync>()
+        // CartService calls the newer overload: StringSetAsync(RedisKey, RedisValue, Expiration, ValueCondition, CommandFlags)
+        // Must use As<IDatabaseAsync>() because it is an explicit interface implementation
         mockDatabase.As<IDatabaseAsync>()
             .Setup(x => x.StringSetAsync(
-                shoppingCart.Id,
+                It.IsAny<RedisKey>(),
                 It.IsAny<RedisValue>(),
-                It.IsAny<TimeSpan?>(),
-                It.IsAny<When>(),
+                It.IsAny<Expiration>(),
+                It.IsAny<ValueCondition>(),
                 It.IsAny<CommandFlags>()))
             .ReturnsAsync(false);
 
