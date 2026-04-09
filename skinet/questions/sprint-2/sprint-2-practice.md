@@ -122,7 +122,7 @@ When the class has no injectable seam for its external dependencies — for exam
 You deploy your Angular app and all Material components lose their styling. The console shows CSP violations. What happened and how do you fix it?
 
 <details><summary>Answer</summary>
-CSP is blocking inline styles. Angular Material injects `<style>` blocks directly into the DOM. Fix: add `unsafe-inline` to `style-src` directive. The ideal fix is nonce-based CSP, but Material doesn't support it without a custom renderer.
+CSP is blocking inline styles. Angular Material injects <code>&lt;style&gt;</code> blocks directly into the DOM. Fix: add <code>unsafe-inline</code> to <code>style-src</code> directive. The ideal fix is nonce-based CSP, but Material doesn't support it without a custom renderer.
 </details>
 
 ### M2. Scenario
@@ -348,12 +348,12 @@ Key points: re-read the entity (not the stale tracked copy), re-check stock, bac
 Angular Material uses `ViewEncapsulation.None` which injects global `<style>` tags. Why does this conflict with CSP? What would a production-grade solution look like?
 
 <details><summary>Answer</summary>
-CSP `style-src` without `unsafe-inline` blocks any `<style>` tag not loaded from an allowed source. Material injects styles at runtime into the DOM — these are inline styles with no `nonce` attribute.
+CSP <code>style-src</code> without <code>unsafe-inline</code> blocks any <code>&lt;style&gt;</code> tag not loaded from an allowed source. Material injects styles at runtime into the DOM — these are inline styles with no <code>nonce</code> attribute.
 
 Production solution:
 1. Server generates a random nonce per request
-2. Middleware injects `nonce` attribute into all `<style>` tags in the rendered HTML
-3. CSP header includes `style-src 'nonce-<value>'` instead of `unsafe-inline`
+2. Middleware injects <code>nonce</code> attribute into all <code>&lt;style&gt;</code> tags in the rendered HTML
+3. CSP header includes <code>style-src 'nonce-&lt;value&gt;'</code> instead of <code>unsafe-inline</code>
 4. Requires Angular Universal (SSR) or custom middleware to modify the HTML response
 
 This is complex and not worth it for most projects — `unsafe-inline` is the accepted tradeoff.
