@@ -68,8 +68,8 @@ export class CheckoutComponent {
         this.paymentElement?.mount('#payment-element');
         this.paymentElement.on('change', this.handlePaymentChange);
       }
-      catch (error: any) {
-        this.snackBar.error(error.message);
+      catch (error: unknown) {
+        this.snackBar.error(error instanceof Error ? error.message : 'Failed to load payment elements');
       }
     });
 
@@ -120,8 +120,8 @@ export class CheckoutComponent {
         this.confirmationToken.set(result.confirmationToken);
       }
     }
-    catch (error: any) {
-      this.snackBar.error(error.message);
+    catch (error: unknown) {
+      this.snackBar.error(error instanceof Error ? error.message : 'Something went wrong');
     }
   }
 
@@ -150,9 +150,9 @@ export class CheckoutComponent {
           throw new Error("Something went wrong with the payment confirmation");
       }
     }
-    catch (error: any) {
+    catch (error: unknown) {
       if (error instanceof HttpErrorResponse && error.status === 409) return;
-      this.snackBar.error(error.message || "Something went wrong");
+      this.snackBar.error(error instanceof Error ? error.message : 'Something went wrong');
       stepper.previous(); // go to Step 2, then can go to Step 3 to generate new token
     }
     finally {
