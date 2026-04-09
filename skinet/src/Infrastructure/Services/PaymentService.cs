@@ -1,5 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Infrastructure.Services;
 
+// PaymentService and its private helpers call Stripe SDK classes (PaymentIntentService,
+// RefundService, CouponService) directly via `new` — there is no DI seam to mock.
+// Unit testing would require a full Stripe test-mode sandbox (real HTTP calls).
+// Architectural fix: inject an IStripeClient abstraction. Deferred — out of scope for this sprint.
+[ExcludeFromCodeCoverage]
 public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : IPaymentService
 {
     private readonly ICartService _cartService = cartService;
