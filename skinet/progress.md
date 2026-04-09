@@ -52,6 +52,14 @@
 - [ ] T33 — Form errors: `<mat-error>` on login/register
 - [ ] T34 — Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent
 - [ ] T35 — NgOptimizedImage: `ngSrc` + priority/lazy
+- [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers
+- [ ] T55 — Lighthouse baseline: run on `/`, `/shop`, `/checkout`
+- [ ] T31 — Product delete: reuse ConfirmationDialogComponent
+- [ ] T32 — Memory leak audit: `takeUntilDestroyed()`
+- [ ] T33 — Form errors: `<mat-error>` on login/register
+- [ ] T34 — Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent
+- [ ] T35 — NgOptimizedImage: `ngSrc` + priority/lazy
+- [ ] T56 — Performance pass: MiniProfiler + bundle analyzer, fix top 3, re-run Lighthouse
 - [ ] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin)
 - [ ] T38 — README update with UX screenshots
 
