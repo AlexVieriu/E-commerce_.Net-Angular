@@ -24,4 +24,4 @@ One-liner per concept. Click the link for full explanation + Q&A.
 - [Task 17 — Price change detection](sprint-2/task-17-price-change-detection.md) — custom PriceChangedException → 409; cart prices updated in Redis before throw; interceptor reloads cart signal on 409
 - **[Sprint 2 Checkout Flow](sprint-2/sprint-2-checkout-flow.md)** — full Redis/SQLite/Stripe/Angular flow with Task 16 + 18 failure zones and known limitation marked
 - [Task 19 — Mock overload resolution](sprint-2/task-19-mock-overload-resolution.md) — Moq silently ignores unmatched setups; wrong StringSetAsync overload (TimeSpan? vs Expiration) passes accidentally; fix with correct type + Verify
-- **[Sprint 2 Practice Exam](sprint-2/sprint-2-practice.md)** — 30 questions: recall + scenario + practical + senior stretch. Will expand when sprint completes.
+- **[Sprint 2 Practice Exam](sprint-2/sprint-2-practice.md)** — 39 questions: recall + scenario + practical + senior stretch. Covers tasks 9–19 + BUG-1.

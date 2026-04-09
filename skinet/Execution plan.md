@@ -184,7 +184,7 @@ Sprint end: final deploy + smoke test. Share with someone.
 ## Progress
 
 - [x] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
-- [ ] Sprint 2 — Testing + Data Integrity (8 tasks) *(Apr 6 – Apr 19)*
+- [x] Sprint 2 — Testing + Data Integrity (9 tasks) *(done: Apr 9)*
 - [ ] Sprint 3 — Admin Panel (8 tasks) *(Apr 20 – May 3)*
 - [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(May 4 – May 17)*
 - [ ] Sprint 5 — Domain Expansion (7 tasks) *(May 18 – May 31)*
