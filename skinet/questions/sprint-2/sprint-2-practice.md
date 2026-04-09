@@ -474,7 +474,7 @@ UPDATE Products SET QuantityInStock = 4 WHERE Id = 1 AND RowVersion = 0x00000000
 Use case: protecting the entire row. Any change to any column updates the version. SQL Server only. Good for entities where any concurrent modification is a conflict (e.g., user profile, config records).
 </details>
 
-### H13. Debug
+### H12. Debug
 A colleague's PR has a `CartService_Tests.cs` failure-path test with no `Verify`. You run the tests. They pass. You delete `SetCartAsync` entirely and run the tests again. They still pass. Walk through why and what you'd say in code review.
 
 <details><summary>Answer</summary>
@@ -483,7 +483,7 @@ Without `Verify`, there's no assertion that `SetCartAsync` was called. The mock 
 Code review comment: "This test proves nothing. Add `mockDatabase.As<IDatabaseAsync>().Verify(x => x.StringSetAsync(...), Times.Once)`. Delete the production method — the test must break. Then restore the method and confirm the test passes again. That's the red-green cycle that validates the test."
 </details>
 
-### H14. Senior Design
+### H13. Senior Design
 `PaymentService` calls `new PaymentIntentService()` and `new RefundService()` directly. You want to unit test it. What are the three options, and which is right for this project?
 
 <details><summary>Answer</summary>
@@ -502,7 +502,7 @@ Code review comment: "This test proves nothing. Add `mockDatabase.As<IDatabaseAs
 For this project: Option 1 chosen. Comment in the source: "Calls Stripe SDK via `new` — no DI seam to mock. Fix: inject `IStripeClient` abstraction. Deferred."
 </details>
 
-### H15. Scenario — Idempotency Testing
+### H14. Scenario — Idempotency Testing
 You need to test that calling `CreateOrderAsync` twice with the same cart returns the existing order, not a duplicate. Your first approach: seed an order with Id=99 into EF InMemory, then call the service once. The test fails — a new order with Id=100 is created. Why does manual seeding fail, and what's the correct approach?
 
 <details><summary>Answer</summary>
@@ -519,7 +519,7 @@ product!.QuantityInStock.Should().Be(8); // decremented once, not twice
 This tests user-visible behavior: place the same order twice, get one result, stock not double-charged. No seeding needed.
 </details>
 
-### H12. Senior Design
+### H15. Senior Design
 You need to implement a "stock reservation" system: when a user starts checkout, reserve their items for 15 minutes. If they don't complete, release the reservation. Design the backend.
 
 <details><summary>Answer</summary>
