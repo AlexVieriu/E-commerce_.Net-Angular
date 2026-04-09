@@ -136,3 +136,7 @@ A: `Core/Exceptions/` — the domain layer has zero dependencies, so exceptions 
 
 **Q: What's the risk of the PaymentService silently correcting prices vs the OrderService rejecting them?**
 A: `PaymentService` corrects prices during `createOrUpdatePaymentIntent()` (step 3 of checkout). This keeps Stripe in sync but the user never sees the change — they could pay a higher price without knowing. `OrderService` is the explicit gate: it rejects the order and forces the user to acknowledge the price change before proceeding. Defence-in-depth: PaymentService handles Stripe correctness, OrderService handles user transparency.
+
+--- 
+
+claude --resume eff6bd99-a311-4263-a404-95747cc0eac5
