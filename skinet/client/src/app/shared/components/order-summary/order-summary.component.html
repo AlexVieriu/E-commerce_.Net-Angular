@@ -59,7 +59,7 @@
 
             <mat-form-field appearance="outline">
                 <mat-label>Voucher code</mat-label>
-                <input [disabled]="!!cartService.cart()?.coupon" [(ngModel)]="couponCode" name="code" type="text" matInput>
+                <input [disabled]="!!cartService.cart()?.coupon" [ngModel]="couponCode()" (ngModelChange)="couponCode.set($event)" name="code" type="text" matInput>
             </mat-form-field>
 
             <button [disabled]="!!cartService.cart()?.coupon" type="submit" mat-flat-button>Apply code</button>

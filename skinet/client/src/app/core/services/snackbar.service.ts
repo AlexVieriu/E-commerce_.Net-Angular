@@ -9,7 +9,7 @@ export class SnackbarService {
 
   error(message: string) {
     this.snackbar.open(message, 'Close', {
-      duration: 5000,
+      duration: 15000,
       panelClass: ['snack-error'] // .css class to style the snackbar
     })
   }

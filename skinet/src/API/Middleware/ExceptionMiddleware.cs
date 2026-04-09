@@ -23,7 +23,12 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
 
         ApiErrorResponse response;
 
-        if (ex is InvalidOperationException)
+        if (ex is PriceChangedException)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+            response = new ApiErrorResponse(context.Response.StatusCode, ex.Message, null);
+        }
+        else if (ex is InvalidOperationException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             // Safe to expose — we wrote this message intentionally

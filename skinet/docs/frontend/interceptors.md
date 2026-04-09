@@ -17,12 +17,15 @@ Clones every request with `withCredentials: true`. Sends the Identity cookie aut
 |---|---|
 | 400 (validation) | Throws `ValidationError(errors[])` |
 | 400 (other) | Snackbar |
-| 401 | Snackbar |
+| 401 | Redirect `/account/login` |
 | 403 | Snackbar "Forbidden" |
+| 409 | Snackbar + reload cart from Redis + navigate `/cart` |
 | 404 | Navigate `/not-found` |
 | 500 | Navigate `/server-error` (error in router state) |
 
 **Snackbar message:** `err.error.title || err.error.message || err.error`
+
+**409 detail:** Injects `CartService`, calls `getCartAsync()` to refresh the signal with updated prices from Redis before navigating. Used exclusively for price change detection.
 
 ## Rules / Constraints
 
