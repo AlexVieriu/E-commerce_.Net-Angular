@@ -1,8 +1,8 @@
 # Sprint 2 — Practice Exam
 
-> CORS/CSP, Angular signals, optimistic concurrency
+> CORS/CSP, Angular signals, optimistic concurrency, unit test quality
 > 20% easy | 40% medium | 40% hard
-> Covers tasks 9, BUG-1, 13 (will expand when sprint completes)
+> Covers tasks 9, BUG-1, 13, 14, 15, 16, 17, 18, 19
 
 ---
 
@@ -17,6 +17,8 @@
 - [ ] Create a signal in Angular with an object value. Mutate it with `update(s => { s.x = 1; return s; })`. Verify the template does NOT update. Fix with spread. Verify it updates.
 - [ ] Check the EF Core migration snapshot: open `SqlServerStoreContextModelSnapshot.cs`, search for `IsConcurrencyToken` on `QuantityInStock`
 - [ ] Run `dotnet test` — all green before moving on
+- [ ] Change the `StringSetAsync` setup in `CartService_Tests.cs` to use `TimeSpan?/When` (old overload). Run the test. It still passes — understand why (Moq silently ignores unmatched setups, returns default). Add `Verify(Times.Once)`. Run again. Does it fail?
+- [ ] Open `PaymentService.cs` and `CouponService.cs` — verify `[ExcludeFromCodeCoverage]` is present with a comment explaining why
 
 ---
 
@@ -87,6 +89,29 @@ Write from memory the SQL that EF Core generates WITH `[ConcurrencyCheck]` on `Q
 
 <details><summary>Answer</summary>
 `UPDATE Products SET QuantityInStock = 4 WHERE Id = @p0 AND QuantityInStock = 5`
+</details>
+
+### E7. Question
+You have a Moq `Setup(...).ReturnsAsync(false)` but no `Verify`. You delete the production method. The test still passes. Why?
+
+<details><summary>Answer</summary>
+Moq silently ignores setups that don't match the actual call. When the setup doesn't match (wrong overload, wrong parameters), the mock returns the type's default value — `false` for `bool`, `null` for reference types. The test never exercises your production code. Without `Verify`, there's no assertion that the method was called at all.
+</details>
+
+### E8. Question
+What three properties make a test valuable (as opposed to "noise")?
+
+<details><summary>Answer</summary>
+1. **It can fail** — delete the production code and the test breaks.
+2. **It fails for the right reason** — the assertion is the behavior you care about, not a side effect.
+3. **It tests behavior, not implementation** — cares about WHAT the code does, not HOW.
+</details>
+
+### E9. Question
+When should you use `[ExcludeFromCodeCoverage]`?
+
+<details><summary>Answer</summary>
+When the class has no injectable seam for its external dependencies — for example, Stripe services that call `new PaymentIntentService()` directly. Testing would require real HTTP calls. Always document WHY and what the architectural fix would be. Never use it to hide laziness.
 </details>
 
 ---
@@ -194,6 +219,75 @@ Write the `Permissions-Policy` header value that disables accelerometer, camera,
 `accelerometer=(), camera=(), microphone=()`. 
 - Accelerometer: reads device tilt/motion sensor. Disabled because a shop doesn't need it, and injected scripts could fingerprint users.
 - Camera/Microphone: media capture APIs. Disabled to prevent injected scripts from silently activating them.
+</details>
+
+### M13. Practical
+`StringSetAsync` on StackExchange.Redis has two overloads. Write the correct Moq setup for the one called by production code in .NET + Redis 2.6+.
+
+<details><summary>Answer</summary>
+```csharp
+mockDatabase.As<IDatabaseAsync>()
+    .Setup(x => x.StringSetAsync(
+        It.IsAny<RedisKey>(),
+        It.IsAny<RedisValue>(),
+        It.IsAny<Expiration>(),       // not TimeSpan?
+        It.IsAny<ValueCondition>(),   // not When
+        It.IsAny<CommandFlags>()))
+    .ReturnsAsync(true);
+
+// Always add Verify on failure-path tests
+mockDatabase.As<IDatabaseAsync>()
+    .Verify(x => x.StringSetAsync(
+        It.IsAny<RedisKey>(),
+        It.IsAny<RedisValue>(),
+        It.IsAny<Expiration>(),
+        It.IsAny<ValueCondition>(),
+        It.IsAny<CommandFlags>()),
+        Times.Once);
+```
+If you use the old overload (`TimeSpan?/When`) Moq ignores the setup and returns the default — the test passes but proves nothing.
+</details>
+
+### M14. Question
+Why do you need `mockDatabase.As<IDatabaseAsync>()` instead of `mockDatabase.Setup(...)` directly when mocking StackExchange.Redis?
+
+<details><summary>Answer</summary>
+`StringSetAsync` is an explicit interface implementation — it's only accessible through `IDatabaseAsync`, not through `IDatabase`. Moq's `Setup` on the concrete type can't reach explicit interface implementations. `As<IDatabaseAsync>()` casts the mock to the interface so Moq can intercept the call.
+</details>
+
+### M15. Question
+What coverage target do you set for each layer in this project, and why?
+
+<details><summary>Answer</summary>
+
+| Layer | Target | Reason |
+|---|---|---|
+| Core | 90% | Pure logic, no dependencies — no excuse not to test |
+| Application | ~90% | Specs and mappings are pure C# — easy to test |
+| Infrastructure (services) | ~85% | CartService 100%, OrderService 80% |
+| API controllers | 0% | Covered by Playwright E2E (Task 37) |
+
+Infrastructure overall reports ~2.6% — misleading. Factories, seed scripts, and EF config classes (all 0%) drag down the average. The meaningful services are at 80-100%.
+</details>
+
+### M16. Scenario
+`Order.GetTotal()` returns `-5` when discount is `60`, subtotal is `50`, shipping is `5`. You don't know if this is intentional. What do you do?
+
+<details><summary>Answer</summary>
+Write a test that documents the current behavior with a comment explaining it's documentation, not validation:
+
+```csharp
+[Fact]
+public void GetTotal_WhenDiscountExceedsSubtotal_TotalIsNegative()
+{
+    // Documents current behaviour: no floor at zero.
+    // If a floor is added later, change Should().Be(-5m) to Should().Be(0m).
+    var order = MakeOrder(subtotal: 50m, discount: 60m, shipping: 5m);
+    order.GetTotal().Should().Be(-5m);
+}
+```
+
+This acts as a regression alarm: if someone adds a floor, the test breaks and forces a conscious decision. Don't silently "fix" undocumented behavior.
 </details>
 
 ---
@@ -378,6 +472,51 @@ Use case: protecting a specific business-critical field (stock, balance). Works 
 UPDATE Products SET QuantityInStock = 4 WHERE Id = 1 AND RowVersion = 0x000000000000007B
 ```
 Use case: protecting the entire row. Any change to any column updates the version. SQL Server only. Good for entities where any concurrent modification is a conflict (e.g., user profile, config records).
+</details>
+
+### H13. Debug
+A colleague's PR has a `CartService_Tests.cs` failure-path test with no `Verify`. You run the tests. They pass. You delete `SetCartAsync` entirely and run the tests again. They still pass. Walk through why and what you'd say in code review.
+
+<details><summary>Answer</summary>
+Without `Verify`, there's no assertion that `SetCartAsync` was called. The mock has an unmatched setup (wrong overload or the method is gone), so Moq returns `false` by default. The test asserts `result.Should().BeNull()` — and since the method isn't called at all, the service returns `null` anyway. It passes by coincidence.
+
+Code review comment: "This test proves nothing. Add `mockDatabase.As<IDatabaseAsync>().Verify(x => x.StringSetAsync(...), Times.Once)`. Delete the production method — the test must break. Then restore the method and confirm the test passes again. That's the red-green cycle that validates the test."
+</details>
+
+### H14. Senior Design
+`PaymentService` calls `new PaymentIntentService()` and `new RefundService()` directly. You want to unit test it. What are the three options, and which is right for this project?
+
+<details><summary>Answer</summary>
+**Option 1: Mark `[ExcludeFromCodeCoverage]` with a documented reason** (chosen here).
+- Fast. No architectural change required. The comment explains what the fix would be.
+- Right for: CV project with time constraints.
+
+**Option 2: Inject an `IStripeClient` abstraction**.
+- Create `IStripeClient` with `CreatePaymentIntentAsync` / `CreateRefundAsync`. The Stripe SDK wrapper implements it. Tests inject a mock.
+- Right for: production codebases with a payment team.
+
+**Option 3: Use Stripe's test-mode sandbox in integration tests**.
+- No mocking — real HTTP calls to `api.stripe.com/v1` with test API keys.
+- Right for: end-to-end payment flow verification. Not unit tests.
+
+For this project: Option 1 chosen. Comment in the source: "Calls Stripe SDK via `new` — no DI seam to mock. Fix: inject `IStripeClient` abstraction. Deferred."
+</details>
+
+### H15. Scenario — Idempotency Testing
+You need to test that calling `CreateOrderAsync` twice with the same cart returns the existing order, not a duplicate. Your first approach: seed an order with Id=99 into EF InMemory, then call the service once. The test fails — a new order with Id=100 is created. Why does manual seeding fail, and what's the correct approach?
+
+<details><summary>Answer</summary>
+EF InMemory doesn't enforce required navigation properties the same way SQL Server does. When you seed `new Order { Id = 99, DeliveryMethod = null! }`, the `GetEntityWithSpec` with `.Include(o => o.DeliveryMethod)` doesn't find it — the Include filter or null nav causes a mismatch. So the pre-insert check misses the seeded order and creates Id=100.
+
+Correct approach: call the real flow twice, not once:
+```csharp
+var first = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+var second = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+second!.Id.Should().Be(first!.Id);       // same order returned
+product!.QuantityInStock.Should().Be(8); // decremented once, not twice
+```
+This tests user-visible behavior: place the same order twice, get one result, stock not double-charged. No seeding needed.
 </details>
 
 ### H12. Senior Design
