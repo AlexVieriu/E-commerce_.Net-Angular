@@ -1,5 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Infrastructure.Services;
 
+// CouponService calls Stripe SDK (PromotionCodeService) directly via `new` — no DI seam.
+// See PaymentService for the full explanation.
+[ExcludeFromCodeCoverage]
 public class CouponService : ICouponService
 {
     public async Task<AppCoupon?> GetCouponFromPromoCode(string code)

@@ -1,7 +1,7 @@
 # Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
-> **47 tasks | 6 sprints (2 wk each) | Deadline: Jun 14, 2026**
+> **50 tasks | 6 sprints (2 wk each) | Deadline: Jun 14, 2026**
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
@@ -95,22 +95,25 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 ## Sprint 4 — Frontend Quality + UX *(May 4 – May 17)*
 
 > Polish existing features. Isolated Angular tasks, easiest first.
-> Order: Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Playwright(37) -> README(38)
+> Order: ESLint(54) -> Lighthouse(55) -> Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Performance(56) -> Playwright(37) -> README(38)
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
+| 54 | ESLint + `@angular-eslint` + Prettier: setup + CI integration. Roslyn analyzers for .NET | S | -- | **Do first.** Enforces quality for rest of sprint and all future PRs |
+| 55 | Lighthouse baseline: run on `/`, `/shop`, `/checkout`, screenshot + record scores | S | -- | 2 hours max. Baseline before T35 so you have before/after numbers |
 | 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Carried from S3. Dep 29 done. |
-| 32 | Memory leak audit: unsubscribed Observables -> `takeUntilDestroyed()` | S | -- | Likely minimal (signals+httpResource) |
+| 32 | Memory leak audit: unsubscribed Observables -> `takeUntilDestroyed()` | S | -- | Likely minimal (signals+httpResource). Done early in T17 session |
 | 33 | Form errors: `<mat-error>` on login/register via TextInputComponent | S | -- | |
 | 34 | Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent | M | -- | |
 | 35 | NgOptimizedImage: `ngSrc` + priority/lazy on product images | S | -- | Mostly HTML changes |
+| 56 | Performance pass: MiniProfiler (.NET) + bundle analyzer (Angular), fix top 3 findings, re-run Lighthouse | M | 35 | After T35 so NgOptimizedImage is already in. Compare against T55 baseline |
 | 37 | Playwright E2E: 3 tests (checkout, auth+orders, admin). Timebox 4 days | L | 1 | LEARN: Testing pyramid + Page Object Model |
 | 38 | README update with UX screenshots | S | -- | |
 
 Sprint end: Playwright + backend tests green. Verify deploy.
 
-**Time:** Best 4d | Normal 7d | Worst 10d
-- **Best:** Quick wins (31,32,33,35) done in 1d, skeleton loaders fast. Start OrderStatus(40) early.
+**Time:** Best 5d | Normal 8d | Worst 11d
+- **Best:** T54+T55 done in 1d, quick wins (31,32,33,35) next day, performance pass fast. Start OrderStatus(40) early.
 - **Normal:** Playwright setup is painful, CI is flaky — run locally only.
 - **Worst:** Playwright eats the sprint. Timebox at 4d, ship 2 tests not 3. **Talking point:** Even 2 E2E tests signals testing maturity that most candidates don't have.
 
@@ -180,7 +183,7 @@ Sprint end: final deploy + smoke test. Share with someone.
 
 ## Progress
 
-- [ ] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
+- [x] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
 - [ ] Sprint 2 — Testing + Data Integrity (8 tasks) *(Apr 6 – Apr 19)*
 - [ ] Sprint 3 — Admin Panel (8 tasks) *(Apr 20 – May 3)*
 - [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(May 4 – May 17)*
