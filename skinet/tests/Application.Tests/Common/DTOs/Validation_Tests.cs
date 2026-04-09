@@ -18,6 +18,9 @@ file static class Validator
 
 public class RegisterDto_Validation_Tests
 {
+    // Fake test value — not a real credential // pragma: allowlist secret
+    private const string TestPassword = "Pa$$w0rd12";
+
     [Fact]
     public void RegisterDto_ShouldPass_WhenAllFieldsAreValid()
     {
@@ -26,7 +29,7 @@ public class RegisterDto_Validation_Tests
             FirstName = "John",
             LastName = "Doe",
             Email = "john@example.com",
-            Password = "Pa$$w0rd12"
+            Password = TestPassword
         };
 
         Validator.IsValid(dto).Should().BeTrue();
@@ -43,7 +46,7 @@ public class RegisterDto_Validation_Tests
             FirstName = "John",
             LastName = "Doe",
             Email = badEmail,
-            Password = "Pa$$w0rd12"
+            Password = TestPassword
         };
 
         var errors = Validator.Validate(dto);
@@ -59,7 +62,7 @@ public class RegisterDto_Validation_Tests
             FirstName = "",
             LastName = "Doe",
             Email = "john@example.com",
-            Password = "Pa$$w0rd12"
+            Password = TestPassword
         };
 
         var errors = Validator.Validate(dto);
