@@ -18,8 +18,7 @@ file static class Validator
 
 public class RegisterDto_Validation_Tests
 {
-    // Fake test value — not a real credential // pragma: allowlist secret
-    private const string TestPassword = "Pa$$w0rd12";
+    private const string TestPassword = "Pa$$w0rd12"; // pragma: allowlist secret
 
     [Fact]
     public void RegisterDto_ShouldPass_WhenAllFieldsAreValid()
