@@ -6,7 +6,14 @@
 
 <details><summary>Answer</summary>
 
-`npm ci` deletes `node_modules`, installs exactly from `package-lock.json` (never modifies it), is faster, and fails if the lock file is out of sync. `npm install` may update the lock file and resolve newer versions. Always use `npm ci` in CI for reproducible builds.
+| | `npm ci` | `npm install` |
+|---|---|---|
+| Source | Installs exactly from `package-lock.json` | May update `package-lock.json` |
+| `node_modules` | Deletes and reinstalls from scratch | Incremental update |
+| Speed | Faster (no resolution step) | Slower |
+| Fails if | Lock file out of sync with `package.json` | Never — resolves differences |
+
+**Use `npm ci` in CI** — reproducible builds, no accidental package upgrades.
 </details>
 
 ---
@@ -117,11 +124,15 @@ Setup: Azure AD app registration + federated credential pointing to GitHub's OID
 
 <details><summary>Answer</summary>
 
-1. Missing `Microsoft.NET.Test.Sdk` NuGet — required for test discovery. Check `.csproj`.
-2. SDK version mismatch — CI has older SDK that doesn't support the target framework. Fix: add `global.json` or specify SDK version in CI.
-3. Runtime identifier mismatch — test project targets a framework not installed on CI agent.
+**Common causes:**
+1. **Missing `Microsoft.NET.Test.Sdk`** — required for test discovery; without it the test host can't start. Check all test `.csproj` files.
+2. **SDK version mismatch** — CI has an older SDK that doesn't support the target framework. Fix: add `global.json` to pin the SDK, or specify it in the CI runner setup.
+3. **Runtime identifier mismatch** — test project targets a framework not installed on the CI agent.
 
-Debug: run `dotnet test --verbosity detailed`, check `dotnet --info` on CI, ensure all test projects reference the SDK package.
+**Debug steps:**
+- Run `dotnet test --verbosity detailed` on CI and read the full output.
+- Run `dotnet --info` on CI and compare SDK/runtime versions with local.
+- Ensure every test project references `Microsoft.NET.Test.Sdk`.
 </details>
 
 ---
