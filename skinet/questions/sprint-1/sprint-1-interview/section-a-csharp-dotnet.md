@@ -10,6 +10,8 @@
 - **`readonly`** — runtime, can be set in the constructor, works for any type.
 
 Use `const` for true constants (e.g. `Math.PI`), `readonly` for values set at construction (config, injected dependencies).
+
+https://claude.ai/chat/b3e1ad34-130d-4c89-ae3f-2b0718974b59
 </details>
 
 ---
@@ -36,6 +38,8 @@ Many framework types are sealed — e.g. `string`.
 - **`IList<T>`** — adds indexing, `Count`, `Add`/`Remove` — materialized in memory.
 
 Return `IEnumerable<T>` when consumers only iterate; use `IList<T>` when you need random access or mutation.
+
+https://claude.ai/chat/46c27fdb-6053-4e9c-9fcc-755d1970603d
 </details>
 
 ---
@@ -58,7 +62,22 @@ https://claude.ai/chat/5bd1eb7b-a65f-42ec-80a8-9043d925b1e8
 
 <details><summary>Answer</summary>
 
-Boxing wraps a value type in a heap-allocated `object`. Unboxing extracts it back. Implicit boxing: `int x = 42; object o = x;` — also happens with `ArrayList.Add(42)`, `string.Format("{0}", 42)`, and casting value types to interfaces.
+**Boxing** — wraps a value type in a heap-allocated `object` wrapper. **Unboxing** — extracts the value back out (must be the exact original type).
+
+**Implicit boxing happens in:**
+- Direct assignment: `object o = 42;`
+- Collections: `ArrayList.Add(42)` (legacy non-generic)
+- String formatting: `string.Format("{0}", 42)`
+- Interface casting: `IComparable c = 42;` (int implements IComparable)
+
+Example:
+```csharp
+int x = 42;
+object o = x;  // Boxing — x is copied to heap
+int y = (int)o;  // Unboxing — must cast back to int, not uint
+```
+
+If you try `uint z = (uint)o;` on an `int`-boxed value, you get `InvalidCastException`.
 </details>
 
 ---
@@ -80,7 +99,11 @@ Console.WriteLine(ReferenceEquals(a, c));
 
 <details><summary>Answer</summary>
 
-`True, True, True, False`. `==` for strings does value comparison. `a` and `b` reference the same interned string literal, so `ReferenceEquals` is True. `c` is a new string object with the same value — `==` is True (value) but `ReferenceEquals` is False (different heap object).
+Output: `True, True, True, False`
+
+- `==` on strings is **value comparison** (operator overloaded) — always compares content, not reference.
+- `a` and `b` point to the **same interned string literal** — `ReferenceEquals` is `true`.
+- `c` is `new string(...)` — **new heap object** with the same content — `==` is `true` but `ReferenceEquals` is `false`.
 </details>
 
 ---
@@ -118,7 +141,10 @@ Choose `StartNew` only for long-running CPU-bound work or custom task schedulers
 
 <details><summary>Answer</summary>
 
-`ConfigureAwait(true)` (default) resumes on the captured SynchronizationContext. `ConfigureAwait(false)` resumes on any thread pool thread. Matters in UI apps (WPF/WinForms) and old ASP.NET (had a SyncContext). ASP.NET Core has NO SyncContext, so `ConfigureAwait(false)` is unnecessary there — but library code should still use it for portability.
+- **`ConfigureAwait(true)`** (default) — resumes on the captured `SynchronizationContext`. Needed in WPF/WinForms to get back to the UI thread after an `await`.
+- **`ConfigureAwait(false)`** — resumes on any thread pool thread. Avoids the overhead of capturing/restoring the context.
+
+**In ASP.NET Core:** no `SynchronizationContext` exists, so `ConfigureAwait(false)` has no practical effect. Still use it in **library code** for portability across UI frameworks.
 </details>
 
 ---
@@ -127,7 +153,16 @@ Choose `StartNew` only for long-running CPU-bound work or custom task schedulers
 
 <details><summary>Answer</summary>
 
-`IDisposable` provides deterministic cleanup via `Dispose()` / `using`. Creating/disposing `HttpClient` in a loop causes socket exhaustion — sockets linger in `TIME_WAIT`. `IHttpClientFactory` pools `HttpMessageHandler` instances (2min default lifetime), recycles them for DNS changes, and lets you create `HttpClient` instances cheaply without socket exhaustion.
+`IDisposable` provides deterministic cleanup via `Dispose()` / `using`.
+
+**Problem — `HttpClient` in a loop:**
+- Creating/disposing `HttpClient` per request causes **socket exhaustion** — sockets linger in `TIME_WAIT` for minutes.
+- Even though `HttpClient` implements `IDisposable`, disposing it closes the underlying `HttpMessageHandler` prematurely.
+
+**`IHttpClientFactory` solution:**
+- Pools `HttpMessageHandler` instances (2-minute default lifetime).
+- Lets you call `CreateClient()` cheaply — no socket exhaustion.
+- Recycles handlers automatically to respect DNS changes.
 </details>
 
 ---
@@ -145,7 +180,13 @@ public async Task<List<Product>> GetAllAsync()
 
 <details><summary>Answer</summary>
 
-It fetches all products in parallel using `Task.WhenAll`. The subtle bug: `Select` with an async lambda creates tasks immediately — if `productIds` is large, this fires ALL requests simultaneously (no throttling). Could overwhelm the server. Fix: use `SemaphoreSlim` or `Parallel.ForEachAsync` with `MaxDegreeOfParallelism`. Also: multiple enumeration risk if `tasks` is lazy.
+It fetches all products **in parallel** using `Task.WhenAll`.
+
+**Subtle bugs:**
+1. **No throttling** — `Select` with an async lambda creates ALL tasks immediately. With a large `productIds`, this fires all requests simultaneously — could overwhelm the DB or downstream service.
+2. **Multiple enumeration risk** — if `productIds` is a lazy `IEnumerable`, iterating it creates two sets of tasks (once for `Select`, once for `WhenAll`).
+
+**Fix:** use `SemaphoreSlim` to cap concurrency, or `Parallel.ForEachAsync(productIds, new ParallelOptions { MaxDegreeOfParallelism = 10 }, ...)` .
 </details>
 
 ---
@@ -154,7 +195,17 @@ It fetches all products in parallel using `Task.WhenAll`. The subtle bug: `Selec
 
 <details><summary>Answer</summary>
 
-`throw;` preserves the original stack trace. `throw ex;` resets the stack trace to the current catch block, losing the original call site. Always use `throw;` to re-throw. `throw ex;` makes debugging much harder because you can't see where the exception originated.
+- **`throw;`** — re-throws the original exception, **preserving the full stack trace**. Always use this.
+- **`throw ex;`** — creates a new throw point at the `catch` block, **resetting the stack trace**. You lose where the exception originally occurred.
+
+```csharp
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Failed");
+    throw;     // ✅ original stack trace preserved
+    // throw ex; ❌ stack trace reset — root cause hidden
+}
+```
 </details>
 
 ---
@@ -174,7 +225,20 @@ This is called a **Captive Dependency**. The Scoped service gets captured by the
 
 <details><summary>Answer</summary>
 
-Gen 0: short-lived objects (locals, temp strings) — collected frequently and fast. Gen 1: buffer between short/long-lived. Gen 2: long-lived objects — collected rarely and expensive. Objects surviving a collection get promoted. Triggered when Gen 0 budget is exceeded. LOH holds objects ≥85KB, collected with Gen 2, not compacted by default (fragmentation risk). `GCSettings.LargeObjectHeapCompactionMode` can force compaction.
+**Generations:**
+- **Gen 0** — short-lived objects (locals, temp strings). Collected frequently, very fast.
+- **Gen 1** — buffer between short/long-lived. Collected less often.
+- **Gen 2** — long-lived objects (statics, caches). Collected rarely, expensive.
+
+Objects **surviving a collection are promoted** to the next generation.
+
+**What triggers a collection:** Gen 0 budget exceeded → Gen 0 GC fires; may cascade to Gen 1/2.
+
+**Large Object Heap (LOH):**
+- Objects ≥ **85 KB** skip Gen 0/1 and go directly to the LOH.
+- Collected only with Gen 2 (rare).
+- **Not compacted by default** — can cause memory fragmentation.
+- Force compaction: `GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce`.
 </details>
 
 ---
@@ -227,7 +291,15 @@ public class OrderProcessor
 
 <details><summary>Answer</summary>
 
-`ValueTask<T>` avoids allocation when the result is already available synchronously — it wraps either a `T` value or a `Task<T>`. Faster in hot paths with cache hits. Dangerous: must only be awaited ONCE. Awaiting twice is undefined behavior — may throw, return wrong result, or corrupt state. Can't `.Result` or `.GetAwaiter()` concurrently. Use `.AsTask()` if you need to store/await multiple times.
+- **`Task<T>`** — always allocates a heap object, even if the result is already available.
+- **`ValueTask<T>`** — wraps either a `T` value (stack-allocated) or a `Task<T>`. **Avoids allocation** when the result is ready synchronously (e.g. cache hit).
+
+**When `ValueTask<T>` is faster:** hot paths where the method frequently completes synchronously (reading from a memory cache before hitting async I/O).
+
+**Dangers:**
+- **Must be awaited exactly once.** Awaiting twice is **undefined behavior** — may throw, return the wrong value, or corrupt state.
+- Cannot use `.Result` or `.GetAwaiter()` concurrently.
+- **Fix:** call `.AsTask()` if you need to store, share, or await multiple times.
 </details>
 
 ---
@@ -236,7 +308,16 @@ public class OrderProcessor
 
 <details><summary>Answer</summary>
 
-Records provide value-based equality (all properties compared), auto-generated `ToString` (human-readable), `Deconstruct`, and `with` expressions for non-destructive mutation. `record class` is a reference type with immutability via `init` properties. `record struct` is a value type — good for small, frequently-copied data. Records are ideal for DTOs, events, and immutable domain objects.
+**Key features of `record`:**
+- **Value-based equality** — all properties compared (not reference).
+- Auto-generated: human-readable `ToString()`, `Deconstruct()`, `==` / `!=`.
+- **`with` expression** — non-destructive mutation: `var b = a with { Name = "Bob" };`
+
+**`record class` vs `record struct`:**
+- **`record class`** — reference type; immutable via `init` properties.
+- **`record struct`** — value type; good for small, frequently-copied data (avoids heap allocation).
+
+**When to use:** DTOs, domain events, immutable value objects.
 </details>
 
 ---

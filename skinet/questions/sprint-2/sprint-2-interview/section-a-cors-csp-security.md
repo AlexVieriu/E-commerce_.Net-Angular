@@ -6,7 +6,10 @@
 
 <details><summary>Answer</summary>
 
-CORS (Cross-Origin Resource Sharing) is a browser security mechanism that blocks JavaScript from making requests to a different origin (different domain, port, or protocol) than the page that loaded it. It exists to enforce the **Same-Origin Policy** — preventing a malicious site from silently calling your bank's API using the victim's cookies. Without CORS configured on your API, every cross-origin AJAX call from your Angular app will be blocked by the browser before it even reaches your server. The .NET API never sees the request.
+**CORS** (Cross-Origin Resource Sharing) is a **browser security mechanism** that blocks JavaScript from making requests to a different origin (different domain, port, or protocol) than the page that loaded it.
+
+- **Why it exists:** enforces the **Same-Origin Policy** — prevents a malicious site from silently calling your bank's API using the victim's cookies.
+- **Without CORS configured:** every cross-origin AJAX call from your Angular app is blocked by the browser **before it reaches your server**. The .NET API never sees the request — the browser rejects it client-side.
 </details>
 
 ---
@@ -27,7 +30,12 @@ Both are enforced by the browser, but they solve completely different problems.
 
 <details><summary>Answer</summary>
 
-It protects against **clickjacking** — an attack where your page is embedded inside an invisible `<iframe>` on a malicious site. The attacker overlays their UI on top of your page, tricking users into clicking your buttons (e.g., "Confirm Transfer") while thinking they're clicking something else. `DENY` tells the browser: never render this page inside any frame, anywhere.
+Protects against **clickjacking** — the page is embedded in an invisible `<iframe>` on a malicious site; the attacker overlays a fake UI on top, tricking users into clicking real buttons (e.g. "Confirm Transfer").
+
+- **`DENY`** — never render this page inside any frame, on any site (including same-origin).
+- **`SAMEORIGIN`** — allow framing only from the same origin.
+
+Modern replacement: `Content-Security-Policy: frame-ancestors 'none'` (more flexible, same effect).
 </details>
 
 ---
@@ -36,7 +44,11 @@ It protects against **clickjacking** — an attack where your page is embedded i
 
 <details><summary>Answer</summary>
 
-It prevents **MIME type sniffing**. Without it, browsers try to "guess" the content type of a response by inspecting its bytes, even if the server declared a different `Content-Type`. An attacker could upload an HTML file disguised as an image (`Content-Type: image/png`), and without `nosniff`, some browsers would execute it as HTML/script. With `nosniff`, the browser strictly trusts the declared `Content-Type` and refuses to execute mismatched content.
+Prevents **MIME type sniffing** — some browsers "guess" the content type by inspecting response bytes, ignoring the declared `Content-Type`.
+
+**Attack without `nosniff`:** attacker uploads an HTML file with `Content-Type: image/png`. Browser sniffs the bytes, detects HTML, and executes it as a script → XSS.
+
+**With `nosniff`:** browser strictly trusts the declared `Content-Type` and refuses to execute content that doesn't match. Required on all responses serving user-uploaded content.
 </details>
 
 ---
@@ -47,7 +59,15 @@ It prevents **MIME type sniffing**. Without it, browsers try to "guess" the cont
 
 <details><summary>Answer</summary>
 
-The deployed origin (`https://myapp.azurestaticapps.net` or similar) isn't in your .NET CORS allowed origins list. Your localhost origin was allowed during development. The browser sends the preflight/request, the server responds without the correct `Access-Control-Allow-Origin` header, and the browser blocks the JS from reading the response. Because the browser blocks it client-side before processing the actual response body, your .NET logs may show nothing (for simple requests) or a 200 response that Angular never sees.
+The deployed origin (e.g. `https://myapp.azurestaticapps.net`) is **not in the .NET CORS allowed origins list** — only `localhost` was added during development.
+
+**What happens:**
+1. Browser sends preflight or request with `Origin: https://myapp.azurestaticapps.net`.
+2. Server responds **without** `Access-Control-Allow-Origin`.
+3. Browser blocks JavaScript from reading the response — client-side rejection.
+4. .NET logs show nothing (or a 200 Angular never sees) because the blocking is in the browser, not the server.
+
+**Fix:** add the production origin to your CORS policy and redeploy.
 </details>
 
 ---
@@ -82,7 +102,16 @@ Angular Material injects `<style>` tags directly into the DOM at runtime via Jav
 
 <details><summary>Answer</summary>
 
-By default, browsers strip cookies and `Authorization` headers from cross-origin requests. `AllowCredentials()` on the server, combined with `withCredentials: true` on the client, tells the browser: "include cookies and auth headers in this cross-origin request." Without it, your cookie-based auth never works across origins — the browser sends the request without the session cookie, the server sees an unauthenticated request, and returns 401.
+By default, browsers **strip cookies and `Authorization` headers** from cross-origin requests.
+
+**`AllowCredentials()` + `withCredentials: true` on the client** tells the browser: include cookies and auth headers in this cross-origin request.
+
+**Without it:**
+- Browser sends the request without the session cookie.
+- Server sees an unauthenticated request → returns 401.
+- Cookie-based auth **never works** across origins.
+
+**Constraint:** `AllowCredentials()` requires a specific origin — you **cannot** combine it with `AllowAnyOrigin()` (wildcard `*`).
 </details>
 
 ---
@@ -105,8 +134,18 @@ builder.Services.AddCors(o => o.AddPolicy("default", p =>
 
 <details><summary>Answer</summary>
 
-- **Config B is both insecure AND invalid at runtime.** .NET throws an `InvalidOperationException` when you combine `AllowAnyOrigin()` with `AllowCredentials()` — the CORS spec explicitly forbids it. Conceptually it's also dangerous: it would allow any website on the internet to make credentialed requests using the user's cookies, enabling attacker-controlled sites to call your API as the authenticated user.
+- **Config B is both insecure AND invalid at runtime.**
+  - .NET throws `InvalidOperationException` at startup: `AllowAnyOrigin()` + `AllowCredentials()` is forbidden by the CORS spec.
+  - Conceptually: any website on the internet could make credentialed requests with the user's cookies, calling your API as the authenticated user.
 - **Config A is correct** — credentials are only accepted from a specific, trusted origin.
+
+```csharp
+// ✅ Correct
+p.WithOrigins("https://myapp.com").AllowAnyHeader().AllowCredentials()
+
+// ❌ Runtime exception + security hole
+p.AllowAnyOrigin().AllowAnyHeader().AllowCredentials()
+```
 </details>
 
 ---
@@ -167,7 +206,22 @@ Explain exactly what `SetIsOriginAllowed(_ => true)` does, why it's dangerous, a
 
 <details><summary>Answer</summary>
 
-`SetIsOriginAllowed(_ => true)` is a lambda that receives any origin string and always returns `true` — meaning every origin on the internet is allowed. Unlike `AllowAnyOrigin()` (which sets `*` and is blocked from combining with `AllowCredentials()` by .NET), `SetIsOriginAllowed` bypasses that guard by setting the origin to the *exact value sent by the browser*, while still passing .NET's validation. Combined with `AllowCredentials()`, it means any website can make fully authenticated cross-origin requests to your API using the victim's cookies.
+`SetIsOriginAllowed(_ => true)` is a lambda that always returns `true` — every origin on the internet is allowed.
+
+**Why it's more dangerous than `AllowAnyOrigin()`:**
+- `AllowAnyOrigin()` sets `*` — .NET **blocks** combining it with `AllowCredentials()`.
+- `SetIsOriginAllowed(_ => true)` **bypasses that guard** by echoing the exact origin the browser sent, while still passing .NET's own validation check. Combined with `AllowCredentials()`, any website can make fully authenticated credentialed requests using the victim's cookies.
+
+**Attack scenario:** attacker hosts `evil.com`. Victim is logged in to `myapp.com`. `evil.com` script calls `POST /api/orders` — browser sends the victim's cookie, your API accepts it, order placed.
+
+**Corrected version:**
+```csharp
+app.UseCors(x => x
+    .WithOrigins("https://myapp.com", "https://staging.myapp.com")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
+```
 </details>
 
 ---
@@ -176,7 +230,17 @@ Explain exactly what `SetIsOriginAllowed(_ => true)` does, why it's dangerous, a
 
 <details><summary>Answer</summary>
 
-`ViewEncapsulation.None` means Angular doesn't scope component styles — instead it dumps them as plain `<style>` tags into the document's `<head>` at runtime, injected by JavaScript. CSP's `style-src` directive (or `default-src` fallback) blocks inline styles unless `'unsafe-inline'`, a hash, or a nonce is present. Since Angular injects these styles dynamically via JS (not in the original HTML), static hashes don't work. A production-grade solution uses **Angular SSR with nonces**: the server generates a fresh nonce per request, embeds it in the CSP header, and Angular's server-side renderer attaches it to each `<style>` tag it outputs.
+`ViewEncapsulation.None` — Angular doesn't scope component styles; instead it dumps them as plain `<style>` tags into `<head>` **at runtime via JavaScript**.
+
+**The conflict:** CSP's `style-src` (or `default-src` fallback) blocks inline styles unless `'unsafe-inline'`, a hash, or a nonce is present. Static hashes can't work because Angular injects styles dynamically — the original HTML has no `<style>` tags to hash.
+
+**Production-grade solution — nonce-based approach:**
+1. Server generates a **random nonce** per request (e.g. `crypto.randomBytes(16).toString('base64')`).
+2. Nonce is embedded in the CSP header: `style-src 'nonce-abc123'`.
+3. Angular's **SSR renderer** attaches the nonce to each `<style>` tag it outputs.
+4. Browser only executes `<style>` tags whose nonce matches the header.
+
+**Requires Angular SSR** — cannot be done with client-side-only rendering because there's no server to generate the nonce per request.
 </details>
 
 ---
@@ -186,9 +250,12 @@ Explain exactly what `SetIsOriginAllowed(_ => true)` does, why it's dangerous, a
 <details><summary>Answer</summary>
 
 Your colleague is right. `SameSite=Strict` is strong but has gaps:
-- it's a client-side browser feature — doesn't work if the cookie predates the SameSite attribute, the user's browser is old, or the attacker controls a subdomain
+- It's a **client-side browser feature** — doesn't protect if the browser is old, the cookie predates the `SameSite` attribute, or the attacker controls a subdomain of your domain.
+- A subdomain cookie scope (`Domain=.example.com`) means a compromised subdomain can still send your cookie on same-site requests.
 
-Anti-forgery tokens (synchronizer token pattern) are server-side and independent of cookie attributes — they provide defence-in-depth. Neither alone covers all attack scenarios.
+**Anti-forgery tokens (synchronizer token pattern)** are **server-side and independent of cookie attributes** — they provide defence-in-depth. The server generates a unique token per session, embeds it in the form/header, and rejects requests where it's missing or wrong.
+
+**Rule:** neither alone covers all attack scenarios — use both for sensitive state-changing operations.
 </details>
 
 ---

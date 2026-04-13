@@ -42,11 +42,13 @@
 
 <details><summary>Answer</summary>
 
-`Strict`: cookie never sent on cross-site requests — maximum CSRF protection but poor UX (links from email = unauthenticated).
+| Value | Browser sends cookie | CSRF protection | Downside |
+|---|---|---|---|
+| **`Strict`** | Same-site requests only | Maximum | Links from email/social arrive unauthenticated |
+| **`Lax`** (default) | Same-site + top-level GET navigation | Good | POST/AJAX/iframe from other origins blocked |
+| **`None`** | All cross-site requests | None | Requires `Secure` flag; needed for OAuth, iframes |
 
-`Lax` (browser default): sent on top-level GET navigations (clicking a link) but NOT on POST, iframe, AJAX, or images from other sites — good balance.
-
-`None`: sent on ALL cross-site requests — requires `Secure` flag — needed for cross-origin iframes, OAuth flows. Use Lax for most apps.
+**Rule:** use `Lax` for most apps. Use `None` only when cross-site cookies are explicitly required (e.g. embedded Stripe form).
 </details>
 
 ---

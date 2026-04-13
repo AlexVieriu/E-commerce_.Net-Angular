@@ -69,15 +69,15 @@ Pattern: `products$ | async` in template instead of `subscribe()` in component.
 
 <details><summary>Answer</summary>
 
-Default: Angular checks every component top-down on any async event (click, HTTP, setTimeout).
+**Default:** Angular checks every component top-down on any async event (click, HTTP, `setTimeout`).
 
-OnPush only runs change detection when:
-1. `@Input()` reference changes (not mutation!).
-2. DOM event originates in the component.
-3. `async` pipe emits.
-4. Manually via `ChangeDetectorRef.markForCheck()`.
+**`OnPush`** — only runs change detection when:
+1. An `@Input()` **reference** changes (mutation of the same object does NOT trigger it).
+2. A DOM event originates **from within** the component.
+3. An `async` pipe emits.
+4. `ChangeDetectorRef.markForCheck()` is called manually.
 
-OnPush SKIPS when: parent mutates an input object without creating a new reference, or external observable emits without `async` pipe.
+**`OnPush` skips when:** the parent mutates an input object without creating a new reference, or an external observable emits without going through the `async` pipe.
 </details>
 
 ---
@@ -177,13 +177,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 <details><summary>Answer</summary>
 
-`switchMap`: cancels previous inner observable. Use: search typeahead — new keystroke cancels pending request.
-
-`mergeMap`: runs all inner observables concurrently. Use: batch file uploads — all in parallel. Risk: flooding.
-
-`concatMap`: queues — waits for previous to complete before starting next. Use: ordered operations (chat messages, sequential API calls).
-
-`exhaustMap`: ignores new emissions while current is active. Use: login/submit button — prevents duplicate submissions.
+| Operator | Behavior on new emission | Use case |
+|---|---|---|
+| **`switchMap`** | Cancels the previous inner observable | Search typeahead — new keystroke cancels in-flight request |
+| **`mergeMap`** | Runs all concurrently | Batch file uploads — all in parallel (risk: flooding) |
+| **`concatMap`** | Queues — waits for previous to complete | Ordered operations: chat messages, sequential API calls |
+| **`exhaustMap`** | Ignores new while current is active | Login / submit button — prevents duplicate submissions |
 </details>
 
 ---

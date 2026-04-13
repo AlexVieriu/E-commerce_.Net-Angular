@@ -118,9 +118,25 @@ Use `toObservable()` to convert the signal to an observable, then `switchMap` fo
 
 <details><summary>Answer</summary>
 
-It depends on what the template reads. Spreading the outer object creates a new signal value reference — the signal's equality check (`Object.is`) sees a new object and fires. Templates and computed signals that read the signal will re-evaluate. However, the inner `address` object is still the **same reference** — any `computed()` that reads `signal().user.address` and uses reference equality to check it won't detect a change. More critically, the mutation happens before `set()` is called, meaning the original signal value is also mutated (they share the `address` reference).
+**Spreading the outer object:** creates a new signal reference — `Object.is` detects a new object and templates re-evaluate. ✅
 
-Fix: replace every level of nesting you change with a new object.
+**The inner reference problem:**
+```typescript
+store.update(s => ({
+    ...s,               // ✅ new outer object — signal fires
+    user: {
+        ...s.user,
+        address: {
+            ...s.user.address, // ❌ mutated in-place before set() was called
+            city: 'London'
+        }
+    }
+}));
+```
+
+The original `address` object is mutated **before** `.set()` is called — the old and new signal values share the same `address` reference. Any `computed()` that reads `signal().user.address` and compares by reference sees no change → no re-evaluation.
+
+**Fix:** replace every level of nesting you change with a new object (spread at each level).
 </details>
 
 ---

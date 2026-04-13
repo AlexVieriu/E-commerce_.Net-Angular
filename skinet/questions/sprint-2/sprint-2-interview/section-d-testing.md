@@ -103,14 +103,18 @@ A test that doesn't constrain behavior provides false confidence.
 
 <details><summary>Answer</summary>
 
-The `Setup` targets the wrong overload — the one taking `TimeSpan?`. The production code calls a different overload taking `Expiration`. Moq never matches the setup; the mock falls back to the default loose behavior (returns `false` for `bool` methods). The production code proceeds anyway.
+**Chain of events:**
 
-When you delete the production method, nothing changes — the test never called it through the mock. The setup was targeting dead air the whole time.
+1. `Setup` targets `StringSetAsync(..., TimeSpan?, ...)` — the `TimeSpan?` overload.
+2. Production code calls `StringSetAsync(..., Expiration, ...)` — a **different overload**.
+3. Moq finds no matching setup → falls back to **loose mock default** → returns `false`.
+4. Production code proceeds as if the setup never existed.
+5. Delete the production method → test still compiles (calling through mock) → `Setup` still targets dead air → test still passes.
 
 **Prevention:**
-- Use `MockBehavior.Strict` — any unmocked call throws immediately.
-- Add `Verify` — explicitly assert the specific overload was called.
-- Check the exact method signature in IntelliSense before writing the `Setup`.
+- **`MockBehavior.Strict`** — any unmocked call throws immediately, exposing the overload mismatch.
+- **`Verify`** — explicitly assert the exact overload was called with exact arguments.
+- **Check IntelliSense** — confirm the method signature before writing `Setup`.
 </details>
 
 ---
@@ -171,9 +175,20 @@ public void GetTotal_WhenDiscountIsZero_ReturnsSubtotalPlusDelivery()
 
 <details><summary>Answer</summary>
 
-`mockDb.Setup(...)` sets up methods on the concrete mock type `T`. `mockDb.As<IDatabaseAsync>().Setup(...)` sets up methods on an interface that `T` implements — necessary when the production code holds a reference of type `IDatabaseAsync`, not the concrete type.
+- **`mockDb.Setup(...)`** — sets up methods on the **concrete mock type** `T` (`IDatabase`).
+- **`mockDb.As<IDatabaseAsync>().Setup(...)`** — sets up methods on a specific **interface** that `T` implements. Required when production code holds the reference as `IDatabaseAsync`, not `IDatabase`.
 
-If you use the wrong one: the production code calls through the `IDatabaseAsync` interface reference, Moq finds no matching setup on that interface, falls back to default values, and your setup silently never fires. The test passes even though the expected call never happened.
+**If you use the wrong one:**
+```csharp
+// Production code holds: IDatabaseAsync _db
+// This setup NEVER fires — wrong interface face:
+mockDb.Setup(x => x.KeyDeleteAsync(...)).ReturnsAsync(true);
+
+// Correct:
+mockDb.As<IDatabaseAsync>().Setup(x => x.KeyDeleteAsync(...)).ReturnsAsync(true);
+```
+
+Moq finds no matching setup on the interface face → returns the **default value** → your setup silently never fires → test passes but the mock was never called.
 </details>
 
 ---
@@ -197,10 +212,24 @@ Use **SQLite in-process** for tests that care about constraints or concurrency.
 
 <details><summary>Answer</summary>
 
-- **Code coverage** — measures which lines/branches were *executed* by tests. Does not measure whether assertions would catch a bug.
-- **Mutation testing** — automatically introduces small bugs (mutations) into your code and checks whether your test suite catches them. If a test still passes after a mutation, the test is "weak."
+- **Code coverage** — measures which **lines/branches were executed**. Does not check whether assertions would catch a bug.
+- **Mutation testing** — introduces small code changes (mutations) and verifies your tests fail:
+  - `>` changed to `>=`
+  - `return true` changed to `return false`
+  - `+` changed to `-`
+  If a test still passes after a mutation → the test is **weak**.
 
-100% coverage does NOT mean tests are good. A test with `Assert.NotNull(result)` covers every line of a method but wouldn't catch a wrong calculation, missing `Verify`, or off-by-one error.
+**100% coverage ≠ good tests:**
+```csharp
+// Covers every line but catches no bug:
+[Fact]
+public void GetTotal_ReturnsNotNull()
+{
+    Assert.NotNull(order.GetTotal()); // ✅ executes the line, ❌ catches nothing
+}
+
+// Mutation: changes '-' to '+' in GetTotal() → test still passes
+```
 </details>
 
 ---
@@ -336,11 +365,16 @@ If you truly cannot touch the production code, option 2 (integration test) is th
 
 <details><summary>Answer</summary>
 
-The test calls `SetCartAsync` and asserts on the return value (e.g. `result.Should().BeNull()`). Without a `Verify`, there's no assertion that any mock method was or wasn't called. When `SetCartAsync` is deleted, the test still compiles if it was testing a different method, OR it was testing a null path that never hit the service method at all.
+**Why the test still passes:**
 
-The test is a false safety net — it passes whether or not the production code does what it claims.
+The test asserts on the return value of `SetCartAsync` — but without a `Verify`, there is no assertion that any Redis mock was called. If the failure path never reaches the Redis layer (e.g. throws early, or returns null before calling the service), the `Setup` never fires and no error occurs.
 
-**In code review:** point out that without `Verify`, the test provides no protection against regressions in the Redis call. Suggest adding `_mockDb.Verify(x => x.StringSetAsync(...), Times.Never)` for the failure path, or `Times.Once` for the happy path.
+The test is a **false safety net** — it passes whether or not the production code calls Redis.
+
+**In code review — what to say:**
+> "Quick question: what code change would break this test? I think it might pass even if we remove the Redis call entirely — there's no `Verify` on `StringSetAsync`. Adding `_mockDb.Verify(x => x.StringSetAsync(...), Times.Never)` for the failure path would make it a real safety net."
+
+Ask, don't accuse. Offer the fix.
 </details>
 
 ---
@@ -349,11 +383,25 @@ The test is a false safety net — it passes whether or not the production code 
 
 <details><summary>Answer</summary>
 
-The service likely checks for an existing order by querying the DB with the cart ID. The seeded order has the cart ID set, but it was inserted into a **different `DbContext` instance** than the one the service uses. Each test `DbContext` gets a fresh InMemory database — seeded data in one context isn't visible to a service using another context.
+**Why seeding fails:**
 
-**Fix:**
-- Seed using the same `DbContext` instance the service uses, or
-- Use a shared `DbContextOptions` with a named InMemory database (`UseInMemoryDatabase("TestDb")`) so both contexts share the same in-memory store.
+Seeded data was inserted into a **different `DbContext` instance** than the one the service uses. Each `DbContext` in EF InMemory gets a fresh, isolated store by default — seeded data in one context is **not visible** to a service using another context.
+
+**Fix — Option 1:** use the same `DbContext` instance for seeding AND the service:
+```csharp
+context.Orders.Add(existingOrder);
+await context.SaveChangesAsync();
+var service = new OrderService(context); // same instance
+```
+
+**Fix — Option 2:** use a named InMemory database (both contexts share the same store):
+```csharp
+var options = new DbContextOptionsBuilder<AppDbContext>()
+    .UseInMemoryDatabase("TestDb") // named → shared across instances
+    .Options;
+```
+
+**Note:** even with these fixes, InMemory still doesn't enforce unique constraints or concurrency tokens. Switch to SQLite in-process when you need those.
 </details>
 
 ---
