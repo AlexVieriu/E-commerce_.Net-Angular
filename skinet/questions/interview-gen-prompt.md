@@ -88,7 +88,24 @@ Match language to the section. Mixed sections: one from each.
 
 ## Answer Rules
 
-- No filler. No *"Great question."*
+> All answers are exported directly to Anki. Every answer must work as a flashcard back — scannable in ≤15 seconds.
+
+**The 5% Answer**
+- Bullet points only — no prose paragraphs.
+- Multi-part questions: open each part with a bold label (`**Bug 1 — root cause:**`).
+- Max ~2 bullets per sub-part; max ~6 bullets total. If more are needed, the question is too broad — split it.
+- Code blocks: ≤8 lines — show the fix or the key call, never a full class.
+- If all parts share a common thread, end with one "both X are Y" takeaway line.
 - **Bold** key terms. Language tag on every code block (`csharp`, `typescript`, `yaml`, `sql`, `bash`).
-- Show **why** — the reasoning behind the decision, not just the correct API.
-- Hard answers must include a **Production consequence** line.
+- Hard answers end with: **Production consequence:** *one tight sentence — what fails if wrong in prod.*
+
+**Red Flag**
+- 2 sentences max.
+- Sentence 1: the exact shallow/wrong thing the candidate says (quote it or show the code).
+- Sentence 2: one sentence on why it still fails.
+
+**Green Flag**
+- 1 short paragraph — one insight only someone who shipped this would know.
+- State what it catches and why it's better than the baseline answer.
+
+**No `<details><summary>Explanation</summary>` blocks** — not parsed by the Anki pipeline, never generated.

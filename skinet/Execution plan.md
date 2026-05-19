@@ -1,14 +1,14 @@
 # Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
-> **50 tasks | 6 sprints (2 wk each) | Deadline: Jun 14, 2026**
+> **50 tasks | 6 sprints (2 wk each) | Deadline: Jul 5, 2026**
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
 **LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> append to `questions/Technical Questions.txt`.
 **Git:** Branch per sprint, conventional commits, PR to main at sprint end.
 
-**Deadline reality (Apr 2 → Jun 14 ≈ 40 prog days at 4 days/week):**
+**Deadline reality (Apr 2 → Jul 5 ≈ 54 prog days at 4 days/week):**
 Sprint 1 buffer already consumed — no more slack. One slow sprint = one cut task somewhere.
 CV priority order if forced to cut: Sprint 3 (admin) > Sprint 6 (README) > Sprint 2 (tests) > rest.
 Never sacrifice working Azure deploy + README. That's what job hunters actually look at.
@@ -67,7 +67,7 @@ Sprint end: full test suite green. Verify Azure. Update README.
 
 ---
 
-## Sprint 3 — Admin Panel *(Apr 20 – May 3)*
+## Sprint 3 — Admin Panel *(May 11 – May 24)*
 
 > Most clickable CV feature. Backend first, then Angular.
 > Pattern: copy ShopComponent's httpResource + Material table. Don't break existing orders/refund.
@@ -92,7 +92,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint 4 — Frontend Quality + UX *(May 4 – May 17)*
+## Sprint 4 — Frontend Quality + UX *(May 25 – Jun 7)*
 
 > Polish existing features. Isolated Angular tasks, easiest first.
 > Order: ESLint(54) -> Lighthouse(55) -> Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Performance(56) -> Playwright(37) -> README(38)
@@ -119,7 +119,7 @@ Sprint end: Playwright + backend tests green. Verify deploy.
 
 ---
 
-## Sprint 5 — Domain Expansion *(May 18 – May 31)*
+## Sprint 5 — Domain Expansion *(Jun 8 – Jun 21)*
 
 > Domain modeling depth. Backend comfort zone.
 > Order: Status(40) -> Cancel(41) -> Email(39) -> Soft delete(42) -> Indexes(43) -> Tests(46) -> Integration tests(20)
@@ -143,7 +143,7 @@ Sprint end: full test suite. Test cancel, soft delete, status history. Verify Az
 
 ---
 
-## Sprint 6 — Polish + Standout *(Jun 1 – Jun 14)*
+## Sprint 6 — Polish + Standout *(Jun 22 – Jul 5)*
 
 > Recruiter spends 30 seconds on your repo. README day 1 = highest ROI.
 
@@ -184,11 +184,11 @@ Sprint end: final deploy + smoke test. Share with someone.
 ## Progress
 
 - [x] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
-- [x] Sprint 2 — Testing + Data Integrity (9 tasks) *(done: Apr 9)*
-- [ ] Sprint 3 — Admin Panel (8 tasks) *(Apr 20 – May 3)*
-- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(May 4 – May 17)*
-- [ ] Sprint 5 — Domain Expansion (7 tasks) *(May 18 – May 31)*
-- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Jun 1 – Jun 14)*
+- [x] Sprint 2 — Testing + Data Integrity (9 tasks) *(done: May 7)*
+- [ ] Sprint 3 — Admin Panel (8 tasks) *(May 11 – May 24)*
+- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(May 25 – Jun 7)*
+- [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jun 8 – Jun 21)*
+- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Jun 22 – Jul 5)*
 
 Every sprint end: E2E run, Azure verify, README update.
 

@@ -42,6 +42,92 @@ Mentioning that `pull_request` CI runs against the **merged state** (PR branch +
 
 </details>
 
+<details>
+<summary>Explanation</summary>
+
+### Behind the Scenes
+
+**`pull_request`:**
+1. You open (or update) a PR.
+2. GitHub silently creates a **throwaway merge commit** in memory: `base branch + your branch`.
+3. GitHub fires a webhook with that synthetic SHA → runner picks it up.
+4. Runner checks out the **virtual merge result**, not your branch tip.
+5. CI runs on "what would `main` look like if you clicked Merge right now."
+6. The commit is never stored. It vanishes after the run.
+
+**`push`:**
+1. You run `git push`. Git sends commits to GitHub over HTTPS/SSH.
+2. GitHub stores the commit, advances the branch ref.
+3. GitHub fires a webhook → runner picks it up.
+4. Runner checks out the **exact commit SHA** that just landed.
+5. CI runs on that commit. Whatever is in the branch is already there.
+
+**The key difference:** `push` tests what *is*. `pull_request` tests what *would be*.
+
+---
+
+### What `pull_request` CI actually does
+
+When you open a PR, GitHub doesn't just test your branch. It silently creates a **virtual merge commit** — your branch already merged into the base branch — and runs CI on that. The commit is thrown away after. It never lands anywhere.
+
+The question it's answering is not "does my branch work?" but **"if I click Merge right now, does `main` still work?"**
+
+---
+
+### Why testing branches individually isn't enough
+
+Your branch passes. `main` passes. But the *combination* can still be broken.
+
+**Example:**
+- `main` has `Calculate(int a, int b)`
+- You add a caller: `Calculate(1, 2, 3)` — you're planning to extend the signature
+- Your colleague merges a change to `main` that simplifies it to `Calculate(int a)`
+- Both branches pass CI on their own
+- The merged result → compile error. Your 3-arg call no longer matches
+
+`pull_request` CI catches this before merge. `push` CI catches it after — when it's already in `main`.
+
+---
+
+### The stale CI problem (multiple PRs)
+
+With 4-5 PRs open at the same time (common in corporations):
+
+- PR-A and PR-B both pass CI — but both were tested against `main` from this morning
+- PR-A merges first
+- PR-B's CI result is now **stale** — it was never tested against `main + PR-A`
+- PR-B merges → `main` is broken
+
+**Fix: GitHub Merge Queue.** PRs enter a queue. Each one is re-tested against the accumulated state before merging. Guaranteed: every PR is tested against the exact `main` it will produce.
+
+---
+
+### Real-world scenario — WorldPay style
+
+At a payments company the pipeline looks like:
+
+```
+feature branch
+    ↓ PR + CI
+development
+    ↓ PR + CI + QA sign-off
+testing
+    ↓ PR + CI + integration tests
+integration
+    ↓ PR + CI + performance/security tests
+staging           ← mirrors production exactly
+    ↓ PR + CI + manual approval
+production
+```
+
+Each level is a gate. You cannot skip. `pull_request` CI runs at every boundary.
+
+**Why so strict:** a bug in production at WorldPay isn't "users see an error." It's millions in failed transactions, regulatory fines, and SLA breaches with banks. The cost of a bad merge vastly outweighs the cost of slower delivery.
+
+**The tradeoff:** a feature can take 2-3 weeks to reach production — not because of coding time, but because of waiting for sign-offs and test runs at each gate. Startups skip layers and accept the risk. Payment processors cannot.
+
+</details>
+
 ---
 
 **A2.** [HIGH] [OUT-OF-SCOPE] What is OIDC-based authentication for Azure deployments? Why is it safer than a stored client secret?
@@ -50,7 +136,7 @@ Mentioning that `pull_request` CI runs against the **merged state** (PR branch +
 <summary>The 5% Answer</summary>
 
 - **OIDC (OpenID Connect)** — GitHub and Azure establish a trust relationship via a **federated credential** on a Managed Identity. No password is stored anywhere.
-- GitHub requests a **short-lived token** per workflow run from Azure's STS. The token is scoped to the run and expires within minutes.
+- GitHub requests a **short-lived token** per workflow run from Azure's STS(Security Token Service). The token is scoped to the run and expires within minutes.
 - Compare to a stored client secret: stored in GitHub Secrets as a long-lived credential, must be manually rotated, and is compromised if the secret store is breached.
 
 ```yaml
@@ -83,8 +169,6 @@ Mentioning that OIDC tokens are bound to the specific repository, branch, and en
 
 </details>
 
-https://claude.ai/chat/e5da0b13-00a1-450f-b80c-9c440569473b
-
 ---
 
 ### MEDIUM
@@ -96,14 +180,7 @@ https://claude.ai/chat/e5da0b13-00a1-450f-b80c-9c440569473b
 
 **Impact:** every merge to `development` (every PR merge during daily development) triggers a production deploy. Developers merging feature work multiple times a day would each cause a production deployment — including half-finished features and work-in-progress branches.
 
-**Fix 1 — condition on the deploy job:**
-```yaml
-deploy:
-  needs: [test-backend, test-frontend]
-  if: github.ref == 'refs/heads/main'
-```
-
-**Fix 2 (cleaner) — separate triggers:**
+**Fix — separate triggers:**
 ```yaml
 on:
   pull_request:
@@ -111,9 +188,6 @@ on:
   push:
     branches: [main]               # deploy only
 ```
-
-The condition `github.ref == 'refs/heads/main'` is the correct check — `github.ref_name` and `github.head_ref` resolve differently on `pull_request` vs `push` events and can produce false matches.
-
 </details>
 
 <details>
@@ -128,7 +202,65 @@ The condition `github.ref == 'refs/heads/main'` is the correct check — `github
 <summary>Green Flag</summary>
 
 **Green Flag:**
-Mentioning that `github.ref` on a `push` event is the fully-qualified ref (`refs/heads/main`). Using `github.ref_name` (just `main`) is simpler but `github.ref` is more explicit and unambiguous — no risk of a branch named `something/main` accidentally matching.
+Splitting deploy into a **dedicated workflow file** (`deploy.yml`) with only `push: [main]` as its trigger — CI and deploy are never in the same YAML file. This eliminates trigger-bleed entirely: a CI workflow physically cannot deploy, and a deploy workflow physically cannot run tests. Each file's intent is unambiguous at a glance, and a future developer adding `push: [development]` to `ci.yml` cannot accidentally affect deploys.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+### What actually happens when you add `development` to `push:`
+
+```yaml
+on:
+  push:
+    branches: [main, development]  # danger
+```
+
+Every time a PR merges into `development`, this fires. With no branch condition on the deploy job, the pipeline deploys to whatever Azure resource is wired up in that job. If there is only one App Service configured and it points to production — every feature merge hits production, mid-sprint, before QA has touched anything.
+
+---
+
+### Best practice — what corporations actually do
+
+Two separate Azure resources, two deploy jobs with `if:` conditions:
+
+```
+feature/task-N  →  PR to development  →  CI only (pull_request trigger)
+development     →  push trigger        →  CI + deploy to STAGING App Service
+main            →  push trigger        →  CI + deploy to PRODUCTION App Service
+```
+
+```yaml
+deploy-staging:
+  if: github.ref == 'refs/heads/development'
+  steps:
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: skinet-staging
+
+deploy-production:
+  if: github.ref == 'refs/heads/main'
+  steps:
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: skinet-production
+```
+
+On top of this, corporations add a **manual approval gate** on the production job — a human clicks approve before it runs. Staging is automatic, production is gated.
+
+---
+
+### For this project
+
+Solo + learning — staging deploy on `development` is optional. CI on feature PRs is the important gate. The minimum correct setup:
+
+```
+feature/task-N  →  PR to development  (CI only)
+development     →  PR to main         (CI + deploy to production)
+```
+
+`development` accumulates sprint work. Only `main` deploys.
 
 </details>
 
@@ -199,6 +331,42 @@ CI:     @angular/material@18.2.0 (latest in ^18 range)
 
 **Green Flag:**
 Mentioning `--frozen-lockfile` is the `yarn` equivalent, and `pnpm ci` for pnpm. Also: `npm ci` is significantly faster on CI because it skips dependency resolution entirely — it reads the lock file and extracts packages directly, bypassing the semver solver.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+### What `node_modules` is
+
+When you run `npm install`, npm reads `package.json`, downloads every dependency, and dumps them all into a folder called `node_modules`. That folder is your project's local library shelf — all third-party code lives there, ready to import.
+
+```
+your-project/
+  package.json       ← wish list: "I want @angular/core ^18"
+  package-lock.json  ← exact receipt: "I got @angular/core 18.0.1"
+  node_modules/      ← the actual files on disk
+    @angular/
+    rxjs/
+    zone.js/
+    ... (often 50,000+ files)
+```
+
+### Real-world analogy
+
+Think of it like a recipe app:
+
+- `package.json` = your shopping list ("any brand of olive oil, at least 500ml")
+- `package-lock.json` = the exact receipt from last time ("Tesco Extra Virgin 500ml, batch #A3")
+- `node_modules` = your actual pantry where the bottles sit
+
+**`npm install`** goes shopping using the wish list. If a newer bottle is on the shelf, it grabs that instead. Your pantry differs from your colleague's pantry.
+
+**`npm ci`** goes shopping using the receipt — same brand, same batch, every time. If the receipt says `18.0.1`, it installs exactly `18.0.1`. If someone changed the wish list without updating the receipt, it refuses to shop at all.
+
+### Why `node_modules` is never committed to git
+
+50,000+ files, 300 MB+, contains platform-specific binaries (Windows `.dll`, Linux `.so`). Committing it would make every `git clone` massive and break cross-platform CI. The lock file is the commitment — 1 file, 2 KB, platform-neutral.
 
 </details>
 
@@ -301,6 +469,7 @@ Mentioning `RestorePackagesWithLockFile = true` in the `.csproj` — NuGet's equ
 
 </details>
 
+
 ---
 
 **A8.** [HIGH] A PR's CI passes on `pull_request`, but the deploy job on `push` to `main` fails with "Resource not found." The only change was adding a new environment variable. What are the 3 most likely causes?
@@ -320,11 +489,34 @@ deploy:
 
 Fix: add the secret to Settings → Environments → production → Secrets.
 
-**Cause 2 — Variable used in deploy step but not passed via `env:`:**
-The variable is defined in `env:` at the job level but referenced as an OS env var in a bash step that doesn't inherit it, or is referenced in the wrong context (e.g., `${{ env.NEW_VAR }}` vs `$NEW_VAR`).
+**Cause 2 — Wrong syntax when referencing the variable in the workflow YAML:**
+`env:` is a block inside your `.github/workflows/pipeline.yml` file — nothing to do with Azure. "Job level" means it sits under the job definition, so every step in that job can read it. But there are two reference syntaxes and they only work in specific places:
 
-**Cause 3 — Azure App Service app setting not added:**
-The new env var is needed at runtime (not build time), but it was only added to the GitHub workflow — not to the Azure App Service Application Settings. The workflow deploys successfully but the app can't find the config at runtime.
+```yaml
+# .github/workflows/pipeline.yml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:                                  # ← job-level: all steps below inherit this
+      NEW_VAR: ${{ secrets.NEW_VAR }}
+
+    steps:
+      - run: echo "$NEW_VAR"             # ✅ bash syntax — works inside run: scripts
+      - uses: some-action@v1
+        with:
+          token: $NEW_VAR               # ❌ broken — bash syntax doesn't work in with:
+          token: ${{ env.NEW_VAR }}     # ✅ correct — GitHub expression syntax required here
+```
+
+The bug: the secret is wired up correctly in `env:` but then referenced with `$NEW_VAR` (bash) inside a `with:` block where only `${{ env.NEW_VAR }}` works — so the value arrives as an empty string at runtime.
+
+**Cause 3 — Secret exists in GitHub but not in Azure App Service:**
+The GitHub workflow can read `${{ secrets.NEW_VAR }}` during the deploy step (pipeline time), but the running app reads its config from Azure App Service → Settings → Environment variables (runtime). These are two separate stores — adding a secret to GitHub does not put it in App Service.
+
+The deploy job completes green (it just uploaded files). The app starts, calls `IConfiguration["NewVar"]`, gets `null`, and throws "Resource not found."
+
+Fix: Azure Portal → App Service → Settings → Environment variables → add `NEW_VAR`.
 
 **Diagnosis order:**
 1. Check the exact step that fails → narrow down build-time vs runtime
@@ -332,6 +524,8 @@ The new env var is needed at runtime (not build time), but it was only added to 
 3. Check Azure App Service Configuration blade
 
 **Production consequence:** the workflow completes green, the artifact is pushed, but the running app crashes on first use of the missing config. Without a smoke test after every deploy, the failure goes undetected until a user hits the broken feature — the pipeline reported success.
+
+**In this project:** secrets never live in GitHub — they live in Azure Key Vault, read at startup via `AddAzureKeyVault` + `DefaultAzureCredential`. The equivalent failure is either (a) the Key Vault secret was never created, or (b) the name uses `:` instead of `--` so the `IConfiguration` mapping silently misses it. Diagnosis: Azure Portal → Key Vault → Secrets blade, not GitHub Settings.
 
 </details>
 
@@ -348,6 +542,48 @@ The new env var is needed at runtime (not build time), but it was only added to 
 
 **Green Flag:**
 Mentioning that environment-scoped secrets **override** repository-level secrets of the same name — but only for jobs with `environment:` set. A secret named `CONNECTION_STRING` in both scopes has different values for CI (repo scope) vs deploy (environment scope). This intentional isolation is the correct pattern for staging vs production configs.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+> This project uses Azure + OIDC so secrets live in Key Vault, not GitHub. But most companies store credentials directly in GitHub Secrets — knowing how it works is an interview staple.
+
+---
+
+### Two secret scopes
+
+GitHub has two places to store secrets:
+
+| Scope | Where to add it | Who sees it |
+|---|---|---|
+| **Repository** | Settings → Secrets → Repository secrets | Every job in every workflow |
+| **Environment** | Settings → Environments → `production` → Secrets | Only jobs that declare `environment: production` |
+
+**Gotcha:** environments don't exist by default. A fresh repo has none. You must go to `Settings → Environments → New environment` and create one manually. Until you do, `environment: production` in your YAML is a no-op for secrets.
+
+---
+
+### The failure scenario
+
+A company deploys to Fly.io using a static API token. Everything works. A developer adds a Stripe webhook secret:
+
+- They go to `Settings → Secrets → Repository secrets` and add `STRIPE_WEBHOOK_SECRET`
+- They think: "repo secrets are visible everywhere"
+
+But the deploy job has `environment: production` — it looks at the production environment's secrets first. `STRIPE_WEBHOOK_SECRET` was never added there, so it resolves to an empty string at runtime → app crashes on startup → "Resource not found."
+
+**CI passed** because the `test` job runs without `environment:`, uses no secrets, and always succeeds.
+
+**The fix:** `Settings → Environments → production → Secrets → add STRIPE_WEBHOOK_SECRET`.
+
+---
+
+### What to say in an interview
+
+- "I'd check whether the deploy job has `environment:` set, then verify the secret is scoped to that environment, not just the repository."
+- Junior mistake: "I added it to repo settings, that should be enough."
 
 </details>
 
@@ -414,51 +650,30 @@ Mentioning `dotnet test --list-tests` — runs test discovery without executing 
 <details>
 <summary>The 5% Answer</summary>
 
-**Bug 1 — Moq type matching (`It.IsAny<string>()` vs `It.IsAny<RedisKey>()`):**
-
-Moq 4.20+ uses exact type matching for argument matchers. `RedisKey` is a struct with an implicit conversion from `string`, but Moq's matcher doesn't follow C# implicit conversions — it checks the declared parameter type.
+**Bug 1 — wrong matcher type:**
+- Moq checks `actualArg is T` at runtime. `RedisKey is string` → false. No match, no error, default return value.
+- `StringSetAsync` is an explicit impl on `IDatabaseAsync` — `.As<IDatabaseAsync>()` is required to mount those members on the proxy.
 
 ```csharp
-// WRONG — declared type is RedisKey, not string; matcher never fires
 mockDb.As<IDatabaseAsync>()
     .Setup(x => x.StringSetAsync(
-        It.IsAny<string>(),      // ← RedisKey != string to Moq
+        It.IsAny<RedisKey>(),    // declared type — not string
         It.IsAny<RedisValue>(),
         It.IsAny<Expiration>(),
         It.IsAny<When>(),
         It.IsAny<CommandFlags>()))
     .ReturnsAsync(true);
-
-// CORRECT
-mockDb.As<IDatabaseAsync>()
-    .Setup(x => x.StringSetAsync(
-        It.IsAny<RedisKey>(),    // ← matches the declared type
-        ...))
-    .ReturnsAsync(true);
 ```
 
-When the matcher doesn't fire, Moq returns the default value (`false` for `bool`) without error. Tests that assert on the mock's return value still pass — asserting behaviour that never actually ran.
-
-**Why `.As<IDatabaseAsync>()` is required:**
-StackExchange.Redis implements async methods as **explicit interface implementations** on `IDatabaseAsync`. `Mock<IDatabase>` doesn't expose them directly — `.As<IDatabaseAsync>()` lets you set up and verify those explicit members.
-
-**Bug 2 — constructor runs before mock is configured:**
+**Bug 2 — setup after constructor:**
+- `CartService` calls `GetDatabase()` inside its constructor. Setup registered after `new CartService(...)` is too late — the constructor already ran against an unconfigured mock.
 
 ```csharp
-// WRONG — CartService constructor calls GetDatabase() before the mock is set up
-var mockRedis = new Mock<IConnectionMultiplexer>();
-var service = new CartService(mockRedis.Object);  // constructor runs here, calls GetDatabase()
-mockRedis.Setup(x => x.GetDatabase(...)).Returns(mockDb.Object);  // too late
-
-// CORRECT — set up mock BEFORE passing it to the constructor
-var mockRedis = new Mock<IConnectionMultiplexer>();
-mockRedis.Setup(x => x.GetDatabase(...)).Returns(mockDb.Object);  // configured first
-var service = new CartService(mockRedis.Object);  // constructor sees the configured mock
+mockRedis.Setup(x => x.GetDatabase(...)).Returns(mockDb.Object); // configure first
+var service = new CartService(mockRedis.Object);                  // then construct
 ```
 
-Constructor injection runs at instantiation. If the mock isn't configured before `new CartService(...)`, the constructor calls an unmocked dependency and any state established in the constructor is wrong for all subsequent test assertions.
-
-**Production consequence:** a silently unmatched mock produces a test that compiles and passes while exercising zero production code paths. A real Redis failure would go untested — the feature's failure mode is invisible until production.
+**Both bugs are silent** — the test compiles, runs, and passes while covering zero production code paths.
 
 </details>
 
@@ -476,70 +691,88 @@ Constructor injection runs at instantiation. If the mock isn't configured before
 
 </details>
 
+<details>
+<summary>Explanation</summary>
+
+### Bug 2 — Setup after constructor
+
+`CartService` calls `mockRedis.GetDatabase()` inside its constructor. At that moment, Moq intercepts the call and returns whatever is set up — if nothing is set up yet, it returns `null` (loose mock default).
+
+```csharp
+// ❌ Wrong order — constructor runs against an unconfigured mock
+var service = new CartService(mockRedis.Object);          // GetDatabase() fires here
+mockRedis.Setup(x => x.GetDatabase(...)).Returns(mockDb.Object); // too late
+```
+
+The service now holds a `null` database reference. Every subsequent call (`StringSetAsync`, `StringGetAsync`) throws `NullReferenceException` — or worse, returns a default and the test passes while exercising nothing.
+
+```csharp
+// ✅ Correct order — configure before constructing
+mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
+         .Returns(mockDb.Object);
+
+var service = new CartService(mockRedis.Object); // GetDatabase() now returns mockDb.Object
+```
+
+**Why this is silent:** loose mocks return defaults (`null`, `false`, `0`) for unconfigured calls instead of throwing. The test compiles and often passes — assertions are satisfied by the wrong value, not the production path.
+
+**General rule:** always configure a mock fully before passing it to the constructor. With `MockBehavior.Strict`, an unconfigured call throws immediately — no silent defaults, no debugging.
+
+</details>
+
 ---
 
-**A11.** [HIGH] `Mock<IDatabase>.Setup(x => x.StringSetAsync(...))` registers cleanly but never fires — the test always sees the default `false`. Explain why StackExchange.Redis forces `Mock<IDatabase>().As<IDatabaseAsync>().Setup(...)`, and describe the exact runtime symptom when the `.As<>()` cast is omitted.
+**A11.** [HIGH] `mockDatabase.Setup(x => x.StringSetAsync(...))` compiles and registers but never fires — the test always gets back `false` and passes for the wrong reason. Why does this happen with StackExchange.Redis, and what is the fix?
 
 <details>
 <summary>The 5% Answer</summary>
 
-**The underlying mechanism — explicit interface implementation:**
+**Root cause — `StringSetAsync` is hidden behind a parent interface:**
 
-`IDatabase` inherits from `IDatabaseAsync`, but StackExchange.Redis declares the async methods as **explicit interface implementations** on `IDatabaseAsync`:
+`IDatabase` extends `IDatabaseAsync`. StackExchange.Redis declared `StringSetAsync` on `IDatabaseAsync` using **explicit interface implementation** — meaning the method is only reachable through an `IDatabaseAsync`-typed variable, even though `IDatabase` inherits it.
 
+In production code this is invisible — C# finds it automatically. But Moq creates a fake object for `Mock<IDatabase>` that only intercepts calls made through `IDatabase`'s own declared members. Calls routed through `IDatabaseAsync` bypass it completely — no setup fires, no exception, just `false` back silently.
+
+**Fix — tell Moq to also cover `IDatabaseAsync`:**
 ```csharp
-// Simplified — StackExchange.Redis source
-public class RedisDatabase : IDatabase  // IDatabase : IDatabaseAsync
-{
-    // Explicit member — accessible only via IDatabaseAsync-typed reference
-    Task<bool> IDatabaseAsync.StringSetAsync(RedisKey, RedisValue, ...)
-        => /* real impl */;
-}
-```
+// ❌ setup registers but never fires — IDatabase mock doesn't intercept IDatabaseAsync calls
+mockDatabase.Setup(x => x.StringSetAsync(...)).ReturnsAsync(true);
 
-Explicit members are invisible on the declaring class and on derived interfaces — they resolve **only through a reference typed as the declaring interface**. In production code, `IDatabase db; db.StringSetAsync(...)` compiles because C#'s overload resolution walks up the interface chain. But Moq's proxy generator builds a proxy for `IDatabase` — it does not automatically expose `IDatabaseAsync`'s explicit members through the `IDatabase` mock surface.
-
-**The correct setup:**
-```csharp
-// WRONG — Mock<IDatabase>'s proxy has no handler for the explicit StringSetAsync
-mockDb.Setup(x => x.StringSetAsync(It.IsAny<RedisKey>(), ...)).ReturnsAsync(true);
-// Setup compiles and registers, but the real call bypasses it.
-
-// RIGHT — .As<IDatabaseAsync>() extends the proxy with IDatabaseAsync's members
-mockDb.As<IDatabaseAsync>()
-    .Setup(x => x.StringSetAsync(It.IsAny<RedisKey>(), ...))
+// ✅ extends the same mock to also intercept IDatabaseAsync calls
+mockDatabase.As<IDatabaseAsync>()
+    .Setup(x => x.StringSetAsync(
+        It.IsAny<RedisKey>(),
+        It.IsAny<RedisValue>(),
+        It.IsAny<Expiration>(),
+        It.IsAny<ValueCondition>(),
+        It.IsAny<CommandFlags>()))
     .ReturnsAsync(true);
 ```
 
-`.As<TInterface>()` tells Moq to mount `TInterface`'s members on the underlying proxy so that casts to `TInterface` actually intercept those calls.
+This is exactly what `SetCartAsync_ShouldSaveAndReturnCart_WhenSuccessful` does in this project (line 83).
 
-**Runtime symptom if omitted:**
+**How to catch it:** add a `Verify` at the end of the test — this is already in the project (line 111):
+```csharp
+mockDatabase.As<IDatabaseAsync>()
+    .Verify(x => x.StringSetAsync(...), Times.Once);
+```
+If `StringSetAsync` was never intercepted, `Verify` throws — the test fails loudly instead of silently passing.
 
-No exception. No warning. The unmocked method returns the default for its return type:
-
-| Return type | Default |
-|---|---|
-| `Task<bool>` | `Task.FromResult(false)` |
-| `Task<string?>` | `Task.FromResult<string?>(null)` |
-| `Task<RedisValue>` | `Task.FromResult(RedisValue.Null)` |
-
-A test asserting `result.Should().BeTrue()` fails with "expected True, got False" and no hint that the mock setup never matched. Debugging burns hours before someone notices the setup was registered but `mockDb.Invocations` is empty.
-
-**Production consequence:** every Redis-related test with the missing `.As<>()` cast exercises zero production code — the mock returns defaults, the assertions drive on those defaults, and real Redis failures stay untested. This was one of the 12 pre-existing failures CI caught on first run (see A7). A green test suite for months meanwhile covering nothing.
+**How to know `.As<IDatabaseAsync>()` exists:** when a mock setup compiles but never fires, check the interface the method actually lives on (F12 in VS on the method). If it's on a parent interface, search "Moq explicit interface implementation" — `.As<T>()` is Moq's documented fix for this exact case.
 
 </details>
 
 <details>
 <summary>Red Flag</summary>
 
-**Red Flag:** "Just declare the variable as `Mock<IDatabaseAsync>` from the start." That breaks the test — `CartService`'s constructor takes `IDatabase`, and `Mock<IDatabaseAsync>` doesn't fit the constructor. `.As<T>()` is the documented Moq API for extending a single mock instance across the explicit-interface seam without changing the constructor contract.
+**Red Flag:** "Just change the variable to `Mock<IDatabaseAsync>`." That breaks the constructor — `CartService` takes `IDatabase`, not `IDatabaseAsync`. `.As<T>()` extends the existing mock without touching the constructor contract.
 
 </details>
 
 <details>
 <summary>Green Flag</summary>
 
-**Green Flag:** Mentioning **`MockBehavior.Strict`** as the preventive measure — `new Mock<IDatabase>(MockBehavior.Strict)` throws `MockException` on any call that has no matching setup, surfacing the omission on the first test run instead of letting it silently pass for months. Also: calling `mockDb.VerifyAll()` at teardown catches registered-but-never-invoked setups — the mirror failure mode where `.As<>()` is called but the wrong matcher (`It.IsAny<string>()` for a `RedisKey` parameter) was used, so the setup exists but never binds.
+**Green Flag:** Adding `Verify(Times.Once)` after the act — as done in this project. If the setup never fired, Verify catches it immediately instead of letting the test silently pass on a default return value. `MockBehavior.Strict` is the stronger version: it throws the moment any unmocked call is made, so you never even reach the assert.
 
 </details>
 

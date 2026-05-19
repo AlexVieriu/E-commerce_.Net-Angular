@@ -8,6 +8,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── CI: .NET ────────────────────────────────────────────────────────────────
   # Restores, builds and runs all test projects via the solution file.
