@@ -11,7 +11,7 @@ if (!builder.Environment.IsDevelopment())
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Key Vault unavailable, falling back to App Service settings: {ex.Message}");
+            WriteLine($"Key Vault unavailable, falling back to App Service settings: {ex.Message}");
         }
     }
 }

