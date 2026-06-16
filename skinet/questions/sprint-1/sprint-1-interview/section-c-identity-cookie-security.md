@@ -28,7 +28,7 @@
 |---|---|---|
 | `HttpOnly` | Cookie theft via `document.cookie` | `options.Cookie.HttpOnly = true;` |
 | `Secure` | Cookie over HTTP (MITM capture) | `options.Cookie.SecurePolicy = CookieSecurePolicy.Always;` |
-| `SameSite=Strict` | Cookie on cross-site requests (CSRF) | `options.Cookie.SameSite = SameSiteMode.Strict;` |
+| `SameSite=Strict` | Cookie on cross-site requests — CSRF (Cross-Site Request Forgery) | `options.Cookie.SameSite = SameSiteMode.Strict;` |
 
 </details>
 
@@ -83,7 +83,7 @@ That's **session hijacking**.
 
 | Gap | What still happens | Fix |
 |---|---|---|
-| Browser attaches cookie to every request automatically | **CSRF** — attacker tricks your browser into sending a request; cookie goes with it, no JS needed | `SameSite=Strict` |
+| Browser attaches cookie to every request automatically | **CSRF (Cross-Site Request Forgery)** — attacker tricks your browser into sending a request; cookie goes with it, no JS needed | `SameSite=Strict` |
 | Cookie travels in plaintext over HTTP | **Network interception** — anyone on the same network reads traffic and captures the token | `Secure` flag |
 | XSS can still run code in your browser | **Session abuse** — script calls your API from your tab directly, cookie attaches automatically | CSP |
 
@@ -102,7 +102,7 @@ Rule: **auth cookies → always `HttpOnly`. Non-sensitive UI state → fine to s
 
 **Code examples:**
 
-**CSRF** — victim visits `evil.com` while logged in to `skinet.com`:
+**CSRF (Cross-Site Request Forgery)** — victim visits `evil.com` while logged in to `skinet.com`:
 ```html
 <form method="POST" action="https://api.skinet.com/api/account/address">
   <input name="line1" value="1 Evil St">
@@ -223,7 +223,7 @@ Mentioning that returning the same 401 for "wrong password" AND "account locked"
   - Cookie **sent** on top-level navigations: link click, bookmark, address bar
   - Cookie **sent** on all same-site requests
   - Cookie **blocked** on cross-site background requests: `fetch`, form POST, images loaded from another site
-  - CSRF attacks rely on background requests → `Lax` still blocks CSRF while keeping email links and social shares working
+  - CSRF (Cross-Site Request Forgery) attacks rely on background requests → `Lax` still blocks CSRF (Cross-Site Request Forgery) while keeping email links and social shares working
   - ASP.NET Core default since .NET 6
 - **`Strict`:** cookie never sent on any cross-site request — including top-level GET navigations.
 
@@ -238,7 +238,7 @@ Mentioning that returning the same 401 for "wrong password" AND "account locked"
 **Why this project uses `Strict`:**
 - No OAuth (cookie-only auth, no external IdPs in scope)
 - The cost (re-login from email links) is acceptable
-- Maximum CSRF protection is the priority
+- Maximum CSRF (Cross-Site Request Forgery) protection is the priority
 
 </details>
 
@@ -360,14 +360,16 @@ Mentioning that `IdentityConstants.ApplicationScheme` is the literal string `"Id
 
 ---
 
-**C6.** [HIGH] `options.Lockout.AllowedForNewUsers` defaults to `false`. This project explicitly sets it to `true`. What specific attack window does `true` close that the default leaves open?
+**C6.** [HIGH] `options.Lockout.AllowedForNewUsers` defaults to `true`. What does it control, and what specific attack window opens if it is set to `false`?
 
 <details>
 <summary>The 5% Answer</summary>
 
-`AllowedForNewUsers = true` makes `CreateAsync` store `LockoutEnabled = true` on every new row. The default (`false`) stores `LockoutEnabled = false` — Identity checks this column before incrementing `AccessFailedCount`, so **lockout never fires** for that user regardless of `MaxFailedAccessAttempts`.
+**Common trap:** many candidates assume the default is `false` — it is `true`. The framework protects new users by default.
 
-**Attack window closed:** from registration, an attacker can attempt unlimited passwords — credential-stuffing 10,000 breached passwords hits no threshold. With `true`, lockout applies from day one.
+`AllowedForNewUsers = true` makes `CreateAsync` store `LockoutEnabled = true` on every new row. If set to `false`, `LockoutEnabled = false` is stored instead — Identity checks this per-row column before incrementing `AccessFailedCount`, so **lockout never fires** for that user regardless of `MaxFailedAccessAttempts`.
+
+**Attack window when `false`:** from registration, an attacker can attempt unlimited passwords — credential-stuffing 10,000 breached passwords hits no threshold.
 
 **Migration catch:** changing the config doesn't fix existing users — Identity checks the per-row column, not the options value:
 ```sql
@@ -380,7 +382,7 @@ UPDATE AspNetUsers SET LockoutEnabled = 1 WHERE LockoutEnabled = 0;
 <summary>Red Flag</summary>
 
 **Red Flag:**
-"Defaults are secure." Identity's lockout defaults are permissive — `AllowedForNewUsers = false`, `DefaultLockoutTimeSpan = 5min`. Never assume defaults are tight.
+Saying the default is `false` — it's `true`. The real risk is `DefaultLockoutTimeSpan = 5min` (too short for production) and assuming the per-row `LockoutEnabled` column is set correctly for existing users when you change the config.
 
 </details>
 
@@ -421,7 +423,7 @@ The attacker receives the cookie, uses it from their own machine, and has full s
 **Vulnerability 2 — `SecurePolicy = SameAsRequest` → MITM cookie theft:**
 The cookie is transmitted in plaintext over HTTP. A network attacker (coffee shop WiFi, corporate proxy, ISP) reads the session token directly from unencrypted HTTP traffic. `CookieSecurePolicy.Always` forces HTTPS-only transmission.
 
-**Vulnerability 3 — `SameSite = None` + `SlidingExpiration = true` → indefinite CSRF session:**
+**Vulnerability 3 — `SameSite = None` + `SlidingExpiration = true` → indefinite CSRF (Cross-Site Request Forgery) session:**
 `None` allows cross-site cookie attachment — any site can make authenticated requests with the victim's session. With sliding expiration, a stolen (or attacker-kept-alive) session never expires while in use. An attacker who bookmarks `https://api.skinet.com/api/account/email?change=attacker@evil.com` can keep triggering it from the victim's browser indefinitely.
 
 **Combined consequence:** XSS or MITM yields a 30-day, continuously renewable session token readable by JavaScript over HTTP, usable from any origin. Full account takeover with no expiration.
@@ -518,7 +520,7 @@ options.Lockout.AllowedForNewUsers = true;                         // lockout fr
 // Cookie
 options.Cookie.HttpOnly = true;                                    // blocks XSS token theft
 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;           // HTTPS-only, blocks MITM
-options.Cookie.SameSite = SameSiteMode.Strict;                     // blocks CSRF
+options.Cookie.SameSite = SameSiteMode.Strict;                     // blocks CSRF (Cross-Site Request Forgery)
 options.ExpireTimeSpan = TimeSpan.FromHours(24);                   // absolute session cap
 options.SlidingExpiration = false;                                 // stolen token expires predictably
 ```
@@ -543,7 +545,7 @@ Mentioning `IPasswordValidator<TUser>` — ASP.NET Identity's extensibility poin
 
 ---
 
-**C10.** [HIGH] [OUT-OF-SCOPE] Show the exact HTTP request a CSRF attack sends against this app when `SameSite=None; Secure` is misconfigured. Identify which header would be absent with `SameSite=Strict` and why that stops the attack.
+**C10.** [HIGH] [OUT-OF-SCOPE] Show the exact HTTP request a CSRF (Cross-Site Request Forgery) attack sends against this app when `SameSite=None; Secure` is misconfigured. Identify which header would be absent with `SameSite=Strict` and why that stops the attack.
 
 <details>
 <summary>The 5% Answer</summary>
@@ -594,7 +596,7 @@ firstName=Attacker&line1=1+Evil+St&city=Hacktown&country=GB
 <details>
 <summary>Red Flag</summary>
 
-**Red Flag:** "Checking the `Origin` or `Referer` header on the server stops CSRF." Both headers can be absent (privacy settings, HTTPS→HTTP transitions) or spoofed in edge cases. `SameSite` enforcement is at the browser layer — the attacker has no influence over it.
+**Red Flag:** "Checking the `Origin` or `Referer` header on the server stops CSRF (Cross-Site Request Forgery)." Both headers can be absent (privacy settings, HTTPS→HTTP transitions) or spoofed in edge cases. `SameSite` enforcement is at the browser layer — the attacker has no influence over it.
 
 </details>
 
@@ -607,20 +609,20 @@ firstName=Attacker&line1=1+Evil+St&city=Hacktown&country=GB
 
 ---
 
-**C11.** [MEDIUM] [OUT-OF-SCOPE] This project's CORS policy calls `WithOrigins(...)` instead of `AllowAnyOrigin()`. Why does `AllowAnyOrigin().AllowCredentials()` cause a runtime error in ASP.NET Core, and what does the exact exception say?
+**C11.** [MEDIUM] [OUT-OF-SCOPE] A cookie-authenticated ASP.NET Core API configures its CORS policy with `AllowAnyOrigin().AllowCredentials()`. Why does this throw a runtime error, and what does the exact exception say?
 
 <details>
 <summary>The 5% Answer</summary>
 
-**ASP.NET Core throws at startup:**
+**ASP.NET Core throws at runtime on the first CORS request** (not at startup — the app starts fine):
 ```
-InvalidOperationException: The CORS protocol does not allow specifying a wildcard
+ArgumentException: The CORS protocol does not allow specifying a wildcard
 (any) origin and credentials at the same time. Configure either a wildcard origin
-or a list of specific origins, not both.
+or a list of specific origins, not both. (Parameter 'policy')
 ```
 
 **Why the spec prohibits it:**
-RFC 6454 (Origins) and the CORS specification: if the server responds with `Access-Control-Allow-Origin: *`, the browser must ignore `Access-Control-Allow-Credentials: true`. A browser that sent cookies to `*` would expose session cookies to any site that happens to share the user's browser — a trivial CSRF vector. The RFC authors closed this deliberately.
+RFC 6454 (Origins) and the CORS specification: if the server responds with `Access-Control-Allow-Origin: *`, the browser must ignore `Access-Control-Allow-Credentials: true`. A browser that sent cookies to `*` would expose session cookies to any site that happens to share the user's browser — a trivial CSRF (Cross-Site Request Forgery) vector. The RFC authors closed this deliberately.
 
 **This project's fix:**
 ```csharp
@@ -637,7 +639,7 @@ services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
 
 `AllowAnyHeader()` is safe here — the origin whitelist is the real protection. Any origin not in the list gets a CORS rejection at the preflight stage.
 
-**Production consequence:** `AllowAnyOrigin()` with `AllowCredentials()` throws before the app accepts any requests — you'd catch it in CI or on first startup, not in prod. But removing `AllowCredentials()` to make it compile creates a silent regression — Angular's auth cookies are never sent, all authenticated API calls return 401.
+**Production consequence:** `AllowAnyOrigin()` with `AllowCredentials()` does not fail at startup — it throws on the first cross-origin request. Without a cross-origin test in CI, this reaches prod silently. But removing `AllowCredentials()` to make it compile creates a silent regression — Angular's auth cookies are never sent, all authenticated API calls return 401.
 
 </details>
 

@@ -309,7 +309,9 @@ def parse_md_to_cards(md_text: str, section_num: int) -> list[Card]:
     current_difficulty = 'Easy'
     card_counter = 0
 
-    for chunk in re.split(r'(### (?:EASY|MEDIUM|HARD|BEHAVIORAL))', md_text):
+    _Q_ID = r'[A-Z](?:-[A-Z]+)?\d+(?:\.\d+)*'
+
+    for chunk in re.split(r'(### (?:EASY|MEDIUM|HARD|BEHAVIORAL)|##[^#]*Syntax Quick-Fire)', md_text):
         chunk_stripped = chunk.strip()
 
         if re.match(r'^### (?:EASY|MEDIUM|HARD|BEHAVIORAL)$', chunk_stripped):
@@ -317,13 +319,17 @@ def parse_md_to_cards(md_text: str, section_num: int) -> list[Card]:
             current_difficulty = 'Medium' if label_text == 'Behavioral' else label_text
             continue
 
-        for block in re.split(r'(?=\*\*[A-Z]\d+(?:\.\d+)*\.\*\*)', chunk):
+        if re.search(r'Syntax Quick-Fire', chunk_stripped):
+            current_difficulty = 'Easy'
+            continue
+
+        for block in re.split(rf'(?=\*\*{_Q_ID}\.\*\*)', chunk):
             block = block.strip()
-            if not block or not re.match(r'\*\*[A-Z]\d+(?:\.\d+)*\.\*\*', block):
+            if not block or not re.match(rf'\*\*{_Q_ID}\.\*\*', block):
                 continue
 
             q_match = re.match(
-                r'\*\*[A-Z]\d+(?:\.\d+)*\.\*\*\s*(.*?)(?=<details|\Z)',
+                rf'\*\*{_Q_ID}\.\*\*\s*(.*?)(?=<details|\Z)',
                 block, re.DOTALL,
             )
             if not q_match:

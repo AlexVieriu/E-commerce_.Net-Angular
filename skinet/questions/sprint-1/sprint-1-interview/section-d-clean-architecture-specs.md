@@ -25,7 +25,7 @@
 - Swapping Infrastructure (e.g., EF Core → Dapper) only requires changing Infrastructure, never Core or Application
 - Controllers test against service interfaces (Application layer), never against concrete implementations
 
-Red rule: no project higher in the diagram imports a project lower in the diagram. If Infrastructure imported API, you'd have a circular dependency.
+- **Red rule:** no outer layer may import an inner layer — Infrastructure → Core is valid; Core → API is a circular dependency and a compile error.
 
 </details>
 
@@ -45,6 +45,41 @@ Mentioning the **Dependency Inversion Principle** (the 'D' in SOLID) is the form
 
 </details>
 
+<details>
+<summary>Explanation</summary>
+
+```
+┌─────────────┐     ┌───────────────────┐
+│     API     │────▶│   Application     │
+│  (Web/HTTP) │     │ (Services/UseCases)│
+└──────┬──────┘     └────────┬──────────┘
+       │                     │
+       │            ┌────────▼──────────┐
+       └───────────▶│      Core         │
+                    │(Entities/Interfaces)
+                    └────────▲──────────┘
+                             │
+                    ┌────────┴──────────┐
+                    │  Infrastructure   │
+                    │ (DB/Stripe/Email) │
+                    └───────────────────┘
+  ──▶ = "depends on"
+```
+
+| Layer | Knows about | Blind to |
+|---|---|---|
+| **Core** | Nothing | Everyone |
+| **Application** | Core | API, Infra |
+| **Infrastructure** | Core + Application | API |
+| **API** | Application | Infrastructure directly |
+
+**Concrete flow — placing an order:**
+`Controller` → `IOrderService` (Application) → `IOrderRepository` (Core interface) → `OrderRepository` (Infrastructure implements it).
+
+The controller never touches `OrderRepository` directly. Core defines the contract; Infrastructure fulfills it; the DI container wires them at startup.
+
+</details>
+
 ---
 
 **D2.** [HIGH] What is the Specification pattern and why does this project use it instead of writing query methods on the repository?
@@ -55,21 +90,22 @@ Mentioning the **Dependency Inversion Principle** (the 'D' in SOLID) is the form
 A **specification** encapsulates a query's WHERE, ORDER BY, INCLUDE, SKIP/TAKE logic into a reusable C# object. The repository executes specs against any EF provider.
 
 ```csharp
-// Without spec — query in service (anti-pattern)
-var products = await _context.Products
-    .Where(p => p.Name.Contains(search) && brands.Contains(p.Brand))
-    .OrderBy(p => p.Price).Skip(skip).Take(take).ToListAsync();
+// Custom repo method — works, but one method per filter combo
+public Task<List<Product>> GetByBrandAsync(string brand) => ...
+public Task<List<Product>> GetByBrandAndSearchAsync(string brand, string search) => ...
+public Task<List<Product>> GetByBrandAndSearchSortedAsync(string brand, string search, string sort) => ...
+// 3 filters = already 3 methods. 5 filters = up to 25 methods.
 
-// With spec — query encapsulated (correct)
-var spec = new ProductSpecification(new ProductSpecParams { Search = search, Brands = brands });
+// With spec — all filter combinations in one class
+var spec = new ProductSpecification(new ProductSpecParams { Search = search, Brands = brands, Sort = sort });
 var products = await _repo.GetAllAsync(spec);
 ```
 
 **Why specs:**
-1. **Testable in isolation** — `ProductSpecification` is a plain C# object; verify filter logic without EF
+1. **Testable in isolation** — `ProductSpecification` is a plain C# object; `new()` it in a test with no EF context needed. A custom repo method requires mocking the entire repository to test the same filter logic.
 2. **Single source of truth** — one spec class, not 5 copies of the same LINQ across different services
 3. **Repository stays generic** — `IGenericRepository<T>` has ~6 methods covering all entities. Without specs, you'd need `GetProductsByBrand`, `GetProductsByBrandAndSearch`, etc. — combinatorial explosion.
-4. **Projection support** — `BaseSpecification<T, TResult>` maps entities to DTOs in the database, avoiding over-fetching
+4. **Projection support** — `BaseSpecification<T, TResult>` centralises the `Select` projection inside the spec, keeping it testable and reusable. Custom repo methods can also project to DTOs, but the projection is buried inside the method and can't be composed or reused across different queries.
 
 </details>
 
@@ -86,6 +122,94 @@ var products = await _repo.GetAllAsync(spec);
 
 **Green Flag:**
 Mentioning that specifications can be **composed** — `ProductSpecification` can accept multiple optional filters in one constructor. The alternative (separate methods per filter combination) grows exponentially and creates N×M method counts for N filters and M sort options. Specs keep the combinatorial complexity in one place.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+### Big Picture Flow
+
+User opens `/products?brand=Nike&sort=priceAsc&page=2`:
+
+```
+HTTP GET /products?brand=Nike&sort=priceAsc&page=2
+         │
+         ▼
+┌─────────────────────────────────┐
+│         ProductsController      │  ← builds ProductSpecParams only
+│  var spec = new                 │
+│    ProductSpecification(params) │
+│  _repo.GetAllAsync(spec)        │
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│       ProductSpecification      │  ← ALL query logic lives here
+│  AddCriteria(x =>               │
+│    x.Brand == params.Brand &&   │
+│    x.Name.Contains(params.Search│
+│  )                              │
+│  AddOrderByAsc(x => x.Price)    │
+│  AddPaging(skip, take)          │
+│  AddInclude(x => x.ProductType) │
+└─────────────┬───────────────────┘
+              │  (plain C# object — no DB yet)
+              ▼
+┌─────────────────────────────────┐
+│     IGenericRepository<T>       │  ← same 6 methods for ALL entities
+│  GetAllAsync(spec)              │
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│      SpecificationEvaluator     │  ← translates spec → IQueryable chain
+│  query = query.Where(criteria)  │
+│  query = query.Include(...)     │
+│  query = query.OrderBy(...)     │
+│  query = query.Skip().Take()    │
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│     EF Core → SQL Server        │
+│  SELECT p.*, pt.*               │
+│  FROM Products p                │
+│  JOIN ProductTypes pt ON ...    │
+│  WHERE p.Brand = 'Nike'         │
+│  ORDER BY p.Price ASC           │
+│  OFFSET 20 ROWS FETCH NEXT 20   │
+└─────────────────────────────────┘
+```
+
+---
+
+### When to use each approach
+
+| Approach | Use when |
+|---|---|
+| **Query in service** | Never in production. Prototypes only. |
+| **Custom repo methods** | Small project, < 5 entities, queries are few and stable. Simple CRUD. |
+| **Specification (this project)** | Medium+ project with many filter combinations. Queries need testing in isolation. |
+| **CQRS + MediatR** | Large team, complex domain, reads/writes scale independently, or event sourcing. Overkill for 90% of projects. |
+
+---
+
+### When NOT to use specs
+
+```csharp
+// Overkill — just use FindAsync
+var product = await _repo.FindAsync(id);
+
+// Overkill — one-time query, never reused
+var count = await _context.Products.CountAsync();
+```
+
+Specs are worth it when the query has **optional filters**, is **reused across services**, or needs **testing in isolation**.
+
+---
+
+**Key mental model:** a spec is a query stored as a value. Build it in the service layer, hand it to the generic repo, and the evaluator applies it to EF's `IQueryable<T>`. The DB never sees the spec — only the resulting SQL.
 
 </details>
 
@@ -120,6 +244,7 @@ AddOrderByAsc(x => (object)x.Price);
 ```
 
 `(object)` satisfies the `Expression<Func<T, object>>` signature without any type conversion. EF Core translates this to `ORDER BY Price` with no `CAST` — the decimal column sorts precisely.
+- **Note:** the project's `specifications.md` mandates this pattern. Always verify the generated SQL via EF Core query logging (`Microsoft.EntityFrameworkCore.Database.Command` at `Information`) when switching providers.
 
 **Production consequence:** product price ordering silently changes in production for items with prices like `$9.995` and `$10.004`. Subtle, hard to reproduce, causes customer complaints about "wrong" sort order.
 
@@ -141,6 +266,102 @@ Mentioning this is explicitly documented in the project's Common Mistakes. The b
 
 </details>
 
+<details>
+<summary>Explanation</summary>
+
+### How LINQ works — two modes
+
+LINQ has two completely different modes depending on the target type:
+
+```
+Func<Product, bool>              f = p => p.Price > 10;
+// ↑ compiled delegate — black box, runs in C# memory
+// EF cannot look inside — already machine code
+
+Expression<Func<Product, bool>> e = p => p.Price > 10;
+// ↑ data structure — a tree describing what the code would do
+// EF can walk the tree and translate each node to SQL
+```
+
+Same lambda syntax — the C# compiler picks which one based on the target type.
+
+**The expression tree for `p => p.Price > 10`:**
+```
+BinaryExpression (GreaterThan)
+  ├── MemberExpression  →  p.Price   →  SQL: Price
+  └── ConstantExpression →  10       →  SQL: 10
+
+Result: WHERE Price > 10
+```
+
+**The expression tree for `p => (double)p.Price`:**
+```
+UnaryExpression (Convert decimal → double)
+  └── MemberExpression  →  p.Price   →  SQL: Price
+
+EF sees: numeric type conversion decimal → double
+Result: CAST(Price AS float)
+```
+
+**The expression tree for `p => (object)p.Price`:**
+```
+UnaryExpression (Convert decimal → object)  ← boxing
+  └── MemberExpression  →  p.Price   →  SQL: Price
+
+EF sees: boxing — no SQL equivalent, drop the node
+Result: Price
+```
+
+This is why `.Compile()` in D9 was a bug — it converted the expression tree into a compiled delegate, making it a black box EF could no longer translate.
+
+---
+
+### Why the cast direction matters
+
+`x.Price` is `decimal` in C# and stored as `decimal(18,2)` in SQL Server. When you write `(double)x.Price` in a LINQ expression, you are telling EF: "I want this value as a `double`." EF reads the expression tree, sees the source type (`decimal`) and the target type (`double`), looks up its type map, and emits a SQL-level cast:
+
+```
+C# Entity            DB Column (SQL Server)      LINQ Expression
+decimal Price   →    decimal(18,2) Price    →    (double)x.Price
+                                                  ↓
+                                            EF sees:
+                                            source = decimal
+                                            target = double → SQL float
+                                                  ↓
+                                       ORDER BY CAST(Price AS float)
+                                       -- sorts on the converted float
+                                       -- not the original decimal
+```
+
+You never wrote `CAST` — EF generated it because the expression tree contained a numeric type conversion.
+
+### Why `(object)` fixes it
+
+Boxing (`decimal → object`) has no SQL equivalent. EF cannot map it to a `CAST`, so it drops the conversion node entirely and uses the column's native type:
+
+```
+(object)x.Price
+↓
+EF sees: boxing — no SQL type conversion possible
+↓
+ORDER BY Price    -- sorts on the exact decimal column, no CAST
+```
+
+### Why SQLite hides the bug
+
+Your `SqliteStoreContext` maps all `decimal` columns to `REAL` (float) via `HasColumnType("REAL")`. SQLite is already storing `$9.995` as a float. Casting float → float is a no-op — same approximate value in, same out. Sort order doesn't change in dev.
+
+SQL Server stores `decimal` exactly. The `CAST(Price AS float)` does a real conversion with precision loss. For prices near a binary representability boundary, the float approximation shifts the value slightly — `$9.995` becomes `9.994999999999999...` — and two prices that were correctly ordered as decimals can swap positions as floats.
+
+### Why it's hard to reproduce
+
+- No exception, no 500 error, no log entry — just silently wrong sort order
+- Only affects prices near a binary representability boundary
+- Looks correct in every environment you can debug in (SQLite dev)
+- A customer complains, you check locally, everything looks fine
+
+</details>
+
 ---
 
 **D4.** [HIGH] [OUT-OF-SCOPE] Why does this project use SQLite in development and SQL Server in production? How is `StoreContext` registered so service code never changes between environments?
@@ -152,23 +373,22 @@ Mentioning this is explicitly documented in the project's Common Mistakes. The b
 - **SQLite:** zero-install, file-based. Any developer can run the project without installing SQL Server, Azure SQL, or Docker. Fast local startup.
 - **SQL Server:** full ANSI compliance, proper `nvarchar(450)` indexes, decimal precision matching production, transaction semantics that match what users experience.
 
-**DI registration — factory pattern:**
+**DI registration — factory pattern (dev):**
 ```csharp
-// Program.cs
-if (env.IsDevelopment())
-{
-    services.AddDbContext<SqliteStoreContext>(o =>
-        o.UseSqlite(config.GetConnectionString("DefaultConnection")));
-    services.AddScoped<StoreContext>(p =>
-        p.GetRequiredService<SqliteStoreContext>());
-}
-else
-{
-    services.AddDbContext<SqlServerStoreContext>(o =>
-        o.UseSqlServer(config.GetConnectionString("DefaultConnection")));
-    services.AddScoped<StoreContext>(p =>
-        p.GetRequiredService<SqlServerStoreContext>());
-}
+// Program.cs — Development
+services.AddDbContext<SqliteStoreContext>(o =>
+    o.UseSqlite(config.GetConnectionString("DefaultConnection")));
+services.AddScoped<StoreContext>(p =>
+    p.GetRequiredService<SqliteStoreContext>());
+```
+
+**Production:**
+```csharp
+// Program.cs — Production
+services.AddDbContext<SqlServerStoreContext>(o =>
+    o.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+services.AddScoped<StoreContext>(p =>
+    p.GetRequiredService<SqlServerStoreContext>());
 ```
 
 All services inject `StoreContext` — the abstract base. In dev, the DI container resolves `SqliteStoreContext`; in prod, `SqlServerStoreContext`. Service code is identical in both environments. The provider detail is entirely in `Program.cs`.
@@ -193,26 +413,26 @@ Mentioning that despite SQLite working for dev, **integration tests should run a
 
 ---
 
-**D5.** [MEDIUM] The namespace `Application.Specifications.ProductSpecification` causes a compile error — but it was working yesterday. What happened and what should the namespace be?
+**D5.** [MEDIUM] You add `global using Application.Specifications` to `GlobalUsings.cs`. Three months later a teammate complains their new `ShippingSpecification` class isn't found anywhere in the project — but all your existing specs work fine. Same namespace, same folder. What are the three things you check first?
 
 <details>
 <summary>The 5% Answer</summary>
 
-**What happened:** the `GlobalUsings.cs` file (or a `using` statement) was incorrectly written to include the class name as a sub-namespace:
+**Check 1 — Is the namespace in the file correct?**
 ```csharp
-// WRONG — implies a subfolder named ProductSpecification inside Specifications/
-global using Application.Specifications.ProductSpecification;
-
-// CORRECT — specs are flat in the Specifications/ folder
-global using Application.Specifications;
+// ShippingSpecification.cs
+namespace Application.Specifications;   // ✅ matches the global using
+namespace Application.Specifications.Shipping;  // ❌ sub-namespace, not covered
 ```
+The most common mistake: the IDE auto-generates a nested namespace based on the subfolder. `global using Application.Specifications` only covers that exact namespace — not children.
 
-**Why it worked before:** a previous developer may have had an older version where specs were in per-class subdirectories, or the class was previously defined inside a nested namespace. After a folder restructure, the namespace changed but `GlobalUsings.cs` wasn't updated.
+**Check 2 — Is `GlobalUsings.cs` in the right project?**
+`global using` is scoped to the project it lives in. If the teammate is writing specs in a different project (e.g., they added `ShippingSpecification` to `Infrastructure` instead of `Application`), the `global using` in `Application` doesn't cover it.
 
-**The correct namespace:**
-All specification files live directly in `Application/Specifications/` (no subdirectories). The namespace is `Application.Specifications` — never nested by class name.
+**Check 3 — Is the file included in the build?**
+Check the `.csproj` for explicit `<Compile Remove="..." />` entries, or verify the file wasn't accidentally created outside the project folder. A file on disk that isn't part of the project compiles to nothing — no error, just silently missing.
 
-This was one of the 12 CI failures found in Task 1 (first pipeline run) — it existed silently on dev machines because their local namespace matched the file structure, but CI picked up the mismatch from a clean build.
+**The rule:** one `global using` per namespace covers every class in that namespace forever — you never add per-class usings. If a class isn't found, the problem is always the namespace declaration inside the file, the project scope, or the build inclusion — never the `global using` itself.
 
 </details>
 
@@ -220,7 +440,7 @@ This was one of the 12 CI failures found in Task 1 (first pipeline run) — it e
 <summary>Red Flag</summary>
 
 **Red Flag:**
-"Create a subfolder `ProductSpecification` to match the namespace." That technically compiles but creates one-file-per-folder organisation for no benefit — hundreds of single-file directories.
+"Add `global using Application.Specifications.Shipping` for the new class." That treats `global using` like a per-class import (Python-style). One namespace `global using` covers all classes inside it — adding per-class or per-subfolder usings bloats `GlobalUsings.cs` and signals a misunderstanding of how C# namespaces work.
 
 </details>
 
@@ -228,7 +448,7 @@ This was one of the 12 CI failures found in Task 1 (first pipeline run) — it e
 <summary>Green Flag</summary>
 
 **Green Flag:**
-Mentioning that `GlobalUsings.cs` with a wrong namespace generates no "unused using" warning — the namespace partially resolves. The error only surfaces when a type from that namespace is used and the compiler can't find it. IDE tooling (Resharper, Roslyn analyser) can catch this as a "namespace not found" warning if configured, but by default it's invisible until compile time.
+Knowing that `global using` generates no "unused using" warning even if the namespace is wrong — it partially resolves and the error only surfaces when a type from that namespace is actually referenced. Mentioning that Roslyn analysers (ReSharper, or `dotnet_diagnostic` rules) can surface "namespace not found" warnings earlier than compile time.
 
 </details>
 
@@ -236,7 +456,7 @@ Mentioning that `GlobalUsings.cs` with a wrong namespace generates no "unused us
 
 ### HARD
 
-**D6.** [HIGH] The `UnitOfWork` caches `GenericRepository<T>` instances in a `ConcurrentDictionary`. What problem does this solve, and what subtle bug does it introduce if `UnitOfWork` is accidentally registered as a Singleton?
+**D6.** [HIGH] [OUT-OF-SCOPE] The `UnitOfWork` caches `GenericRepository<T>` instances in a `ConcurrentDictionary`. What problem does this solve, and what subtle bug does it introduce if `UnitOfWork` is accidentally registered as a Singleton?
 
 <details>
 <summary>The 5% Answer</summary>
@@ -284,6 +504,106 @@ Mentioning that `ConcurrentDictionary` is used because `UnitOfWork` could theore
 
 </details>
 
+<details>
+<summary>Explanation</summary>
+
+### What the ConcurrentDictionary actually holds
+
+```
+ConcurrentDictionary<string, object>
+
+KEY (string)        VALUE (object — common base type to hold any GenericRepository<T>)
+────────────────────────────────────────────────────────
+"Product"        →  GenericRepository<Product>        { _context = [0xA1B2] }
+"Order"          →  GenericRepository<Order>          { _context = [0xA1B2] }
+"Coupon"         →  GenericRepository<Coupon>         { _context = [0xA1B2] }
+"DeliveryMethod" →  GenericRepository<DeliveryMethod> { _context = [0xA1B2] }
+```
+
+The dictionary stores **repo instances only** — not entities. Entities live in the DbContext:
+
+```
+DbContext [0xA1B2]
+  └── ChangeTracker
+        ├── Product #3  (Modified)   ← Stock changed
+        ├── Product #7  (Modified)   ← Stock changed
+        └── Order       (Added)      ← new order
+```
+
+`[0xA1B2]` is just a memory address showing all repos point to the **same** context — not part of the dictionary. The dictionary is purely `"TypeName" → RepoInstance`.
+
+---
+
+### Real checkout flow — 4 repos, 1 transaction
+
+```csharp
+// HTTP POST /checkout — DI creates StoreContext [0xA1B2] → UnitOfWork(_context)
+
+var productRepo        = _unitOfWork.Repository<Product>();        // dict: { Product → Repo[0xA1B2] }
+var orderRepo          = _unitOfWork.Repository<Order>();          // dict: { Product, Order → Repo[0xA1B2] }
+var couponRepo         = _unitOfWork.Repository<Coupon>();         // dict: { Product, Order, Coupon → ... }
+var deliveryMethodRepo = _unitOfWork.Repository<DeliveryMethod>(); // dict: { ..., DeliveryMethod → ... }
+// All 4 repos share context [0xA1B2] — one ChangeTracker
+
+var basket         = await _basketService.GetBasketAsync(basketId); // Redis — no SQL
+var deliveryMethod = await deliveryMethodRepo.GetByIdAsync(id);     // SELECT DeliveryMethods
+var coupon         = await couponRepo.GetByIdAsync(basket.CouponId); // SELECT Coupons
+
+foreach (var item in basket.Items)
+{
+    var product = await productRepo.GetByIdAsync(item.ProductId); // SELECT Products
+    product.Stock -= item.Quantity; // ChangeTracker: Product (Modified) — RAM only
+}
+
+orderRepo.Add(new Order { ... }); // ChangeTracker: Order (Added) — RAM only
+
+// Second call to Repository<Product>() in the loop:
+// key "Product" already IN dict → same Repo[0xA1B2] returned, no new instance
+
+await _unitOfWork.Complete(); // → SaveChangesAsync()
+// BEGIN TRANSACTION
+//   UPDATE Products SET Stock = 8  WHERE Id = 3
+//   UPDATE Products SET Stock = 14 WHERE Id = 7
+//   INSERT INTO Orders   VALUES (...)
+//   INSERT INTO OrderItems VALUES (...)   ← EF cascades automatically
+// COMMIT  ← all or nothing
+```
+
+---
+
+### Why shared context matters — without ConcurrentDictionary
+
+```
+WITH shared context (correct)         WITHOUT (new repo each call)
+──────────────────────────────        ──────────────────────────────
+productRepo  → context [0xA1B2]       productRepo → context [0xA1B2]
+orderRepo    → context [0xA1B2]       orderRepo   → context [0xC3D4]  ← different!
+
+Complete() → one SaveChangesAsync()   Complete() → saves [0xA1B2] only
+  Products ✓                            Products saved ✓
+  Orders   ✓  ← same ChangeTracker     Orders   ✗  ← on a different context
+  atomic COMMIT                         stock decremented, no order record
+```
+
+---
+
+### Singleton bug
+
+```
+CORRECT (Scoped)                      WRONG (Singleton)
+────────────────────                  ──────────────────────────────
+Request A → UnitOfWork A              Request A ──┐
+              └── context A                        ├──► ONE UnitOfWork
+Request B → UnitOfWork B              Request B ──┘      └── ONE context
+              └── context B                                     │
+                                                     concurrent ChangeTracker writes
+                                                          ↓
+                                               InvalidOperationException
+                                               or cross-request data corruption
+```
+
+</details>
+
 ---
 
 **D7.** [HIGH] A spec passes `PageIndex = 0` to `ApplyPaging`. Describe the exact failure in SQL Server vs SQLite and write the defensive fix.
@@ -317,6 +637,7 @@ protected void ApplyPaging(int skip, int take)
         $"Take must be > 0 (got {take}).");
     Skip = skip;
     Take = take;
+    IsPagingEnabled = true;
 }
 ```
 
@@ -353,70 +674,110 @@ Mentioning that this is the exact CI failure: `PagingParams` test expected `50` 
 
 ---
 
-**D8.** [HIGH] A service loads 200 orders then fetches each order's items in a loop. Count the SQL queries, name the pattern, and write two EF Core fixes — one using the Specification pattern already in this project, one using EF Core 10's `AsSplitQuery()`.
+**D8.** [HIGH] [OUT-OF-SCOPE] A service loads 200 orders then fetches each order's items in a loop. Count the SQL queries, name the pattern, and write two EF Core fixes — one using the Specification pattern already in this project, one using `AsSplitQuery()`.
 
 <details>
 <summary>The 5% Answer</summary>
 
-**The anti-pattern:**
+**Anti-pattern:**
 ```csharp
-// In OrderService
-var orders = await _unitOfWork.Repository<Order>()
-    .GetAllAsync(new OrdersForUserSpec(email));       // 1 query
-
+var orders = await _repo.GetAllAsync(new OrdersForUserSpec(email)); // 1 query
 foreach (var order in orders)
-{
-    var items = await _unitOfWork.Repository<OrderItem>()
-        .GetAllAsync(new ItemsForOrderSpec(order.Id)); // N queries — one per order
-}
+    var items = await _repo.GetAllAsync(new ItemsForOrderSpec(order.Id)); // N queries
 // 200 orders = 201 SQL queries
 ```
-
-**Pattern name:** **N+1** — 1 query to fetch the parent list, then N queries for each child collection.
-
-**At scale:** 1,000 active users, each with 50 orders → 50,001 queries per page load. Database thread pool exhausted, latency spikes to seconds, connection pool timeouts under concurrent load.
+- **Count:** 201 — 1 query for the list, 1 per order for its items.
+- **Pattern:** **N+1** — one query fetches the parent set, then N separate round-trips fetch each child.
 
 **Fix 1 — `AddInclude` in the Specification (correct for this project):**
 ```csharp
-public class OrdersForUserSpec : BaseSpecification<Order>
+public OrdersForUserSpec(string email) : base(o => o.BuyerEmail == email)
 {
-    public OrdersForUserSpec(string email) : base(o => o.BuyerEmail == email)
-    {
-        AddInclude(o => o.OrderItems);         // LEFT JOIN — 1 query total
-        AddInclude(o => o.DeliveryMethod);     // chain includes as needed
-        AddOrderByDescending(o => o.OrderDate);
-    }
+    AddInclude(o => o.OrderItems);
+    AddInclude(o => o.DeliveryMethod);
+    AddOrderByDescending(o => o.OrderDate);
 }
 ```
-EF Core generates a single SQL query with `LEFT JOIN OrderItems`. All order items are loaded in one round-trip.
+- EF generates a single `SELECT` with `LEFT JOIN OrderItems` — all data in one round-trip.
 
-**Fix 2 — `AsSplitQuery()` for EF Core 9/10 (avoids cartesian explosion on multiple collections):**
+**Fix 2 — `AsSplitQuery()` (multiple collections):**
 ```csharp
-// In SpecificationEvaluator (or directly in the spec):
-query = query.AsSplitQuery();
-// EF Core issues 2 separate SQL queries instead of 1 giant JOIN:
-// SELECT * FROM Orders WHERE BuyerEmail = ...
-// SELECT * FROM OrderItems WHERE OrderId IN (...)
-// Avoids row multiplication when including multiple collections simultaneously
+// GenericRepository<T>.GetAllAsync
+return await SpecificationEvaluator<T>
+    .GetQuery(_context.Set<T>().AsQueryable(), spec)
+    .AsSplitQuery()
+    .ToListAsync();
+// EF issues 2 queries:
+// Query 1: SELECT * FROM Orders WHERE BuyerEmail = ...
+// Query 2: SELECT * FROM OrderItems WHERE OrderId IN (1, 2, 3 ...)
 ```
+- Use when an entity has **more than one collection navigation** included — a single JOIN causes cartesian explosion (`OrderItems` × `Coupons` per order multiplies result rows; EF deduplicates in memory but the wire payload can be 100× larger).
+- Default is single-query mode; opt in globally with `UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)` in `DbContext` options.
 
-**When to use split queries:** loading `Order` with both `OrderItems` and `Coupons` as includes — a JOIN would multiply rows (cartesian product). With EF Core 10, `AsSplitQuery()` is the default for multi-collection includes when configured globally.
-
-**Production consequence:** N+1 in a paginated order history endpoint with 50 orders per page → 51 queries. Under 100 concurrent users = 5,100 queries per second. Database CPU spikes, connection pool exhausted, P99 latency exceeds 5s.
+**Production consequence:** N+1 on 50 orders per page under 100 concurrent users = 5,100 queries/second — database thread pool exhausted, P99 latency spikes to seconds.
 
 </details>
 
 <details>
 <summary>Red Flag</summary>
 
-**Red Flag:** "Add `AsNoTracking()` to fix N+1." `AsNoTracking()` improves read performance but doesn't reduce query count — N+1 still fires N+1 queries, just without change tracking overhead. The problem is missing eager loading (`AddInclude`), not tracking.
+**Red Flag:** "Add `AsNoTracking()` to fix N+1." `AsNoTracking()` removes change-tracking overhead but still fires 201 queries — the root cause is the missing `AddInclude`, not tracking.
 
 </details>
 
 <details>
 <summary>Green Flag</summary>
 
-**Green Flag:** Knowing EF Core's **cartesian explosion warning** — loading `Orders` with both `OrderItems` (100 items) and `Coupons` (3 per order) via JOIN produces 300 rows per order in the result set. EF deduplicates in memory, but the wire transfer is 300x larger than necessary. `AsSplitQuery()` solves this at the cost of a second round-trip — the right trade-off for wide result sets.
+**Green Flag:** Knowing that `AsSplitQuery()` does not run inside a transaction — if a concurrent write lands between the two queries, the second result can reflect a different DB state than the first. For order or inventory data, either use a transaction scope or accept the larger single-query payload. Selective use per query is safer than enabling split globally.
+
+</details>
+
+<details>
+<summary>Explanation</summary>
+
+### Fix 1 — `AddInclude` (single query)
+
+`DeliveryMethod = null!` is a required single nav → **INNER JOIN**.
+`List<OrderItem>` is a collection nav → **LEFT JOIN**.
+
+```sql
+FROM "Orders" AS "o"
+INNER JOIN "DeliveryMethods" AS "d" ON "o"."DeliveryMethodId" = "d"."Id"
+LEFT JOIN "OrderItems" AS "o0" ON "o"."Id" = "o0"."OrderId"
+WHERE "o"."BuyerEmail" = @email
+ORDER BY "o"."OrderDate" DESC
+```
+
+### Fix 2 — `AsSplitQuery()` (first query only)
+
+`OrderItems` disappears from the first query — EF fires a second `IN (...)` query after.
+
+```sql
+-- Query 1
+FROM "Orders" AS "o"
+INNER JOIN "DeliveryMethods" AS "d" ON "o"."DeliveryMethodId" = "d"."Id"
+WHERE "o"."BuyerEmail" = @email
+ORDER BY "o"."OrderDate" DESC
+
+-- Query 2 (EF fires after, not shown by ToQueryString)
+SELECT "o0".* FROM "OrderItems" AS "o0"
+WHERE "o0"."OrderId" IN (1, 2, 3 ...)
+```
+
+### Paging — EF wraps in a subquery
+
+EF pages the `Orders` rows first inside a subquery, then JOINs — avoids cartesian explosion on paginated results.
+
+```sql
+FROM (
+    SELECT "o".* FROM "Orders" AS "o"
+    WHERE "o"."Status" = @status_Value
+    ORDER BY "o"."OrderDate" DESC
+    LIMIT @p OFFSET @p
+) AS "o0"
+INNER JOIN "DeliveryMethods" AS "d" ON "o0"."DeliveryMethodId" = "d"."Id"
+LEFT JOIN "OrderItems" AS "o1" ON "o0"."Id" = "o1"."OrderId"
+```
 
 </details>
 
@@ -466,7 +827,7 @@ private IQueryable<T> ApplySpecification(ISpecification<T> spec)
 <summary>Red Flag</summary>
 
 **Red Flag:**
-"Just add `.AsQueryable()` after `_context.Set<T>()`." That fixes bug 1 but leaves `.Compile()` forcing client-side predicate evaluation and still ignores `Includes`/`OrderBy`/paging. Repositories that only use `Criteria` defeat the entire Specification pattern — also, any `ToListAsync()` replacement for `Task.FromResult(query.ToList())` belongs on an `IQueryable`, not an `IEnumerable` (it compiles but is the same synchronous `ToList` + `Task.FromResult` under the hood on `IEnumerable`).
+"Just add `.AsQueryable()` after `_context.Set<T>()`." That fixes bug 1 but leaves `.Compile()` forcing client-side evaluation and ignores all `Includes`/`OrderBy`/paging — 2 of 3 bugs remain.
 
 </details>
 
