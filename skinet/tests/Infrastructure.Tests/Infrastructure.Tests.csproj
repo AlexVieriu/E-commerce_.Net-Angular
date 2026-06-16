@@ -9,6 +9,11 @@
 
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+
+    <!-- xUnit1051 wants TestContext.Current.CancellationToken on async DB calls.
+         Skipped on purpose: these are fast in-memory test ops where cancellation
+         responsiveness adds no value and would clutter the tests (esp. FindAsync). -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
