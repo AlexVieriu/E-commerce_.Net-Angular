@@ -5,12 +5,14 @@ import { catchError, throwError } from 'rxjs';
 import { SnackbarService } from '../services/snackbar.service';
 import { ValidationError } from '../../shared/models/validationError';
 import { CartService } from '../services/cart.service';
+import { AccountService } from '../services/account.service';
 
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const snackbar = inject(SnackbarService);
   const cartService = inject(CartService);
+  const accountService = inject(AccountService);
 
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
@@ -23,6 +25,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
       if (err.status === 401) {
+        // Session is gone (cookie expired/cleared) — drop stale client auth state
+        // so the navbar updates from username back to Login/Register.
+        accountService.clearCurrentUser();
         const alreadyOnLogin = router.url.includes('/account/login');
         if (!req.url.includes('account/user-info') && !alreadyOnLogin)
           router.navigate(['/account/login'], { queryParams: { returnUrl: router.url } });
