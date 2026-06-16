@@ -110,6 +110,8 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 | 56 | Performance pass: MiniProfiler (.NET) + bundle analyzer (Angular), fix top 3 findings, re-run Lighthouse | M | 35 | After T35 so NgOptimizedImage is already in. Compare against T55 baseline |
 | 37 | Playwright E2E: 3 tests (checkout, auth+orders, admin). Timebox 4 days | L | 1 | LEARN: Testing pyramid + Page Object Model |
 | 38 | README update with UX screenshots | S | -- | |
+| BUG-2 | Checkout: declined card can't retry in-session — "card unavailable" (Stripe `elements.submit()` is single-use). Re-init PaymentElement on payment failure | S | -- | Pre-existing. Found during T17/T18 testing |
+| BUG-3 | Checkout: Address "Next" stays disabled with no hint when a required field (e.g. postal code) is empty — Stripe Address Element shows no error until a field is touched. Add a hint/validation cue | S | -- | Pre-existing. Found during checkout testing |
 
 Sprint end: Playwright + backend tests green. Verify deploy.
 
