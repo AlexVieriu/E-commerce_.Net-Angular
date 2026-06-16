@@ -1,261 +1,536 @@
-## SECTION A — CORS & CSP & SECURITY HEADERS
+## SECTION A — CORS, CSP & SECURITY HEADERS
+
+> **Source:** Task 9 — NetEscapades security headers + CORS policy in `ApplicationServicesExtensions`.
+
+---
 
 ### EASY
 
-**A1.** What is CORS? Why does it exist? What happens if you don't configure CORS on your API?
+**A1.** [HIGH] What is CORS and why is it a browser-enforced mechanism (not server-enforced)?
 
-<details><summary>Answer</summary>
+<details>
+<summary>The 5% Answer</summary>
 
-**CORS** (Cross-Origin Resource Sharing) is a **browser security mechanism** that blocks JavaScript from making requests to a different origin (different domain, port, or protocol) than the page that loaded it.
+- **CORS (Cross-Origin Resource Sharing)** is a browser security mechanism — it controls whether JS from origin X can read responses from origin Y
+- The server doesn't enforce it; it just *declares* its policy via `Access-Control-Allow-*` response headers
+- The browser checks those headers and **blocks the JS from reading the response** — even if the server returned 200 and fully processed the request
+- Exists because browsers auto-attach cookies to requests — without CORS, any malicious site could silently call your bank API using your session cookie
 
-- **Why it exists:** enforces the **Same-Origin Policy** — prevents a malicious site from silently calling your bank's API using the victim's cookies.
-- **Without CORS configured:** every cross-origin AJAX call from your Angular app is blocked by the browser **before it reaches your server**. The .NET API never sees the request — the browser rejects it client-side.
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+"CORS blocks requests from other sites." Wrong — the request often reaches your server and executes. The browser blocks the *response* from being read by JS.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that CORS only protects browser-origin requests — **a malicious Node script can ignore CORS entirely**. CORS is defence against browser-delivered attacks (XSS-to-API), not against all cross-origin calls.
+
 </details>
 
 ---
 
-**A2.** What's the difference between CORS and CSP?
+**A2.** [HIGH] [OUT-OF-SCOPE] What is the `SameSite` cookie attribute? Explain `Strict`, `Lax`, and `None` — what attack does each setting mitigate or enable?
 
-<details><summary>Answer</summary>
+<details>
+<summary>The 5% Answer</summary>
 
-- **CORS** — controls which *external origins* can call your API. Server-side configuration that tells browsers "I accept requests from these origins." Protects your **API** from being called by unauthorized sites.
-- **CSP** (Content Security Policy) — controls what resources your **own web page** is allowed to load: scripts, styles, images, fonts, frames. Protects your **frontend** from injected malicious content (XSS).
+- `SameSite` controls whether the browser attaches a cookie to **cross-site** requests
+- **`Strict`** — cookie never sent on any cross-site request, including top-level navigations. Completely blocks CSRF. **Downside:** clicking a link from an email or Google Search won't carry the session — user appears logged out on first load.
+- **`Lax`** — cookie sent on top-level `GET` navigations (link clicks) but **not** on cross-site sub-requests (XHR, fetch, forms, images). ASP.NET Core default since .NET 6. Best balance for most apps.
+- **`None; Secure`** — cookie sent on all cross-site requests, including iframes. Required for embedded flows (Stripe 3DS iframe, OAuth pop-ups). **Must** be paired with `Secure` — without HTTPS, modern browsers silently drop the cookie.
 
-Both are enforced by the browser, but they solve completely different problems.
+ASP.NET Core sets `SameSite=Lax` by default. To override per-cookie:
+```csharp
+options.Cookie.SameSite = SameSiteMode.Strict;
+```
+
 </details>
 
----
+<details>
+<summary>Red Flag</summary>
 
-**A3.** What does `X-Frame-Options: DENY` protect against?
+**Red Flag:**
+"`SameSite=None` is always dangerous." Not true — it's required for embedded payment flows like Stripe's 3DS. The risk comes from pairing `None` with weak CORS, no `Secure` flag, or broad `AllowCredentials()`.
 
-<details><summary>Answer</summary>
-
-Protects against **clickjacking** — the page is embedded in an invisible `<iframe>` on a malicious site; the attacker overlays a fake UI on top, tricking users into clicking real buttons (e.g. "Confirm Transfer").
-
-- **`DENY`** — never render this page inside any frame, on any site (including same-origin).
-- **`SAMEORIGIN`** — allow framing only from the same origin.
-
-Modern replacement: `Content-Security-Policy: frame-ancestors 'none'` (more flexible, same effect).
 </details>
 
----
+<details>
+<summary>Green Flag</summary>
 
-**A4.** What does `X-Content-Type-Options: nosniff` do?
+**Green Flag:**
+Mentioning that `SameSite=Lax` does NOT fully prevent CSRF. A top-level GET navigation (`<img src="https://api.skinet.com/account/delete">`) still carries the cookie. State-changing operations on GET endpoints remain vulnerable — use `SameSite=Strict` or anti-forgery tokens for those. `Lax` protects POST/XHR cross-site, not GET-based exploits.
 
-<details><summary>Answer</summary>
-
-Prevents **MIME type sniffing** — some browsers "guess" the content type by inspecting response bytes, ignoring the declared `Content-Type`.
-
-**Attack without `nosniff`:** attacker uploads an HTML file with `Content-Type: image/png`. Browser sniffs the bytes, detects HTML, and executes it as a script → XSS.
-
-**With `nosniff`:** browser strictly trusts the declared `Content-Type` and refuses to execute content that doesn't match. Required on all responses serving user-uploaded content.
 </details>
 
 ---
 
 ### MEDIUM
 
-**A5.** Your Angular app works on `localhost:4200` but after deploying to Azure, API calls fail silently. No errors in the .NET logs. What's wrong?
+**A3.** [HIGH] Your Angular app works on `localhost:4200` but after deploying to Azure Static Web Apps, login requests fail silently — nothing in the .NET logs. Diagnose and fix.
 
-<details><summary>Answer</summary>
+<details>
+<summary>The 5% Answer</summary>
 
-The deployed origin (e.g. `https://myapp.azurestaticapps.net`) is **not in the .NET CORS allowed origins list** — only `localhost` was added during development.
-
-**What happens:**
-1. Browser sends preflight or request with `Origin: https://myapp.azurestaticapps.net`.
-2. Server responds **without** `Access-Control-Allow-Origin`.
-3. Browser blocks JavaScript from reading the response — client-side rejection.
-4. .NET logs show nothing (or a 200 Angular never sees) because the blocking is in the browser, not the server.
-
-**Fix:** add the production origin to your CORS policy and redeploy.
-</details>
-
----
-
-**A6.** What is a preflight request? When does the browser send one? What headers does it include? What must the server respond with for the preflight to succeed?
-
-<details><summary>Answer</summary>
-
-A preflight is an automatic `OPTIONS` request the browser sends before a "non-simple" cross-origin request. It asks the server: "Will you accept this kind of request?" The server must respond with the right `Access-Control-Allow-*` headers. Only if the preflight succeeds does the browser send the real request.
-
-- **Triggers** — any request with a custom header (`Authorization`, `Content-Type: application/json`), or a method other than GET/POST/HEAD.
-- **Preflight request headers** — `Origin`, `Access-Control-Request-Method`, `Access-Control-Request-Headers`
-- **Required server response** — `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Headers` (and optionally `Access-Control-Max-Age`)
-</details>
-
----
-
-**A7.** You add `Content-Security-Policy: default-src 'self'` to your API. Your Angular app's Material components break. The console shows CSP violation errors for inline styles. Explain why and give two solutions with different security trade-offs.
-
-<details><summary>Answer</summary>
-
-Angular Material injects `<style>` tags directly into the DOM at runtime via JavaScript. CSP `default-src 'self'` covers `style-src`, which by default blocks all inline styles. The browser sees these dynamically injected `<style>` tags and blocks them.
-
-**Solution 1 — `'unsafe-inline'`** (weaker): `style-src 'self' 'unsafe-inline'` — allows all inline styles everywhere. Easy to implement but defeats much of the XSS protection CSP provides for styles.
-
-**Solution 2 — Nonce** (stronger): Server generates a random nonce per request, adds it to the CSP header and to every `<style>` tag. Only `<style>` tags with the matching nonce are allowed. Harder to implement with Angular but provides real protection.
-</details>
-
----
-
-**A8.** Why does `AllowCredentials()` in CORS matter for cookie auth? What happens if you remove it?
-
-<details><summary>Answer</summary>
-
-By default, browsers **strip cookies and `Authorization` headers** from cross-origin requests.
-
-**`AllowCredentials()` + `withCredentials: true` on the client** tells the browser: include cookies and auth headers in this cross-origin request.
-
-**Without it:**
-- Browser sends the request without the session cookie.
-- Server sees an unauthenticated request → returns 401.
-- Cookie-based auth **never works** across origins.
-
-**Constraint:** `AllowCredentials()` requires a specific origin — you **cannot** combine it with `AllowAnyOrigin()` (wildcard `*`).
-</details>
-
----
-
-**A9.** Compare these two CORS configurations. Which is insecure and why?
+- **Root cause:** the deployed origin (`https://skinet.azurestaticapps.net`) isn't in the CORS `WithOrigins(...)` whitelist — only `http://localhost:4200` was added
+- The server returns 200 and processes the request, but the response has no matching `Access-Control-Allow-Origin` header
+- Browser blocks JS from reading the response client-side → **logs are empty because the block happens in the browser, not on the server**
+- Fix: add the deployed origin to the CORS policy and republish
 
 ```csharp
-// Config A
-builder.Services.AddCors(o => o.AddPolicy("default", p =>
-    p.WithOrigins("https://myapp.com")
-     .AllowAnyHeader()
-     .AllowCredentials()));
-
-// Config B
-builder.Services.AddCors(o => o.AddPolicy("default", p =>
-    p.AllowAnyOrigin()
-     .AllowAnyHeader()
-     .AllowCredentials()));
+policy.WithOrigins(
+    "http://localhost:4200",
+    "https://skinet.azurestaticapps.net"  // added
+);
 ```
 
-<details><summary>Answer</summary>
+- **Production consequence:** silently breaks every time a new environment (staging, preview slot, custom domain) is added without a CORS update
 
-- **Config B is both insecure AND invalid at runtime.**
-  - .NET throws `InvalidOperationException` at startup: `AllowAnyOrigin()` + `AllowCredentials()` is forbidden by the CORS spec.
-  - Conceptually: any website on the internet could make credentialed requests with the user's cookies, calling your API as the authenticated user.
-- **Config A is correct** — credentials are only accepted from a specific, trusted origin.
+</details>
 
-```csharp
-// ✅ Correct
-p.WithOrigins("https://myapp.com").AllowAnyHeader().AllowCredentials()
+<details>
+<summary>Red Flag</summary>
 
-// ❌ Runtime exception + security hole
-p.AllowAnyOrigin().AllowAnyHeader().AllowCredentials()
-```
+**Red Flag:**
+"Enable `AllowAnyOrigin()`." That kills cookie-based auth (incompatible with `AllowCredentials()`) and opens the API to the entire internet.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that Azure preview slots have **unpredictable URLs** — the solution is a regex-based origin matcher or config-driven origin list per environment, not hardcoded domains.
+
 </details>
 
 ---
 
-**A10.** Write the `Permissions-Policy` header value that disables accelerometer, camera, and microphone. What does each API do and why disable them?
+**A4.** [MEDIUM] Why does your CSP use `unsafe-inline` for `style-src`? Isn't that a security hole?
 
-<details><summary>Answer</summary>
+<details>
+<summary>The 5% Answer</summary>
 
-```http
-Permissions-Policy: accelerometer=(), camera=(), microphone=()
-```
+- Yes — `unsafe-inline` disables XSS protection for styles. It's a **deliberate, documented tradeoff**
+- **Why it's necessary:** Angular Material uses `ViewEncapsulation.None` and injects `<style>` tags into the DOM at runtime via JavaScript
+- The original HTML has no `<style>` tags at build time → nothing to hash
+- No per-request nonce is possible because this is a client-rendered SPA — no server to inject nonces
+- **Real alternatives:**
+  1. **Nonce-based CSP** — requires Angular SSR so the server injects a fresh nonce per request into Material's renderer
+  2. **Hash-based CSP** — precompute hashes of all injected styles at build time, list them in the CSP (massive maintenance cost — rebuild on every Material update)
+- Both are too expensive for this project's scope → `unsafe-inline` on `style-src` is the accepted tradeoff
 
-An empty `()` means "denied for all origins including the page itself."
+</details>
 
-- **Accelerometer**: reads device motion/orientation. Could fingerprint users or detect keystrokes via vibration analysis.
-- **Camera**: access to device camera. Dangerous if XSS runs — silently captures video.
-- **Microphone**: access to device microphone. Same risk as camera — silent audio capture via injected script.
+<details>
+<summary>Red Flag</summary>
 
-Disabling APIs your app doesn't use is defence-in-depth: even if XSS occurs, the attacker can't use these hardware APIs.
+**Red Flag:**
+"I use `unsafe-inline` because Angular needs it." That's parroting — it's not Angular that needs it, it's **Material's runtime style injection**.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that `unsafe-inline` on `style-src` is far less dangerous than on `script-src`. Style-based XSS is limited (no code execution, only data exfiltration via CSS selectors). Still, pointing out you'd tighten it in a regulated environment.
+
+</details>
+
+---
+
+**A5.** [MEDIUM] Your CSP includes `connect-src 'self' wss: https:`. Why is `wss:` there? What breaks without it?
+
+<details>
+<summary>The 5% Answer</summary>
+
+- `wss:` is the **secure WebSocket protocol** — it's what SignalR uses for the `/hubs/notifications` endpoint
+- Without `wss:` in `connect-src`, the browser blocks the WebSocket upgrade
+- SignalR automatically falls back to **long-polling** (slower, holds more server connections) or fails entirely if transports are restricted to WebSockets only
+- `ws:` (insecure WebSocket) is **intentionally not listed** — only encrypted connections allowed
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+"WebSockets need it." True but shallow — you need to know SignalR's fallback behaviour and why `ws:` (insecure) is explicitly NOT listed.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that **SignalR at scale needs a backplane** (Redis or Azure SignalR Service), and that the CSP must allow the backplane's origin too if clients connect to it directly.
+
+</details>
+
+---
+
+**A6.** [HIGH] Compare `AllowCredentials()` + `WithOrigins("...")` vs `AllowCredentials()` + `AllowAnyOrigin()`. When does each break?
+
+<details>
+<summary>The 5% Answer</summary>
+
+- **`AllowAnyOrigin()` + `AllowCredentials()`** → ASP.NET throws `InvalidOperationException` at startup
+  - The CORS spec forbids wildcard `*` origin with credentials — any website could make authenticated requests using the victim's cookies
+  - The framework enforces this at startup, not at runtime
+- **`WithOrigins("...")` + `AllowCredentials()`** → works correctly
+  - The `Access-Control-Allow-Origin` header echoes the exact requesting origin
+  - `Access-Control-Allow-Credentials: true` is returned only for that specific whitelisted origin
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+"You can't use `AllowAnyOrigin` with credentials." Correct but incomplete — you must know *why* (session hijacking via CSRF-style attack) and that the framework enforces it at startup.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning `SetIsOriginAllowed(_ => true)` as the **sneaky way to bypass this guard** — it echoes the origin dynamically and passes ASP.NET's validation but is functionally equivalent to `AllowAnyOrigin` with credentials. Dangerous code smell in code review.
+
 </details>
 
 ---
 
 ### HARD
 
-**A11.** Design a CSP policy for an e-commerce app that uses: Angular (self-hosted), Angular Material (inline styles), Stripe Elements (loads from `js.stripe.com`), Google Fonts, and your own API. Write the full CSP header value. Explain each directive.
+**A7.** [MEDIUM] Find the 3 security bugs in this CORS configuration:
 
-<details><summary>Answer</summary>
+```csharp
+builder.Services.AddCors(o => o.AddPolicy("default", p =>
+    p.SetIsOriginAllowed(_ => true)
+     .AllowAnyMethod()
+     .AllowAnyHeader()
+     .AllowCredentials()
+     .WithExposedHeaders("*")));
+```
+
+<details>
+<summary>The 5% Answer</summary>
+
+- **Bug 1 — `SetIsOriginAllowed(_ => true)` + `AllowCredentials()`**
+  - Functionally identical to `AllowAnyOrigin()` + credentials, which ASP.NET *would* block at startup
+  - The lambda bypasses that guard — any site on the internet can make credentialed requests with the victim's cookies
+
+- **Bug 2 — `AllowAnyHeader()` on a credentialed policy**
+  - Allows attackers to inject arbitrary custom headers (e.g. `X-User-Impersonate`, `X-Admin-Override`) without restriction
+  - Should be `WithHeaders("Content-Type", "Authorization", "Accept")`
+
+- **Bug 3 — `WithExposedHeaders("*")` with credentials** (the interviewer's trap)
+  - The `*` wildcard in `Access-Control-Expose-Headers` is **silently ignored when credentials are allowed** — browsers require explicit header names
+  - Looks like it exposes everything, actually exposes nothing — false sense of security
+
+- **Corrected:**
+```csharp
+p.WithOrigins("https://skinet.azurestaticapps.net")
+ .WithHeaders("Content-Type", "Authorization", "Accept")
+ .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+ .WithExposedHeaders("Pagination")
+ .AllowCredentials();
+```
+
+- **Production consequence:** the original config lets any site execute authenticated state-changing requests as your logged-in users
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+Only spotting the `SetIsOriginAllowed` issue. That's the obvious one — the exposed-headers wildcard silently failing is the interviewer's trap.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that `SetIsOriginAllowed` is sometimes legitimate (reflecting a validated subdomain list), and showing how to do it safely: `SetIsOriginAllowed(origin => allowedRegex.IsMatch(origin))`.
+
+</details>
+
+---
+
+**A8.** [HIGH] [OUT-OF-SCOPE] Your ASP.NET Core API is consumed by three clients: (1) your Angular SPA at `skinet.com`, (2) a React Native mobile app, (3) a third-party partner sending webhooks. Each uses a different auth mechanism. Design the CORS policy and auth strategy for each, and explain what breaks if you apply a single policy to all three.
+
+<details>
+<summary>The 5% Answer</summary>
+
+**Client 1 — Angular SPA (`skinet.com`):**
+- **Auth:** ASP.NET Identity cookie (`SameSite=Lax; HttpOnly; Secure`)
+- **CORS:** required — browser enforces same-origin policy
+- **Policy:** `WithOrigins("https://skinet.com").AllowCredentials().WithHeaders(...)`
+- The browser attaches the cookie automatically; CORS restricts other origins from reading responses
+
+**Client 2 — React Native mobile app:**
+- **Auth:** JWT Bearer token — `Authorization: Bearer <token>`. Cookies don't work across native apps.
+- **CORS:** NOT required — mobile apps are not browser origins; they make direct HTTP calls
+- Rate-limit by token presence; validate JWT with the same `IssuerSigningKey` as your SPA tokens
+
+**Client 3 — Partner webhook (server-to-server):**
+- **Auth:** HMAC-signed requests (`X-Signature` header) or static API key in `X-Api-Key`
+- **CORS:** NOT required — server-to-server calls bypass CORS entirely
+- IP allowlisting as a second layer; verify signature before processing any payload
+
+**Named policies in ASP.NET Core:**
+```csharp
+services.AddCors(o => {
+    o.AddPolicy("spa", p => p
+        .WithOrigins("https://skinet.com")
+        .WithHeaders("Content-Type", "Authorization")
+        .WithMethods("GET", "POST", "PUT", "DELETE")
+        .AllowCredentials());
+    // mobile and partner: no CORS policy needed
+});
+
+// Apply per-controller or globally with conditions:
+app.UseCors(ctx =>
+    ctx.Request.Headers.ContainsKey("Origin") ? "spa" : "none");
+```
+
+**What breaks with a single policy:**
+- Applying `AllowCredentials` to partner traffic: any webhook can impersonate a browser session
+- Applying SPA CORS to mobile: adds unnecessary overhead and exposes your origin whitelist
+- Mixing JWT and cookie auth on the same endpoint without `[Authorize(AuthenticationSchemes)]`: either scheme can authenticate where only one should
+
+**Production consequence:** a single broad CORS policy applied to all consumers opens session-hijacking surface for server-to-server traffic that never needs cookies.
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+"Apply `AllowAnyOrigin()` and let the clients deal with it." That kills `AllowCredentials()` (framework throws at startup) and exposes every authenticated endpoint to cross-origin exploitation.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning `[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]` on SPA-only endpoints and `[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]` on mobile-only endpoints. Without scheme-scoping, a valid JWT could authenticate a cookie-protected endpoint — a subtle auth bypass that's invisible in testing but exploitable in production.
+
+</details>
+
+---
+
+**A9.** [MEDIUM] Describe a realistic attack scenario where `SetIsOriginAllowed(_ => true)` + `AllowCredentials()` is exploited. Show the exact HTTP request and the fix.
+
+<details>
+<summary>The 5% Answer</summary>
+
+- **Setup:** victim is logged in to `https://skinet.com`. Attacker hosts `https://evil.com`
+
+```js
+fetch('https://api.skinet.com/account/email', {
+  method: 'PUT',
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'attacker@evil.com' })
+});
+```
+
+- Victim visits `evil.com` → browser sends **preflight OPTIONS** with `Origin: https://evil.com`
+- Server lambda returns `true` → responds with:
 
 ```http
-Content-Security-Policy:
-  default-src 'self';
-  script-src 'self' https://js.stripe.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com;
-  img-src 'self' data: https:;
-  frame-src https://js.stripe.com;
-  connect-src 'self' https://api.stripe.com;
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
+Access-Control-Allow-Origin: https://evil.com
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: PUT
 ```
+
+- Browser approves → real PUT fires with victim's session cookie attached → email changed to attacker's
+- Attacker initiates password reset → **full account takeover**
+
+- **Fix:**
+```csharp
+var allowed = new[] { "https://skinet.com", "https://skinet.azurestaticapps.net" };
+p.SetIsOriginAllowed(origin => allowed.Contains(origin))
+ .AllowCredentials()
+ .WithMethods("GET", "POST", "PUT", "DELETE");
+```
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+Describing CSRF generically without the `credentials: 'include'` detail or the preflight flow. The interviewer wants to see you understand the browser-server dance.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that **`SameSite=Lax` cookies** (ASP.NET default since .NET 7) partially mitigate this for simple GET-based exploits, but state-changing requests with `credentials: 'include'` still succeed when the user has recently interacted with the target site. Defence in depth: `SameSite=Strict` + explicit origin whitelist + anti-forgery tokens.
+
 </details>
 
 ---
 
-**A12.** You're auditing a codebase and find:
+**A10.** [HIGH] [OUT-OF-SCOPE] What is a CORS preflight? Describe the exact headers the browser sends, the headers the server must return, and the conditions that trigger a preflight.
+
+<details>
+<summary>The 5% Answer</summary>
+
+- A preflight is an automatic `OPTIONS` request the browser sends **before** a non-simple cross-origin request, asking "will you accept this?"
+
+- **Triggers (non-simple request conditions):**
+  - Method is not GET / POST / HEAD
+  - Custom headers beyond CORS-safelisted ones (`Accept`, `Accept-Language`, `Content-Language`, simple `Content-Type`)
+  - `Content-Type: application/json` — NOT on the safelist, always triggers preflight
+
+- **Preflight request:**
+```http
+OPTIONS /api/orders HTTP/1.1
+Origin: https://skinet.com
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: content-type, authorization
+```
+
+- **Required server response:**
+```http
+HTTP/1.1 204 No Content
+Access-Control-Allow-Origin: https://skinet.com
+Access-Control-Allow-Methods: POST, GET, DELETE
+Access-Control-Allow-Headers: content-type, authorization
+Access-Control-Allow-Credentials: true
+Access-Control-Max-Age: 600
+```
+
+- If any `Allow-*` header is missing or doesn't cover the request → browser blocks the real request
+- `Access-Control-Max-Age: 600` caches the preflight result for 10 minutes client-side — prevents a preflight on every single API call
+- **Production consequence:** forgetting `Max-Age` means every API call is preceded by an OPTIONS round-trip — on a 100-call page, that's 100 wasted network trips
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:**
+"The browser sends an OPTIONS request before the real one." No detail on the headers or what triggers it.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:**
+Mentioning that **you can avoid preflights entirely by keeping requests "simple"** — GET with standard headers. Relevant for high-throughput public APIs. Also mentioning that preflight caching (`Max-Age`) is capped by the browser (Chrome: 2 hours max, Firefox: 24 hours max).
+
+</details>
+
+---
+
+### ⚡ Syntax Quick-Fire
+
+**AQ1.** [HIGH] `?.` (null-conditional) vs `!.` (null-forgiving operator) — what happens at runtime when the value IS null?
+
+<details>
+<summary>The 5% Answer</summary>
+
+- **`?.`** short-circuits on null: `user?.Name` returns `null` as `string?` — never throws.
+- **`!.`** suppresses the compiler's nullable warning but does **nothing** at runtime — a null value still throws `NullReferenceException`. It is a compiler promise ("I know this isn't null"), not a null check.
+- Use `?.` defensively. Use `!.` only after a checked invariant (post-`Assert.NotNull`, inside an `if (x != null)` branch) and never at system boundaries.
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:** "They both prevent null exceptions." `!.` doesn't prevent anything at runtime.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:** Noting that `!.` is a code smell in public-facing methods and a legitimate shortcut only inside tight-controlled scopes (test helpers, framework-generated code). Seeing `!.` in production service code is a review flag.
+
+</details>
+
+---
+
+**AQ2.** [HIGH] When do you need `ConfigureAwait(false)` in an ASP.NET Core API, and why?
+
+<details>
+<summary>The 5% Answer</summary>
+
+- **Almost never** in ASP.NET Core. The framework has no `SynchronizationContext`, so `ConfigureAwait(false)` is a no-op — continuations already resume on the thread pool.
+- **Critical in library/NuGet code** where the caller may have a `SynchronizationContext` (WinForms, WPF, Blazor WASM). Without it the continuation tries to resume on the UI thread while it's blocked calling `.Result` → **deadlock**.
+- Rule: library code — always add it. ASP.NET Core app code — omit (clarity over redundancy).
+
+</details>
+
+<details>
+<summary>Red Flag</summary>
+
+**Red Flag:** "Always add it for performance." In ASP.NET Core it provides no benefit.
+
+</details>
+
+<details>
+<summary>Green Flag</summary>
+
+**Green Flag:** Knowing that `ConfigureAwait(false)` is in the ASP.NET Core framework source itself — as a convention for library authors to follow, not for performance. Understanding *why* it's there vs cargo-culting it.
+
+</details>
+
+---
+
+**AQ3.** [HIGH] C# `record` vs `class` — name the two concrete features that make `record` ideal for DTOs.
+
+<details>
+<summary>The 5% Answer</summary>
+
+- **Value-based equality** — `Equals` and `GetHashCode` are compiler-generated from all properties. Two `record` instances with the same values are equal; two `class` instances are equal only if they're the same reference.
+- **`with` expression** — non-destructive mutation: `var updated = original with { Price = 75m };` creates a new instance with one field changed. No manual copy constructor.
 
 ```csharp
-app.UseCors(x => x
-    .SetIsOriginAllowed(_ => true)
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials());
+record Product(int Id, string Name, decimal Price);
+
+var p1 = new Product(1, "Shoe", 50m);
+var p2 = p1 with { Price = 75m };
+
+p1 == p2;  // false — different Price
+p1 with { } == p1;  // true — all fields same
 ```
 
-Explain exactly what `SetIsOriginAllowed(_ => true)` does, why it's dangerous, and write a realistic attack scenario. Then write the corrected version.
+- **When NOT to use record:** entities with identity semantics (`Order`, `User`) where equality should be by ID, not all fields.
 
-<details><summary>Answer</summary>
-
-`SetIsOriginAllowed(_ => true)` is a lambda that always returns `true` — every origin on the internet is allowed.
-
-**Why it's more dangerous than `AllowAnyOrigin()`:**
-- `AllowAnyOrigin()` sets `*` — .NET **blocks** combining it with `AllowCredentials()`.
-- `SetIsOriginAllowed(_ => true)` **bypasses that guard** by echoing the exact origin the browser sent, while still passing .NET's own validation check. Combined with `AllowCredentials()`, any website can make fully authenticated credentialed requests using the victim's cookies.
-
-**Attack scenario:** attacker hosts `evil.com`. Victim is logged in to `myapp.com`. `evil.com` script calls `POST /api/orders` — browser sends the victim's cookie, your API accepts it, order placed.
-
-**Corrected version:**
-```csharp
-app.UseCors(x => x
-    .WithOrigins("https://myapp.com", "https://staging.myapp.com")
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials());
-```
 </details>
 
----
+<details>
+<summary>Red Flag</summary>
 
-**A13.** Angular Material uses `ViewEncapsulation.None` which injects global `<style>` tags. Why does this conflict with CSP? What would a production-grade solution look like? Explain the nonce-based approach.
+**Red Flag:** "Records are always immutable." `record class` with `set` properties is mutable. Immutability is opt-in (init-only or positional records).
 
-<details><summary>Answer</summary>
-
-`ViewEncapsulation.None` — Angular doesn't scope component styles; instead it dumps them as plain `<style>` tags into `<head>` **at runtime via JavaScript**.
-
-**The conflict:** CSP's `style-src` (or `default-src` fallback) blocks inline styles unless `'unsafe-inline'`, a hash, or a nonce is present. Static hashes can't work because Angular injects styles dynamically — the original HTML has no `<style>` tags to hash.
-
-**Production-grade solution — nonce-based approach:**
-1. Server generates a **random nonce** per request (e.g. `crypto.randomBytes(16).toString('base64')`).
-2. Nonce is embedded in the CSP header: `style-src 'nonce-abc123'`.
-3. Angular's **SSR renderer** attaches the nonce to each `<style>` tag it outputs.
-4. Browser only executes `<style>` tags whose nonce matches the header.
-
-**Requires Angular SSR** — cannot be done with client-side-only rendering because there's no server to generate the nonce per request.
 </details>
 
----
+<details>
+<summary>Green Flag</summary>
 
-**A14.** You use `SameSite=Strict` for CSRF protection. A colleague argues you should add anti-forgery tokens (`[ValidateAntiForgeryToken]`) too. Are they right? When would one not be enough?
+**Green Flag:** Mentioning `record struct` (C# 10) brings value equality to structs with no heap allocation — ideal for small hot-path value objects like `Money` or `Coordinate`.
 
-<details><summary>Answer</summary>
-
-Your colleague is right. `SameSite=Strict` is strong but has gaps:
-- It's a **client-side browser feature** — doesn't protect if the browser is old, the cookie predates the `SameSite` attribute, or the attacker controls a subdomain of your domain.
-- A subdomain cookie scope (`Domain=.example.com`) means a compromised subdomain can still send your cookie on same-site requests.
-
-**Anti-forgery tokens (synchronizer token pattern)** are **server-side and independent of cookie attributes** — they provide defence-in-depth. The server generates a unique token per session, embeds it in the form/header, and rejects requests where it's missing or wrong.
-
-**Rule:** neither alone covers all attack scenarios — use both for sensitive state-changing operations.
 </details>
 
 ---

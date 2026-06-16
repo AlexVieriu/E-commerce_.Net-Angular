@@ -3,11 +3,10 @@ namespace API.Controllers;
 public class PaymentsController(IPaymentService payService,
                                 IUnitOfWork unitOfWork,
                                 ILogger<PaymentsController> logger,
-                                IConfiguration config,
+                                IOptions<StripeSettings> stripeOptions,
                                 IHubContext<NotificationHub> hubContext) : BaseApiController
 {
-    private readonly string _whSecret = config["StripeSettings:WhSecret"]
-        ?? throw new InvalidOperationException("StripeSettings:WhSecret is not configured.");
+    private readonly string _whSecret = stripeOptions.Value.WhSecret;
 
     [Authorize]
     [HttpPost("{cartId}")]
