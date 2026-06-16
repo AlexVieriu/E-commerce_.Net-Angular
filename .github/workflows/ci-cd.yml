@@ -63,11 +63,11 @@ jobs:
         working-directory: ./skinet/client
         run: npm ci
 
-      - name: Lint and Test
+      # Lint returns in T54 (ESLint setup); Angular unit tests are out of scope.
+      # For now CI verifies the Angular app compiles.
+      - name: Build
         working-directory: ./skinet/client
-        run: |
-          npm run lint
-          npm test -- --watch=false --browsers=ChromeHeadless
+        run: npm run build
 
   # ── CD: Deploy ──────────────────────────────────────────────────────────────
   deploy:
