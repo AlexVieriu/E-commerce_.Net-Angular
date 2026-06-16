@@ -1,15 +1,16 @@
 # Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
-> **50 tasks | 6 sprints (2 wk each) | Deadline: Jul 5, 2026**
+> **50 tasks | 6 sprints (2 wk each) | Deadline: Aug 30, 2026**
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
 **LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> append to `questions/Technical Questions.txt`.
 **Git:** Branch per sprint, conventional commits, PR to main at sprint end.
 
-**Deadline reality (Apr 2 → Jul 5 ≈ 54 prog days at 4 days/week):**
-Sprint 1 buffer already consumed — no more slack. One slow sprint = one cut task somewhere.
+**Deadline reality (restart Jun 16 → Aug 30 at 4 days/week):**
+Sprints 1–2 done. Build window Jun 16 – Aug 16 (Sprints 3–6), then Aug 17–30 reserved for interview-deck/Anki prep.
+~36 build-days vs ~32 days of remaining task work — thin but real slack. One slow sprint = one cut task somewhere.
 CV priority order if forced to cut: Sprint 3 (admin) > Sprint 6 (README) > Sprint 2 (tests) > rest.
 Never sacrifice working Azure deploy + README. That's what job hunters actually look at.
 
@@ -41,7 +42,7 @@ Sprint end: verify local + Azure deploy. Update README.
 
 ---
 
-## Sprint 2 — Testing + Data Integrity *(Apr 6 – Apr 19)*
+## Sprint 2 — Testing + Data Integrity *(done: May 7)*
 
 > Fix race condition + idempotency + coverage. All C#. TDD: failing test first.
 > Order: CORS/CSP(9) -> Race condition(13-15) -> Idempotency(16,18) -> Price detection(17) -> Tests(19)
@@ -67,7 +68,7 @@ Sprint end: full test suite green. Verify Azure. Update README.
 
 ---
 
-## Sprint 3 — Admin Panel *(May 11 – May 24)*
+## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
 
 > Most clickable CV feature. Backend first, then Angular.
 > Pattern: copy ShopComponent's httpResource + Material table. Don't break existing orders/refund.
@@ -92,7 +93,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint 4 — Frontend Quality + UX *(May 25 – Jun 7)*
+## Sprint 4 — Frontend Quality + UX *(Jul 2 – Jul 17)*
 
 > Polish existing features. Isolated Angular tasks, easiest first.
 > Order: ESLint(54) -> Lighthouse(55) -> Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Performance(56) -> Playwright(37) -> README(38)
@@ -119,7 +120,7 @@ Sprint end: Playwright + backend tests green. Verify deploy.
 
 ---
 
-## Sprint 5 — Domain Expansion *(Jun 8 – Jun 21)*
+## Sprint 5 — Domain Expansion *(Jul 18 – Aug 1)*
 
 > Domain modeling depth. Backend comfort zone.
 > Order: Status(40) -> Cancel(41) -> Email(39) -> Soft delete(42) -> Indexes(43) -> Tests(46) -> Integration tests(20)
@@ -143,7 +144,7 @@ Sprint end: full test suite. Test cancel, soft delete, status history. Verify Az
 
 ---
 
-## Sprint 6 — Polish + Standout *(Jun 22 – Jul 5)*
+## Sprint 6 — Polish + Standout *(Aug 2 – Aug 16)*
 
 > Recruiter spends 30 seconds on your repo. README day 1 = highest ROI.
 
@@ -185,10 +186,23 @@ Sprint end: final deploy + smoke test. Share with someone.
 
 - [x] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
 - [x] Sprint 2 — Testing + Data Integrity (9 tasks) *(done: May 7)*
-- [ ] Sprint 3 — Admin Panel (8 tasks) *(May 11 – May 24)*
-- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(May 25 – Jun 7)*
-- [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jun 8 – Jun 21)*
-- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Jun 22 – Jul 5)*
+- [ ] Sprint 3 — Admin Panel (8 tasks) *(Jun 16 – Jul 1)*
+- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(Jul 2 – Jul 17)*
+- [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jul 18 – Aug 1)*
+- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Aug 2 – Aug 16)*
+- [ ] Interview-deck / Anki prep *(Aug 17 – Aug 30)*
+
+## Certifications *(never steals build days or run days)*
+
+Uber-day reality: 2 days are 13h drives (cognitive zeros — passive audio only), 1 is a half-day (the real study slot).
+
+- [ ] **AZ-900** — MS Learn path: passive audio on the 13h drives + real study on the half Uber day. **Exam target ~Jul 1.** Mostly review (Azure deploy + Key Vault already done).
+- [ ] **AZ-204** — NO separate study during Sprints 3–6; the project IS the lab (Key Vault, App Service, App Config, Managed Identity, App Insights covered by building). Concentrated study in the **Aug 17–30 prep window** on the gaps only (Cosmos, Functions, Service Bus, Event Grid). **Exam end of Aug, slip to early Sept if Sprint 6 ran over.** Project ships first.
+
+## When behind (life buffer)
+
+Aug 30 is the **target**, not a cliff. The hard commitment is: ship with a working Azure deploy + great README.
+When a medical check / contract renewal / bad day eats time → **cut the lowest-priority task** (see cut order below), never extend hours or sacrifice sleep/runs. Realistic finish: Aug 30 clean, mid-Sept if life hits. Both fine.
 
 Every sprint end: E2E run, Azure verify, README update.
 

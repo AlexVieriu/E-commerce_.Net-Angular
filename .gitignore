@@ -508,3 +508,6 @@ skinet/API/wwwroot/
 *.db
 *.db-shm
 *.db-wal
+
+# Personal learning-process / mindset notes — kept local, out of the repo employers browse
+mindset/
