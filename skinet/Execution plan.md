@@ -5,20 +5,20 @@
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
-**LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> append to `questions/Technical Questions.txt`.
-**Git:** Branch per sprint, conventional commits, PR to main at sprint end.
+**LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> write `skinet/questions/sprint-N/task-N-*.md` + one line in `interview-prep.md`.
+**Git:** Branch per task -> development (squash); merge sprint -> main (`--no-ff`). Conventional commits. See `docs/git-workflow.md`.
 
 **Deadline reality (restart Jun 16 → Aug 30 at 4 days/week):**
 Sprints 1–2 done. Build window Jun 16 – Aug 16 (Sprints 3–6), then Aug 17–30 reserved for interview-deck/Anki prep.
 ~36 build-days vs ~32 days of remaining task work — thin but real slack. One slow sprint = one cut task somewhere.
-CV priority order if forced to cut: Sprint 3 (admin) > Sprint 6 (README) > Sprint 2 (tests) > rest.
+CV priority if forced to cut: keep Sprint 3 (admin) + Sprint 6 (README); cut from S4/S5 first.
 Never sacrifice working Azure deploy + README. That's what job hunters actually look at.
 
 ---
 
 ## What Already Exists
 
-Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Customer) | Stripe (PaymentIntent+webhook+refund+coupons) | SignalR notifications | Redis cart+cache | Angular 22 zoneless+signals+Tailwind+Material | 4-step checkout | Admin orders+refund | Guards (auth/admin/emptycart/orderComplete) | Rate limiting | ExceptionMiddleware+errorInterceptor | GitHub Actions CI/CD to Azure | 21 docs | 14 test files | Security audit done (stock race condition remains)
+Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Customer) | Stripe (PaymentIntent+webhook+refund+coupons) | SignalR notifications | Redis cart+cache | Angular 22 zoneless+signals+Tailwind+Material | 4-step checkout | Admin orders+refund | Guards (auth/admin/emptycart/orderComplete) | Rate limiting | ExceptionMiddleware+errorInterceptor | GitHub Actions CI/CD to Azure | 21 docs | 14 test files | Security audit done (stock race condition fixed in T13)
 
 ---
 
