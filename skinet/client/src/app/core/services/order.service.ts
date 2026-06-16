@@ -11,6 +11,9 @@ export class OrderService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient)
   orderComplete = false;
+  // Order created during checkout (before payment confirm). Lets the success page
+  // fall back to fetching it by id if the SignalR push is delayed or lost.
+  createdOrder: Order | null = null;
 
   createOrder(orderToCreate: OrderToCreate) {
     return this.http.post(this.baseUrl + 'orders', orderToCreate);

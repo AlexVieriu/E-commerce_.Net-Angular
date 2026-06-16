@@ -16,9 +16,9 @@ Run before every PR `development` → `main`. See `git-workflow.md` for the merg
 
 ### Sprint 2 — Testing + Data Integrity
 
-- [ ] **Price change (T17):** edit a product's price in the DB while it's in your cart → checkout → expect **409 + snackbar + redirect to cart**
-- [ ] **Idempotency (T16/T18):** resubmit the same order/payment → **no duplicate order** created
-- [ ] **Concurrency (T13) + transaction rollback (T14):** can't be reliably triggered by hand → confirm the **automated suite is green** (these exist precisely because manual testing can't catch races)
+- [ ] **Price change (T17):** reach the **Payment** step first, *then* edit that product's `Price` in `data/store.db` (DB Browser, not the Docker container) → **Confirmation** → **Pay** → expect **409 + snackbar + redirect to cart, no charge**. (Editing *before* the Payment step is silently re-synced — no 409.)
+- [ ] **Idempotency (T16/T18):** locked by `OrderService_Tests` (same `PaymentIntentId` → returns existing order, no duplicate) → confirm `dotnet test` green. (No clean manual check — a declined→retry in the same session hits a Stripe `elements.submit()` retry limit, unrelated to idempotency.)
+- [ ] **Concurrency (T13) + rollback (T14):** can't be triggered by hand (it's a race) → just confirm `dotnet test` is green.
 
 ## Azure — after merging to `main` (deploy)
 

@@ -19,6 +19,7 @@ import { CurrencyPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ShippingAddress } from '../../shared/models/order/shippingAddress';
 import { OrderToCreate } from '../../shared/models/order/orderToCreate';
+import { Order } from '../../shared/models/order/order';
 import { OrderService } from '../../core/services/order.service';
 
 @Component({
@@ -130,19 +131,22 @@ export class CheckoutComponent {
     // if they have a problem with the credit card, go back to payment page
     try {
       if (this.confirmationToken()) {
+        // Create the order FIRST (status Pending) so the Stripe webhook always finds it.
+        // Otherwise payment_intent.succeeded can arrive before the order exists (a race
+        // that loses on slow clients), leaving the order stuck Pending with no SignalR push.
+        // Bonus: price/stock validation now runs *before* the customer is charged.
+        const order = await this.createOrderModel();
+        const createdOrder = await firstValueFrom(this.orderService.createOrder(order)) as Order;
+        if (!createdOrder) throw new Error("Order creation failed");
+        this.orderService.createdOrder = createdOrder;
+
         const result = await this.stripeService.confirmPayment(this.confirmationToken()!);
 
         if (result.paymentIntent?.status === 'succeeded') {
-          const order = await this.createOrderModel();
-          const orderResult = await firstValueFrom(this.orderService.createOrder(order));
-          if (orderResult) {
-            this.orderService.orderComplete = true;
-            this.cartService.deleteCart();
-            this.cartService.setSelectedDelivery(null);
-            this.router.navigateByUrl('/checkout/success');
-          }
-          else
-            throw new Error("Order creation failed");
+          this.orderService.orderComplete = true;
+          this.cartService.deleteCart();
+          this.cartService.setSelectedDelivery(null);
+          this.router.navigateByUrl('/checkout/success');
         }
         else if (result.error)
           throw new Error(result.error.message);
