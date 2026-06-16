@@ -29,7 +29,7 @@
 
                         <ng-container matColumnDef="orderDate">
                             <th mat-header-cell *matHeaderCellDef> Date </th>
-                            <td mat-cell *matCellDef="let order"> {{order.orderDate | date: 'short'}} </td>
+                            <td mat-cell *matCellDef="let order"> {{order.orderDate | date: 'dd/MM/yy, h:mm a'}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="total">
@@ -46,7 +46,7 @@
                             <th mat-header-cell *matHeaderCellDef> Actions </th>
                             <td mat-cell *matCellDef="let order">
                                 <div class="flex gap-3">
-                                    <button matTooltip="View" mat-icon-button routerLink="/order/{{order.id}}">
+                                    <button matTooltip="View" mat-icon-button routerLink="/orders/{{order.id}}">
                                         <mat-icon class="text-purple-500">visibility</mat-icon>
                                     </button>
                                     <button matTooltip="Refund" [disabled]="order.status === 'Refunded'" mat-icon-button
