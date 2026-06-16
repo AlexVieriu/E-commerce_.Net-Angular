@@ -23,7 +23,7 @@
 - [x] T6 — Account lockout: 5 attempts, 15 min
 - [x] T7 — Cookie: SameSite=Strict, Secure, HttpOnly, 24h
 
-## Sprint 2 — Testing + Data Integrity *(Apr 6 – Apr 19)*
+## Sprint 2 — Testing + Data Integrity *(done: May 7)*
 
 - [x] T9 — CORS explicit + security headers
 - [x] T13 — Stock race condition: `[ConcurrencyCheck]` + `DbUpdateConcurrencyException`
@@ -35,7 +35,7 @@
 - [x] T17 — Price change detection: cart vs DB, 409 + snackbar + redirect
 - [x] T19 — Expand unit tests: specs, discount edges, validators. Target 80% → achieved 90% Core, 89.3% Application
 
-## Sprint 3 — Admin Panel *(Apr 20 – May 3)*
+## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
 
 - [ ] T8 — FluentValidation: auto-validation, CreateOrderDto + CreateProductDTO
 - [ ] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
@@ -46,13 +46,8 @@
 - [ ] T29 — Product list: Material Table + Paginator
 - [ ] T30 — Product create/edit: reactive form, Material inputs
 
-## Sprint 4 — Frontend Quality + UX *(May 4 – May 17)*
+## Sprint 4 — Frontend Quality + UX *(Jul 2 – Jul 17)*
 
-- [ ] T31 — Product delete: reuse ConfirmationDialogComponent
-- [ ] T32 — Memory leak audit: `takeUntilDestroyed()`
-- [ ] T33 — Form errors: `<mat-error>` on login/register
-- [ ] T34 — Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent
-- [ ] T35 — NgOptimizedImage: `ngSrc` + priority/lazy
 - [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers
 - [ ] T55 — Lighthouse baseline: run on `/`, `/shop`, `/checkout`
 - [ ] T31 — Product delete: reuse ConfirmationDialogComponent
@@ -64,7 +59,7 @@
 - [ ] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin)
 - [ ] T38 — README update with UX screenshots
 
-## Sprint 5 — Domain Expansion *(May 18 – May 31)*
+## Sprint 5 — Domain Expansion *(Jul 18 – Aug 1)*
 
 - [ ] T40 — OrderStatus: Processing/Shipped/Delivered/Cancelled + OrderStatusHistory
 - [ ] T41 — Order cancellation: POST cancel + Stripe refund
@@ -74,7 +69,7 @@
 - [ ] T46 — Unit tests: cancellation, soft delete, OrderStatusHistory
 - [ ] T20 — Integration tests: WebApplicationFactory + TestContainers
 
-## Sprint 6 — Polish + Standout *(Jun 1 – Jun 14)*
+## Sprint 6 — Polish + Standout *(Aug 2 – Aug 16)*
 
 - [ ] T47 — README rewrite: overview, stack, diagram, screenshots/GIFs
 - [ ] T52 — Open redirect: validate returnUrl starts with `/`
