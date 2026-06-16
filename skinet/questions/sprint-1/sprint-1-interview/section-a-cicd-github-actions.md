@@ -6,7 +6,7 @@
 
 ### EASY
 
-**A1.** [HIGH] What is the difference between `pull_request` and `push` triggers in GitHub Actions? Why does this project use both?
+**A1.** [HIGH] What is the difference between `pull_request` and `push` triggers in GitHub Actions? Why would a pipeline with both a CI gate and a deploy step use both?
 
 <details>
 <summary>The 5% Answer</summary>
@@ -302,7 +302,7 @@ Mentioning `dotnet publish` automatically follows `<ProjectReference>` chains �
 <summary>The 5% Answer</summary>
 
 **Why it happens:**
-`npm install` resolves semver ranges in `package.json`. If `"@angular/core": "^18.0.0"` and a new patch `18.0.3` was released between the developer's last `npm install` and the CI run, CI installs `18.0.3` while local has `18.0.1`.
+`npm install` resolves semver ranges in `package.json`. If `"@angular/core": "^22.0.0"` and a new patch `22.0.3` was released between the developer's last `npm install` and the CI run, CI installs `22.0.3` while local has `22.0.1`.
 
 **How `npm ci` prevents it:**
 - Reads `package-lock.json` **exactly** — no range resolution
@@ -311,9 +311,9 @@ Mentioning `dotnet publish` automatically follows `<ProjectReference>` chains �
 
 **Practical failure mode:**
 ```
-Local:  @angular/material@18.0.1 (installed 3 months ago)
-CI:     @angular/material@18.2.0 (latest in ^18 range)
-→ Angular build passes locally, fails on CI due to breaking change in 18.2.0
+Local:  @angular/material@22.0.1 (installed 3 months ago)
+CI:     @angular/material@22.2.0 (latest in ^22 range)
+→ Angular build passes locally, fails on CI due to breaking change in 22.2.0
 ```
 
 </details>
@@ -525,7 +525,7 @@ Fix: Azure Portal → App Service → Settings → Environment variables → add
 
 **Production consequence:** the workflow completes green, the artifact is pushed, but the running app crashes on first use of the missing config. Without a smoke test after every deploy, the failure goes undetected until a user hits the broken feature — the pipeline reported success.
 
-**In this project:** secrets never live in GitHub — they live in Azure Key Vault, read at startup via `AddAzureKeyVault` + `DefaultAzureCredential`. The equivalent failure is either (a) the Key Vault secret was never created, or (b) the name uses `:` instead of `--` so the `IConfiguration` mapping silently misses it. Diagnosis: Azure Portal → Key Vault → Secrets blade, not GitHub Settings.
+**When using Azure Key Vault instead of GitHub Secrets:** secrets never live in GitHub — they live in Key Vault, read at startup via `AddAzureKeyVault` + `DefaultAzureCredential`. The equivalent failure is either (a) the Key Vault secret was never created, or (b) the name uses `:` instead of `--` so the `IConfiguration` mapping silently misses it. Diagnosis: Azure Portal → Key Vault → Secrets blade, not GitHub Settings.
 
 </details>
 
@@ -749,7 +749,7 @@ mockDatabase.As<IDatabaseAsync>()
     .ReturnsAsync(true);
 ```
 
-This is exactly what `SetCartAsync_ShouldSaveAndReturnCart_WhenSuccessful` does in this project (line 83).
+This is the correct pattern — add a `Verify` call at the end of the test after the act.
 
 **How to catch it:** add a `Verify` at the end of the test — this is already in the project (line 111):
 ```csharp
@@ -786,23 +786,23 @@ If `StringSetAsync` was never intercepted, `Verify` throws — the test fails lo
 <summary>The 5% Answer</summary>
 
 - `push` to `main` → `github.ref` = `refs/heads/main`
-- `pull_request` targeting `main` → `github.ref` = `refs/heads/main` (the **base** branch, not the PR branch)
-- To get the PR source branch use `github.head_ref` — only populated on `pull_request` events
-- Mixing them in a branch condition like `if: github.ref == 'refs/heads/main'` can match both a direct push AND a PR targeting main, accidentally triggering deploy jobs on PR runs
+- `pull_request` targeting `main` → `github.ref` = `refs/pull/<pr_number>/merge` (the synthetic merge commit ref, **not** the base branch)
+- To get the base branch use `github.base_ref`; to get the PR source branch use `github.head_ref` — both only populated on `pull_request` events
+- **Common trap:** `pull_request_target` events DO set `github.ref` to the base branch (`refs/heads/main`) — `pull_request` does not. Confusing the two leads to broken branch conditions
 
 </details>
 
 <details>
 <summary>Red Flag</summary>
 
-**Red Flag:** Using `github.ref_name` (resolves to just `main`) and assuming it only matches on direct pushes. It also matches on `pull_request` targeting `main` — the same subtle ambiguity.
+**Red Flag:** Saying `github.ref` on `pull_request` is `refs/heads/main`. That is the `pull_request_target` behaviour. On a standard `pull_request` event `github.ref` is `refs/pull/<pr_number>/merge` — a condition `github.ref == 'refs/heads/main'` will never fire on a PR run.
 
 </details>
 
 <details>
 <summary>Green Flag</summary>
 
-**Green Flag:** Pairing the branch condition with the event type: `if: github.event_name == 'push' && github.ref == 'refs/heads/main'` — unambiguously targets only direct pushes to main, never PR runs.
+**Green Flag:** Pairing the branch condition with the event type: `if: github.event_name == 'push' && github.ref == 'refs/heads/main'` — unambiguously targets only direct pushes to main. On PR runs `github.ref` is `refs/pull/<pr_number>/merge` so the condition never fires, making the guard redundant but explicit and safe.
 
 </details>
 
