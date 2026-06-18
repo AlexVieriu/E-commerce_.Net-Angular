@@ -22,7 +22,7 @@ dotnet run --project src/API
 cd client && ng serve
 ```
 
-Backend on `https://localhost:5001`. Angular dev server proxies API calls.
+Backend on `https://localhost:7096`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL from `environment.development.ts` — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
 
 ## Production Build
 
@@ -30,7 +30,7 @@ Backend on `https://localhost:5001`. Angular dev server proxies API calls.
 cd client && ng build
 ```
 
-Output goes to `wwwroot/browser`. Served by .NET via `UseStaticFiles` + `FallbackController`.
+Output goes to `src/API/wwwroot` (set by `angular.json` `outputPath`). Served same-origin by .NET via `UseStaticFiles` + `FallbackController`, so prod uses the relative `apiUrl: 'api/'` from `environment.ts`.
 
 ## SQLite → SqlServer Switch
 
