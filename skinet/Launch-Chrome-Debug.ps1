@@ -1,3 +1,14 @@
+# Launch-Chrome-Debug.ps1
+# ----------------------------------------------------------------------------
+# What: launches Chrome for Testing with remote debugging (port 9222) + an
+#       isolated profile, then opens the Angular dev app (https://localhost:4200).
+# Why:  lets VS Code attach for breakpoint debugging of the Angular client
+#       (the "Angular Debug (Manual Chrome)" launch config). --disable-web-security
+#       drops CORS for frictionless local debugging — DEV ONLY, never for browsing.
+# When: only needed if you debug Angular via VS Code attach. For plain browser
+#       DevTools debugging you don't need this. Requires Chrome for Testing at
+#       the hardcoded $ChromePath below (update it if your install moves).
+# ----------------------------------------------------------------------------
 # PowerShell script to launch Chrome for Testing with debugging enabled
 Write-Host "Starting Chrome for Testing with debugging enabled for VS Code..." -ForegroundColor Green
 
