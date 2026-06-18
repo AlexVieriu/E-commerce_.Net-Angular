@@ -2,6 +2,9 @@
 
 xUnit (.NET). No Angular unit tests — UI flows covered by Playwright E2E (Task 37).
 
+This doc covers **automated (unit) tests** — how they run and what gets them.
+Manual "does the site actually work" smoke testing lives in `sprint-end-checklist.md`.
+
 ## When to test (cadence)
 
 | When | What | Where |
@@ -30,16 +33,14 @@ tests/
 
 Shared helpers in `tests/Tests.Shared/`. Uses xUnit v3 + FluentAssertions + Moq.
 
-## Coverage (Task 19 — Apr 2026)
+## Coverage
 
-| Layer | Coverage | Notes |
-|---|---|---|
-| Core | **90%** | Entities, value objects, domain logic |
-| Application | **89.3%** | Specs, mappings, DTOs, validators |
-| Infrastructure (services) | **~85%** | CartService 100%, OrderService 80% |
-| API controllers | 0% | Covered by Playwright E2E |
+Target ~80% backend. What's intentionally **not** covered:
 
-`PaymentService` and `CouponService` are marked `[ExcludeFromCodeCoverage]` — they call Stripe SDK classes directly with no DI seam. Architectural fix: inject `IStripeClient` abstraction (deferred).
+- API controllers → Playwright E2E (Task 37)
+- `PaymentService` / `CouponService` → `[ExcludeFromCodeCoverage]`: they call Stripe SDK classes directly with no DI seam. Architectural fix: inject an `IStripeClient` abstraction (deferred).
+
+Snapshot percentages live in `progress.md` (Task 19 log), not here — they go stale.
 
 ## Running .NET Tests
 
