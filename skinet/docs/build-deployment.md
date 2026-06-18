@@ -32,6 +32,18 @@ cd client && ng build
 
 Output goes to `src/API/wwwroot` (set by `angular.json` `outputPath`). Served same-origin by .NET via `UseStaticFiles` + `FallbackController`, so prod uses the relative `apiUrl: 'api/'` from `environment.ts`.
 
+## Production environment (live)
+
+Deployed to App Service **`skinet-2025-test`** (RG `skinet-2025-rg-test`, Poland Central). Push to `main` → GitHub Actions builds + deploys → live on the `…azurewebsites.net` URL.
+
+| Concern | Reality |
+|---|---|
+| **Database** | Serverless Azure SQL `skinet-test` (free tier). **Auto-pauses when idle** — the first request after idle resumes it (~30–60s). `UseSqlServer` has `EnableRetryOnFailure` so startup survives the transient `40613` instead of 500.30 (BUG-8). |
+| **Redis** | **Upstash** (serverless). In App Service → Connection strings as `Redis` (Custom): `host:6379,password=…,ssl=True,abortConnect=False`. **Not** in Key Vault. |
+| **Admin user** | `admin@test.com`, password from Key Vault `AdminSettings:Password`, **re-synced on every startup** — rotate the secret + restart to change it (BUG-9). |
+| **Security headers** | CSP allows `js.stripe.com` (script/frame), `hooks.stripe.com` (frame), `api.stripe.com` (connect); COEP overridden to `unsafe-none` so Stripe Elements load (BUG-7). Fonts are self-hosted, not the Google CDN (BUG-6). |
+| **Stripe webhook** | Stripe Dashboard endpoint → `…azurewebsites.net/api/payments/webhook`; signing secret = Key Vault `StripeSettings:WhSecret`. |
+
 ## SQLite → SqlServer Switch
 
 Set `ASPNETCORE_ENVIRONMENT=Production`. Ensure `ConnectionStrings:DefaultConnection` points to SqlServer.
@@ -47,8 +59,8 @@ dotnet ef database update --context SqlServerStoreContext
 |---|---|---|
 | `StripeSettings:SecretKey` | User Secrets | Azure Key Vault |
 | `StripeSettings:WhSecret` | User Secrets (update each Stripe CLI session) | Azure Key Vault |
-| `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | Azure Key Vault |
-| `ConnectionStrings:SqlServerAzureConnection` | not used in dev | Azure Key Vault |
+| `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | App Service → Connection strings (Upstash) |
+| `ConnectionStrings:SqlServerAzureConnection` | not used in dev | App Service → Connection strings (SQLServer) |
 | `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
 | `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
 
@@ -72,7 +84,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 | `skinet-2025-test` (managed identity) | Key Vault | Secrets User | App reads secrets at runtime |
 | `oidc-msi-aef5` | App Service | Website Contributor | CI/CD deploys code |
 
-- Permission model: **Vault access policy** (not Azure RBAC)
+- Permission model: **Azure RBAC** (`Key Vault Secrets User` role on the managed identity), not vault access policy
 - If Key Vault is unavailable at startup, app falls back to App Service settings (`try/catch` in `Program.cs`)
 
 ### Dev setup (first time)
