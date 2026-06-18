@@ -11,6 +11,7 @@
 | Apr 8 | T17 | Price change detection: 409 + snackbar + redirect. Also fixed order detail routing (/order → /orders) |
 | Apr 9 | T19 | Unit tests: 128 tests, Core 90%, Application 89.3%, Infrastructure services ~85%. Fixed broken CartService mock, added OrderService happy path + idempotency, discount edges, search/sort specs, mapping tests, DTO validators, coupon tests. [ExcludeFromCodeCoverage] on Stripe services. |
 | Apr 21 | Sprint 2 interview polish | Audited 11-section interview set vs `interview-gen-prompt.md` spec; added 7 questions (G12 Testcontainers, H12 `signal.mutate()` removal, I9 outbox pattern, I10 3DS/SCA, J8 captive dependency, J9 sync-over-async, K7 zoneless runtime-mode bug). Regenerated Anki for G/H/I/J/K (12+12+10+9+7 cards). |
+| Jun 18 | Sprint 2 → live on Azure + BUG-4..10 | Deployed Sprint 2 to `skinet-2025-test`. Fixed deploy-hardening bugs: auth-401 nav (4), wwwroot root-500 (5), fonts CSP (6), Stripe CSP+COEP (7), serverless SQL idle-pause retry (8), config-driven admin password (9); logged BUG-10 (loading bar, deferred). `main` rewritten to 1 squashed commit/sprint. Live smoke green: register→cart→Stripe→order→refund→admin. |
 
 ---
 
