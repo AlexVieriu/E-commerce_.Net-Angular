@@ -31,7 +31,15 @@ public static class ApplicationServicesExtensions
         else
         {
             services.AddDbContext<SqlServerStoreContext>(options =>
-                options.UseSqlServer(config.GetConnectionString("SqlServerAzureConnection")));
+                options.UseSqlServer(
+                    config.GetConnectionString("SqlServerAzureConnection"),
+                    // Serverless Azure SQL auto-pauses when idle; the first connection while it
+                    // resumes throws transient error 40613. Retry so startup waits it out instead
+                    // of crashing (500.30) — see BUG-8.
+                    sql => sql.EnableRetryOnFailure(
+                        maxRetryCount: 8,
+                        maxRetryDelay: TimeSpan.FromSeconds(20),
+                        errorNumbersToAdd: null)));
             services.AddScoped<StoreContext>(provider =>
                 provider.GetRequiredService<SqlServerStoreContext>());
         }
