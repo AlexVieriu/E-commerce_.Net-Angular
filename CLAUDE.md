@@ -24,7 +24,6 @@ Before starting any task, list:
   1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
      - # Task N — Concept Name
      - ## Why this approach
-     - ## Why this approach
      - ## What confused me
      - ## Explanation
      - ## Exercise
@@ -37,10 +36,12 @@ Before starting any task, list:
    
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
-  - PR to `development` when task is done
-  - PR to `main` at sprint end only
+  - PR to `development` when task is done → **squash-merge** (one clean commit per task)
+  - PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
+    (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
   - Never commit directly to `main` or `development`
-  - For forgotten changes on a completed task: `fix/task-N-description` from `development`
+  - For forgotten changes on a completed task: `fix/task-N-description` from `development` (squash-merge)
+  - Full flow + commands: `skinet/docs/git-workflow.md`
 
  # PR
   When asked to open/create a PR, always output a suggested title and description before the URL.
