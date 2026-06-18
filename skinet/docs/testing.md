@@ -2,6 +2,22 @@
 
 xUnit (.NET). No Angular unit tests — UI flows covered by Playwright E2E (Task 37).
 
+## When to test (cadence)
+
+| When | What | Where |
+|---|---|---|
+| **After each task** | `dotnet test` green + smoke the one new behavior + pass the gate | below |
+| **Before `development` → `main`** | full suite + core smoke + this sprint's behaviors + infra | `sprint-end-checklist.md` |
+| **After deploying to `main`** | Azure smoke (live URL, prod flow) | `sprint-end-checklist.md` |
+
+### After each task (before opening the PR)
+
+- [ ] `dotnet test` green locally
+- [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches
+- [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
+
+CI re-runs `dotnet test` + `npm run build` on the task PR — that's the backstop, not the first check.
+
 ## .NET Test Projects
 
 ```
