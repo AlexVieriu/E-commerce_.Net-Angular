@@ -1,8 +1,12 @@
 global using Application.Common.Interfaces;
+global using Application.Common.DTOs;
 global using Core.Entities;
+global using Core.Entities.OrderAggregate;
 global using Core.Interfaces;
 global using FluentAssertions;
+global using Infrastructure.Data;
 global using Infrastructure.Services;
+global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Configuration;
 global using Moq;
 global using StackExchange.Redis;

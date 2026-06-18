@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ShopService } from '../../../core/services/shop.service';
 import { MatDivider } from '@angular/material/divider';
 import { MatListOption, MatSelectionList } from '@angular/material/list';
@@ -25,13 +25,13 @@ export class FiltersDialogComponent {
   private dialogRef = inject(MatDialogRef<FiltersDialogComponent>);
   data = inject(MAT_DIALOG_DATA);
 
-  selectedBrands: string[] = this.data.selectedBrands;
-  selectedTypes: string[] = this.data.selectedTypes;
+  selectedBrands = signal<string[]>(this.data.selectedBrands);
+  selectedTypes = signal<string[]>(this.data.selectedTypes);
 
   applyFilters() {
     this.dialogRef.close({
-      selectedBrands: this.selectedBrands,
-      selectedTypes: this.selectedTypes
-    })
+      selectedBrands: this.selectedBrands(),
+      selectedTypes: this.selectedTypes()
+    });
   }
 }

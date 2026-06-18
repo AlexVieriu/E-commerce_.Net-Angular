@@ -496,12 +496,9 @@ skinet/client/ssl/*.key
 # Angular build cache
 skinet/client/.angular/
 
-# Angular build output (CI rebuilds this on every deploy)
-skinet/API/wwwroot/*.js
-skinet/API/wwwroot/*.css
-skinet/API/wwwroot/*.txt
-skinet/API/wwwroot/*.json
-skinet/API/wwwroot/index.html
+# Angular build output in API wwwroot (CI rebuilds on every deploy); committed images kept
+skinet/src/API/wwwroot/*
+!skinet/src/API/wwwroot/images/
 
 # Claude Code local settings
 .claude/settings.local.json
@@ -510,3 +507,6 @@ skinet/API/wwwroot/index.html
 *.db
 *.db-shm
 *.db-wal
+
+# Personal learning-process / mindset notes — kept local, out of the repo employers browse
+mindset/

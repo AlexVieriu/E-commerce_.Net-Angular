@@ -15,9 +15,13 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
 		<PackageReference Include="StackExchange.Redis" Version="2.12.8" />
 		<PackageReference Include="Stripe.net" Version="51.0.0" />
+		<!-- Direct ref overrides vulnerable transitive 9.0.0 (NU1903, high) pulled via Microsoft.Data.SqlClient.
+		     10.0.6 is the patched .NET 10 release (10.0.0-10.0.5 affected by EncryptedXml DoS). -->
+		<PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.6" />
 	</ItemGroup>
 	<ItemGroup>		
 		<ProjectReference Include="..\Application\Application.csproj" />

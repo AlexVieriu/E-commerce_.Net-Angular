@@ -1,25 +1,24 @@
-claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5
-
 # Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
-> **47 tasks | 6 sprints (2 wk each) | Deadline: Jun 14, 2026**
+> **50 tasks | 6 sprints (2 wk each) | Deadline: Aug 30, 2026**
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
-**LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> append to `questions/Technical Questions.txt`.
-**Git:** Branch per sprint, conventional commits, PR to main at sprint end.
+**LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> write `skinet/questions/sprint-N/task-N-*.md` + one line in `interview-prep.md`.
+**Git:** Branch per task -> development (squash); merge sprint -> main (`--no-ff`). Conventional commits. See `docs/git-workflow.md`.
 
-**Deadline reality (Apr 2 → Jun 14 ≈ 40 prog days at 4 days/week):**
-Sprint 1 buffer already consumed — no more slack. One slow sprint = one cut task somewhere.
-CV priority order if forced to cut: Sprint 3 (admin) > Sprint 6 (README) > Sprint 2 (tests) > rest.
+**Deadline reality (restart Jun 16 → Aug 30 at 4 days/week):**
+Sprints 1–2 done. Build window Jun 16 – Aug 16 (Sprints 3–6), then Aug 17–30 reserved for interview-deck/Anki prep.
+~36 build-days vs ~32 days of remaining task work — thin but real slack. One slow sprint = one cut task somewhere.
+CV priority if forced to cut: keep Sprint 3 (admin) + Sprint 6 (README); cut from S4/S5 first.
 Never sacrifice working Azure deploy + README. That's what job hunters actually look at.
 
 ---
 
 ## What Already Exists
 
-Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Customer) | Stripe (PaymentIntent+webhook+refund+coupons) | SignalR notifications | Redis cart+cache | Angular 22 zoneless+signals+Tailwind+Material | 4-step checkout | Admin orders+refund | Guards (auth/admin/emptycart/orderComplete) | Rate limiting | ExceptionMiddleware+errorInterceptor | GitHub Actions CI/CD to Azure | 21 docs | 14 test files | Security audit done (stock race condition remains)
+Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Customer) | Stripe (PaymentIntent+webhook+refund+coupons) | SignalR notifications | Redis cart+cache | Angular 22 zoneless+signals+Tailwind+Material | 4-step checkout | Admin orders+refund | Guards (auth/admin/emptycart/orderComplete) | Rate limiting | ExceptionMiddleware+errorInterceptor | GitHub Actions CI/CD to Azure | 24 docs | 14 test files | Security audit done (stock race condition fixed in T13)
 
 ---
 
@@ -43,7 +42,7 @@ Sprint end: verify local + Azure deploy. Update README.
 
 ---
 
-## Sprint 2 — Testing + Data Integrity *(Apr 6 – Apr 19)*
+## Sprint 2 — Testing + Data Integrity *(done: May 7)*
 
 > Fix race condition + idempotency + coverage. All C#. TDD: failing test first.
 > Order: CORS/CSP(9) -> Race condition(13-15) -> Idempotency(16,18) -> Price detection(17) -> Tests(19)
@@ -58,6 +57,15 @@ Sprint end: verify local + Azure deploy. Update README.
 | 18 | Order idempotency: unique constraint on PaymentIntentId, return existing if duplicate | S | -- | Group with 16 (both idempotency) |
 | 17 | Price change detection: cart vs DB prices, 409 + snackbar + redirect to cart | M | -- | No dialog, just snackbar |
 | 19 | Expand unit tests: specs, discount edges, validators. Target 80% backend | M | -- | Build on 14 existing files |
+| BUG-1 | Checkout: Address tab "Next" button stays disabled until voucher field is clicked | S | -- | Pre-existing. Fix reactive form validation trigger |
+| BUG-4 | Navbar shows stale logged-in state after a 401 — client auth signal not cleared | S | -- | Found pre-deploy (Jun 18). `fix(bug-4)` |
+| BUG-5 | Root URL serves stale SPA / 500 — Angular `outputPath` at `API/wwwroot` not `src/API/wwwroot` | S | -- | Found pre-deploy (Jun 18). `fix(bug-5)` |
+| BUG-6 | Roboto + Material Icons blocked by CSP on prod artifact (Google Fonts CDN) — self-host fonts | S | -- | Surfaced once `:7096` was the tested origin. `fix(bug-6)` |
+| BUG-7 | Stripe Elements blocked by CSP + COEP on prod artifact — allow Stripe origins, COEP `unsafe-none` | M | -- | Same root cause as BUG-6. `fix(bug-7)` |
+| BUG-8 | App 500.30 on startup when serverless Azure SQL is idle-paused — `MigrateAsync` hits transient SQL 40613, no retry resiliency | S | -- | Found smoke-testing live Azure. `fix(bug-8)`: `EnableRetryOnFailure` on `UseSqlServer` |
+| BUG-9 | Admin password not config-driven — seed only created-if-missing, so rotating Key Vault `AdminSettings:Password` never updated the existing admin (locked out, unrecoverable) | S | -- | Found logging into live admin. `fix(bug-9)`: seed resets admin password from config on startup |
+
+> BUG-4..8 are deploy-hardening defects surfaced while smoke-testing the Sprint 2 release on Azure / the prod artifact (`:7096`); the dev server (`:4200`) sends no security headers and dev uses SQLite, so they stayed hidden until the real deploy.
 
 Sprint end: full test suite green. Verify Azure. Update README.
 
@@ -68,7 +76,7 @@ Sprint end: full test suite green. Verify Azure. Update README.
 
 ---
 
-## Sprint 3 — Admin Panel *(Apr 20 – May 3)*
+## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
 
 > Most clickable CV feature. Backend first, then Angular.
 > Pattern: copy ShopComponent's httpResource + Material table. Don't break existing orders/refund.
@@ -93,31 +101,36 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint 4 — Frontend Quality + UX *(May 4 – May 17)*
+## Sprint 4 — Frontend Quality + UX *(Jul 2 – Jul 17)*
 
 > Polish existing features. Isolated Angular tasks, easiest first.
-> Order: Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Playwright(37) -> README(38)
+> Order: ESLint(54) -> Lighthouse(55) -> Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Performance(56) -> Playwright(37) -> README(38)
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
+| 54 | ESLint + `@angular-eslint` + Prettier: setup + CI integration. Roslyn analyzers for .NET | S | -- | **Do first.** Enforces quality for rest of sprint and all future PRs |
+| 55 | Lighthouse baseline: run on `/`, `/shop`, `/checkout`, screenshot + record scores | S | -- | 2 hours max. Baseline before T35 so you have before/after numbers |
 | 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Carried from S3. Dep 29 done. |
-| 32 | Memory leak audit: unsubscribed Observables -> `takeUntilDestroyed()` | S | -- | Likely minimal (signals+httpResource) |
+| 32 | Memory leak audit: unsubscribed Observables -> `takeUntilDestroyed()` | S | -- | Likely minimal (signals+httpResource). Done early in T17 session |
 | 33 | Form errors: `<mat-error>` on login/register via TextInputComponent | S | -- | |
 | 34 | Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent | M | -- | |
 | 35 | NgOptimizedImage: `ngSrc` + priority/lazy on product images | S | -- | Mostly HTML changes |
+| 56 | Performance pass: MiniProfiler (.NET) + bundle analyzer (Angular), fix top 3 findings, re-run Lighthouse | M | 35 | After T35 so NgOptimizedImage is already in. Compare against T55 baseline |
 | 37 | Playwright E2E: 3 tests (checkout, auth+orders, admin). Timebox 4 days | L | 1 | LEARN: Testing pyramid + Page Object Model |
 | 38 | README update with UX screenshots | S | -- | |
+| BUG-2 | Checkout: declined card can't retry in-session — "card unavailable" (Stripe `elements.submit()` is single-use). Re-init PaymentElement on payment failure | S | -- | Pre-existing. Found during T17/T18 testing |
+| BUG-3 | Checkout: Address "Next" stays disabled with no hint when a required field (e.g. postal code) is empty — Stripe Address Element shows no error until a field is touched. Add a hint/validation cue | S | -- | Pre-existing. Found during checkout testing |
 
 Sprint end: Playwright + backend tests green. Verify deploy.
 
-**Time:** Best 4d | Normal 7d | Worst 10d
-- **Best:** Quick wins (31,32,33,35) done in 1d, skeleton loaders fast. Start OrderStatus(40) early.
+**Time:** Best 5d | Normal 8d | Worst 11d
+- **Best:** T54+T55 done in 1d, quick wins (31,32,33,35) next day, performance pass fast. Start OrderStatus(40) early.
 - **Normal:** Playwright setup is painful, CI is flaky — run locally only.
 - **Worst:** Playwright eats the sprint. Timebox at 4d, ship 2 tests not 3. **Talking point:** Even 2 E2E tests signals testing maturity that most candidates don't have.
 
 ---
 
-## Sprint 5 — Domain Expansion *(May 18 – May 31)*
+## Sprint 5 — Domain Expansion *(Jul 18 – Aug 1)*
 
 > Domain modeling depth. Backend comfort zone.
 > Order: Status(40) -> Cancel(41) -> Email(39) -> Soft delete(42) -> Indexes(43) -> Tests(46) -> Integration tests(20)
@@ -141,7 +154,7 @@ Sprint end: full test suite. Test cancel, soft delete, status history. Verify Az
 
 ---
 
-## Sprint 6 — Polish + Standout *(Jun 1 – Jun 14)*
+## Sprint 6 — Polish + Standout *(Aug 2 – Aug 16)*
 
 > Recruiter spends 30 seconds on your repo. README day 1 = highest ROI.
 
@@ -181,12 +194,25 @@ Sprint end: final deploy + smoke test. Share with someone.
 
 ## Progress
 
-- [ ] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
-- [ ] Sprint 2 — Testing + Data Integrity (8 tasks) *(Apr 6 – Apr 19)*
-- [ ] Sprint 3 — Admin Panel (8 tasks) *(Apr 20 – May 3)*
-- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(May 4 – May 17)*
-- [ ] Sprint 5 — Domain Expansion (7 tasks) *(May 18 – May 31)*
-- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Jun 1 – Jun 14)*
+- [x] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
+- [x] Sprint 2 — Testing + Data Integrity (9 tasks) *(done: May 7)*
+- [ ] Sprint 3 — Admin Panel (8 tasks) *(Jun 16 – Jul 1)*
+- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(Jul 2 – Jul 17)*
+- [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jul 18 – Aug 1)*
+- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Aug 2 – Aug 16)*
+- [ ] Interview-deck / Anki prep *(Aug 17 – Aug 30)*
+
+## Certifications *(never steals build days or run days)*
+
+Uber-day reality: 2 days are 13h drives (cognitive zeros — passive audio only), 1 is a half-day (the real study slot).
+
+- [ ] **AZ-900** — MS Learn path: passive audio on the 13h drives + real study on the half Uber day. **Exam target ~Jul 1.** Mostly review (Azure deploy + Key Vault already done).
+- [ ] **AZ-204** — NO separate study during Sprints 3–6; the project IS the lab (Key Vault, App Service, App Config, Managed Identity, App Insights covered by building). Concentrated study in the **Aug 17–30 prep window** on the gaps only (Cosmos, Functions, Service Bus, Event Grid). **Exam end of Aug, slip to early Sept if Sprint 6 ran over.** Project ships first.
+
+## When behind (life buffer)
+
+Aug 30 is the **target**, not a cliff. The hard commitment is: ship with a working Azure deploy + great README.
+When a medical check / contract renewal / bad day eats time → **cut the lowest-priority task** (see cut order below), never extend hours or sacrifice sleep/runs. Realistic finish: Aug 30 clean, mid-Sept if life hits. Both fine.
 
 Every sprint end: E2E run, Azure verify, README update.
 
@@ -240,3 +266,7 @@ Domain events (M, backend) | Category hierarchy (M) | Wishlist (M) | SEO slugs (
 ## Skipped
 
 OAuth2/JWT, multi-currency, i18n, K8s, GitOps, CSRF, Prometheus/Grafana/Jaeger/OTel, Outbox, Service Bus, CQRS, Domain events, PWA, SSR, file upload, Angular unit tests, and more.
+
+---
+
+claude --resume 855033c5-43ce-41cf-afc0-7ed0bd5ba0b5

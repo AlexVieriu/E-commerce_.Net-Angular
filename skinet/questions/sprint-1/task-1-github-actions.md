@@ -1,22 +1,4 @@
-claude --resume dbc7a4f4-df3b-4f9f-880f-e344aee3a522
-
 # Task 1 — GitHub Actions CI/CD
-
-## Plan
-
-- CI job: `dotnet test` + `ng build` on every PR to `main` or `development`
-- CD job: deploy to Azure App Service on merge to `main` only
-- Auth: OIDC via Azure Managed Identity (no stored secrets)
-- Fix all pre-existing test failures before pipeline can go green
-
-## Todo
-
-- [x] Create `.github/workflows/cicd.yml` with 3 jobs: test-backend, test-frontend, deploy
-- [x] Configure OIDC federated credential on Azure Managed Identity
-- [x] Fix 12 pre-existing test failures caught by CI
-- [x] Add `.gitignore` entries for Angular cache + wwwroot build output
-
----
 
 ## Why this approach
 
@@ -96,6 +78,19 @@ Key ones:
 2. The constructor runs at `new CartService()`. If the mock isn't set up yet, the real (or unmocked) dependency runs instead. The setup call must precede instantiation so the constructor sees the mock.
 3. `npm ci` reads `package-lock.json` exactly and fails if it doesn't match `package.json`. `npm install` resolves ranges and can silently bump patch versions, producing a different dependency tree on CI than local.
 
+## Tests
+
+CI found 12 pre-existing test failures on first run. Key fixes:
+
+| Failure | Root cause | Fix |
+|---------|-----------|-----|
+| `GlobalUsing.cs` wrong namespace | `Application.Specifications.OrderSpecifications` doesn't exist — flat under `Application.Specifications` | Corrected namespace |
+| `PagingParams` expected `50`, got `60` | Test value out of sync with production code | Updated expected value |
+| `CartService` mock crash | `redis.GetDatabase()` called in constructor before mock was set up | Moved mock setup before `new CartService()` |
+| `StringSetAsync` overload mismatch | Redis 2.12.x added `Expiration`/`ValueCondition` overload; `TimeSpan` no longer matched old signature | Updated mock to match new overload |
+| `It.IsAny<string>()` vs `RedisKey` | Moq 4.20+ won't match `string` where `RedisKey` is expected | Changed to `It.IsAny<RedisKey>()` |
+| Angular `fb.nonNullable` | `FormGroup.value` returns `Partial<T>` with nulls; `nonNullable` returns `string` directly | Used `fb.nonNullable.group(...)` |
+
 ## Interview Q&A
 
 **Q: Walk me through your CI/CD pipeline.**
@@ -125,3 +120,7 @@ setup order, wrong overload matched, `string` vs `RedisKey` type mismatch in Moq
 A: StackExchange.Redis implements some async methods as explicit interface implementations
 on `IDatabaseAsync`. Moq doesn't expose those directly on `Mock<IDatabase>`.
 `As<IDatabaseAsync>()` lets you set up and verify the explicit interface members.
+
+---
+
+claude --resume dbc7a4f4-df3b-4f9f-880f-e344aee3a522

@@ -38,7 +38,7 @@ export class ShopComponent {
   private dialogService = inject(MatDialog);
 
   shopParams = signal(new ShopParams());
-  searchInput = '';
+  searchInput = signal('');
   sortOptions = [
     { name: 'Alphabetical', value: 'name' },
     { name: 'Price: Low-High', value: 'priceAsc' },
@@ -60,12 +60,12 @@ export class ShopComponent {
   });
 
   resetFilters() {
-    this.searchInput = '';
+    this.searchInput.set('');
     this.shopParams.set(new ShopParams());
   }
 
   onSearchChange() {
-    this.shopParams.update(p => ({ ...p, search: this.searchInput, pageNumber: 1 }));
+    this.shopParams.update(p => ({ ...p, search: this.searchInput(), pageNumber: 1 }));
   }
 
   handlePageEvent(event: PageEvent) {

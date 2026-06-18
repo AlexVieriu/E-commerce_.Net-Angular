@@ -1,24 +1,4 @@
-claude --resume deff6f44-f61f-4683-84bc-1d3cdc62ff51
-
 # Task 3 — Config Provider Chain & Secrets Management
-
-## Plan
-
-- Move Stripe keys + connection strings out of `appsettings.json`
-- Dev: User Secrets via `dotnet user-secrets set`
-- Prod: Azure Key Vault via `AddAzureKeyVault` + `DefaultAzureCredential`
-- Deploy and verify before rotating any keys (keys are in git history)
-
-## Todo
-
-- [x] Init User Secrets on API project
-- [x] Move `StripeSettings:SecretKey`, `StripeSettings:WhSecret` to User Secrets (dev)
-- [x] Create Azure Key Vault, add secrets with `--` separator naming
-- [x] Add `AddAzureKeyVault` to `Program.cs` (non-Development only)
-- [x] Enable Managed Identity on App Service, grant Key Vault Secrets User role
-- [x] Verify Azure deploy works, then rotate any keys that were in git history
-
----
 
 ## Why this approach
 
@@ -149,3 +129,7 @@ Secrets are the .NET-idiomatic choice for dev because they don't pollute the she
 A: Key Vault doesn't allow `:` in secret names. The `AddAzureKeyVault` provider maps `--`
 back to `:` automatically, so `StripeSettings--SecretKey` in Key Vault becomes
 `StripeSettings:SecretKey` in `IConfiguration`.
+
+---
+
+claude --resume deff6f44-f61f-4683-84bc-1d3cdc62ff51

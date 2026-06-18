@@ -1,0 +1,356 @@
+namespace Infrastructure.Tests.Services;
+
+public class OrderService_HappyPathTests
+{
+    private static DbContextOptions<StoreContext> InMemoryOptions()
+        => new DbContextOptionsBuilder<StoreContext>()
+            .UseInMemoryDatabase("OrderService_" + Guid.NewGuid())
+            .Options;
+
+    private static ShoppingCart MakeCart(
+        int productId = 1,
+        int deliveryMethodId = 1,
+        decimal price = 100m,
+        int quantity = 2,
+        string paymentIntentId = "pi_happy",
+        AppCoupon? coupon = null)
+    => new()
+    {
+        Id = "cart-happy",
+        PaymentIntentId = paymentIntentId,
+        DeliveryMethodId = deliveryMethodId,
+        Coupon = coupon,
+        Items =
+        [
+            new CartItem
+            {
+                ProductId = productId,
+                ProductName = "Test Board",
+                Price = price,
+                Quantity = quantity,
+                PictureUrl = "/images/board.png",
+                Brand = "TestBrand",
+                Type = "Boards"
+            }
+        ]
+    };
+
+    private static CreateOrderDto MakeOrderDto(int deliveryMethodId = 1) => new()
+    {
+        CartId = "cart-happy",
+        DeliveryMethodId = deliveryMethodId,
+        ShippingAddress = new ShippingAddress
+        {
+            Name = "Jane Doe",
+            Line1 = "1 Test St",
+            City = "London",
+            State = "England",
+            PostalCode = "EC1A 1BB",
+            Country = "GB"
+        },
+        PaymentSummary = new PaymentSummary
+        {
+            Last4 = 1234,
+            Brand = "visa",
+            ExpMonth = 6,
+            ExpYear = 2028
+        }
+    };
+
+    [Fact]
+    public async Task CreateOrderAsync_WithValidCart_ShouldCreateOrderWithCorrectSubtotal()
+    {
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 100m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 10
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        using var ctx = new StoreContext(options);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart());
+        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+
+        var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        order.Should().NotBeNull();
+        order!.Subtotal.Should().Be(200m);      // price 100 * qty 2
+        order.Discount.Should().Be(0m);          // no coupon
+        order.BuyerEmail.Should().Be("buyer@test.com");
+        order.OrderItems.Should().HaveCount(1);
+        order.DeliveryMethod.Price.Should().Be(5m);
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_WhenCartNotFound_ShouldReturnNull()
+    {
+        var options = InMemoryOptions();
+
+        using var ctx = new StoreContext(options);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync((ShoppingCart?)null);
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+
+        var result = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_WhenCartHasNoPaymentIntentId_ShouldReturnNull()
+    {
+        var options = InMemoryOptions();
+
+        using var ctx = new StoreContext(options);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync("cart-happy"))
+            .ReturnsAsync(MakeCart(paymentIntentId: null!));
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+
+        var result = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_WithAmountOffCoupon_ShouldApplyFlatDiscount()
+    {
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 100m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 10
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        using var ctx = new StoreContext(options);
+        var coupon = new AppCoupon
+        {
+            Id = "coup1", Name = "$20 Off", PromotionCode = "SAVE20", AmountOff = 20m
+        };
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart(coupon: coupon));
+        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+
+        var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        order.Should().NotBeNull();
+        order!.Discount.Should().Be(20m);
+        order.GetTotal().Should().Be(185m); // 200 - 20 + 5 shipping
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_WithPercentOffCoupon_ShouldApplyPercentageDiscount()
+    {
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 100m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 10
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        using var ctx = new StoreContext(options);
+        var coupon = new AppCoupon
+        {
+            Id = "coup2", Name = "10% Off", PromotionCode = "SAVE10", PercentOff = 10m
+        };
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart(coupon: coupon));
+        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+
+        var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        order.Should().NotBeNull();
+        order!.Discount.Should().Be(20m); // 10% of subtotal 200
+        order.GetTotal().Should().Be(185m); // 200 - 20 + 5 shipping
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_WithSamePaymentIntentId_ShouldReturnExistingOrder()
+    {
+        // Task 18: idempotency — calling twice with same cart/PaymentIntentId returns
+        // the first order without creating a duplicate or decrementing stock twice.
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 100m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 10
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        using var ctx = new StoreContext(options);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart());
+        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+
+        // First call — creates the order, decrements stock
+        var first = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        // Second call — same PaymentIntentId, should return the existing order
+        var second = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        second!.Id.Should().Be(first!.Id); // same order returned, no duplicate
+
+        // Stock should only have been decremented once (qty=2 from QuantityInStock=10)
+        using var verify = new StoreContext(options);
+        var product = await verify.Products.FindAsync(1);
+        product!.QuantityInStock.Should().Be(8); // 10 - 2, not 10 - 4
+    }
+}
+
+public class OrderService_ConcurrencyTests
+{
+    private static DbContextOptions<StoreContext> InMemoryOptions()
+        => new DbContextOptionsBuilder<StoreContext>()
+            .UseInMemoryDatabase("ConcurrencyTest_" + Guid.NewGuid())
+            .Options;
+
+    private static ShoppingCart MakeCart(int productId, int deliveryMethodId, string paymentIntentId = "pi_test_123") => new()
+    {
+        Id = "test-cart",
+        PaymentIntentId = paymentIntentId,
+        DeliveryMethodId = deliveryMethodId,
+        Items =
+        [
+            new CartItem
+            {
+                ProductId = productId,
+                ProductName = "Test Board",
+                Price = 199m,
+                Quantity = 1,
+                PictureUrl = "/images/test.png",
+                Brand = "TestBrand",
+                Type = "Boards"
+            }
+        ]
+    };
+
+    private static CreateOrderDto MakeOrderDto(int deliveryMethodId) => new()
+    {
+        CartId = "test-cart",
+        DeliveryMethodId = deliveryMethodId,
+        ShippingAddress = new ShippingAddress
+        {
+            Name = "John Doe",
+            Line1 = "123 Main St",
+            City = "London",
+            State = "England",
+            PostalCode = "SW1A 1AA",
+            Country = "GB"
+        },
+        PaymentSummary = new PaymentSummary
+        {
+            Last4 = 4242,
+            Brand = "visa",
+            ExpMonth = 12,
+            ExpYear = 2027
+        }
+    };
+
+    [Fact]
+    public async Task CreateOrderAsync_WhenStockModifiedConcurrently_SecondOrderFails()
+    {
+        // Arrange
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 199m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 1
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        var ctx1 = new StoreContext(options);
+        var ctx2 = new StoreContext(options);
+
+        // Pre-load into both contexts before either saves — simulates the race
+        await ctx1.Products.FindAsync(1);
+        await ctx2.Products.FindAsync(1);
+
+        var cart1 = new Mock<ICartService>();
+        cart1.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1));
+
+        var cart2 = new Mock<ICartService>();
+        cart2.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1, "pi_test_456"));
+
+        var service1 = new OrderService(new UnitOfWork(ctx1), cart1.Object);
+        var service2 = new OrderService(new UnitOfWork(ctx2), cart2.Object);
+
+        // Act
+        var order1 = await service1.CreateOrderAsync("user1@test.com", MakeOrderDto(1));
+        var act2 = async () => await service2.CreateOrderAsync("user2@test.com", MakeOrderDto(1));
+
+        // Assert
+        order1.Should().NotBeNull();
+        await act2.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*concurrent*");
+
+        using var verify = new StoreContext(options);
+        var product = await verify.Products.FindAsync(1);
+        product!.QuantityInStock.Should().Be(0);
+    }
+}

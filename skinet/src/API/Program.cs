@@ -11,7 +11,7 @@ if (!builder.Environment.IsDevelopment())
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Key Vault unavailable, falling back to App Service settings: {ex.Message}");
+            WriteLine($"Key Vault unavailable, falling back to App Service settings: {ex.Message}");
         }
     }
 }
@@ -56,10 +56,26 @@ app.UseMiddleware<ExceptionMiddleware>();
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
-app.UseCors(options => options.AllowAnyHeader()
-                              .AllowAnyMethod()
-                              .AllowCredentials()
-                              .WithOrigins("http://localhost:4200", "https://localhost:4200", "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"));
+app.UseCors("CorsPolicy");
+
+app.UseSecurityHeaders(policies => policies
+    .AddDefaultSecurityHeaders()
+    // Stripe Elements iframes (js.stripe.com, hooks.stripe.com) don't send CORP/COEP headers,
+    // so COEP 'credentialless' from the defaults blocks them. We don't use SharedArrayBuffer /
+    // cross-origin isolation, so turn COEP off. COOP same-origin from the defaults stays.
+    .AddCrossOriginEmbedderPolicy(builder => builder.UnsafeNone())
+    .AddContentSecurityPolicy(csp =>
+    {
+        csp.AddDefaultSrc().Self();
+        csp.AddStyleSrc().Self().UnsafeInline();
+        csp.AddScriptSrc().Self().UnsafeInline().From("https://js.stripe.com");
+        csp.AddImgSrc().Self().Data().OverHttps();
+        csp.AddFontSrc().Self().Data();
+        csp.AddFrameSrc().From("https://js.stripe.com").From("https://hooks.stripe.com");
+        csp.AddConnectSrc().Self().From("wss:").From("https://api.stripe.com").OverHttps();
+    })
+    .AddPermissionsPolicy(p => p.AddAccelerometer().None())
+);
 
 // Static files served before rate limiter so Angular chunks are never throttled
 app.UseDefaultFiles();

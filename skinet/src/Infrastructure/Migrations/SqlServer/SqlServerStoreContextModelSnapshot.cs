@@ -50,7 +50,6 @@ namespace Infrastructure.Migrations.SqlServer
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -209,7 +208,7 @@ namespace Infrastructure.Migrations.SqlServer
 
                     b.Property<string>("PaymentIntentId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -221,6 +220,9 @@ namespace Infrastructure.Migrations.SqlServer
                     b.HasKey("Id");
 
                     b.HasIndex("DeliveryMethodId");
+
+                    b.HasIndex("PaymentIntentId")
+                        .IsUnique();
 
                     b.ToTable("Orders");
                 });
@@ -277,6 +279,7 @@ namespace Infrastructure.Migrations.SqlServer
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("QuantityInStock")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("Type")

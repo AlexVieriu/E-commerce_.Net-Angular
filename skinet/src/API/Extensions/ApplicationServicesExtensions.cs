@@ -31,7 +31,15 @@ public static class ApplicationServicesExtensions
         else
         {
             services.AddDbContext<SqlServerStoreContext>(options =>
-                options.UseSqlServer(config.GetConnectionString("SqlServerAzureConnection")));
+                options.UseSqlServer(
+                    config.GetConnectionString("SqlServerAzureConnection"),
+                    // Serverless Azure SQL auto-pauses when idle; the first connection while it
+                    // resumes throws transient error 40613. Retry so startup waits it out instead
+                    // of crashing (500.30) — see BUG-8.
+                    sql => sql.EnableRetryOnFailure(
+                        maxRetryCount: 8,
+                        maxRetryDelay: TimeSpan.FromSeconds(20),
+                        errorNumbersToAdd: null)));
             services.AddScoped<StoreContext>(provider =>
                 provider.GetRequiredService<SqlServerStoreContext>());
         }
@@ -67,7 +75,21 @@ public static class ApplicationServicesExtensions
                     }));
         });
 
-        services.AddCors();
+        services.AddCors(opt =>
+        {
+            opt.AddPolicy("CorsPolicy", policy =>
+            {
+                policy
+                    .WithOrigins(
+                        "http://localhost:4200",
+                        "https://localhost:4200",
+                        "https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net"
+                    )
+                    .AllowAnyHeader()
+                    .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .AllowCredentials();
+            });
+        });
         services.AddAuthorization();
         services.AddIdentityApiEndpoints<AppUser>(options =>
                 {
@@ -92,6 +114,11 @@ public static class ApplicationServicesExtensions
             options.SlidingExpiration = false;
         });
         services.AddSignalR();
+
+        services.AddOptions<StripeSettings>()
+            .BindConfiguration("StripeSettings")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"]
             ?? throw new InvalidOperationException("StripeSettings:SecretKey is not configured.");

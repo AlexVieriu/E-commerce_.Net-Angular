@@ -14,7 +14,8 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStor
         // Build configuration to read from appsettings.json
         var configuration = new ConfigurationBuilder()
             .SetBasePath(GetBasePath())
-            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddEnvironmentVariables()
             .Build();
 
         // Get the connection string

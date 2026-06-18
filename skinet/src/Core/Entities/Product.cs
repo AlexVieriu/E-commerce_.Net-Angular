@@ -3,6 +3,7 @@ namespace Core.Entities;
 public class Product : BaseEntity
 {
     public decimal Price { get; set; }
+    [ConcurrencyCheck]
     public int QuantityInStock { get; set; }
     public required string Brand { get; set; }
     public required string Description { get; set; }

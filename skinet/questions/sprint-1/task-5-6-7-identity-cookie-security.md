@@ -1,18 +1,5 @@
 # Tasks 5-6-7 — Identity Password Policy, Account Lockout, Cookie Hardening
 
-## Plan
-
-- Configure `IdentityOptions` via `AddIdentityApiEndpoints<AppUser>(options => { ... })`
-- Configure application cookie via `ConfigureApplicationCookie`
-
-## Todo
-
-- [x] Password: min 12, uppercase, digit, special
-- [x] Lockout: 5 attempts, 15 min, AllowedForNewUsers = true
-- [x] Cookie: HttpOnly, Secure=Always, SameSite=Strict, 24h absolute, no sliding
-
----
-
 ## Why this approach
 
 All three plug into the same `IdentityOptions` and cookie middleware that ASP.NET Identity

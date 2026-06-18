@@ -43,7 +43,6 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("TEXT");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -210,6 +209,9 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.HasIndex("DeliveryMethodId");
 
+                    b.HasIndex("PaymentIntentId")
+                        .IsUnique();
+
                     b.ToTable("Orders");
                 });
 
@@ -261,6 +263,7 @@ namespace Infrastructure.Migrations.SQLite
                         .HasColumnType("REAL");
 
                     b.Property<int>("QuantityInStock")
+                        .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Type")
