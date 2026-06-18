@@ -500,11 +500,6 @@ skinet/client/.angular/
 skinet/src/API/wwwroot/*
 !skinet/src/API/wwwroot/images/
 
-# Stale pre-restructure wwwroot path (build output ignored; keep any committed images)
-skinet/API/wwwroot/*
-!skinet/API/wwwroot/favicon.ico
-!skinet/API/wwwroot/images/
-
 # Claude Code local settings
 .claude/settings.local.json
 
