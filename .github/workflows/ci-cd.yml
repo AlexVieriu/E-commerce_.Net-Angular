@@ -122,5 +122,5 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: skinet-api
+          app-name: skinet-2025-test
           package: ${{ env.DOTNET_ROOT }}/myapp
