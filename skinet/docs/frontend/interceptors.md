@@ -17,7 +17,7 @@ Clones every request with `withCredentials: true`. Sends the Identity cookie aut
 |---|---|
 | 400 (validation) | Throws `ValidationError(errors[])` |
 | 400 (other) | Snackbar |
-| 401 | Redirect `/account/login` |
+| 401 | Clear auth state (`clearCurrentUser`) + redirect `/account/login` |
 | 403 | Snackbar "Forbidden" |
 | 409 | Snackbar + reload cart from Redis + navigate `/cart` |
 | 404 | Navigate `/not-found` |
@@ -26,6 +26,8 @@ Clones every request with `withCredentials: true`. Sends the Identity cookie aut
 **Snackbar message:** `err.error.title || err.error.message || err.error`
 
 **409 detail:** Injects `CartService`, calls `getCartAsync()` to refresh the signal with updated prices from Redis before navigating. Used exclusively for price change detection.
+
+**401 detail:** Injects `AccountService`, calls `clearCurrentUser()` — nulls the `currentUser` signal + stops the SignalR hub — so the navbar drops to Login/Register when the cookie expired or was cleared out-of-band. Skips the redirect for the `account/user-info` probe and when already on `/account/login`.
 
 ## Rules / Constraints
 
