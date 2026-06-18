@@ -1,6 +1,7 @@
 # Sprint End Checklist
 
 Run before every PR `development` → `main`. See `git-workflow.md` for the merge step.
+Per-task testing (the inner loop) lives in `testing.md` — this doc is the **deploy gate** only.
 
 ## Core smoke — every sprint
 
@@ -19,6 +20,14 @@ Run before every PR `development` → `main`. See `git-workflow.md` for the merg
 - [ ] **Price change (T17):** reach the **Payment** step first, *then* edit that product's `Price` in `data/store.db` (DB Browser, not the Docker container) → **Confirmation** → **Pay** → expect **409 + snackbar + redirect to cart, no charge**. (Editing *before* the Payment step is silently re-synced — no 409.)
 - [ ] **Idempotency (T16/T18):** locked by `OrderService_Tests` (same `PaymentIntentId` → returns existing order, no duplicate) → confirm `dotnet test` green. (No clean manual check — a declined→retry in the same session hits a Stripe `elements.submit()` retry limit, unrelated to idempotency.)
 - [ ] **Concurrency (T13) + rollback (T14):** can't be triggered by hand (it's a race) → just confirm `dotnet test` is green.
+
+## Infra — confirm before pushing `main` (prod config)
+
+> Only you can verify these against the Azure portal. The app boots without them but
+> fails on first cart/cache use or payment.
+
+- [ ] App Service **Redis** connection string set (not `localhost`)
+- [ ] Key Vault `kv-skinet-test` has Stripe `SecretKey` + `WhSecret`; managed identity can read it
 
 ## Azure — after merging to `main` (deploy)
 
