@@ -6,9 +6,8 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 ## Cross-cutting (`docs/`)
 
 - **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, CSP/CORS
-- **testing.md** — test project layout + how to run (.NET + Angular)
-- **git-workflow.md** — branch / PR / merge flow (pairs with `sprint-end-checklist.md`)
-- **sprint-end-checklist.md** — manual smoke before `development` → `main`
+- **testing.md** — all verification: per-task / pre-deploy / post-deploy **checklists** (top) + how to write tests (reference, bottom)
+- **git-workflow.md** — branch / PR / merge flow (pairs with the deploy gate in `testing.md`)
 - **documentation.md** — how to write docs here *(DO NOT EDIT)*
 
 ## `backend/`

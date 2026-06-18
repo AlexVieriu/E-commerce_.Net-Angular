@@ -1,6 +1,6 @@
 # Git Workflow
 
-How code flows from a task to a sprint release. Pairs with `sprint-end-checklist.md`.
+How code flows from a task to a sprint release. Pairs with the deploy gate in `testing.md`.
 
 ## Branches
 
@@ -26,7 +26,7 @@ gh pr merge <pr> --squash --delete-branch     # development = 1 clean commit per
 
 ```bash
 # 1. all sprint tasks squash-merged into development
-# 2. run sprint-end-checklist.md (local verify)
+# 2. run the deploy gate in testing.md (local verify)
 gh pr create --base main --head development --title "Sprint N — <name>"
 gh pr merge <pr> --merge                        # MERGE COMMIT, not squash
 # 3. push to main triggers Azure deploy → run the Azure half of the checklist
