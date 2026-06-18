@@ -46,11 +46,15 @@ export class AccountService {
 
   logout() {
     return this.http.post(this.baseUrl + 'account/logout', {}).pipe(
-      tap(() => {
-        this._currentUser.set(null);
-        this.signalrService.stopHubConnection();
-      })
+      tap(() => this.clearCurrentUser())
     );
+  }
+
+  // Drop client-side auth state without an API call. Used when a request 401s
+  // (cookie expired or cleared out-of-band) so the UI reflects logged-out state.
+  clearCurrentUser() {
+    this._currentUser.set(null);
+    this.signalrService.stopHubConnection();
   }
 
   updateAddress(address: Address) {
