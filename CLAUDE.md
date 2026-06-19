@@ -38,6 +38,8 @@ Before starting any task, list:
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
   - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
     the gate + doc review, so review tweaks fold in.
+  - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
+    (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
   - PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
     (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
   - Never commit directly to `main` or `development`
