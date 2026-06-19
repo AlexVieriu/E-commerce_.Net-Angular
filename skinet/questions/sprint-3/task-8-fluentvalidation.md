@@ -19,6 +19,9 @@ The one real decision was *how to trigger* FluentValidation, since `[ApiControll
 - **Why is the test helper written as `file static class Validator` with a fully-qualified call inside?**
   `file` (C# 11) limits the type to that one source file. It's named `Validator`, which **shadows** `System.ComponentModel.DataAnnotations.Validator`; `file` stops it leaking, and the call inside must be fully-qualified to reach the real BCL validator past the shadow. It only survives because `RegisterDTO` still uses DataAnnotations — FluentValidation needs no such helper (`TestValidate` is built in).
 
+- **How does `!context.ModelState.IsValid` *know* it's invalid? What flips the bool?**
+  `ModelState` is a `ModelStateDictionary`; each entry carries a validation state (Valid / Invalid / Unvalidated). `IsValid` is **not a stored flag** — it's a computed getter that returns `false` if *any* entry is Invalid. Calling `AddModelError(...)` is what marks an entry Invalid, so my loop's `AddModelError` calls are the trigger. No registered validator → no `AddModelError` → every entry stays Valid → `IsValid` stays `true` → `next()` runs (200). (`[ApiController]` model binding writes to this *same* `ModelState` too — e.g. sending `"abc"` for an `int` adds its own error before the filter even runs.)
+
 ## Explanation
 
 ### 1. DataAnnotations vs FluentValidation
