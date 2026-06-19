@@ -1,8 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Application.Common.Validators;
+using FluentValidation.TestHelper;
 
 namespace Application.Tests.Common.DTOs;
 
 // Helper to run DataAnnotation validation without ASP.NET pipeline
+// (still used by RegisterDTO, which keeps DataAnnotations — only CreateProductDTO was migrated).
 file static class Validator
 {
     public static IList<ValidationResult> Validate(object model)
@@ -88,21 +91,23 @@ public class RegisterDto_Validation_Tests
 
 public class CreateProductDto_Validation_Tests
 {
+    private readonly CreateProductDtoValidator _validator = new();
+
+    private static CreateProductDTO ValidDto() => new()
+    {
+        Name = "Angular Board",
+        Description = "Fast board",
+        Price = 99.99m,
+        PictureUrl = "/images/board.png",
+        Type = "Boards",
+        Brand = "Angular",
+        QuantityInStock = 10
+    };
+
     [Fact]
     public void CreateProductDto_ShouldPass_WhenAllFieldsAreValid()
     {
-        var dto = new CreateProductDTO
-        {
-            Name = "Angular Board",
-            Description = "Fast board",
-            Price = 99.99m,
-            PictureUrl = "/images/board.png",
-            Type = "Boards",
-            Brand = "Angular",
-            QuantityInStock = 10
-        };
-
-        Validator.IsValid(dto).Should().BeTrue();
+        _validator.TestValidate(ValidDto()).ShouldNotHaveAnyValidationErrors();
     }
 
     [Theory]
@@ -111,39 +116,28 @@ public class CreateProductDto_Validation_Tests
     [InlineData(-99.99)]
     public void CreateProductDto_ShouldFail_WhenPriceIsNotPositive(decimal badPrice)
     {
-        var dto = new CreateProductDTO
-        {
-            Name = "Board",
-            Description = "desc",
-            Price = badPrice,
-            PictureUrl = "/img.png",
-            Type = "Boards",
-            Brand = "Angular",
-            QuantityInStock = 1
-        };
+        var dto = ValidDto();
+        dto.Price = badPrice;
 
-        var errors = Validator.Validate(dto);
-
-        errors.Should().Contain(r => r.MemberNames.Contains("Price"));
+        _validator.TestValidate(dto).ShouldHaveValidationErrorFor(x => x.Price);
     }
 
     [Fact]
     public void CreateProductDto_ShouldFail_WhenQuantityIsZero()
     {
-        var dto = new CreateProductDTO
-        {
-            Name = "Board",
-            Description = "desc",
-            Price = 100m,
-            PictureUrl = "/img.png",
-            Type = "Boards",
-            Brand = "Angular",
-            QuantityInStock = 0
-        };
+        var dto = ValidDto();
+        dto.QuantityInStock = 0;
 
-        var errors = Validator.Validate(dto);
+        _validator.TestValidate(dto).ShouldHaveValidationErrorFor(x => x.QuantityInStock);
+    }
 
-        errors.Should().Contain(r => r.MemberNames.Contains("QuantityInStock"));
+    [Fact]
+    public void CreateProductDto_ShouldFail_WhenNameIsEmpty()
+    {
+        var dto = ValidDto();
+        dto.Name = "";
+
+        _validator.TestValidate(dto).ShouldHaveValidationErrorFor(x => x.Name);
     }
 
     [Fact]
