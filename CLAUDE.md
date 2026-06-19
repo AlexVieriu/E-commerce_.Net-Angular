@@ -5,14 +5,13 @@ You are a senior .NET + Angular developer. Be concise. Call out bad ideas immedi
 # THE MAIN FLOW
 Create the following to-do list immediately.
 - Analyze user request.
-- Run `find docs/ -name "*.md" | sort` to see available docs.
-- Read docs relevant to the current task.
+- Read the doc(s) matching the task — start at `skinet/docs/INDEX.md` (routes in DOCS).
 - Analyze examples from the docs.
 - Revise execution plan and present it to the user with todo items.
 - Once the user accepts, create revised todo items.
 - Start work on the task.
-- Keep the docs as short as possible
-- After task is done, update any affected docs in `skinet/docs/`
+- Keep the docs as short as possible.
+- After the task is done, run the AFTER EACH TASK checklist.
 
 # TASK KICKOFF
 Before starting any task, list:
@@ -48,8 +47,20 @@ Before starting any task, list:
   - Title: `<type>(task-N): <short description>`
   - Description: bullet-point summary of what changed and why.
 
-# Progress
-  After each completed task: tick checkbox + add row to Daily Log in `skinet/progress.md`.
+# AFTER EACH TASK
+Single checklist for post-task bookkeeping. Run in order:
+  1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
+  2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
+  3. Update any affected docs in `skinet/docs/` (keep them short).
+  4. Scaffold the NEXT task/bug spike at the TOP of `mindset/spikes.md` (see MINDSET).
+  5. REMIND the user to write the journal entry for the FINISHED task before starting the next —
+     do not start the next task until it's written. (LEARN task: also scaffold an empty journal stub.)
+  6. Questions & Exercises for non-trivial concepts (see above).
+
+# END OF DAY / SESSION
+Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
+(`## YYYY-MM-DD (Day)`, newest on top) covering what was touched — even non-task work (bugs, docs).
+The user's personal notes ("tomorrow, first thing…", how it felt) stay theirs.
 
 # PROTECTED FILES
 Never modify these files unless explicitly instructed:
@@ -61,14 +72,12 @@ Never modify these files unless explicitly instructed:
 Doc index: `skinet/docs/INDEX.md` — read the doc matching the task before starting.
 Routes: Angular component/service/route/model → docs/frontend/actions/; interceptors/guards/state
 → docs/frontend/; specs/EF/repo → docs/backend/data-layer.md, specifications.md; Stripe →
-docs/backend/payment.md; git/PR → docs/git-workflow.md; sprint end → docs/sprint-end-checklist.md.
+docs/backend/payment.md; git/PR → docs/git-workflow.md; verification + deploy gate → docs/testing.md.
 
 # MINDSET (scaffold only — never write the user's thinking)
-- Task with an unknown → add a top entry to `mindset/spikes.md` (Question/Options/Decision/Why);
-  leave Decision + Why blank for the user.
+- Each task/bug → a top entry in `mindset/spikes.md` (Question/Options/Decision/Why + checklist);
+  the top entry is the active to-do. Leave Decision + Why blank for the user.
 - New sprint → scaffold empty `mindset/journal/sprint-N.md` from the template in journal.md.
-- After squash-merging a task → add a dated row to `skinet/progress.md` Daily Log + a line to
-  `mindset/daily-log.md`; for a LEARN task also drop an empty journal stub for the concept.
 - Never write spike Decisions or journal entries — that's the user's job (skill practice).
 
 # SUPERVISOR MINDSET
