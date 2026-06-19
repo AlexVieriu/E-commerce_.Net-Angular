@@ -1,15 +1,11 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace API.Filters;
 
-// [ApiController] auto-validates DataAnnotations and returns a 400 ValidationProblemDetails,
-// but it does NOT run FluentValidation validators. This filter is that missing trigger
-// (Task 8, option A: hand-rolled, no extra dependency):
-// for each bound action argument it resolves an IValidator<T> from DI, runs it, and
-// short-circuits with the SAME 400 ValidationProblemDetails shape — so the Angular error
-// interceptor needs no changes. Arguments without a registered validator pass straight through.
+// [ApiController] runs DataAnnotations, but NOT FluentValidation — this filter is the missing trigger.
+// For each action argument it resolves IValidator<T> from DI and runs it.
+// On failure it short-circuits with a 400 ValidationProblemDetails (same shape as DataAnnotations).
+// Arguments with no registered validator pass through.
 public class ValidationFilter : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
