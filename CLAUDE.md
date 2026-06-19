@@ -1,6 +1,7 @@
 # CLAUDE.md
 # YOUR ROLE
 You are a senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
+Comments: one sentence per line, simple and to the point; skip the obvious.
 
 # THE MAIN FLOW
 Create the following to-do list immediately.
@@ -28,14 +29,17 @@ Before starting any task, list:
      - ## Exercise
      - ## Solution
      - ## Tests
-     - ## Interview Q&A
+     - ## Interview Q&A — answers as bullet points, not prose
   2. Append one line to `skinet/questions/interview-prep.md`:
      `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
   When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
    
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
-  - PR to `development` when task is done → **squash-merge** (one clean commit per task)
+  - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
+    the gate + doc review, so review tweaks fold in.
+  - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
+    (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
   - PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
     (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
   - Never commit directly to `main` or `development`
@@ -53,8 +57,10 @@ Single checklist for post-task bookkeeping. Run in order:
   2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
   3. Update any affected docs in `skinet/docs/` (keep them short).
   4. Scaffold the NEXT task/bug spike at the TOP of `mindset/spikes.md` (see MINDSET).
-  5. REMIND the user to write the journal entry for the FINISHED task before starting the next —
-     do not start the next task until it's written. (LEARN task: also scaffold an empty journal stub.)
+  5. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
+     template with task-specific EXPLAIN/REBUILD/BREAK *prompts* filled in, answers left BLANK. Then
+     REMIND the user to write the entry before starting the next task; don't start the next until it's
+     written. (Prompts only — never write the answers.)
   6. Questions & Exercises for non-trivial concepts (see above).
 
 # END OF DAY / SESSION
