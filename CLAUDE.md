@@ -28,7 +28,7 @@ Before starting any task, list:
      - ## Exercise
      - ## Solution
      - ## Tests
-     - ## Interview Q&A
+     - ## Interview Q&A — answers as bullet points, not prose
   2. Append one line to `skinet/questions/interview-prep.md`:
      `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
   When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
@@ -53,8 +53,10 @@ Single checklist for post-task bookkeeping. Run in order:
   2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
   3. Update any affected docs in `skinet/docs/` (keep them short).
   4. Scaffold the NEXT task/bug spike at the TOP of `mindset/spikes.md` (see MINDSET).
-  5. REMIND the user to write the journal entry for the FINISHED task before starting the next —
-     do not start the next task until it's written. (LEARN task: also scaffold an empty journal stub.)
+  5. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
+     template with task-specific EXPLAIN/REBUILD/BREAK *prompts* filled in, answers left BLANK. Then
+     REMIND the user to write the entry before starting the next task; don't start the next until it's
+     written. (Prompts only — never write the answers.)
   6. Questions & Exercises for non-trivial concepts (see above).
 
 # END OF DAY / SESSION
