@@ -35,7 +35,9 @@ Before starting any task, list:
   When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
    
 # GIT
-  - Branch per task: `feature/<task-number>-<short-description>` from `development`
+  - **One branch + one PR per task/bug** (`feature/<task-number>-…` or `fix/…` from `development`).
+    Commit to it as often as you like — commits squash into one at merge; never open another PR for
+    the same work.
   - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
     the gate + doc review, so review tweaks fold in.
   - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
