@@ -1,6 +1,7 @@
 # CLAUDE.md
 # YOUR ROLE
 You are a senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
+Comments: one sentence per line, simple and to the point; skip the obvious.
 
 # THE MAIN FLOW
 Create the following to-do list immediately.
@@ -35,7 +36,8 @@ Before starting any task, list:
    
 # GIT
   - Branch per task: `feature/<task-number>-<short-description>` from `development`
-  - PR to `development` when task is done → **squash-merge** (one clean commit per task)
+  - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
+    the gate + doc review, so review tweaks fold in.
   - PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
     (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
   - Never commit directly to `main` or `development`
