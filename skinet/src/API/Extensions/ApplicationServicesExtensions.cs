@@ -1,3 +1,6 @@
+using FluentValidation;
+using Application.Common.Validators;
+
 namespace API.Extensions;
 
 public static class ApplicationServicesExtensions
@@ -7,9 +10,17 @@ public static class ApplicationServicesExtensions
     {
         services.AddControllers(options =>
         {
+            // Runs FluentValidation on every action argument (see ValidationFilter).
+            options.Filters.Add<ValidationFilter>();
+
             if (!env.IsDevelopment())
                 options.Conventions.Add(new RemoveControllerConvention(typeof(BuggyController)));
         });
+
+        // Scans the Application assembly for every AbstractValidator<T> and registers each as a
+        // scoped IValidator<T>. Scoped is the safe default — a validator may inject a scoped repo
+        // for async DB checks; a singleton holding one would be a captive dependency.
+        services.AddValidatorsFromAssemblyContaining<CreateProductDtoValidator>();
 
         services.AddOpenApi();
 
