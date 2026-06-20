@@ -67,6 +67,14 @@ Single checklist for post-task bookkeeping. Run in order:
      written. (Prompts only — never write the answers.)
   6. Questions & Exercises for non-trivial concepts (see above).
 
+# START OF DAY / SESSION
+At the start of the day's first work session, ask ONE line:
+"Energy today — 1–5? (5 🔵 peak · 4 🟢 high · 3 🟡 ok · 2 🟠 low · 1 🔴 depleted)"
+Then read `mindset/energy-protocol.md` and recommend the day's focus for that level
+(4–5 → deep LEARN/REBUILD; 3 → mechanical + light study; 2 → chores + light mechanical, no new learning;
+1 → recovery/rest).
+One line, skippable, don't nag. Ask once per day, not every chat.
+
 # END OF DAY / SESSION
 Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
 (`## YYYY-MM-DD (Day)`, newest on top) covering what was touched — even non-task work (bugs, docs).
