@@ -12,13 +12,15 @@ file static class Validator
     {
         var results = new List<ValidationResult>();
         var ctx = new ValidationContext(model);
-        System.ComponentModel.DataAnnotations.Validator.TryValidateObject(model, ctx, results, validateAllProperties: true);
+        System.ComponentModel.DataAnnotations.Validator
+            .TryValidateObject(model, ctx, results, validateAllProperties: true);
         return results;
     }
 
     public static bool IsValid(object model) => !Validate(model).Any();
 }
 
+// DataAnnotations validation (RegisterDTO still uses [Required], [EmailAddress], etc.).
 public class RegisterDto_Validation_Tests
 {
     private const string TestPassword = "Pa$$w0rd12"; // pragma: allowlist secret
@@ -89,6 +91,7 @@ public class RegisterDto_Validation_Tests
     }
 }
 
+// FluentValidation (CreateProductDtoValidator + TestHelper's TestValidate).
 public class CreateProductDto_Validation_Tests
 {
     private readonly CreateProductDtoValidator _validator = new();

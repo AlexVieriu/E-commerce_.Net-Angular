@@ -22,11 +22,12 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
  # QUESTIONS & EXERCISES
-  After each completed task (non-trivial concepts only):
+  After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
+  content (non-trivial concepts only):
   1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
      - # Task N — Concept Name
      - ## Why this approach
-     - ## What confused me
+     - ## What confused me — the actual gaps from the cold test / LEARN session
      - ## Explanation
      - ## Exercise
      - ## Solution
@@ -65,6 +66,10 @@ Single checklist for post-task bookkeeping. Run in order:
      template with task-specific EXPLAIN/REBUILD/BREAK *prompts* filled in, answers left BLANK. Then
      REMIND the user to write the entry before starting the next task; don't start the next until it's
      written. (Prompts only — never write the answers.)
+     Also scaffold the REBUILD scratch files: a `<Name>2.cs` skeleton (comments only) beside each
+     file the task created/changed, add them to `.git/info/exclude`, verify the build is green. The
+     user rebuilds cold, then you delete all `*2` files + exclude lines after they diff. Procedure:
+     `mindset/journal.md`.
   6. Questions & Exercises for non-trivial concepts (see above).
 
 # START OF DAY / SESSION

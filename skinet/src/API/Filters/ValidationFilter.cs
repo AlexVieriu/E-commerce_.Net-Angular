@@ -17,6 +17,7 @@ public class ValidationFilter : IAsyncActionFilter
             if (argument is null) continue;
 
             var validatorType = typeof(IValidator<>).MakeGenericType(argument.GetType());
+
             if (services.GetService(validatorType) is not IValidator validator) continue;
 
             var result = await validator.ValidateAsync(new ValidationContext<object>(argument));

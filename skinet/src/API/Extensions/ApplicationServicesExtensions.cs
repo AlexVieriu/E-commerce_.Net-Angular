@@ -18,8 +18,7 @@ public static class ApplicationServicesExtensions
         });
 
         // Scans the Application assembly for every AbstractValidator<T> and registers each as a
-        // scoped IValidator<T>. Scoped is the safe default — a validator may inject a scoped repo
-        // for async DB checks; a singleton holding one would be a captive dependency.
+        // scoped IValidator<T>. Scoped is the safe default.
         services.AddValidatorsFromAssemblyContaining<CreateProductDtoValidator>();
 
         services.AddOpenApi();
