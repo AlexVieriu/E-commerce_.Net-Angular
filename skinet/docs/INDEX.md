@@ -15,7 +15,7 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 - **architecture.md** — Clean architecture layers (Core → Application → Infrastructure → API)
 - **data-layer.md** — StoreContext, GenericRepository, UnitOfWork, migrations
 - **specifications.md** — Specification pattern (ISpecification, BaseSpecification)
-- **api-patterns.md** — BaseApiController conventions, ApiErrorResponse
+- **api-patterns.md** — BaseApiController conventions, ApiErrorResponse, FluentValidation (validators + `ValidationFilter`)
 - **controllers.md** — controller specifics / endpoint conventions
 - **error-handling.md** — ExceptionMiddleware, problem details
 - **auth.md** — cookie Identity, roles, ClaimsPrincipal extensions
