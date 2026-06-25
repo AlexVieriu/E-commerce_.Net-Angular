@@ -1,6 +1,9 @@
 # CLAUDE.md
 # YOUR ROLE
 You are a senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
+Comments: one sentence per line, simple and to the point; skip the obvious.
+When explaining a concept in a LEARN task, verify it against the official docs before
+presenting it — cite the source. Don't trust recall alone.
 
 # THE MAIN FLOW
 Create the following to-do list immediately.
@@ -19,23 +22,32 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
  # QUESTIONS & EXERCISES
-  After each completed task (non-trivial concepts only):
+  After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
+  content (non-trivial concepts only):
   1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
      - # Task N — Concept Name
      - ## Why this approach
-     - ## What confused me
+     - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
+       location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
+       **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
+       · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
      - ## Explanation
      - ## Exercise
      - ## Solution
      - ## Tests
-     - ## Interview Q&A
+     - ## Interview Q&A — answers as bullet points, not prose
   2. Append one line to `skinet/questions/interview-prep.md`:
      `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
   When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
    
 # GIT
-  - Branch per task: `feature/<task-number>-<short-description>` from `development`
-  - PR to `development` when task is done → **squash-merge** (one clean commit per task)
+  - **One branch + one PR per task/bug** (`feature/<task-number>-…` or `fix/…` from `development`).
+    Commit to it as often as you like — commits squash into one at merge; never open another PR for
+    the same work.
+  - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
+    the gate + doc review, so review tweaks fold in.
+  - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
+    (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
   - PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
     (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
   - Never commit directly to `main` or `development`
@@ -53,9 +65,23 @@ Single checklist for post-task bookkeeping. Run in order:
   2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
   3. Update any affected docs in `skinet/docs/` (keep them short).
   4. Scaffold the NEXT task/bug spike at the TOP of `mindset/spikes.md` (see MINDSET).
-  5. REMIND the user to write the journal entry for the FINISHED task before starting the next —
-     do not start the next task until it's written. (LEARN task: also scaffold an empty journal stub.)
+  5. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
+     template with task-specific EXPLAIN/REBUILD/BREAK *prompts* filled in, answers left BLANK. Then
+     REMIND the user to write the entry before starting the next task; don't start the next until it's
+     written. (Prompts only — never write the answers.)
+     Also scaffold the REBUILD scratch files: a `<Name>2.cs` skeleton (comments only) beside each
+     file the task created/changed, add them to `.git/info/exclude`, verify the build is green. The
+     user rebuilds cold, then you delete all `*2` files + exclude lines after they diff. Procedure:
+     `mindset/journal.md`.
   6. Questions & Exercises for non-trivial concepts (see above).
+
+# START OF DAY / SESSION
+At the start of the day's first work session, ask ONE line:
+"Energy today — 1–5? (5 🔵 peak · 4 🟢 high · 3 🟡 ok · 2 🟠 low · 1 🔴 depleted)"
+Then read `mindset/energy-protocol.md` and recommend the day's focus for that level
+(4–5 → deep LEARN/REBUILD; 3 → mechanical + light study; 2 → chores + light mechanical, no new learning;
+1 → recovery/rest).
+One line, skippable, don't nag. Ask once per day, not every chat.
 
 # END OF DAY / SESSION
 Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
