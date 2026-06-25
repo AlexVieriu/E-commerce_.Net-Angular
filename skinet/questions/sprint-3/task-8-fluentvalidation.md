@@ -10,37 +10,49 @@ The one real decision was *how to trigger* FluentValidation, since `[ApiControll
 
 ## What confused me — the actual gaps from the cold test / LEARN session
 
-The architecture was clear when I built it. The cold rebuild surfaced that the **syntax inside the filter** was where I was fuzzy — I could explain *what* the filter does but stalled writing it line by line. These are those gaps.
+**Triage — drill only what pays off.** OWN = explain cold for interviews · RECOGNIZE = re-derive on the spot, don't memorize · LET GO = trivia, the one-line summary is enough.
 
-- **`continue` — I genuinely didn't know what it did.**
-  `continue` skips the *rest of the current loop iteration* and jumps to the next item. It does **not** exit the loop (`break`) and does **not** exit the method (`return`). Think "skip this lap, run the next." The filter uses it as a **guard clause**: `if (argument is null) continue;` means "nothing to do for this argument, move on." Stacking several early `continue`s keeps the loop body flat instead of nesting four `if`s deep.
+| Gap | Tier | Where |
+|---|---|---|
+| FluentValidation vs DataAnnotations / why a filter at all | **OWN** | `ValidationFilter.cs` + wiring |
+| Scoped registration / captive dependency | **OWN** | `ApplicationServicesExtensions.cs` |
+| `ModelState.IsValid` is computed, not stored | **OWN** | `ValidationFilter.cs`, final `if` |
+| Unit tests: Arrange/Act/Assert, `[Fact]` vs `[Theory]`, `TestValidate` | **OWN** | `Validation_Tests.cs` |
+| `continue` vs `break` / `return` | RECOGNIZE | `ValidationFilter.cs`, guard clauses |
+| `is not IValidator validator` pattern matching | RECOGNIZE | `ValidationFilter.cs`, `GetService` line |
+| `CascadeMode.Continue` (runs all rules) | RECOGNIZE | concept |
+| `typeof(IValidator<>)` + `MakeGenericType` (open generics) | LET GO | `ValidationFilter.cs`, `MakeGenericType` line |
+| `System.Type` "business card" | LET GO | same line |
+| `ValidationContext<object>` type-erasure internals | LET GO | `ValidationFilter.cs`, `ValidateAsync` line |
+| `file static class Validator` shadowing | LET GO | `Validation_Tests.cs` top (task-19 leftover) |
 
-- **`typeof(IValidator<>)` — doesn't this make `validatorType` an `IValidator`?** No.
-  `typeof(X)` *always* returns a `System.Type` (metadata), never an instance of X. `typeof(IValidator<>)` is an **open generic** — `T` is left unfilled (the `<>`). `.MakeGenericType(argument.GetType())` fills `T` at runtime with the argument's real type → returns a `Type` representing `IValidator<CreateProductDTO>`. It's still just a `Type` object, not a validator.
+> **For the deadline:** ~4 OWN items here, not 11. The reflection / type-erasure stuff that ate the most time *today* is exactly what to let go tomorrow — understanding it once was the point; retaining it isn't. The **Interview Q&A** section at the bottom is the real revision surface.
 
-- **What does a `System.Type` actually *hold*? (the "blueprint" wasn't clicking.)**
-  A `Type` is a data object *describing* a type — not the type itself, and definitely not an instance. It has properties like `.Name` (`"IValidator\`1"`), `.FullName`, `.IsInterface` (`true`), `.IsGenericType` (`true`), `.GetGenericArguments()` (`[CreateProductDTO]`). Just strings and booleans. There is **no `.ValidateAsync()` on it** — it can't validate anything. Analogy: it's a **business card** for a type, not the person. You hand the card to DI and DI gives you back the real object.
+The architecture was clear; the **syntax inside the filter** was the fuzzy part. Gaps below in reading order, grouped by where they live — each tagged `(tier · location)`.
 
-- **`services.GetService(validatorType) is not IValidator validator` — what's happening in one line?**
-  Three things at once (C# pattern matching): (1) `GetService` takes the `Type` "business card" and returns the real registered instance as `object?` — or `null` if none; (2) `is not IValidator validator` tests *and* casts it to the usable `IValidator` interface; (3) if it's null or the wrong type → `continue` (no validator for this argument, skip it). If it matches, the variable `validator` is live for the rest of the loop. **Real-world:** POST to an action taking `(CreateProductDTO dto, int id)` — DI has a validator for the DTO but not for `int`, so the `int` iteration hits `null` → `continue`, no crash.
+**In the filter — top to bottom**
 
-- **`new ValidationContext<object>(argument)` — "wrap the object" didn't cut it. Why is it needed?**
-  Type erasure. I resolved the validator as the **non-generic** `IValidator` (I can't write `IValidator<CreateProductDTO>` — the type is only known at runtime). The non-generic `IValidator.ValidateAsync` does **not** accept a raw object — only an `IValidationContext`. So I must box the argument into a `ValidationContext<object>` (the only one I can build, since `argument` is compile-time `object`). It implements `IValidationContext` → the door fits. **Real-world:** a courier who only accepts parcels in their official box — I have a loose item, so I put it in the box.
+- **`continue`** *(RECOGNIZE · guard clauses)* — skips the rest of *this* loop iteration and jumps to the next item; not `break` (stops the loop) or `return` (exits the method). Used as an early guard so the loop body stays flat.
 
-- **How does the validator get the *right* typed object back out?**
-  The object is stored in the context as `InstanceToValidate`. `object` is only the *compile-time* label — the thing in memory is still really a `CreateProductDTO` (casting to `object` hides the type from the compiler, not from the runtime). The concrete `CreateProductDtoValidator` knows its own `T`, casts `InstanceToValidate` back to `CreateProductDTO` (safe, because I built the validator *from* `argument.GetType()` — they always match), then runs the rules. Apple in a box labelled "FRUIT" is still an apple.
+- **`typeof(IValidator<>)` → `MakeGenericType`** *(LET GO · the `MakeGenericType` line)* — `typeof` always returns a `System.Type`, never an instance. `<>` is an **open generic** (T unfilled); `.MakeGenericType(argument.GetType())` fills T at runtime → a `Type` for `IValidator<CreateProductDTO>`. Still just a `Type`, not a validator.
 
-- **What does `ValidateAsync` actually do?**
-  Walks **every** `RuleFor` in the validator against the object and returns a `ValidationResult` (`IsValid` bool + `Errors` list of `ValidationFailure`, each with `PropertyName` + `ErrorMessage`). By default `CascadeMode` is `Continue`, so it runs *all* rules and collects *every* failure — not just the first — so the user sees all bad fields in one 400. `Async` because a rule *can* hit I/O (`MustAsync` DB check); if none do, it just doesn't await anything. *(Verified against FluentValidation docs: default cascade = `Continue`; `ValidationResult` = `IsValid` + `Errors`.)*
+- **What a `System.Type` holds** *(LET GO · same line)* — a data object *describing* a type (`.Name`, `.IsInterface`, `.GetGenericArguments()` — strings/booleans). No `.ValidateAsync()` on it. It's a **business card**: hand it to DI, get the real object back.
 
-- **First time writing unit tests — what am I even asserting?** (the genuinely new one)
-  Every test is **Arrange → Act → Assert**: set up a situation, run the thing, claim what should happen. `[Fact]` = one fixed case; `[Theory]` + `[InlineData(x)]` = same test body run with several inputs. FluentValidation's helpers: `_validator.TestValidate(dto).ShouldNotHaveAnyValidationErrors()` (happy path) and `.ShouldHaveValidationErrorFor(x => x.Price)` (a field should error). The **baseline trick**: a `ValidDto()` helper returns a fully-valid object; each failing test breaks *one* field, so a red test points at exactly one rule.
+- **`… is not IValidator validator`** *(RECOGNIZE · the `GetService` line)* — one line, three jobs: `GetService` returns the instance or `null`; `is not IValidator validator` tests **and** casts; null/wrong-type → `continue`, else `validator` is live below. *Real-world:* action takes `(CreateProductDTO dto, int id)` — no validator for `int`, so that lap hits `null` → skip, no crash.
 
-- **Why is the test helper `file static class Validator`?**
-  `file` (C# 11) limits the type to that one source file. It's named `Validator`, which **shadows** `System.ComponentModel.DataAnnotations.Validator`; `file` stops it leaking, and the call inside is fully-qualified to reach the real BCL validator past the shadow. It only exists because `RegisterDTO` still uses DataAnnotations (from task-19) — FluentValidation needs no such helper (`TestValidate` is built in).
+- **`new ValidationContext<object>(argument)`** *(LET GO · the `ValidateAsync` line)* — a type-erasure adapter. I hold the non-generic `IValidator` (T known only at runtime), whose `ValidateAsync` takes an `IValidationContext`, not a raw object — so I box the argument. *Real-world:* a courier who only accepts parcels in their official box.
 
-- **How does `!context.ModelState.IsValid` *know* it's invalid?**
-  `IsValid` is **not a stored flag** — it's a computed getter returning `false` if *any* `ModelState` entry is Invalid. `AddModelError(...)` is what marks an entry Invalid, so my loop's `AddModelError` calls are the trigger. No validator → no `AddModelError` → all entries stay Valid → `IsValid` stays `true` → `next()` runs.
+- **Getting the typed object back** *(LET GO · FluentValidation internals)* — `object` is just the compile-time label; the value is still really a `CreateProductDTO`. The concrete validator casts `InstanceToValidate` back to its T (safe — I built it *from* `argument.GetType()`). An apple in a "FRUIT" box is still an apple.
+
+- **`ValidateAsync`** *(RECOGNIZE · the `ValidateAsync` line)* — runs **every** `RuleFor` and returns a `ValidationResult` (`IsValid` + `Errors`). Default `CascadeMode.Continue` collects *all* failures, not just the first → one 400 lists every bad field. `Async` so a rule can hit I/O (`MustAsync`).
+
+- **`!ModelState.IsValid`** *(OWN · the final `if`)* — `IsValid` is computed, not stored: `false` if *any* entry is Invalid. `AddModelError(...)` is what flips an entry to Invalid. No validator → no `AddModelError` → stays valid → `next()` runs.
+
+**In the tests**
+
+- **Unit-test basics** *(OWN · `Validation_Tests.cs`)* — every test is **Arrange → Act → Assert**. `[Fact]` = one case; `[Theory]` + `[InlineData]` = same body, many inputs. Helpers: `TestValidate(dto).ShouldNotHaveAnyValidationErrors()` / `.ShouldHaveValidationErrorFor(x => x.Price)`. Baseline trick: `ValidDto()` is fully valid; each test breaks **one** field.
+
+- **`file static class Validator`** *(LET GO · top of the test file)* — `file` (C# 11) scopes the type to one file; it **shadows** the BCL `Validator` (hence the fully-qualified call). Exists only for the task-19 DataAnnotations tests — FluentValidation uses `TestValidate`.
 
 ## Explanation
 
@@ -245,6 +257,13 @@ public void ShouldFail_WhenPriceIsNotPositive(decimal badPrice)
 **8. How do you keep the frontend unaffected by the switch?**
 - The filter returns a `ValidationProblemDetails` built from `ModelState` — the exact shape `[ApiController]` produced for DataAnnotations
 - So the existing Angular error interceptor parses it unchanged
+
+**9. What is composability, and where does this task show it?**
+- Composability = building bigger behavior by combining small, self-contained pieces through a stable interface — without modifying the pieces
+- Here: `SetValidator(new ShippingAddressValidator())` snaps a standalone address validator into `CreateOrderDtoValidator`; the same brick reuses anywhere an address appears
+- Payoff: no rule duplication, single responsibility, test the child in isolation, fix a rule once
+- It's "**has-a**, not is-a" — favor **composition over inheritance** (an Order *has an* Address, it isn't one)
+- Other shapes: `RuleForEach(...).SetValidator(...)` for collections, `Include(other)` to merge rule sets
 
 ---
 

@@ -27,7 +27,10 @@ Before starting any task, list:
   1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
      - # Task N — Concept Name
      - ## Why this approach
-     - ## What confused me — the actual gaps from the cold test / LEARN session
+     - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
+       location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
+       **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
+       · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
      - ## Explanation
      - ## Exercise
      - ## Solution
