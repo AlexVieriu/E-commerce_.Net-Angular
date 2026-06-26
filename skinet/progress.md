@@ -13,6 +13,7 @@
 | Apr 21 | Sprint 2 interview polish | Audited 11-section interview set vs `interview-gen-prompt.md` spec; added 7 questions (G12 Testcontainers, H12 `signal.mutate()` removal, I9 outbox pattern, I10 3DS/SCA, J8 captive dependency, J9 sync-over-async, K7 zoneless runtime-mode bug). Regenerated Anki for G/H/I/J/K (12+12+10+9+7 cards). |
 | Jun 18 | Sprint 2 → live on Azure + BUG-4..10 | Deployed Sprint 2 to `skinet-2025-test`. Fixed deploy-hardening bugs: auth-401 nav (4), wwwroot root-500 (5), fonts CSP (6), Stripe CSP+COEP (7), serverless SQL idle-pause retry (8), config-driven admin password (9); logged BUG-10 (loading bar, deferred). `main` rewritten to 1 squashed commit/sprint. Live smoke green: register→cart→Stripe→order→refund→admin. |
 | Jun 25 | T8 | FluentValidation gate passed. Cold rebuild: filter PARTIAL, validators PASS, wiring PASS, tests PARTIAL (first-ever unit tests). Deep LEARN on the filter internals (`continue`, open generics + `MakeGenericType`, `System.Type`, `ValidationContext` type-erasure, `ValidateAsync`/`CascadeMode`, `SetValidator`). Regenerated `task-8-fluentvalidation.md` from the real gaps. 136 tests green; scratch files removed. |
+| Jun 25 | T24 | Bogus seed: 70 products / 13 users / 25 orders via `dotnet run -- --seed` (one-shot, dev-only, idempotent, deterministic). Real images by type; unique `PaymentIntentId`; brand casing aligned to baseline. Verified live: product/brand/order endpoints, order totals checked. 136 tests green. |
 
 ---
 
@@ -40,7 +41,7 @@
 ## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
 
 - [x] T8 — FluentValidation: auto-validation, CreateOrderDto + CreateProductDTO
-- [ ] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
+- [x] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
 - [ ] T27 — Dashboard backend: `GET /api/admin/dashboard`
 - [ ] T25 — Admin layout: parent + sidebar + child routes
 - [ ] T26 — Order status update: `PUT /api/admin/orders/{id}/status`

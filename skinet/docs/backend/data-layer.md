@@ -41,6 +41,29 @@ dotnet ef migrations add <Name> --context SqlServerStoreContext -o Migrations/Sq
 
 Applied automatically on startup via `context.Database.MigrateAsync()`.
 
+## Seeding
+
+Two seeders, both run from `WebApplicationExtensions.SeedDatabaseAsync` after migrate:
+
+| Seeder | When | What |
+|---|---|---|
+| `StoreContextSeed` | **Every startup, all envs** | Admin user (password re-synced from config — BUG-9), JSON products + delivery methods if the tables are empty |
+| `BogusSeeder` | **`dotnet run -- --seed`, Development only** | Bulk demo data: 52 products, 12 customers, 25 orders |
+
+- **`--seed` is one-shot:** `Program.cs` seeds then `return`s (doesn't serve). Passed through as `runBulkSeed`.
+- **Dev-only by design** so a prod deploy never auto-pollutes the live DB; non-dev `--seed` logs a warning and skips the bulk seed.
+- **Idempotent:** `BogusSeeder` no-ops if any order already exists (orders only come from it).
+- **Deterministic:** `Randomizer.Seed` fixed → same dataset each run.
+- Generated data respects the real constraints: product `PictureUrl` is assigned from the fixed local image set by type, orders carry a unique `PaymentIntentId` (T18) + real FK refs, customer emails are sanitised for Identity's username rules.
+- Brand/type lists match the baseline JSON casing exactly — otherwise the cached `/brands` filter shows case-only duplicates.
+
+**Reset (dev):** bulk data is throwaway — no teardown command. To clear it, wipe the dev DB and restart; the baseline reseeds itself:
+
+```bash
+dotnet ef database drop -f --context SqliteStoreContext   # or just delete the SQLite file under ./data
+dotnet run --project src/API                              # baseline (admin + products) auto-reseeds; bulk gone until next --seed
+```
+
 ## Rules / Constraints
 
 - Never inject `StoreContext` into controllers — use `IUnitOfWork`.

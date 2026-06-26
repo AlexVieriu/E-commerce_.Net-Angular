@@ -105,7 +105,7 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 - SQLite for Development, SqlServer for Production — set by `ASPNETCORE_ENVIRONMENT`.
 - Never put secrets in `appsettings.json` or `appsettings.Development.json`.
 - `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
-- Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
+- Baseline seeding (admin + JSON products) runs in all environments; idempotent — checks for existing data first. Bulk demo data (`BogusSeeder`) is opt-in via `dotnet run -- --seed` and Development-only. See `docs/backend/data-layer.md`.
 
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 
