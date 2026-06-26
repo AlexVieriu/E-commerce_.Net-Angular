@@ -24,6 +24,10 @@ cd client && ng serve
 
 Backend on `https://localhost:7096`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL from `environment.development.ts` — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
 
+## Manual API testing (Scalar)
+
+Dev only: **`https://localhost:7096/scalar/v1`** — interactive OpenAPI UI for hitting endpoints by hand (preferred over curl/PowerShell). For auth-gated routes, run `POST /login` with the `useCookies` query param enabled to set the auth cookie, then call the protected endpoint in the same session (the browser carries the cookie automatically — no token to copy). Admin: `admin@test.com` / user-secret `AdminSettings:Password`.
+
 ## Production Build
 
 ```bash
