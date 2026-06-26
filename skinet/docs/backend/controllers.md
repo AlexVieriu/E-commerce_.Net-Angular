@@ -8,6 +8,7 @@ All endpoints, auth requirements, and return types.
 
 | Method | Route | Returns | Notes |
 |---|---|---|---|
+| GET | `/api/admin/dashboard` | `DashboardDto` | Counts, revenue (`PaymentReceived` only), low-stock + recent-orders previews. Via `IDashboardService` (in-memory aggregation) |
 | GET | `/api/admin/orders` | `Pagination<OrderDto>` | `[FromQuery] OrderSpecParams` — filter/sort/page |
 | GET | `/api/admin/orders/{id}` | `OrderDto` | 400 if not found |
 | POST | `/api/admin/orders/refund/{id}` | `OrderDto` | 400 if Pending or refund fails |

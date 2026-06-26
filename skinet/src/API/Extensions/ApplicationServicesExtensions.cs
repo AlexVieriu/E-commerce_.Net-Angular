@@ -60,6 +60,7 @@ public static class ApplicationServicesExtensions
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICouponService, CouponService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         services.AddRateLimiter(options =>
         {

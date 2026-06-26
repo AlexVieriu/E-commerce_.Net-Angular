@@ -15,6 +15,7 @@
 | Jun 25 | T8 | FluentValidation gate passed. Cold rebuild: filter PARTIAL, validators PASS, wiring PASS, tests PARTIAL (first-ever unit tests). Deep LEARN on the filter internals (`continue`, open generics + `MakeGenericType`, `System.Type`, `ValidationContext` type-erasure, `ValidateAsync`/`CascadeMode`, `SetValidator`). Regenerated `task-8-fluentvalidation.md` from the real gaps. 136 tests green; scratch files removed. |
 | Jun 25 | T24 | Bogus seed: 70 products / 13 users / 25 orders via `dotnet run -- --seed` (one-shot, dev-only, idempotent, deterministic). Real images by type; unique `PaymentIntentId`; brand casing aligned to baseline. Verified live: product/brand/order endpoints, order totals checked. 136 tests green. |
 | Jun 26 | fix/deps | Dependency refresh: all packages → latest GA (framework 10.0.9; majors Redis 2→3.0.7, Stripe.net 51→52.1.0) + cleared SQLitePCLRaw advisory (`bundle_e_sqlite3 3.0.3` override). Build 0/0, 136 green, 0 vulnerable solution-wide. Dev-smoked Redis + Stripe. |
+| Jun 26 | T27 | Dashboard backend: `GET /api/admin/dashboard` via `IDashboardService` (in-memory aggregation, controller stays thin). `DashboardDto` + lean `LowStockProductDto`/`RecentOrderDto`; revenue = `PaymentReceived` only (net of discount, incl. shipping); low-stock threshold 5; recent/low-stock previews capped. 138 tests green; live-verified against seed (70 products / 25 orders). |
 
 ---
 
@@ -43,7 +44,7 @@
 
 - [x] T8 — FluentValidation: auto-validation, CreateOrderDto + CreateProductDTO
 - [x] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
-- [ ] T27 — Dashboard backend: `GET /api/admin/dashboard`
+- [x] T27 — Dashboard backend: `GET /api/admin/dashboard`
 - [ ] T25 — Admin layout: parent + sidebar + child routes
 - [ ] T26 — Order status update: `PUT /api/admin/orders/{id}/status`
 - [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table

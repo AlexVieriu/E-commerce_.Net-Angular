@@ -1,8 +1,15 @@
 namespace API.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class AdminController(IUnitOfWork unit, IPaymentService paymentService) : BaseApiController
+public class AdminController(
+    IUnitOfWork unit,
+    IPaymentService paymentService,
+    IDashboardService dashboardService) : BaseApiController
 {
+    [HttpGet("dashboard")]
+    public async Task<ActionResult<DashboardDto>> GetDashboard(CancellationToken cancellationToken)
+        => Ok(await dashboardService.GetDashboardAsync(cancellationToken));
+
     [HttpGet("orders")]
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrders(
         [FromQuery] OrderSpecParams specParams)
