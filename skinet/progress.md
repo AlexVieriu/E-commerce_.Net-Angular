@@ -14,6 +14,7 @@
 | Jun 18 | Sprint 2 → live on Azure + BUG-4..10 | Deployed Sprint 2 to `skinet-2025-test`. Fixed deploy-hardening bugs: auth-401 nav (4), wwwroot root-500 (5), fonts CSP (6), Stripe CSP+COEP (7), serverless SQL idle-pause retry (8), config-driven admin password (9); logged BUG-10 (loading bar, deferred). `main` rewritten to 1 squashed commit/sprint. Live smoke green: register→cart→Stripe→order→refund→admin. |
 | Jun 25 | T8 | FluentValidation gate passed. Cold rebuild: filter PARTIAL, validators PASS, wiring PASS, tests PARTIAL (first-ever unit tests). Deep LEARN on the filter internals (`continue`, open generics + `MakeGenericType`, `System.Type`, `ValidationContext` type-erasure, `ValidateAsync`/`CascadeMode`, `SetValidator`). Regenerated `task-8-fluentvalidation.md` from the real gaps. 136 tests green; scratch files removed. |
 | Jun 25 | T24 | Bogus seed: 70 products / 13 users / 25 orders via `dotnet run -- --seed` (one-shot, dev-only, idempotent, deterministic). Real images by type; unique `PaymentIntentId`; brand casing aligned to baseline. Verified live: product/brand/order endpoints, order totals checked. 136 tests green. |
+| Jun 26 | fix/deps | Dependency refresh: all packages → latest GA (framework 10.0.9; majors Redis 2→3.0.7, Stripe.net 51→52.1.0) + cleared SQLitePCLRaw advisory (`bundle_e_sqlite3 3.0.3` override). Build 0/0, 136 green, 0 vulnerable solution-wide. Dev-smoked Redis + Stripe. |
 
 ---
 
