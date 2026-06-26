@@ -57,6 +57,13 @@ Two seeders, both run from `WebApplicationExtensions.SeedDatabaseAsync` after mi
 - Generated data respects the real constraints: product `PictureUrl` is assigned from the fixed local image set by type, orders carry a unique `PaymentIntentId` (T18) + real FK refs, customer emails are sanitised for Identity's username rules.
 - Brand/type lists match the baseline JSON casing exactly — otherwise the cached `/brands` filter shows case-only duplicates.
 
+**Reset (dev):** bulk data is throwaway — no teardown command. To clear it, wipe the dev DB and restart; the baseline reseeds itself:
+
+```bash
+dotnet ef database drop -f --context SqliteStoreContext   # or just delete the SQLite file under ./data
+dotnet run --project src/API                              # baseline (admin + products) auto-reseeds; bulk gone until next --seed
+```
+
 ## Rules / Constraints
 
 - Never inject `StoreContext` into controllers — use `IUnitOfWork`.

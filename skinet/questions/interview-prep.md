@@ -29,3 +29,4 @@ One-liner per concept. Click the link for full explanation + Q&A.
 ## Sprint 3
 
 - [Task 8 — FluentValidation](sprint-3/task-8-fluentvalidation.md) — validators as `AbstractValidator<T>` in Application; custom `ValidationFilter` resolves `IValidator<T>` and returns a 400 `ValidationProblemDetails`; `[ApiController]` doesn't auto-run FluentValidation, so the filter is the trigger
+- [Task 24 — Bogus seed](sprint-3/task-24-bogus-seed.md) — `Randomizer.Seed` (static, set before any Faker) = determinism; `Orders.AnyAsync()` guard = idempotency; two-check gate (`runBulkSeed` + `IsDevelopment`) = prod safety boundary
