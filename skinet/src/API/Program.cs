@@ -94,6 +94,11 @@ if (!app.Environment.IsDevelopment())
     identityGroup.RequireRateLimiting("strict");
 app.MapHub<NotificationHub>("/hub/notifications");
 
-await app.SeedDatabaseAsync();
+// `dotnet run -- --seed` is a one-shot: seed (incl. the Bogus demo dataset) then exit, don't serve.
+var runSeed = args.Contains("--seed");
+
+await app.SeedDatabaseAsync(runSeed);
+
+if (runSeed) return;
 
 app.Run();
