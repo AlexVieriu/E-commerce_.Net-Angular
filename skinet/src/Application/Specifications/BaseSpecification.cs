@@ -1,10 +1,12 @@
 namespace Application.Specifications;
 
-// Class 1
+// Holds a query described as data (Criteria, Includes, OrderBy, paging…). Runs nothing —
+// the SpecificationEvaluator reads these properties and builds the EF query.
 public class BaseSpecification<T> : ISpecification<T>
 {
     private Expression<Func<T, bool>>? _criteria;
 
+    // - - - CONSTRUCTORS - - -
     protected BaseSpecification() { }
 
     protected BaseSpecification(Expression<Func<T, bool>>? criteria)
@@ -12,28 +14,17 @@ public class BaseSpecification<T> : ISpecification<T>
         _criteria = criteria;
     }
 
-    // Where clause
-    public Expression<Func<T, bool>>? Criteria => _criteria;
-    public Expression<Func<T, object>>? OrderByAsc { get; protected set; }
-    public Expression<Func<T, object>>? OrderByDesc { get; protected set; }
-
-    // JOIN / INNER JOIN 
-    public List<Expression<Func<T, object>>> Includes { get; } = [];
-
-    public int Take { get; private set; }
-    public int Skip { get; private set; }
+    // - - - PROPERTIES (the query as data — each maps to a SQL clause) - - -
+    public Expression<Func<T, bool>>? Criteria => _criteria;                 // WHERE
+    public Expression<Func<T, object>>? OrderByAsc { get; protected set; }   // ORDER BY ... ASC
+    public Expression<Func<T, object>>? OrderByDesc { get; protected set; }  // ORDER BY ... DESC
+    public List<Expression<Func<T, object>>> Includes { get; } = [];         // JOIN (eager-load navs)
+    public int Skip { get; private set; }                                    // OFFSET (paging)
+    public int Take { get; private set; }                                    // FETCH  (paging)
     public bool IsPagingEnabled { get; private set; }
-    public bool IsDistinct { get; private set; }
+    public bool IsDistinct { get; private set; }                             // DISTINCT
 
-    // Where Clause
-    public IQueryable<T> ApplyCriteria(IQueryable<T> query)
-    {
-        if (_criteria != null)
-            query = query.Where(_criteria);
-
-        return query;
-    }
-
+    // - - - BUILDER METHODS (subclasses call these to fill the spec) - - -
     protected void AddCriteria(Expression<Func<T, bool>> criteria)
         => _criteria = _criteria == null ? criteria : CombineWithAnd(_criteria, criteria);
 
@@ -62,7 +53,17 @@ public class BaseSpecification<T> : ISpecification<T>
         IsPagingEnabled = true;
     }
 
-    // - - - PRIVATE HELPER - - - 
+    // - - - CRITERIA MACHINERY (apply the WHERE; combine multiple AddCriteria calls with AND) - - -
+    public IQueryable<T> ApplyCriteria(IQueryable<T> query)
+    {
+        if (_criteria != null)
+            query = query.Where(_criteria);
+
+        return query;
+    }
+
+    // Merge two predicates into one (left AND right). Each lambda has its own parameter,
+    // so we rebind both to a single shared parameter — otherwise EF can't read the tree.
     private Expression<Func<T, bool>> CombineWithAnd(Expression<Func<T, bool>> left,
                                                      Expression<Func<T, bool>> right)
     {
@@ -79,7 +80,7 @@ public class BaseSpecification<T> : ISpecification<T>
         return Expression.Lambda<Func<T, bool>>(combined, parameter);
     }
 
-    // ExpressionVisitor: a visitor or rewriter for expression trees
+    // ExpressionVisitor that swaps one parameter node for another while walking the tree.
     private class ReplaceParameterVisitor : ExpressionVisitor
     {
         private readonly ParameterExpression _oldParameter;
@@ -98,20 +99,16 @@ public class BaseSpecification<T> : ISpecification<T>
     }
 }
 
-// Class 2 
+// Variant that also projects to a different shape — adds Select (SELECT col1, col2…) on top of BaseSpecification<T>.
 public class BaseSpecification<T, TResult> : BaseSpecification<T>, ISpecification<T, TResult>
 {
     protected BaseSpecification() : base() { }
 
     protected BaseSpecification(Expression<Func<T, bool>>? criteria) : base(criteria) { }
 
-    public Expression<Func<T, TResult>>? Select { get; private set; }
+    public Expression<Func<T, TResult>>? Select { get; private set; }        // SELECT projection
 
-    /// <summary>
-    /// Project query results to a different type (SELECT Name, Price FROM Products)
-    /// </summary>
+    // Project query results to a different type, e.g. SELECT DISTINCT Brand FROM Products.
     protected void AddSelect(Expression<Func<T, TResult>> selectExpression)
-    {
-        Select = selectExpression;
-    }
+        => Select = selectExpression;
 }
