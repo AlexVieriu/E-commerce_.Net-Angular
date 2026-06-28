@@ -52,9 +52,18 @@ public class OrderSpecification : BaseSpecification<Order>
         // Apply ordering
         spec.AddOrderByDescending(o => o.OrderDate);
 
-        // Apply pagination 
+        // Apply pagination
         spec.ApplyPaging(specParams.PageSize * (specParams.PageIndex - 1), specParams.PageSize);
 
+        return spec;
+    }
+
+    // For the admin dashboard: all orders, newest first. Reuses the default includes —
+    // DeliveryMethod is needed for GetTotal(); OrderItems ride along (negligible at this scale).
+    public static OrderSpecification AllForDashboard()
+    {
+        var spec = new OrderSpecification();
+        spec.AddOrderByDescending(o => o.OrderDate);
         return spec;
     }
 

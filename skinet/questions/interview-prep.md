@@ -30,3 +30,4 @@ One-liner per concept. Click the link for full explanation + Q&A.
 
 - [Task 8 — FluentValidation](sprint-3/task-8-fluentvalidation.md) — validators as `AbstractValidator<T>` in Application; custom `ValidationFilter` resolves `IValidator<T>` and returns a 400 `ValidationProblemDetails`; `[ApiController]` doesn't auto-run FluentValidation, so the filter is the trigger
 - [Task 24 — Bogus seed](sprint-3/task-24-bogus-seed.md) — `Randomizer.Seed` (static, set before any Faker) = determinism; `Orders.AnyAsync()` guard = idempotency; two-check gate (`runBulkSeed` + `IsDevelopment`) = prod safety boundary
+- [Task 27 — Dashboard aggregation & spec flow](sprint-3/task-27-dashboard-aggregation-and-spec-flow.md) — specs are deferred (run on `ToListAsync`, read once in `ApplyCommon`); revenue = `PaymentReceived` only; in-memory aggregate because `GetTotal()` can't translate to SQL `SUM`; recent sorted by spec, low-stock sorted in service
