@@ -15,7 +15,6 @@ comment: at larger scale, push `COUNT`/`SUM` into SQL via repo aggregate methods
 | Gap | Location | Tier |
 |---|---|---|
 | When/where does a spec actually hit the DB? (deferred until `ToListAsync`) | `GenericRepository.cs · GetAllAsync` → `SpecificationEvaluator` | **OWN** |
-| Revenue = `PaymentReceived` only; summing all statuses overstates it | `DashboardService.cs · GetDashboardAsync` | **OWN** |
 | In-memory aggregate vs SQL `COUNT`/`SUM` — and why `GetTotal()` blocks the SQL version | `DashboardService.cs · TotalRevenue` | **OWN** |
 | "Too many methods" — sort spec/repo by role: recipe / cook / kitchen | `BaseSpecification.cs`, `GenericRepository.cs` | **RECOGNIZE** |
 | Where is the spec "checked"? Only in `ApplyCommon` + `GetQuery` `if`s | `SpecificationEvaluator.cs · ApplyCommon` | **RECOGNIZE** |
@@ -42,16 +41,14 @@ The spec's properties are read in exactly **one** place — `SpecificationEvalua
 `GetQuery` (`if (spec.Criteria != null)`, `Includes`, `OrderBy`, `IsDistinct`, `IsPagingEnabled`).
 Those `if`s are the only "checking points."
 
-### Revenue = captured money only
+### Revenue rule
 
 ```csharp
 TotalRevenue = orders
     .Where(o => o.Status == OrderStatus.PaymentReceived)
     .Sum(o => o.GetTotal());
 ```
-Only `PaymentReceived` is money actually in the account. `Pending`/`Failed`/`Mismatch` aren't paid;
-`Refunded` is money returned. Summing every order shows what you *might* get, not what you *have* —
-that gap is the bug if you drop the `Where`.
+Revenue counts `PaymentReceived` orders only — net of discount, incl. shipping (`GetTotal()`).
 
 ### In-memory vs SQL aggregate
 
@@ -74,7 +71,7 @@ previews** (`Take(10)` / `Take(5)`). The admin sees "30 low" but only the 10 mos
 ## Exercise
 
 Without looking at the code:
-1. Write the `TotalRevenue` LINQ chain and say which order statuses it must exclude and why.
+1. Write the `TotalRevenue` LINQ chain (which status it sums).
 2. Write the low-stock block: exact count + a capped, most-urgent-first preview of `LowStockProductDto`.
 3. Explain where the "recent" ordering comes from (it's not in this method).
 4. Explain what stops you from moving `TotalRevenue` into a SQL `SUM`.
@@ -125,10 +122,6 @@ return new DashboardDto
 **What is a specification and what does it do at runtime?**
 - An object that describes a query as data (criteria, includes, ordering, paging)
 - It runs nothing; the repository + `SpecificationEvaluator` read it and build the EF query; `ToListAsync` executes it
-
-**Why does revenue count only `PaymentReceived`?**
-- It's the only status where money is actually captured
-- Pending/Failed/Mismatch aren't paid; Refunded is returned — including them overstates revenue
 
 **Why aggregate in memory instead of SQL here? When would you switch?**
 - Small admin dataset → loading + LINQ is simple and fine

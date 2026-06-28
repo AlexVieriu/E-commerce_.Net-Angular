@@ -19,7 +19,7 @@ All endpoints, auth requirements, and return types.
 |---|---|---|
 | `TotalProducts` | catalog size | sanity check |
 | `TotalOrders` / `PendingOrders` | order volume + backlog | pending = work to fulfill today |
-| `TotalRevenue` | money actually made (`PaymentReceived` only) | the headline number |
+| `TotalRevenue` | revenue (`PaymentReceived` only) | the headline number |
 | `LowStockProducts` | items running out (≤ threshold) | restock before they sell out — 0 stock = lost sales |
 | `RecentOrders` | latest orders | quick "what just happened" |
 

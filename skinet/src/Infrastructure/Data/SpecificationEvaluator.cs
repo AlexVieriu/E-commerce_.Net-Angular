@@ -2,9 +2,10 @@ namespace Infrastructure.Data;
 
 public class SpecificationEvaluator<T> where T : BaseEntity
 {
-    // Pipeline order matters: WHERE narrows the row set BEFORE JOINs and ORDER BY run.
-    // EF emits INNER JOIN for required navs (e.g. Order.DeliveryMethod) and
-    // LEFT JOIN for collection navs (e.g. Order.OrderItems).
+    // ApplyCommon builds WHERE + JOINs + ORDER BY; this method adds the steps whose order changes the result.
+    // Distinct must run before Skip/Take (dedupe, then page); paging leans on ApplyCommon's ORDER BY so the
+    // page window is deterministic (SQL OFFSET/FETCH needs it). Chaining order of Where/Include/OrderBy is
+    // NOT a perf lever — the DB optimizer picks the plan.
     public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
     {
         query = ApplyCommon(query, spec);
@@ -18,11 +19,12 @@ public class SpecificationEvaluator<T> where T : BaseEntity
         return query;
     }
 
-    public static IQueryable<TResult> GetQuery<TSpec, TResult>(IQueryable<T> query,
-                                                               ISpecification<T, TResult> spec)
+    public static IQueryable<TResult> GetQuery<TResult>(IQueryable<T> query,
+                                                        ISpecification<T, TResult> spec)
     {
         query = ApplyCommon(query, spec);
 
+        // Project first, then Distinct/page operate on TResult, not the full entity row.
         var projectedQuery = spec.Select != null
             ? query.Select(spec.Select)
             : query.Cast<TResult>();
@@ -41,6 +43,7 @@ public class SpecificationEvaluator<T> where T : BaseEntity
         if (spec.Criteria != null)
             query = query.Where(spec.Criteria);
 
+        // EF emits INNER JOIN for required navs (Order.DeliveryMethod), LEFT JOIN for collections (Order.OrderItems).
         query = spec.Includes.Aggregate(query, (current, include) => current.Include(include));
 
         if (spec.OrderByAsc != null)

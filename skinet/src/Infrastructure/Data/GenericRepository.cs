@@ -75,7 +75,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T, TResult> spec)
     {
-        return SpecificationEvaluator<T>.GetQuery<T, TResult>(context.Set<T>().AsQueryable(), spec);
+        return SpecificationEvaluator<T>.GetQuery<TResult>(context.Set<T>().AsQueryable(), spec);
     }
 
     private async Task<int> CountAsync(ISpecification<T> spec)

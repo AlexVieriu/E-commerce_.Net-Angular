@@ -23,8 +23,7 @@ public class DashboardService(IUnitOfWork unitOfWork) : IDashboardService
             TotalProducts = products.Count,
             TotalOrders = orders.Count,
             PendingOrders = orders.Count(o => o.Status == OrderStatus.Pending),
-            // Revenue = captured payments only, net of discount, incl. shipping (GetTotal()).
-            // Pending/Failed/Mismatch aren't paid; Refunded is money returned — all excluded.
+            // Revenue = PaymentReceived only, net of discount, incl. shipping (GetTotal()).
             TotalRevenue = orders
                 .Where(o => o.Status == OrderStatus.PaymentReceived)
                 .Sum(o => o.GetTotal()),
