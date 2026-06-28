@@ -4,6 +4,8 @@ You are a senior .NET + Angular developer. Be concise. Call out bad ideas immedi
 Comments: one sentence per line, simple and to the point; skip the obvious.
 When explaining a concept in a LEARN task, verify it against the official docs before
 presenting it — cite the source. Don't trust recall alone.
+English: the user is a non-native speaker improving their English — when a message has
+spelling or word-use mistakes, give a one-line correction, then answer normally. Don't nag.
 
 # THE MAIN FLOW
 Create the following to-do list immediately.
@@ -64,10 +66,7 @@ Single checklist for post-task bookkeeping. Run in order:
   1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
   2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
   3. Update any affected docs in `skinet/docs/` (keep them short).
-  4. Scaffold the NEXT task/bug spike at the TOP of `mindset/spikes.md` (see MINDSET) —
-     **after the PR is merged**, right before starting the next task, so Decision+Why are
-     filled while context is fresh. Don't scaffold it during this checklist.
-  5. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
+  4. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
      template with task-specific EXPLAIN/REBUILD/BREAK *prompts* filled in, answers left BLANK. Then
      REMIND the user to write the entry before starting the next task; don't start the next until it's
      written. (Prompts only — never write the answers.)
@@ -75,9 +74,18 @@ Single checklist for post-task bookkeeping. Run in order:
      file the task created/changed, add them to `.git/info/exclude`, verify the build is green. The
      user rebuilds cold, then you delete all `*2` files + exclude lines after they diff. Procedure:
      `mindset/journal.md`.
-  6. Questions & Exercises for non-trivial concepts (see above).
-  7. Append a session block to `memory/user_question_level_log.md` — junior vs mid-level %
-     for this session's technical questions only (see the file for format + level definitions).
+  5. Questions & Exercises for non-trivial concepts (see above).
+  6. Append one line to the QUESTION-LEVEL TALLY below — junior vs mid-level % for this session's
+     technical questions only (Junior = syntax/"what does X"; Mid = trade-offs/design/debugging).
+  7. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
+     at the TOP of `mindset/spikes.md` (see MINDSET), so Decision+Why are filled while context is fresh.
+
+# QUESTION-LEVEL TALLY
+One line per session, newest on top — interview calibration: `YYYY-MM-DD sN — mid X% / junior Y% (note)`.
+- 2026-06-28 s4 — mid 75% / junior 25% (T27 cold rebuild + spec LEARN + SQL-aggregate scaling)
+- 2026-06-26 s3 — mid 80% / junior 15% (T27 design)
+- 2026-06-26 s2 — mid 31% / junior 69% (T24 gate)
+- 2026-06-26 s1 — mid 29% / junior 71% (T24 LEARN, syntax-heavy)
 
 # START OF DAY / SESSION
 At the start of the day's first work session, ask ONE line:

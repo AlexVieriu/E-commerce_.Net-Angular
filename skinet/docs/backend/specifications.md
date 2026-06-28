@@ -39,6 +39,23 @@ public class ProductSpecification : BaseSpecification<Product>
 public static OrderSpecification ByEmail(string email) => new(o => o.BuyerEmail == email);
 ```
 
+## Request flow (how a spec runs end-to-end)
+
+A spec only *describes* a query — a bag of properties (`Criteria`, `Includes`, `OrderByDesc`, `Skip/Take`…). It runs nothing. Three roles:
+
+- **Recipe** (`*Specification`) — builder methods (`AddCriteria`/`AddInclude`/`AddOrderBy…`) *set* properties. No DB.
+- **Cook** (`GenericRepository` + `SpecificationEvaluator`) — *read* those properties, build the EF query. Still no DB.
+- **Kitchen** (EF Core) — `ToListAsync`/`ToList`/`Count` translate to SQL and execute. ([EF: queries run only when enumerated](https://learn.microsoft.com/en-us/ef/core/querying/how-query-works))
+
+Road map (e.g. dashboard `GetAllAsync(spec)`):
+
+```
+Controller → Service → [build spec] → UnitOfWork.Repository → GenericRepository.GetAllAsync
+→ ApplySpecification → SpecificationEvaluator.GetQuery → ApplyCommon → ToListAsync → SQL → List<T> → back to Service
+```
+
+The spec's properties are read in exactly **one** place — `SpecificationEvaluator.ApplyCommon` + `GetQuery` (the `Criteria` / `Includes` / `OrderBy` / `IsDistinct` / `IsPagingEnabled` `if`-checks). Those `if`s are the only "checking points"; nothing else inspects a spec.
+
 ## Rules / Constraints
 
 - Namespace must be `Application.Specifications` — not nested under the class name.

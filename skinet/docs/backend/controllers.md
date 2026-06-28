@@ -8,9 +8,20 @@ All endpoints, auth requirements, and return types.
 
 | Method | Route | Returns | Notes |
 |---|---|---|---|
+| GET | `/api/admin/dashboard` | `DashboardDto` | Counts, revenue (`PaymentReceived` only), low-stock + recent-orders previews. Via `IDashboardService` (in-memory aggregation) |
 | GET | `/api/admin/orders` | `Pagination<OrderDto>` | `[FromQuery] OrderSpecParams` — filter/sort/page |
 | GET | `/api/admin/orders/{id}` | `OrderDto` | 400 if not found |
 | POST | `/api/admin/orders/refund/{id}` | `OrderDto` | 400 if Pending or refund fails |
+
+**Dashboard payload (`DashboardDto`)** — the admin's "how's the shop doing?" screen in one call:
+
+| Field | What the admin learns | Why it matters |
+|---|---|---|
+| `TotalProducts` | catalog size | sanity check |
+| `TotalOrders` / `PendingOrders` | order volume + backlog | pending = work to fulfill today |
+| `TotalRevenue` | revenue (`PaymentReceived` only) | the headline number |
+| `LowStockProducts` | items running out (≤ threshold) | restock before they sell out — 0 stock = lost sales |
+| `RecentOrders` | latest orders | quick "what just happened" |
 
 **Refund rules:**
 - `OrderStatus.Pending` cannot be refunded (payment not captured yet)
