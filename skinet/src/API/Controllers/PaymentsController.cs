@@ -89,15 +89,7 @@ public class PaymentsController(IPaymentService payService,
                 return;
             }
 
-            var orderTotalInCents = (long)Math.Round(order.GetTotal() * 100, MidpointRounding.AwayFromZero);
-
-            if (orderTotalInCents != intent.Amount)
-                order.Status = OrderStatus.PaymentMismatch;
-
-            else
-                order.Status = OrderStatus.PaymentReceived;
-
-            await unitOfWork.Complete();
+            await payService.ReconcileOrderPayment(order, intent.Amount);
 
             // SignalR
             var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);

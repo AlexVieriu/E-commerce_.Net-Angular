@@ -12,6 +12,7 @@ All endpoints, auth requirements, and return types.
 | GET | `/api/admin/orders` | `Pagination<OrderDto>` | `[FromQuery] OrderSpecParams` — filter/sort/page |
 | GET | `/api/admin/orders/{id}` | `OrderDto` | 400 if not found |
 | POST | `/api/admin/orders/refund/{id}` | `OrderDto` | 400 if Pending or refund fails |
+| POST | `/api/admin/orders/{id}/sync-payment-status` | `OrderDto` | Re-fetches the PaymentIntent from Stripe and reconciles — recovery path for a missed webhook. 400 if not found or already Refunded |
 
 **Dashboard payload (`DashboardDto`)** — the admin's "how's the shop doing?" screen in one call:
 
@@ -27,6 +28,12 @@ All endpoints, auth requirements, and return types.
 - `OrderStatus.Pending` cannot be refunded (payment not captured yet)
 - Calls `PaymentService.RefundPayment(paymentIntentId)` — must return `"succeeded"`
 - Sets `order.Status = OrderStatus.Refunded` and saves
+
+**Sync-payment-status rules:**
+- `OrderStatus.Refunded` is excluded — a stale Stripe read must never overwrite money that already moved
+- Calls `PaymentService.SyncOrderPaymentStatus(order)`, which re-fetches the `PaymentIntent` from Stripe and
+  runs it through the same `ReconcileOrderPayment` the webhook uses — one rule, two triggers (push vs pull)
+- Pushes the same `OrderCompleteNotification` SignalR event the webhook pushes, if the buyer is connected
 
 ## OrdersController
 

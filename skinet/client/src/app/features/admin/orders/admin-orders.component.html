@@ -51,6 +51,10 @@
                                 (click)="openConfirmDialog(order.id)">
                                 <mat-icon class="text-red-500">undo</mat-icon>
                             </button>
+                            <button matTooltip="Sync payment status from Stripe" [disabled]="order.status === 'Refunded'"
+                                mat-icon-button (click)="syncPaymentStatus(order.id)">
+                                <mat-icon class="text-blue-500">sync</mat-icon>
+                            </button>
                         </div>
                     </td>
                 </ng-container>

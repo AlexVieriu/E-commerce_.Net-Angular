@@ -30,4 +30,8 @@ export class AdminService {
   refundOrder(id: number) {
     return this.http.post<Order>(this.baseUrl + 'admin/orders/refund/' + id, {});
   }
+
+  syncPaymentStatus(id: number) {
+    return this.http.post<Order>(this.baseUrl + 'admin/orders/' + id + '/sync-payment-status', {});
+  }
 }

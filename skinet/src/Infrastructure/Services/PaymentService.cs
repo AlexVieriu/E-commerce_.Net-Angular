@@ -45,53 +45,26 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
         return refund.Status;
     }
 
-    private async Task CreateUpdatePaymentIntentAsync(ShoppingCart cart, long amount)
+    public async Task ReconcileOrderPayment(Order order, long paidAmountInCents)
     {
-        var serviceIntent = new PaymentIntentService();
+        var orderTotalInCents = (long)Math.Round(order.GetTotal() * 100, MidpointRounding.AwayFromZero);
 
-        if (string.IsNullOrEmpty(cart.PaymentIntentId))
-        {
-            var options = new PaymentIntentCreateOptions
-            {
-                Amount = amount,
-                Currency = "usd",
-                PaymentMethodTypes = ["card"]
-            };
+        order.Status = orderTotalInCents != paidAmountInCents
+            ? OrderStatus.PaymentMismatch
+            : OrderStatus.PaymentReceived;
 
-            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = $"{cart.Id}-{Guid.NewGuid()}" });
-            cart.PaymentIntentId = intent.Id;
-            cart.ClientSecret = intent.ClientSecret;
-        }
-        else
-        {
-            var options = new PaymentIntentUpdateOptions
-            {
-                Amount = amount,
-            };
-
-            await serviceIntent.UpdateAsync(cart.PaymentIntentId, options);
-        }
+        await _unitOfWork.Complete();
     }
 
-    private async Task<long> ApplyDiscountAsync(AppCoupon appCoupon, long amount)
+    public async Task SyncOrderPaymentStatus(Order order)
     {
-        var couponService = new Stripe.CouponService();
+        var intentService = new PaymentIntentService();
+        var intent = await intentService.GetAsync(order.PaymentIntentId);
 
-        var coupon = await couponService.GetAsync(appCoupon.Id);
-
-        if (coupon.AmountOff.HasValue)
-            amount -= (long)coupon.AmountOff;
-        if (coupon.PercentOff.HasValue)
-            amount -= (long)(amount * (coupon.PercentOff.Value / 100));
-
-        return Math.Max(amount, 0); // Ensure amount does not go negative
+        await ReconcileOrderPayment(order, intent.Amount);
     }
 
-    private long CalculateSubtotal(ShoppingCart cart)
-    {
-        var itemTotal = cart.Items.Sum(i => i.Quantity * i.Price * 100);
-        return (long)itemTotal;
-    }
+    // Private helpers below, in the order CreateOrUpdatePaymentIntent calls them.
 
     private async Task<long?> GetShippingPriceAsync(ShoppingCart cart)
     {
@@ -118,6 +91,54 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
             {
                 item.Price = productItem.Price;
             }
+        }
+    }
+
+    private long CalculateSubtotal(ShoppingCart cart)
+    {
+        var itemTotal = cart.Items.Sum(i => i.Quantity * i.Price * 100);
+        return (long)itemTotal;
+    }
+
+    private async Task<long> ApplyDiscountAsync(AppCoupon appCoupon, long amount)
+    {
+        var couponService = new Stripe.CouponService();
+
+        var coupon = await couponService.GetAsync(appCoupon.Id);
+
+        if (coupon.AmountOff.HasValue)
+            amount -= (long)coupon.AmountOff;
+        if (coupon.PercentOff.HasValue)
+            amount -= (long)(amount * (coupon.PercentOff.Value / 100));
+
+        return Math.Max(amount, 0); // Ensure amount does not go negative
+    }
+
+    private async Task CreateUpdatePaymentIntentAsync(ShoppingCart cart, long amount)
+    {
+        var serviceIntent = new PaymentIntentService();
+
+        if (string.IsNullOrEmpty(cart.PaymentIntentId))
+        {
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = amount,
+                Currency = "usd",
+                PaymentMethodTypes = ["card"]
+            };
+
+            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = $"{cart.Id}-{Guid.NewGuid()}" });
+            cart.PaymentIntentId = intent.Id;
+            cart.ClientSecret = intent.ClientSecret;
+        }
+        else
+        {
+            var options = new PaymentIntentUpdateOptions
+            {
+                Amount = amount,
+            };
+
+            await serviceIntent.UpdateAsync(cart.PaymentIntentId, options);
         }
     }
 }

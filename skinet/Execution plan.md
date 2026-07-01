@@ -88,7 +88,7 @@ Sprint end: full test suite green. Verify Azure. Update README.
 | 24 | Bogus seed: 50+ products, 10+ users, 20+ orders. `dotnet run -- --seed` | M | -- | Need data before admin pages |
 | 27 | Dashboard backend: `GET /api/admin/dashboard` (counts, revenue, lowStock, recent) | S | -- | Pure C#, finish all backend before Angular |
 | 25 | Admin layout: parent + sidebar + child routes (/admin/dashboard, /products, /orders) | M | -- | LEARN: Lazy loading + child routes. Verify orders still work |
-| 26 | Order status update: `PUT /api/admin/orders/{id}/status` + Material dropdown | S | 25 | |
+| 26 | Payment status reconciliation: `POST /api/admin/orders/{id}/sync-payment-status` — re-sync from Stripe | S | 25 | Reuses webhook match/mismatch logic; no free-form entry. Fulfillment status (Shipped/Delivered) admin control rides with T40 |
 | 28 | Dashboard frontend: 3 Material Cards + recent orders table | M | 25,27 | |
 | 29 | Product list: Material Table + Paginator, wire to existing GET /api/products | M | 25 | Copy existing admin table pattern |
 | 30 | Product create/edit: reactive form, Material inputs. Text URL for image (no upload) | M | 25 | |

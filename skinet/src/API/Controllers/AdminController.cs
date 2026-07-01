@@ -4,7 +4,8 @@ namespace API.Controllers;
 public class AdminController(
     IUnitOfWork unit,
     IPaymentService paymentService,
-    IDashboardService dashboardService) : BaseApiController
+    IDashboardService dashboardService,
+    IHubContext<NotificationHub> hubContext) : BaseApiController
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<DashboardDto>> GetDashboard(CancellationToken cancellationToken)
@@ -48,9 +49,31 @@ public class AdminController(
         order.Status = OrderStatus.Refunded;
 
         // w8 for Db to update
-        // the await ensures that for this specific request, the return statement 
+        // the await ensures that for this specific request, the return statement
         // only happens after the DB operation is completed
         await unit.Complete();
+
+        return order.ToDto();
+    }
+
+    [HttpPost("orders/{id:int}/sync-payment-status")]
+    public async Task<ActionResult<OrderDto>> SyncPaymentStatus(int id)
+    {
+        var spec = OrderSpecification.ById(id);
+        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null)
+            return BadRequest("No order found with this id");
+
+        // Refunded is money-truth from the refund endpoint — never let a stale Stripe read overwrite it.
+        if (order.Status == OrderStatus.Refunded)
+            return BadRequest("Refunded orders can't be re-synced");
+
+        await paymentService.SyncOrderPaymentStatus(order);
+
+        var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
+        if (!string.IsNullOrEmpty(connectionId))
+            await hubContext.Clients.Client(connectionId).SendAsync("OrderCompleteNotification", order.ToDto());
 
         return order.ToDto();
     }

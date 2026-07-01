@@ -76,4 +76,10 @@ export class AdminOrdersComponent {
       this.refundOrder(id);
 
   }
+
+  syncPaymentStatus(id: number) {
+    this.adminService.syncPaymentStatus(id).subscribe({
+      next: () => this.orders.reload()
+    });
+  }
 }
