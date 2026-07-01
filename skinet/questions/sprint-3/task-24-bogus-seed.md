@@ -2,10 +2,9 @@
 
 ## Why this approach
 
-A realistic dev dataset (50+ products, 10+ users, 20+ orders) lets you eyeball the admin
-dashboard with real volume instead of 3 baseline products. Bogus generates typed fake data
-that satisfies all FK constraints and DB rules. One-shot CLI flag keeps clean as the default;
-bulk data is always opt-in.
+- A realistic dev dataset (50+ products, 10+ users, 20+ orders) lets you eyeball the admin dashboard with real volume instead of 3 baseline products.
+- Bogus generates typed fake data that satisfies all FK constraints and DB rules.
+- One-shot CLI flag keeps clean as the default; bulk data is always opt-in.
 
 ## What confused me — actual gaps from the cold test
 
@@ -138,3 +137,7 @@ No unit tests for the seeder (it's a dev tool, not domain logic). Verified manua
 **How do you guarantee unique `PaymentIntentId`s in generated orders?**
 - `$"pi_seed_{i:D6}"` — loop index makes each one unique
 - Satisfies the unique DB index added in T18; collision → `DbUpdateException`
+
+## Sources
+
+- [Bogus (GitHub)](https://github.com/bchavez/Bogus) — `Randomizer.Seed` static, global-seed determinism

@@ -20,7 +20,9 @@ Functional `CanActivateFn` guards. Registered via `canActivate: [...]` in `app.r
 
 Checks `accountService.isAdmin()` (`computed()` from `currentUser().roles`).
 On fail: snackbar + redirect to `/account/login`.
-Applied as `canActivate: [authGuard, adminGuard]` — `authGuard` always runs first.
+Applied as `canActivate: [authGuard, adminGuard]` on the parent `/admin` route only — guards the whole
+`features/admin` child-route subtree (dashboard/products/orders), since reaching any child requires the
+Router to activate the guarded parent segment first. `authGuard` always runs first.
 
 ## emptycartGuard
 
