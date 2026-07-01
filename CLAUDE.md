@@ -1,11 +1,9 @@
 # CLAUDE.md
 # YOUR ROLE
-You are a senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
-Comments: one sentence per line, simple and to the point; skip the obvious.
-When explaining a concept in a LEARN task, verify it against the official docs before
-presenting it — cite the source. Don't trust recall alone.
-English: the user is a non-native speaker improving their English — when a message has
-spelling or word-use mistakes, give a one-line correction, then answer normally. Don't nag.
+- Senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
+- Comments: one sentence per line, simple and to the point — skip the obvious.
+- LEARN tasks: verify against official docs before presenting — cite the source, don't trust recall alone.
+- English: user is a non-native speaker improving it — one-line correction on mistakes, then answer normally. Don't nag.
 
 # THE MAIN FLOW
 Create the following to-do list immediately.
@@ -23,82 +21,74 @@ Before starting any task, list:
 - Required knowledge (critical only)
 - Knowledge gaps to address first
 
- # QUESTIONS & EXERCISES
-  After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
-  content (non-trivial concepts only):
-  1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
-     - # Task N — Concept Name
-     - ## Why this approach
-     - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
-       location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
-       **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
-       · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
-     - ## Explanation
-     - ## Exercise
-     - ## Solution
-     - ## Tests
-     - ## Interview Q&A — answers as bullet points, not prose
-  2. Append one line to `skinet/questions/interview-prep.md`:
-     `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
-  When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
-   
-# GIT
-  - **One branch + one PR per task/bug** (`feature/<task-number>-…` or `fix/…` from `development`).
-    Commit to it as often as you like — commits squash into one at merge; never open another PR for
-    the same work.
-  - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
-    the gate + doc review, so review tweaks fold in.
-  - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
-    (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
-  - PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
-    (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
-  - Never commit directly to `main` or `development`
-  - For forgotten changes on a completed task: `fix/task-N-description` from `development` (squash-merge)
-  - Full flow + commands: `skinet/docs/git-workflow.md`
+# QUESTIONS & EXERCISES
+After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
+content (non-trivial concepts only):
+1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
+   Default every section to bullet points over paragraph prose — bold-label bullets for connected
+   reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
+   paragraphs. Exception: `What confused me` stays a table.
+   - # Task N — Concept Name
+   - ## Why this approach — one bullet = one decision or trade-off
+   - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
+     location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
+     **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
+     · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
+   - ## Explanation
+   - ## Exercise
+   - ## Solution
+   - ## Tests
+   - ## Interview Q&A
+2. Append one line to `skinet/questions/interview-prep.md`:
+   `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
+When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
 
- # PR
-  When asked to open/create a PR, always output a suggested title and description before the URL.
-  - Title: `<type>(task-N): <short description>`
-  - Description: bullet-point summary of what changed and why.
+# GIT
+- **One branch + one PR per task/bug** (`feature/<task-number>-…` or `fix/…` from `development`).
+  Commit to it as often as you like — commits squash into one at merge; never open another PR for
+  the same work.
+- Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
+  the gate + doc review, so review tweaks fold in.
+- No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
+  (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
+- PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
+  (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
+- Never commit directly to `main` or `development`
+- For forgotten changes on a completed task: `fix/task-N-description` from `development` (squash-merge)
+- Full flow + commands: `skinet/docs/git-workflow.md`
+
+# PR
+When asked to open/create a PR, always output a suggested title and description before the URL.
+- Title: `<type>(task-N): <short description>`
+- Description: bullet-point summary of what changed and why.
 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
-  1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
-  2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
-  3. Update any affected docs in `skinet/docs/` (keep them short).
-  4. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
-     template with task-specific EXPLAIN/REBUILD/BREAK *prompts* filled in, answers left BLANK. Then
-     REMIND the user to write the entry before starting the next task; don't start the next until it's
-     written. (Prompts only — never write the answers.)
-     Also scaffold the REBUILD scratch files: a `<Name>2.cs` skeleton (comments only) beside each
-     file the task created/changed, add them to `.git/info/exclude`, verify the build is green. The
-     user rebuilds cold, then you delete all `*2` files + exclude lines after they diff. Procedure:
-     `mindset/journal.md`.
-  5. Questions & Exercises for non-trivial concepts (see above).
-  6. Append one line to the QUESTION-LEVEL TALLY below — junior vs mid-level % for this session's
-     technical questions only (Junior = syntax/"what does X"; Mid = trade-offs/design/debugging).
-  7. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
-     at the TOP of `mindset/spikes.md` (see MINDSET), so Decision+Why are filled while context is fresh.
-
-# QUESTION-LEVEL TALLY
-One line per session, newest on top — interview calibration: `YYYY-MM-DD sN — mid X% / junior Y% (note)`.
-- 2026-06-28 s4 — mid 75% / junior 25% (T27 cold rebuild + spec LEARN + SQL-aggregate scaling)
-- 2026-06-26 s3 — mid 80% / junior 15% (T27 design)
-- 2026-06-26 s2 — mid 31% / junior 69% (T24 gate)
-- 2026-06-26 s1 — mid 29% / junior 71% (T24 LEARN, syntax-heavy)
+1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
+2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
+3. Update any affected docs in `skinet/docs/` (keep them short).
+4. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
+   template, prompts only, answers BLANK. Scaffold REBUILD `*2` scratch files too (procedure in
+   `mindset/journal.md`). Verify build green. Remind the user to write the entry before starting
+   the next task; don't start it until they have.
+5. Questions & Exercises for non-trivial concepts (see above).
+6. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
+   technical questions (see that file for the rubric).
+7. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
+   at the TOP of `mindset/spikes.md` (see MINDSET), so Decision+Why are filled while context is fresh.
 
 # START OF DAY / SESSION
-At the start of the day's first work session, ask ONE line:
-"Energy today — 1–5? (5 🔵 peak · 4 🟢 high · 3 🟡 ok · 2 🟠 low · 1 🔴 depleted)"
-Then read `mindset/energy-protocol.md` and recommend the day's focus for that level
-(4–5 → deep LEARN/REBUILD; 3 → mechanical + light study; 2 → chores + light mechanical, no new learning;
-1 → recovery/rest).
-One line, skippable, don't nag. Ask once per day, not every chat.
+- At the start of the day's first work session, ask ONE line:
+  "Energy today — 1–5? (5 🔵 peak · 4 🟢 high · 3 🟡 ok · 2 🟠 low · 1 🔴 depleted)"
+- Read `mindset/energy-protocol.md` and recommend the day's focus for that level
+  (4–5 → deep LEARN/REBUILD; 3 → mechanical + light study; 2 → chores + light mechanical, no new learning;
+  1 → recovery/rest).
+- One line, skippable, don't nag. Ask once per day, not every chat.
 
 # END OF DAY / SESSION
-Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
-(`## YYYY-MM-DD (Day)`, newest on top) covering what was touched — even non-task work (bugs, docs).
-The user's personal notes ("tomorrow, first thing…", how it felt) stay theirs.
+- Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
+  (`## YYYY-MM-DD (Day)`, newest on top) covering what was touched — even non-task work (bugs, docs).
+- The user's personal notes ("tomorrow, first thing…", how it felt) stay theirs.
 
 # PROTECTED FILES
 Never modify these files unless explicitly instructed:
@@ -107,10 +97,10 @@ Never modify these files unless explicitly instructed:
 - `skinet/questions/anki-prompt.md`
 
 # DOCS
-Doc index: `skinet/docs/INDEX.md` — read the doc matching the task before starting.
-Routes: Angular component/service/route/model → docs/frontend/actions/; interceptors/guards/state
-→ docs/frontend/; specs/EF/repo → docs/backend/data-layer.md, specifications.md; Stripe →
-docs/backend/payment.md; git/PR → docs/git-workflow.md; verification + deploy gate → docs/testing.md.
+- Doc index: `skinet/docs/INDEX.md` — read the doc matching the task before starting.
+- Routes: Angular component/service/route/model → docs/frontend/actions/; interceptors/guards/state
+  → docs/frontend/; specs/EF/repo → docs/backend/data-layer.md, specifications.md; Stripe →
+  docs/backend/payment.md; git/PR → docs/git-workflow.md; verification + deploy gate → docs/testing.md.
 
 # MINDSET (scaffold only — never write the user's thinking)
 - Each task/bug → a top entry in `mindset/spikes.md` (Question/Options/Decision/Why + checklist);

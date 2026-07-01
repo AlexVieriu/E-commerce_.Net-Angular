@@ -202,6 +202,7 @@ Sprint end: final deploy + smoke test. Share with someone.
 - [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jul 18 – Aug 1)*
 - [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Aug 2 – Aug 16)*
 - [ ] Interview-deck / Anki prep *(Aug 17 – Aug 30)*
+  - [ ] *(optional, last priority, post-ship)* **T57 — Preview spike:** on a throwaway branch (never merged/deployed), bump to .NET 11 RC + Angular 23-next, read the migration guide + skim what's new, write interview talking-points notes. Shipping app stays on .NET 10 / Angular 22 GA.
 
 ## Certifications *(never steals build days or run days)*
 

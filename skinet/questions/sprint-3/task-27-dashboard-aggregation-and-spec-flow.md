@@ -2,13 +2,11 @@
 
 ## Why this approach
 
-The admin dashboard is one screen answering "how's the shop doing?" — counts, revenue, low-stock
-alerts, recent orders — in a single call. The work lives behind a dedicated `IDashboardService`
-(controller stays thin, dependency inversion keeps it modular), and the numbers are computed
-**in memory**: load the rows, aggregate with LINQ. Deliberate "fine at this scale" call — the
-admin dataset is small, and the revenue total uses `Order.GetTotal()` (a C# method EF can't
-translate to SQL), so in-memory sidesteps that entirely. The escape hatch is documented in a
-comment: at larger scale, push `COUNT`/`SUM` into SQL via repo aggregate methods.
+- The admin dashboard is one screen answering "how's the shop doing?" — counts, revenue, low-stock alerts, recent orders — in a single call.
+- The work lives behind a dedicated `IDashboardService` (controller stays thin, dependency inversion keeps it modular).
+- Numbers are computed **in memory**: load the rows, aggregate with LINQ — a deliberate "fine at this scale" call, since the admin dataset is small.
+- The revenue total uses `Order.GetTotal()` (a C# method EF can't translate to SQL), so in-memory sidesteps that entirely.
+- Escape hatch documented in a comment: at larger scale, push `COUNT`/`SUM` into SQL via repo aggregate methods.
 
 ## What confused me — actual gaps from the LEARN + cold test
 
@@ -139,3 +137,8 @@ return new DashboardDto
 **Count vs preview cap?**
 - Counts (`LowStockCount`, `TotalOrders`) are exact
 - List fields are capped previews (`Take(10)`/`Take(5)`) so the payload stays small
+
+## Sources
+
+- [Asynchronous Programming - EF Core | Microsoft Learn](https://learn.microsoft.com/en-us/ef/core/miscellaneous/async) — deferred execution, materialization
+- [Client vs. Server Evaluation - EF Core | Microsoft Learn](https://learn.microsoft.com/en-us/ef/core/querying/client-eval) — why `GetTotal()` can't translate to SQL

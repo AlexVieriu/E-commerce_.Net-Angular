@@ -16,6 +16,7 @@
 | Jun 25 | T24 | Bogus seed: 70 products / 13 users / 25 orders via `dotnet run -- --seed` (one-shot, dev-only, idempotent, deterministic). Real images by type; unique `PaymentIntentId`; brand casing aligned to baseline. Verified live: product/brand/order endpoints, order totals checked. 136 tests green. |
 | Jun 26 | fix/deps | Dependency refresh: all packages → latest GA (framework 10.0.9; majors Redis 2→3.0.7, Stripe.net 51→52.1.0) + cleared SQLitePCLRaw advisory (`bundle_e_sqlite3 3.0.3` override). Build 0/0, 136 green, 0 vulnerable solution-wide. Dev-smoked Redis + Stripe. |
 | Jun 26 | T27 | Dashboard backend: `GET /api/admin/dashboard` via `IDashboardService` (in-memory aggregation, controller stays thin). `DashboardDto` + lean `LowStockProductDto`/`RecentOrderDto`; revenue = `PaymentReceived` only (net of discount, incl. shipping); low-stock threshold 5; recent/low-stock previews capped. 138 tests green; live-verified against seed (70 products / 25 orders). |
+| Jul 1 | T25 | Admin layout: `AdminComponent` shell (mat-sidenav + `<router-outlet>`) + `features/admin/routes.ts` child routes (dashboard/products/orders), guarded once at the parent (`[authGuard, adminGuard]`), lazy-loaded via `loadChildren`. Verified live (5/5): guard blocks non-admin, `/admin` redirects to dashboard, child routes swap, deep-link survives refresh, orders+refund work. Gate passed: cold rebuild PASS/PARTIAL across all 4 pieces, EXPLAIN + BREAK answered (shell/placeholder, guard activation not inheritance, `pathMatch:'full'` infinite-loop). |
 
 ---
 
@@ -45,7 +46,7 @@
 - [x] T8 — FluentValidation: auto-validation, CreateOrderDto + CreateProductDTO
 - [x] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
 - [x] T27 — Dashboard backend: `GET /api/admin/dashboard`
-- [ ] T25 — Admin layout: parent + sidebar + child routes
+- [x] T25 — Admin layout: parent + sidebar + child routes
 - [ ] T26 — Order status update: `PUT /api/admin/orders/{id}/status`
 - [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table
 - [ ] T29 — Product list: Material Table + Paginator

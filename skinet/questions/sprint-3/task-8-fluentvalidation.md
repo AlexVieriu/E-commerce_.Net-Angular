@@ -2,11 +2,12 @@
 
 ## Why this approach
 
-DTO rules used to live as **DataAnnotations** on the DTO itself (`[Required]`, `[Range]`). `[ApiController]` runs those automatically during model binding and returns a 400. That's fine for trivial rules but couples validation to the data contract, can't inject dependencies (e.g. "name must be unique" needs the DB), and is awkward for cross-field / conditional rules.
-
-We migrated to **FluentValidation**: rules move into separate `AbstractValidator<TDto>` classes. They're testable in isolation, DI-friendly (async DB checks), composable (`SetValidator`), and — the architecture reason — **portable**: a validator is a plain Application-layer class with no MVC coupling, so it travels with its module if we ever extract a microservice. It's also the natural fit for the future MediatR pipeline (a `ValidationBehavior`) the empty `Commands/Behaviors/` folders are scaffolding for.
-
-The one real decision was *how to trigger* FluentValidation, since `[ApiController]` doesn't run it. Two options: a hand-rolled action filter, or the `SharpGrip.FluentValidation.AutoValidation` package. **Chose the custom filter (option A)** — ~25 lines, no dependency, full control of the 400 shape, and high learning/interview value. The wiring is throwaway at the MediatR migration anyway, so there's nothing to lose by writing it myself.
+- DTO rules used to live as **DataAnnotations** on the DTO itself (`[Required]`, `[Range]`), auto-run by `[ApiController]` during model binding → 400.
+- Fine for trivial rules, but couples validation to the data contract, can't inject dependencies (e.g. "name must be unique" needs the DB), and is awkward for cross-field / conditional rules.
+- Migrated to **FluentValidation**: rules move into separate `AbstractValidator<TDto>` classes — testable in isolation, DI-friendly (async DB checks), composable (`SetValidator`).
+- Architecture reason — **portable**: a validator is a plain Application-layer class with no MVC coupling, so it travels with its module if a microservice is ever extracted. Also the natural fit for a future MediatR `ValidationBehavior` pipeline (the empty `Commands/Behaviors/` folders scaffold for this).
+- The one real decision: *how to trigger* FluentValidation, since `[ApiController]` doesn't run it. Two options — a hand-rolled action filter, or the `SharpGrip.FluentValidation.AutoValidation` package.
+- **Chose the custom filter (option A)** — ~25 lines, no dependency, full control of the 400 shape, high learning/interview value. The wiring is throwaway at the MediatR migration anyway, so nothing lost by writing it myself.
 
 ## What confused me — the actual gaps from the cold test / LEARN session
 
@@ -264,6 +265,20 @@ public void ShouldFail_WhenPriceIsNotPositive(decimal badPrice)
 - Payoff: no rule duplication, single responsibility, test the child in isolation, fix a rule once
 - It's "**has-a**, not is-a" — favor **composition over inheritance** (an Order *has an* Address, it isn't one)
 - Other shapes: `RuleForEach(...).SetValidator(...)` for collections, `Include(other)` to merge rule sets
+
+## Sources
+
+- [Model validation in ASP.NET Core MVC | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/mvc/models/validation) — `[ApiController]` auto-400 is DataAnnotations-only
+- [Filters in ASP.NET Core | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/mvc/controllers/filters) — authorization filters run before action filters
+- [Dependency injection in ASP.NET Core | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) — captive dependency, service lifetimes
+- [Access HttpContext in ASP.NET Core | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-context) — `RequestServices` = per-request scope
+- [ModelStateDictionary.cs (dotnet/aspnetcore)](https://github.com/dotnet/aspnetcore/blob/main/src/Mvc/Mvc.Abstractions/src/ModelBinding/ModelStateDictionary.cs) — `IsValid` is a computed property, not a stored flag
+- [Dependency Injection — FluentValidation docs](https://docs.fluentvalidation.net/en/latest/di.html) — `AddValidatorsFromAssemblyContaining` defaults to scoped
+- [Setting the Cascade mode — FluentValidation docs](https://docs.fluentvalidation.net/en/latest/cascade.html) — `CascadeMode.Continue` default (runs all rules)
+- [Built-in Validators — FluentValidation docs](https://docs.fluentvalidation.net/en/latest/built-in-validators.html) — `NotNull` vs `NotEmpty`
+- [Creating your first validator — FluentValidation docs](https://docs.fluentvalidation.net/en/latest/start.html) — `SetValidator` for complex properties
+- [Test Extensions — FluentValidation docs](https://docs.fluentvalidation.net/en/latest/testing.html) — `TestValidate`
+- [Access Modifiers - C# reference | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/access-modifiers) — `file` modifier (C# 11)
 
 ---
 
