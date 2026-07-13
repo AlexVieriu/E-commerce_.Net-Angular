@@ -5,7 +5,7 @@ namespace Infrastructure.Services;
 // PaymentService and its private helpers call Stripe SDK classes (PaymentIntentService,
 // RefundService, CouponService) directly via `new` — there is no DI seam to mock.
 // Unit testing would require a full Stripe test-mode sandbox (real HTTP calls).
-// Architectural fix: inject an IStripeClient abstraction. Deferred — out of scope for this sprint.
+// Architectural fix: inject an IStripeClient abstraction
 [ExcludeFromCodeCoverage]
 public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : IPaymentService
 {
@@ -28,7 +28,6 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
 
         var total = subtotal + shippingPrice;
 
-        // Tests: only for integration testing 
         await CreateUpdatePaymentIntentAsync(cart, total);
 
         await _cartService.SetCartAsync(cart);
@@ -64,11 +63,10 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
         await ReconcileOrderPayment(order, intent.Amount);
     }
 
-    // Private helpers below, in the order CreateOrUpdatePaymentIntent calls them.
+    // Private helpers below, in the order CreateOrUpdatePaymentIntent calls them
 
     private async Task<long?> GetShippingPriceAsync(ShoppingCart cart)
     {
-
         if (cart.DeliveryMethodId.HasValue)
         {
             var deliveryMethod = await _unitOfWork.Repository<DeliveryMethod>()
@@ -88,9 +86,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
                 .GetByIdAsync(item.ProductId) ?? throw new InvalidOperationException("Problem getting product in cart");
 
             if (item.Price != productItem.Price)
-            {
                 item.Price = productItem.Price;
-            }
         }
     }
 

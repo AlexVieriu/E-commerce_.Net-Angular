@@ -1,3 +1,4 @@
+
 namespace API.Controllers;
 
 [Authorize(Roles = "Admin")]
@@ -21,20 +22,21 @@ public class AdminController(
             unit.Repository<Order>(), spec, specParams.PageIndex, specParams.PageSize, x => x.ToDto());
     }
 
-    [HttpGet("orders/{id}")]
+    [HttpGet("orders/{id:int}")]
     public async Task<ActionResult<OrderDto>> GetOrderById(int id)
     {
-        var spec = OrderSpecification.ById(id);
-        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+        var order = await GetOrderByIdAsync(id);
 
-        return order != null ? Ok(order.ToDto()) : BadRequest("No order found with this id");
+        if (order == null)
+            return BadRequest("No order found with this id");
+
+        return order.ToDto();
     }
 
     [HttpPost("orders/refund/{id:int}")]
     public async Task<ActionResult<OrderDto>> RefundOrder(int id)
     {
-        var spec = OrderSpecification.ById(id);
-        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+        var order = await GetOrderByIdAsync(id);
 
         if (order == null)
             return BadRequest("No order found with this id");
@@ -47,10 +49,6 @@ public class AdminController(
             return BadRequest("Refund failed");
 
         order.Status = OrderStatus.Refunded;
-
-        // w8 for Db to update
-        // the await ensures that for this specific request, the return statement
-        // only happens after the DB operation is completed
         await unit.Complete();
 
         return order.ToDto();
@@ -59,8 +57,7 @@ public class AdminController(
     [HttpPost("orders/{id:int}/sync-payment-status")]
     public async Task<ActionResult<OrderDto>> SyncPaymentStatus(int id)
     {
-        var spec = OrderSpecification.ById(id);
-        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+        var order = await GetOrderByIdAsync(id);
 
         if (order == null)
             return BadRequest("No order found with this id");
@@ -77,4 +74,7 @@ public class AdminController(
 
         return order.ToDto();
     }
+
+    private async Task<Order?> GetOrderByIdAsync(int id)
+        => await unit.Repository<Order>().GetEntityWithSpec(OrderSpecification.ById(id));
 }

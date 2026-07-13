@@ -70,6 +70,12 @@ dotnet run --project src/API                              # baseline (admin + pr
 - Never call `SaveChangesAsync` directly — use `unitOfWork.Complete()`.
 - Never reference derived contexts outside `Program.cs`.
 - Always migrate both providers when changing schema.
+- Entities fetched via the repository (`GetByIdAsync`, `GetEntityWithSpec`) are already tracked by the
+  request's scoped `StoreContext` — just mutate properties and call `unitOfWork.Complete()`;
+  `SaveChangesAsync` diffs live values against the load-time snapshot (`ChangeTracker.DetectChanges()`)
+  and generates the `UPDATE` itself. `Update()` (`Attach` + `EntityState.Modified`) is only for a
+  **detached** entity the context has never tracked — e.g. one built from a deserialized request body.
+  Calling `Update()` on an already-tracked entity is redundant.
 
 ## Common Mistakes
 

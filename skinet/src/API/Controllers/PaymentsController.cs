@@ -1,10 +1,11 @@
 namespace API.Controllers;
 
-public class PaymentsController(IPaymentService payService,
-                                IUnitOfWork unitOfWork,
-                                ILogger<PaymentsController> logger,
-                                IOptions<StripeSettings> stripeOptions,
-                                IHubContext<NotificationHub> hubContext) : BaseApiController
+public class PaymentsController(
+    IPaymentService payService,
+    IUnitOfWork unitOfWork,
+    ILogger<PaymentsController> logger,
+    IOptions<StripeSettings> stripeOptions,
+    IHubContext<NotificationHub> hubContext) : BaseApiController
 {
     private readonly string _whSecret = stripeOptions.Value.WhSecret;
 
@@ -49,13 +50,13 @@ public class PaymentsController(IPaymentService payService,
         }
         catch (StripeException ex)
         {
-            // This is send back to stripe
+            // This is sent back to Stripe
             logger.LogError(ex, "Stripe webhook error");
             return StatusCode(StatusCodes.Status500InternalServerError, "Stripe webhook error");
         }
         catch (Exception ex)
         {
-            // This is send back to stripe
+            // This is sent back to Stripe
             logger.LogError(ex, "Failed to handle stripe event");
             return StatusCode(StatusCodes.Status500InternalServerError, "Failed to handle stripe event");
         }
@@ -66,7 +67,7 @@ public class PaymentsController(IPaymentService payService,
         try
         {
             return EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"],
-            _whSecret, throwOnApiVersionMismatch: false);
+                _whSecret, throwOnApiVersionMismatch: false);
         }
         catch (Exception ex)
         {
@@ -77,27 +78,26 @@ public class PaymentsController(IPaymentService payService,
 
     private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
     {
-        if (intent.Status == "succeeded")
+        if (intent.Status != "succeeded")
+            return;
+
+        var spec = OrderSpecification.ByPaymentIntent(intent.Id);
+
+        var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null)
         {
-            var spec = OrderSpecification.ByPaymentIntent(intent.Id);
-
-            var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
-
-            if (order == null)
-            {
-                logger.LogWarning("Order not found for PaymentIntent {PaymentIntentId}", intent.Id);
-                return;
-            }
-
-            await payService.ReconcileOrderPayment(order, intent.Amount);
-
-            // SignalR
-            var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
-
-            if (!string.IsNullOrEmpty(connectionId))
-                await hubContext.Clients.Client(connectionId)
-                    .SendAsync("OrderCompleteNotification", order.ToDto());
+            logger.LogWarning("Order not found for PaymentIntent {PaymentIntentId}", intent.Id);
+            return;
         }
+
+        await payService.ReconcileOrderPayment(order, intent.Amount);
+
+        // SignalR
+        var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
+
+        if (!string.IsNullOrEmpty(connectionId))
+            await hubContext.Clients.Client(connectionId)
+                .SendAsync("OrderCompleteNotification", order.ToDto());
     }
 }
-

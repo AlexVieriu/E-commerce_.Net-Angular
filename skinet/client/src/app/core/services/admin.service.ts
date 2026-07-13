@@ -1,8 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { OrderParams } from '../../shared/models/order/orderParams';
-import { Pagination } from '../../shared/models/pagination';
+import { HttpClient } from '@angular/common/http';
 import { Order } from '../../shared/models/order/order';
 
 @Injectable({
@@ -12,26 +10,15 @@ export class AdminService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
 
-  getOrders(orderParams: OrderParams) {
-    let params = new HttpParams();
-    if (orderParams.filter && orderParams.filter !== 'All') {
-      params = params.append('status', orderParams.filter);
-    }
-    params = params.append('pageNumber', orderParams.pageNumber);
-    params = params.append('pageSize', orderParams.pageSize);
-
-    return this.http.get<Pagination<Order>>(this.baseUrl + 'admin/orders', { params })
-  }
-
-  getOrder(id: number) {
-    return this.http.get<Order>(this.baseUrl + 'admin/orders/' + id);
-  }
-
   refundOrder(id: number) {
-    return this.http.post<Order>(this.baseUrl + 'admin/orders/refund/' + id, {});
+    return this.post(`admin/orders/refund/${id}`);
   }
 
   syncPaymentStatus(id: number) {
-    return this.http.post<Order>(this.baseUrl + 'admin/orders/' + id + '/sync-payment-status', {});
+    return this.post(`admin/orders/${id}/sync-payment-status`);
+  }
+
+  private post(path: string) {
+    return this.http.post<Order>(this.baseUrl + path, {});
   }
 }

@@ -10,7 +10,8 @@ import { MatLabel, MatSelectChange, MatSelectModule } from '@angular/material/se
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Order } from '../../../shared/models/order/order';
+import { Observable } from 'rxjs';
+import { Order, OrderStatus } from '../../../shared/models/order/order';
 import { OrderParams } from '../../../shared/models/order/orderParams';
 import { Pagination } from '../../../shared/models/pagination';
 import { RouterLink } from '@angular/router';
@@ -37,7 +38,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class AdminOrdersComponent {
   displayedColumns: string[] = ['id', 'buyerEmail', 'orderDate', 'total', 'status', 'action'];
-  statusOptions = ['All', 'PaymentReceived', 'PaymentMismatch', 'Refunded', 'Pending'];
+  statusOptions: (OrderStatus | 'All')[] = ['All', 'PaymentReceived', 'PaymentMismatch', 'Refunded', 'Pending'];
 
   private adminService = inject(AdminService);
   private dialogService = inject(DialogService);
@@ -46,11 +47,14 @@ export class AdminOrdersComponent {
 
   orders = httpResource<Pagination<Order>>(() => {
     const p = this.orderParams();
-    const params: Record<string, string> = {
-      pageNumber: p.pageNumber.toString(),
-      pageSize: p.pageSize.toString(),
+    const params: Record<string, string | number> = {
+      pageNumber: p.pageNumber,
+      pageSize: p.pageSize
     };
-    if (p.filter && p.filter !== 'All') params['status'] = p.filter;
+
+    if (p.filter && p.filter !== 'All')
+      params['status'] = p.filter;
+
     return { url: environment.apiUrl + 'admin/orders', params };
   });
 
@@ -62,24 +66,23 @@ export class AdminOrdersComponent {
     this.orderParams.update(p => ({ ...p, filter: event.value, pageNumber: 1 }));
   }
 
-  refundOrder(id: number) {
-    this.adminService.refundOrder(id).subscribe({
-      next: () => this.orders.reload()
-    });
-  }
-
   async openConfirmDialog(id: number) {
     const confirmed = await this.dialogService.confirm(
       'Confirm Refund', 'Are you sure you want to refund this order?');
 
     if (confirmed)
       this.refundOrder(id);
+  }
 
+  refundOrder(id: number) {
+    this.reloadAfter(this.adminService.refundOrder(id));
   }
 
   syncPaymentStatus(id: number) {
-    this.adminService.syncPaymentStatus(id).subscribe({
-      next: () => this.orders.reload()
-    });
+    this.reloadAfter(this.adminService.syncPaymentStatus(id));
+  }
+
+  private reloadAfter(action: Observable<Order>) {
+    action.subscribe({ next: () => this.orders.reload() });
   }
 }
