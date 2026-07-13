@@ -15,7 +15,7 @@ namespace Infrastructure.Migrations.SQLite
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
             modelBuilder.Entity("Core.Entities.Address", b =>
                 {
@@ -491,7 +491,6 @@ namespace Infrastructure.Migrations.SQLite
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("State")
-                                .IsRequired()
                                 .HasColumnType("TEXT");
 
                             b1.HasKey("OrderId");
