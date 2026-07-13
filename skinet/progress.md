@@ -20,6 +20,7 @@
 | Jul 2 | T26 | Payment status reconciliation: `POST /api/admin/orders/{id}/sync-payment-status`, recovery path for a missed webhook. Rescoped mid-spike from a free-form status dropdown (rejected — payment status must be Stripe-sourced only) to a reconcile endpoint reusing the webhook's match/mismatch rule via new `IPaymentService.ReconcileOrderPayment`/`SyncOrderPaymentStatus`. `Refunded` orders excluded. 140 tests green (2 new); verified live via UI (stuck-Pending → sync → PaymentReceived, webhook regression check) + Scalar (Refunded/not-found/idempotent-resync edge cases). Gate passed: cold rebuild PASS on backend, EXPLAIN + BREAK answered (shared-method drift risk, SignalR circular-reference constraint, missing-guard corrupts Dashboard revenue). |
 | Jul 13 | T26 merge, BUG-12 | Merged T26 (PR #53). Found + fixed BUG-12: admin orders paginator was dead — Angular sent `pageNumber`, backend binds `PagingParams.PageIndex`, so model binding silently dropped it and page 2+ re-served page 1 (`pageSize` bound fine, which is why it looked alive). Shop already did it right (`shop.service.ts:38`); the admin table skipped the rename. Verified live. Also logged BUG-11 + BUG-12 in `Execution plan.md` — neither was tracked there. |
 | Jul 13 | BUG-11 | Checkout 400 for stateless countries (Romania). Spike said "1-line fix (the validator)" — wrong: `State` was mandatory at **4** layers (TS model, validator, entity, NOT NULL column), so dropping the validator alone would have turned a clean 400 into a `DbUpdateException` **after** Stripe took the money. Root discovery: `MakeAddressStateOptional` (Apr 6) had already fixed the *wrong* entity — `Address` (saved profile), not `ShippingAddress` (owned entity in `Orders`, what checkout uses). Fixed per-country (Option B): `State` required only for US/CA/AU — Stripe's own validated list. New migration both providers; `AddressPipe` now drops empty parts (was rendering `", ,"`). 147 tests green (7 new). Verified live: RO order created, US still enforced. |
+| Jul 13 | BUG-13 | Shipping name persisted as the literal string `"null null"` — `stripe.service.ts` did `user.firstName + ' ' + user.lastName`, and JS coerces null to `"null"`; the seeded admin has neither name, so `"null null"` was saved onto the order. Third lying TS model of the day: `user.ts` declared `firstName: string` / `address: Address` while the backend has `string?` / `user.Address?.toDto()` — the type lie is *why* the concat looked safe. Fixed with a null-safe join + honest types. Verified live (named account prefills, RO/US both clean). Forward-only: orders already saved with `"null null"` keep it. |
 
 ---
 
@@ -53,7 +54,7 @@
 - [x] T26 — Payment status reconciliation: `POST /api/admin/orders/{id}/sync-payment-status`
 - [x] BUG-12 — Admin orders paginator dead (`pageNumber` → `pageIndex` on the wire)
 - [x] BUG-11 — Checkout 400 for stateless countries (e.g. Romania)
-- [ ] BUG-13 — Shipping name saved as literal `"null null"` (JS null-concat in `stripe.service.ts`)
+- [x] BUG-13 — Shipping name saved as literal `"null null"` (JS null-concat in `stripe.service.ts`)
 - [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table
 - [ ] T29 — Product list: Material Table + Paginator
 - [ ] T30 — Product create/edit: reactive form, Material inputs
