@@ -6,7 +6,8 @@ public class ShippingAddress
     public required string Line1 { get; set; }
     public string? Line2 { get; set; }
     public required string City { get; set; }
-    public required string State { get; set; }
+    // Optional: stateless countries (e.g. Romania) have no state/region. Enforced per-country in ShippingAddressValidator.
+    public string? State { get; set; }
     public required string PostalCode { get; set; }
     public required string Country { get; set; }
 }
