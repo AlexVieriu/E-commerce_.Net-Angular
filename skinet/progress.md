@@ -18,6 +18,7 @@
 | Jun 26 | T27 | Dashboard backend: `GET /api/admin/dashboard` via `IDashboardService` (in-memory aggregation, controller stays thin). `DashboardDto` + lean `LowStockProductDto`/`RecentOrderDto`; revenue = `PaymentReceived` only (net of discount, incl. shipping); low-stock threshold 5; recent/low-stock previews capped. 138 tests green; live-verified against seed (70 products / 25 orders). |
 | Jul 1 | T25 | Admin layout: `AdminComponent` shell (mat-sidenav + `<router-outlet>`) + `features/admin/routes.ts` child routes (dashboard/products/orders), guarded once at the parent (`[authGuard, adminGuard]`), lazy-loaded via `loadChildren`. Verified live (5/5): guard blocks non-admin, `/admin` redirects to dashboard, child routes swap, deep-link survives refresh, orders+refund work. Gate passed: cold rebuild PASS/PARTIAL across all 4 pieces, EXPLAIN + BREAK answered (shell/placeholder, guard activation not inheritance, `pathMatch:'full'` infinite-loop). |
 | Jul 2 | T26 | Payment status reconciliation: `POST /api/admin/orders/{id}/sync-payment-status`, recovery path for a missed webhook. Rescoped mid-spike from a free-form status dropdown (rejected — payment status must be Stripe-sourced only) to a reconcile endpoint reusing the webhook's match/mismatch rule via new `IPaymentService.ReconcileOrderPayment`/`SyncOrderPaymentStatus`. `Refunded` orders excluded. 140 tests green (2 new); verified live via UI (stuck-Pending → sync → PaymentReceived, webhook regression check) + Scalar (Refunded/not-found/idempotent-resync edge cases). Gate passed: cold rebuild PASS on backend, EXPLAIN + BREAK answered (shared-method drift risk, SignalR circular-reference constraint, missing-guard corrupts Dashboard revenue). |
+| Jul 13 | T26 merge, BUG-12 | Merged T26 (PR #53). Found + fixed BUG-12: admin orders paginator was dead — Angular sent `pageNumber`, backend binds `PagingParams.PageIndex`, so model binding silently dropped it and page 2+ re-served page 1 (`pageSize` bound fine, which is why it looked alive). Shop already did it right (`shop.service.ts:38`); the admin table skipped the rename. Verified live. Also logged BUG-11 + BUG-12 in `Execution plan.md` — neither was tracked there. |
 
 ---
 
@@ -49,6 +50,8 @@
 - [x] T27 — Dashboard backend: `GET /api/admin/dashboard`
 - [x] T25 — Admin layout: parent + sidebar + child routes
 - [x] T26 — Payment status reconciliation: `POST /api/admin/orders/{id}/sync-payment-status`
+- [x] BUG-12 — Admin orders paginator dead (`pageNumber` → `pageIndex` on the wire)
+- [ ] BUG-11 — Checkout 400 for stateless countries (e.g. Romania)
 - [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table
 - [ ] T29 — Product list: Material Table + Paginator
 - [ ] T30 — Product create/edit: reactive form, Material inputs
