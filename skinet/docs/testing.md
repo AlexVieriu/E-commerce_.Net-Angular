@@ -28,6 +28,11 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 > _Sprint 2:_ Price change T17 — reach the **Payment** step, then edit that product's `Price` in
 > `data/store.db` → expect **409 + redirect to cart, no charge**. Idempotency (T16/T18) + concurrency
 > (T13/T14) have no clean manual check → just confirm `dotnet test` is green.
+>
+> _Sprint 3:_ Payment sync T26 — skip `stripe listen` for one checkout (webhook never fires) → order
+> stuck **Pending** → admin orders table → "sync" icon → expect **PaymentReceived** + SignalR
+> notification (if that session is still connected). Then run one checkout **with** `stripe listen`
+> running to confirm the webhook path still works unchanged.
 
 **Infra** — confirm against Azure *before* the push (app boots without them but fails on first cart/cache use or payment):
 - [ ] App Service **Redis** connection string set (not `localhost`)

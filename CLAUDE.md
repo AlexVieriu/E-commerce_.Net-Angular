@@ -23,7 +23,8 @@ Before starting any task, list:
 
 # QUESTIONS & EXERCISES
 After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
-content (non-trivial concepts only):
+content (non-trivial concepts only). Verify every technical claim against the official docs *before*
+writing — cite what you used in `## Sources`; don't trust recall alone.
 1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
    Default every section to bullet points over paragraph prose — bold-label bullets for connected
    reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
@@ -39,6 +40,7 @@ content (non-trivial concepts only):
    - ## Solution
    - ## Tests
    - ## Interview Q&A
+   - ## Sources — official docs backing the claims above (link + what it confirms)
 2. Append one line to `skinet/questions/interview-prep.md`:
    `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
 When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
