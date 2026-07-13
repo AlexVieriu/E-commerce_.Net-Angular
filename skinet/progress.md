@@ -45,7 +45,7 @@
 - [x] T17 — Price change detection: cart vs DB, 409 + snackbar + redirect
 - [x] T19 — Expand unit tests: specs, discount edges, validators. Target 80% → achieved 90% Core, 89.3% Application
 
-## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
+## Sprint 3 — Admin Panel *(Jun 16 – Jul 1 · closed Jul 13 — **goal not met**, 5/8 delivered)*
 
 - [x] T8 — FluentValidation: auto-validation, CreateOrderDto + CreateProductDTO
 - [x] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
@@ -55,50 +55,57 @@
 - [x] BUG-12 — Admin orders paginator dead (`pageNumber` → `pageIndex` on the wire)
 - [x] BUG-11 — Checkout 400 for stateless countries (e.g. Romania)
 - [x] BUG-13 — Shipping name saved as literal `"null null"` (JS null-concat in `stripe.service.ts`)
-- [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table
-- [ ] T29 — Product list: Material Table + Paginator
-- [ ] T30 — Product create/edit: reactive form, Material inputs
+- → T28 / T29 / T30 **spilled to Sprint A**
 
-## Sprint 4 — Frontend Quality + UX *(Jul 2 – Jul 17)*
+> **Why it missed:** over-ran 12 days. Backend flew (T27 in a day); the Angular half (T25) + a mid-sprint
+> rescope (T26) + an 11-day energy stop ate the slack. Three real bugs surfaced late and none were planned
+> for. **Lesson: the plan had no room for bugs, and bug-time is not optional.**
 
-- [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers
-- [ ] T55 — Lighthouse baseline: run on `/`, `/shop`, `/checkout`
+## Re-baseline — 2026-07-13
+
+Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned against **measured velocity**.
+
+- **Root cause:** the six "sprints" were **epics**, not **timeboxes** — a themed container can't absorb
+  spillover without breaking its own theme, so each became a mini-waterfall that couldn't end. Now split:
+  sprints = timeboxes (end on the date, whatever fits); epics = labels.
+- **Measured velocity** (Jun 16 → Jul 13, 28 days): ~12 pts / 28 days = **0.43 pts/day** (S=1, M=2, L=4).
+- **Arithmetic:** ~50 pts remaining vs ~30 pts capacity to Sep 6 (55 days @ ~0.55 pts/day with Uber hours
+  reduced) → **~22 pts (~40%) descoped.**
+- **Levers spent:** Aug 30 → **Sep 6** (+1 wk, hard limit) · Uber hours reduced · **AZ-204 pushed past v1.0**
+  (it was double-booked against the same hours).
+- **No slack left.** One more bad week = cut again immediately, don't grind. Cut order: README(47) >
+  deploy(53) > admin CRUD(28–31) > E2E(37) > rest.
+
+## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* ⏳ CURRENT
+
+- [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table *(spillover)*
+- [ ] T29 — Product list: Material Table + Paginator *(spillover)*
+- [ ] T30 — Product create/edit: reactive form, Material inputs *(spillover)*
 - [ ] T31 — Product delete: reuse ConfirmationDialogComponent
-- [ ] T32 — Memory leak audit: `takeUntilDestroyed()`
-- [ ] T33 — Form errors: `<mat-error>` on login/register
-- [ ] T34 — Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent
-- [ ] T35 — NgOptimizedImage: `ngSrc` + priority/lazy
-- [ ] T56 — Performance pass: MiniProfiler + bundle analyzer, fix top 3, re-run Lighthouse
-- [ ] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin)
-- [ ] T38 — README update with UX screenshots
+- [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers
 
-## Sprint 5 — Domain Expansion *(Jul 18 – Aug 1)*
+## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)*
 
+- [ ] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin) — timebox 4d
 - [ ] T40 — OrderStatus: Processing/Shipped/Delivered/Cancelled + OrderStatusHistory
 - [ ] T41 — Order cancellation: POST cancel + Stripe refund
-- [ ] T39 — Email: IEmailService + Channel\<T\> BackgroundService
-- [ ] T42 — Soft delete: IsDeleted+DeletedAt + global query filter
-- [ ] T43 — DB indexes: unique PaymentIntentId, BuyerEmail, composite
-- [ ] T46 — Unit tests: cancellation, soft delete, OrderStatusHistory
-- [ ] T20 — Integration tests: WebApplicationFactory + TestContainers
+- [ ] BUG-2 — Checkout: declined card can't retry in-session (money path)
 
-## Sprint 6 — Polish + Standout *(Aug 2 – Aug 16)*
+## Sprint C — Ship It *(Aug 11 – Aug 24)*
 
-- [ ] T47 — README rewrite: overview, stack, diagram, screenshots/GIFs
+- [ ] T47 — README rewrite *(day 1, highest ROI)*
+- [ ] T12 — Cart ownership: userId in Redis, verify on read/write *(IDOR — must not ship)*
 - [ ] T52 — Open redirect: validate returnUrl starts with `/`
 - [ ] T48 — C4 diagram (Context+Container) in Mermaid
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
-- [ ] T49 — docker-compose full: SQL Server + Redis + Seq
-- [ ] T51 — RequireConfirmedEmail
-- [ ] T53 — Final Azure smoke test
+- [ ] T43 — DB indexes: unique PaymentIntentId, BuyerEmail, composite
+- [ ] T21 — Coverage gate: coverlet, fail PR < 60%
+- [ ] T38 — README UX screenshots
 
-### If Ahead
+## Buffer *(Aug 25 – Sep 6)* — DO NOT FILL
 
-- [ ] T10 — Health checks: SQL Server + Redis
-- [ ] T22 — Serilog + Seq
-- [ ] T23 — Correlation IDs
-- [ ] T21 — Coverage gate: fail PR < 60%
-- [ ] T2 — Dockerfile multi-stage
-- [ ] T12 — Cart ownership: userId in Redis
-- [ ] T11 — Pagination: TotalPages, HasNext, HasPrev
-- [ ] T36 — Accessibility: axe on home/shop/checkout
+- [ ] T53 — Final Azure smoke test *(non-negotiable, always last)*
+- [ ] Interview deck + Anki prep + slack
+
+> Descoped for v1.0 (~22 pts): see `Execution plan.md`.
+
