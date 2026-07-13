@@ -82,4 +82,32 @@ public class CreateOrderDto_Validation_Tests
 
         _validator.TestValidate(dto).ShouldHaveValidationErrorFor(x => x.PaymentSummary);
     }
+
+    // BUG-11: State is a US/CA/AU concept — requiring it everywhere 400s stateless countries.
+    [Theory]
+    [InlineData("RO")]   // Romania — Stripe's Address Element omits state entirely
+    [InlineData("GB")]
+    [InlineData("FR")]
+    public void ShouldPass_WhenStateIsMissing_ForStatelessCountry(string country)
+    {
+        var dto = ValidDto();
+        dto.ShippingAddress.Country = country;
+        dto.ShippingAddress.State = null;
+
+        _validator.TestValidate(dto).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Theory]
+    [InlineData("US")]
+    [InlineData("CA")]
+    [InlineData("AU")]
+    [InlineData("us")]   // Stripe sends ISO codes; the rule must not be case-sensitive
+    public void ShouldFail_WhenStateIsMissing_ForStateRequiringCountry(string country)
+    {
+        var dto = ValidDto();
+        dto.ShippingAddress.Country = country;
+        dto.ShippingAddress.State = null;
+
+        _validator.TestValidate(dto).ShouldHaveValidationErrorFor("ShippingAddress.State");
+    }
 }
