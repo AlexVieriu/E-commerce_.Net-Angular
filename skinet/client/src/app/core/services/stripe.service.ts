@@ -65,8 +65,11 @@ export class StripeService {
         const user = this.accountService.currentUser();
         let defaultValues: StripeAddressElementOptions['defaultValues'] = {};
 
-        if (user) {
-          defaultValues.name = user.firstName + ' ' + user.lastName;
+        // Never concatenate directly — a user with no first/last name would yield the
+        // literal string "null null", which then gets saved onto the order (BUG-13).
+        const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+        if (fullName) {
+          defaultValues.name = fullName;
         }
 
         if (user?.address) {
