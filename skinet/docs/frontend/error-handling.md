@@ -1,19 +1,8 @@
 # Frontend Error Handling
 
-All HTTP errors handled centrally by `errorInterceptor`. Components don't catch HTTP errors directly.
-
-## Status Code → Action
-
-| Status | Has `errors` field | Action |
-|---|---|---|
-| 400 | Yes | `throw new ValidationError(errors[])` |
-| 400 | No | snackbar |
-| 401 | — | snackbar |
-| 403 | — | snackbar "Forbidden" |
-| 404 | — | navigate `/not-found` |
-| 500 | — | navigate `/server-error` (error in router state) |
-
-**Snackbar message resolution:** `err.error.title || err.error.message || err.error`
+All HTTP errors handled centrally by `errorInterceptor` — components don't catch HTTP errors directly.
+Full status-code → action table lives in [`interceptors.md`](interceptors.md); this doc covers what
+happens downstream of that interceptor.
 
 ## ValidationError
 

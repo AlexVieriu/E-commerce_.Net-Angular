@@ -46,3 +46,13 @@ Runs the action first, then deletes all Redis keys matching the pattern. Only in
 
 - `[Cache]` only caches `OkObjectResult` — errors are never cached.
 - `[InvalidateCache]` pattern must match the cache key prefix (`"api/products|"` clears all product keys).
+
+## Common Mistakes
+
+- Adding a new mutating endpoint without `[InvalidateCache]` — invalidation is TTL-only otherwise, so
+  stale cached data lingers until the cache entry expires on its own, not when the underlying data changes.
+- A typo'd or mismatched `[InvalidateCache]` pattern (e.g. `"api/product|"` vs the real `"api/products|"`
+  prefix) — `RemoveCacheByPattern` just matches nothing and silently no-ops. No error, no log, just stale
+  data that looks like a caching bug instead of a string mismatch.
+- Expecting a `[Cache]`-decorated action's error responses to be cached too — only `OkObjectResult` is
+  ever stored, so a 400/404/500 always re-executes the action on the next request.

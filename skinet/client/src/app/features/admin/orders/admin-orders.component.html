@@ -5,7 +5,7 @@
         <mat-form-field appearance="outline" class="w-48">
             <mat-label>Filter by status</mat-label>
             <mat-select (selectionChange)="onFilterSelect($event)">
-                @for (status of statusOptions; track $index){
+                @for (status of statusOptions; track status){
                 <mat-option [value]="status">{{status}}</mat-option>
                 }
             </mat-select>
@@ -43,13 +43,18 @@
                 <ng-container matColumnDef="action">
                     <th mat-header-cell *matHeaderCellDef> Actions </th>
                     <td mat-cell *matCellDef="let order">
+                        @let isRefunded = order.status === 'Refunded';
                         <div class="flex gap-3">
-                            <button matTooltip="View" mat-icon-button routerLink="/orders/{{order.id}}">
+                            <button matTooltip="View" mat-icon-button [routerLink]="['/orders', order.id]">
                                 <mat-icon class="text-purple-500">visibility</mat-icon>
                             </button>
-                            <button matTooltip="Refund" [disabled]="order.status === 'Refunded'" mat-icon-button
+                            <button matTooltip="Refund" [disabled]="isRefunded" mat-icon-button
                                 (click)="openConfirmDialog(order.id)">
                                 <mat-icon class="text-red-500">undo</mat-icon>
+                            </button>
+                            <button matTooltip="Sync payment status from Stripe" [disabled]="isRefunded"
+                                mat-icon-button (click)="syncPaymentStatus(order.id)">
+                                <mat-icon class="text-blue-500">sync</mat-icon>
                             </button>
                         </div>
                     </td>

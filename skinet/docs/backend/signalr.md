@@ -12,7 +12,8 @@ public static string? GetConnectionId(string email)
     => UserConnections.TryGetValue(email, out var id) ? id : string.Empty;
 ```
 
-Called by `PaymentsController` to push `OrderCompleteNotification` to the buyer after a successful webhook.
+Called by `PaymentsController` (after a webhook confirms payment) and `AdminController` (after an
+admin-triggered payment sync) to push `OrderCompleteNotification` to the buyer — same event, two triggers.
 
 Registered in `Program.cs`:
 ```csharp
@@ -35,6 +36,9 @@ Guard in `createHubConnection()` prevents duplicate connections — no-op if alr
 - `[Authorize]` on the hub — unauthenticated clients are rejected.
 - `GetConnectionId` returns empty string (not null) when email not found — check before sending.
 - In-memory dictionary doesn't scale across multiple servers — use Redis backplane for scale-out.
+- `NotificationHub` lives in `API` — Infrastructure-layer services can't reference it directly (`API`
+  already references `Infrastructure`; the reverse is circular). The push always happens in the
+  controller, not the service.
 
 ## Common Mistakes
 

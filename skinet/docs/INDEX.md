@@ -27,7 +27,7 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 
 - **architecture.md** — standalone components, lazy routes, core/shared/features split
 - **state-management.md** — signal-based state in services (cart, account)
-- **interceptors.md** — auth / loading / error interceptors
+- **interceptors.md** — auth / loading / error interceptors, incl. the full status-code → action table
 - **guards.md** — auth / admin / emptycart / orderComplete route guards
-- **error-handling.md** — error interceptor, snackbar, server-error/not-found pages
+- **error-handling.md** — `ValidationError`, `server-error` component, `ApiErrorResponse` typing (downstream of the interceptor — status-code table lives in interceptors.md)
 - **actions/** — step-by-step how-tos: `create-component`, `create-service`, `create-route`, `create-model`
