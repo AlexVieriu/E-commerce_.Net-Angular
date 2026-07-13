@@ -47,8 +47,9 @@ export class AdminOrdersComponent {
 
   orders = httpResource<Pagination<Order>>(() => {
     const p = this.orderParams();
+    // Wire param is `pageIndex` (matches PagingParams.PageIndex); the model calls it pageNumber.
     const params: Record<string, string | number> = {
-      pageNumber: p.pageNumber,
+      pageIndex: p.pageNumber,
       pageSize: p.pageSize
     };
 
