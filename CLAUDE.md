@@ -22,33 +22,30 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-After each completed task. **`## The Questions` + `## Hints` are written BEFORE the cold test** (they
-give nothing away); **`## Answers` is written AFTER it**, so the gaps you surfaced drive the content
-(non-trivial concepts only). Verify every technical claim against the official docs *before* writing —
-cite what you used in `## Sources`; don't trust recall alone.
+After each completed task. **`## The Change Map` + `## Hints` are written BEFORE the cold test** (study
+material and location anchors — they give nothing away); **everything else is written AFTER it**, so the
+gaps you surfaced drive the content (non-trivial concepts only). Verify every technical claim against the
+official docs *before* writing — cite what you used in `## Sources`; don't trust recall alone.
 1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
    Default every section to bullet points over paragraph prose — bold-label bullets for connected
    reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
    paragraphs. Exception: `What confused me` stays a table.
    - # Task N — Concept Name
-   - ## The Ideas — **the spine. 3–5 numbered, load-bearing ideas the task turns on.** Everything below
-     is a *view* of this one list: REBUILD writes where they live, EXPLAIN asks why idea N works, BREAK
-     asks what happens when idea N is violated, Answers tells 1..N as one chain. **Nothing new may appear
-     at test time.**
-   - ## The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** This is the study material,
-     not the answers. Two lists: **LOAD-BEARING** (the ~5-10 files that *are* the task, each tagged with
-     its Idea number) and **MECHANICAL** (the reformat/`--fix`/codegen noise — named so you know to skip it).
-     A 157-file diff must reduce to ~8 files and ~5 ideas here, or the task can't be studied at all.
-   - ## The Questions — the gate's 3 EXPLAIN + 2 BREAK prompts, verbatim. Each tagged with its Idea number.
-   - ## Hints — one line per question: `file · what to notice`. A location anchor, NEVER the answer.
+   - ## The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** Study material, not answers.
+     Opens with **the Ideas** — 3–5 numbered, load-bearing ideas the task turns on; the spine every gate
+     question hangs off, so nothing new appears at test time. Then two lists: **LOAD-BEARING** (the ~5–10
+     files that *are* the task, each tagged with its Idea) and **MECHANICAL** (reformat / `--fix` / codegen
+     noise — named so it gets skipped). A 157-file diff must reduce to ~8 files and ~5 ideas, or the task
+     can't be studied at all.
+   - ## Hints — one line per gate question: `file · what to notice`. A location anchor, **never the answer.**
      The rung between "I know it" and "just tell me" — without it, every gap becomes a chat dump.
-   - ## Answers — written at LEARN, after the sit. **One chain, in order** — each answer sets up the
-     next. Five disconnected islands is what leaves nothing in your head.
    - ## Why this approach — one bullet = one decision or trade-off
    - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
      location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
      **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
      · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
+   - ## Explanation — written at LEARN, after the sit. **One chain, in order** — each idea sets up the
+     next. Disconnected islands is what leaves nothing in your head.
    - ## Exercise
    - ## Solution
    - ## Tests
@@ -79,12 +76,14 @@ When asked to open/create a PR, always output a suggested title and description 
 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
-0. **Run the gate** — `mindset/the-gate.md`. **It owns its own mechanics; don't restate them here.**
-   Six phases, ~65 min: `GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` → `GATE: REWRITE`.
-   Cap: **3 EXPLAIN + 2 BREAK**, 25-min sit, `BLANK` is a valid result.
-   Its outputs are the journal entry (`mindset/journal/sprint-N.md`) and the questions doc
-   (`skinet/questions/sprint-N/…` — see QUESTIONS & EXERCISES for the scaffold).
+0. **THE GATE — read `mindset/the-gate.md` and follow it. Do not improvise a cold test.**
+   That file is the spec: six phases (`GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` →
+   `GATE: REWRITE`), ~65 min, capped at **3 EXPLAIN + 2 BREAK**, 25-min sit, `BLANK` is a valid result.
+   **It owns its own mechanics — read them there, don't restate them here.**
+   Its outputs: the journal entry (`mindset/journal/sprint-N.md`) + the questions doc
+   (`skinet/questions/sprint-N/…` — scaffold in QUESTIONS & EXERCISES).
    **Nothing below happens until the gate has run — you don't get to tick what you can't explain.**
+   *(T54 was freestyled without reading it: ~30 questions, 4 hours, no coherent picture. Read the file.)*
 1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
 2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
 3. Update any affected docs in `skinet/docs/` (keep them short).

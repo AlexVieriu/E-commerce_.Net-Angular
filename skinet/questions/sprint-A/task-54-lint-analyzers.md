@@ -2,16 +2,18 @@
 
 `claude --resume e6d59f3a-3397-41a2-bb04-30084b7e971e`
 
-> **How to use this doc.**
-> 0. **STUDY** — read `## The Ideas` + `## The Change Map`. ~10 min. *This is the textbook.*
-> 1. Read **`## The Questions`**. Think hard. Answer from memory. **25 min, closed book.**
-> 2. Stuck? → **`## Hints`** — a location anchor, not an answer. Connect the dots yourself.
-> 3. Still stuck? → **`## Answers`** — one chain, front to back.
-> 4. Close it. Rewrite the answers **by hand** in `## Exercise`. *That's* when you know it.
+> **How to use this doc** (the gate → [`mindset/the-gate.md`](../../../mindset/the-gate.md)):
+> 1. **STUDY** — read `## The Change Map`. ~10 min. *This is the textbook, not the answer key.*
+> 2. **SIT** — the questions live in the **journal** (`mindset/journal/sprint-A.md`). Closed book, 25 min.
+> 3. Stuck? → `## Hints` — a location anchor, not an answer. Connect the dots yourself.
+> 4. Still stuck? → `## Explanation` — one chain, front to back.
+> 5. Close it. Rewrite the answers **by hand** in `## Exercise`. *That's* when you know it.
 
 ---
 
-## The Ideas — the spine
+## The Change Map
+
+### The Ideas — the spine
 
 **Everything in this doc is a view of these five.** Nothing new appears at test time.
 
@@ -25,9 +27,7 @@
 
 **The one-line version:** *a linter reads shapes; only you know meanings — and everything it gets wrong, it gets wrong **silently**.*
 
----
-
-## The Change Map
+### The files
 
 *Read this before the cold sit. 157 files changed. **Eight of them are the task.***
 
@@ -60,26 +60,6 @@
 
 ---
 
-## The Questions
-
-**EXPLAIN**
-1. Why do you need **Prettier *and* ESLint** — what does each own? And why must `eslint-config-prettier` load **last**?
-2. What actually **is** Roslyn — and why was "adding analyzers" really just turning a dial on something already running?
-3. Why is `ToLower()` a **bug** in `ProductSpecParams` but **correct** inside `ProductSpecification`? Why did the analyzer flag both — and why could only *you* tell them apart?
-4. Why is `TreatWarningsAsErrors` scoped to **Release**? And why is `$(Configuration)` *empty* — not `"Debug"` — inside `Directory.Build.props`?
-5. Why must `<NoWarn>` be written `$(NoWarn);CA1707` and never bare?
-
-**BREAK**
-1. You obey CA1862 and put `StringComparison.OrdinalIgnoreCase` inside `ProductSpecification`. What happens on the next product search — and would the 147 tests catch it?
-2. A `.csproj` writes a bare `<NoWarn>CS8618</NoWarn>`. What breaks, **what tells you**, and why is it hard to trace?
-3. Someone typos `'$(Configuraton)' == 'Release'`. What is the state of your CI gate — and **what tells you**?
-4. The app is deployed to a Turkish-locale server. A customer searches `IPHONE`. Trace it.
-
-> *This task ran 5+4 questions with sub-bullets — ~30 in total, 3 hours, and it stopped measuring anything.
-> The cap (**3 EXPLAIN + 2 BREAK, 25 min**) exists because of this task. See [the gate](../../../mindset/the-gate.md).*
-
----
-
 ## Hints — where to look
 
 *Location anchors only. These give nothing away — they tell you where to connect the dots.*
@@ -98,7 +78,7 @@
 
 ---
 
-## Answers
+## Explanation
 
 > **Read this as one chain.** Each link sets up the next. That's the whole point — these aren't nine
 > facts, they're one story about a single idea: **a linter reads shapes, and only you know meanings.**
@@ -265,7 +245,7 @@ This is the hinge of the whole task.
 
 ## Solution
 
-1. → `## Answers` §1. Compiler with a public API · **build time** · analyzers subscribe to the syntax tree it already builds.
+1. → `## Explanation` §1. Compiler with a public API · **build time** · analyzers subscribe to the syntax tree it already builds.
 2. → §2. They were already running and already finding them. `AnalysisMode` raised their severity from silent to warning. Zero packages installed.
 3. → §5. `<TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>` · `$(Configuration)` is **empty**, because the `Debug` default is assigned in `Microsoft.Common.targets` (step 4), *after* this file is imported by `Microsoft.Common.props` (step 2).
 4. → §4. `$(NoWarn);CA1707` appends; bare assigns and erases. **Nothing tells you.**
