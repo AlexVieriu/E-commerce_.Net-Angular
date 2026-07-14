@@ -26,13 +26,17 @@ public class UnitOfWork(StoreContext context) : IUnitOfWork
         return await context.SaveChangesAsync() > 0;
     }
 
+    // SuppressFinalize: this type has no finalizer, but the Dispose pattern requires the call so a
+    // derived type that *does* add one isn't finalized twice.
     public void Dispose()
     {
         context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public async ValueTask DisposeAsync()
     {
         await context.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 }

@@ -21,14 +21,14 @@ public class StoreContextSeed
 
             var createResult = await userManager.CreateAsync(admin, adminPassword);
             if (!createResult.Succeeded)
-                throw new Exception($"Failed to create admin user: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
+                throw new InvalidOperationException($"Failed to create admin user: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
         }
         else
         {
             var token = await userManager.GeneratePasswordResetTokenAsync(admin);
             var resetResult = await userManager.ResetPasswordAsync(admin, token, adminPassword);
             if (!resetResult.Succeeded)
-                throw new Exception($"Failed to reset admin password: {string.Join(", ", resetResult.Errors.Select(e => e.Description))}");
+                throw new InvalidOperationException($"Failed to reset admin password: {string.Join(", ", resetResult.Errors.Select(e => e.Description))}");
 
             // Self-heal: a restart also clears any lockout / failed-attempt count on the admin.
             await userManager.SetLockoutEndDateAsync(admin, null);

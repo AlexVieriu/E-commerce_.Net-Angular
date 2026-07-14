@@ -11,13 +11,13 @@ export class SnackbarService {
     this.snackbar.open(message, 'Close', {
       duration: 15000,
       panelClass: ['snack-error'] // .css class to style the snackbar
-    })
+    });
   }
 
   success(message: string) {
     this.snackbar.open(message, 'Close', {
       duration: 5000,
       panelClass: ['snack-success'] // .css class to style the snackbar
-    })
+    });
   }
 }

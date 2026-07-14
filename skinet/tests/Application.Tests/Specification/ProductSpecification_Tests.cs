@@ -82,7 +82,7 @@ public class ProductSpecification_Tests
     }
 
 
-    private List<Product> GetTestProducts()
+    private static List<Product> GetTestProducts()
     {
         return new List<Product>
         {
@@ -125,7 +125,7 @@ public class ProductSpecification_Tests
         };
     }
 
-    private List<Product> ApplySpec(ProductSpecification spec, List<Product> products)
+    private static List<Product> ApplySpec(ProductSpecification spec, List<Product> products)
     {
         // .ApplyCriteria method is the key bridge that allows you to test your specification
         // logic without a database

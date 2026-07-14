@@ -1,14 +1,14 @@
 // Fill the viewport below the fixed header (mt-24 on the app container) so mode="side" renders.
 .admin-shell {
-    min-height: calc(100vh - 8rem);
-    background: transparent;
+  min-height: calc(100vh - 8rem);
+  background: transparent;
 }
 
 .admin-sidenav {
-    width: 220px;
-    padding-top: 0.5rem;
+  width: 220px;
+  padding-top: 0.5rem;
 }
 
 .admin-content {
-    padding: 1rem 1.5rem;
+  padding: 1rem 1.5rem;
 }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import { ProductItemComponent } from "./product-item/product-item.component";
+import { ProductItemComponent } from './product-item/product-item.component';
 import { MatDialog } from '@angular/material/dialog';
 import { FiltersDialogComponent } from './filter-dialog/filter-dialog.component';
 import { MatButton } from '@angular/material/button';
@@ -13,7 +13,7 @@ import { Pagination } from '../../shared/models/pagination';
 import { FormsModule } from '@angular/forms';
 import { Product } from '../../shared/models/products';
 import { ShopService } from '../../core/services/shop.service';
-import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-shop',
@@ -42,16 +42,16 @@ export class ShopComponent {
   sortOptions = [
     { name: 'Alphabetical', value: 'name' },
     { name: 'Price: Low-High', value: 'priceAsc' },
-    { name: 'Price: High-Low', value: 'priceDesc' },
-  ]
-  pageSizeOptions = [5, 10, 15, 20]
+    { name: 'Price: High-Low', value: 'priceDesc' }
+  ];
+  pageSizeOptions = [5, 10, 15, 20];
 
   products = httpResource<Pagination<Product>>(() => {
     const p = this.shopParams();
     const params: Record<string, string> = {
       pageSize: p.pageSize.toString(),
       pageIndex: p.pageNumber.toString(),
-      sort: p.sort,
+      sort: p.sort
     };
     if (p.search) params['search'] = p.search;
     if (p.brands.length > 0) params['brands'] = p.brands.join(',');
@@ -65,17 +65,21 @@ export class ShopComponent {
   }
 
   onSearchChange() {
-    this.shopParams.update(p => ({ ...p, search: this.searchInput(), pageNumber: 1 }));
+    this.shopParams.update((p) => ({ ...p, search: this.searchInput(), pageNumber: 1 }));
   }
 
   handlePageEvent(event: PageEvent) {
-    this.shopParams.update(p => ({ ...p, pageNumber: event.pageIndex + 1, pageSize: event.pageSize }));
+    this.shopParams.update((p) => ({
+      ...p,
+      pageNumber: event.pageIndex + 1,
+      pageSize: event.pageSize
+    }));
   }
 
   onSortChange(event: MatSelectionListChange) {
     const selectedOption = event.options[0];
     if (selectedOption) {
-      this.shopParams.update(p => ({ ...p, sort: selectedOption.value, pageNumber: 1 }));
+      this.shopParams.update((p) => ({ ...p, sort: selectedOption.value, pageNumber: 1 }));
     }
   }
 
@@ -88,9 +92,9 @@ export class ShopComponent {
       }
     });
     dialogRef.afterClosed().subscribe({
-      next: result => {
+      next: (result) => {
         if (result) {
-          this.shopParams.update(p => ({
+          this.shopParams.update((p) => ({
             ...p,
             brands: result.selectedBrands,
             types: result.selectedTypes,

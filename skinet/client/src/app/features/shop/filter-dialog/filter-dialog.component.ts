@@ -8,18 +8,11 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-filters-dialog',
-  imports: [
-    MatDivider,
-    MatSelectionList,
-    MatListOption,
-    MatButton,
-    FormsModule
-  ],
+  imports: [MatDivider, MatSelectionList, MatListOption, MatButton, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './filter-dialog.component.html',
   styleUrl: './filter-dialog.component.scss'
 })
-
 export class FiltersDialogComponent {
   shopService = inject(ShopService);
   private dialogRef = inject(MatDialogRef<FiltersDialogComponent>);

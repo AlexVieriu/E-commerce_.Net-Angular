@@ -22,25 +22,35 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
-content (non-trivial concepts only). Verify every technical claim against the official docs *before*
-writing — cite what you used in `## Sources`; don't trust recall alone.
+After each completed task. **`## The Change Map` + `## Hints` are written BEFORE the cold test** (study
+material and location anchors — they give nothing away); **everything else is written AFTER it**, so the
+gaps you surfaced drive the content (non-trivial concepts only). Verify every technical claim against the
+official docs *before* writing — cite what you used in `## Sources`; don't trust recall alone.
 1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
    Default every section to bullet points over paragraph prose — bold-label bullets for connected
    reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
    paragraphs. Exception: `What confused me` stays a table.
    - # Task N — Concept Name
-   - ## Why this approach — one bullet = one decision or trade-off
-   - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
+   - ## 🗺️ The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** Study material, not answers.
+     Opens with **the Ideas** — 3–5 numbered, load-bearing ideas the task turns on; the spine every gate
+     question hangs off, so nothing new appears at test time. Then two lists: **LOAD-BEARING** (the ~5–10
+     files that *are* the task, each tagged with its Idea) and **MECHANICAL** (reformat / `--fix` / codegen
+     noise — named so it gets skipped). A 157-file diff must reduce to ~8 files and ~5 ideas, or the task
+     can't be studied at all.
+   - ## 🧭 Hints — one line per gate question: `file · what to notice`. A location anchor, **never the answer.**
+     The rung between "I know it" and "just tell me" — without it, every gap becomes a chat dump.
+   - ## ⚖️ Why this approach — one bullet = one decision or trade-off
+   - ## 🌫️ What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
      location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
      **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
      · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
-   - ## Explanation
-   - ## Exercise
-   - ## Solution
-   - ## Tests
-   - ## Interview Q&A
-   - ## Sources — official docs backing the claims above (link + what it confirms)
+   - ## 💡 Explanation — written at LEARN, after the sit. **One chain, in order** — each idea sets up the
+     next. Disconnected islands is what leaves nothing in your head.
+   - ## ✏️ Exercise
+   - ## ✅ Solution
+   - ## 🧪 Tests
+   - ## 🎤 Interview Q&A
+   - ## 📚 Sources — official docs backing the claims above (link + what it confirms)
 2. Append one line to `skinet/questions/interview-prep.md`:
    `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
 When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
@@ -53,8 +63,8 @@ When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution
   the gate + doc review, so review tweaks fold in.
 - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
   (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
-- PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
-  (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
+- PR to `main` at sprint end only → **squash** (exactly one commit per sprint), titled `Sprint N — <name>`
+  (task/bug lines go in the commit body; pushing `main` deploys to Azure — verify first)
 - Never commit directly to `main` or `development`
 - For forgotten changes on a completed task: `fix/task-N-description` from `development` (squash-merge)
 - Full flow + commands: `skinet/docs/git-workflow.md`
@@ -66,17 +76,20 @@ When asked to open/create a PR, always output a suggested title and description 
 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
+0. **THE GATE — read `mindset/the-gate.md` and follow it. Do not improvise a cold test.**
+   That file is the spec: six phases (`GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` →
+   `GATE: REWRITE`), ~65 min, capped at **3 EXPLAIN + 2 BREAK**, 25-min sit, `BLANK` is a valid result.
+   **It owns its own mechanics — read them there, don't restate them here.**
+   Its outputs: the journal entry (`mindset/journal/sprint-N.md`) + the questions doc
+   (`skinet/questions/sprint-N/…` — scaffold in QUESTIONS & EXERCISES).
+   **Nothing below happens until the gate has run — you don't get to tick what you can't explain.**
+   *(T54 was freestyled without reading it: ~30 questions, 4 hours, no coherent picture. Read the file.)*
 1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
 2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
 3. Update any affected docs in `skinet/docs/` (keep them short).
-4. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
-   template, prompts only, answers BLANK. Scaffold REBUILD `*2` scratch files too (procedure in
-   `mindset/journal.md`). Verify build green. Remind the user to write the entry before starting
-   the next task; don't start it until they have.
-5. Questions & Exercises for non-trivial concepts (see above).
-6. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
+4. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
    technical questions (see that file for the rubric).
-7. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
+5. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
    at the TOP of `mindset/spikes.md` (see MINDSET), so Decision+Why are filled while context is fresh.
 
 # START OF DAY / SESSION
@@ -91,6 +104,18 @@ Single checklist for post-task bookkeeping. Run in order:
 - Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
   (`## YYYY-MM-DD (Day)`, newest on top) covering what was touched — even non-task work (bugs, docs).
 - The user's personal notes ("tomorrow, first thing…", how it felt) stay theirs.
+
+# EMOJI
+Learning docs should be pleasant to open — but a landmark only works if it's rare.
+- **Emoji mark fixed, recurring section headings.** If a heading appears in *every* instance of a doc
+  type, it earns one. A sentence, a table cell, or a one-off heading does not.
+- **Where they go:** `questions/…/task-N-*.md` (🗺️🧭⚖️🌫️💡✏️✅🧪🎤📚) · `journal/sprint-N.md`
+  (🔁 REBUILD · 🧠 EXPLAIN · 💥 BREAK · ✍️ Honest note) · `mindset/the-gate.md` (the six phases) ·
+  `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
+- **Where they don't:** this file · `progress.md` rows · `daily-log.md` · `skinet/docs/**` — contracts,
+  prose, and technical reference someone else may read.
+- **Status markers are always fine, anywhere:** ✅ ⚠️ ❌ 🔴 🟡 🟢 ⏳ — they carry meaning, not decoration.
+- The failure mode is marking *everything*: if every heading is a landmark, none of them are.
 
 # PROTECTED FILES
 Never modify these files unless explicitly instructed:

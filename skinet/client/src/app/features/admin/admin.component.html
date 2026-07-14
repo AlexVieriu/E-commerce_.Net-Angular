@@ -1,17 +1,22 @@
 <mat-sidenav-container class="admin-shell">
-    <mat-sidenav mode="side" opened class="admin-sidenav">
-        <mat-nav-list>
-            @for (link of navLinks; track link.path) {
-            <a mat-list-item [routerLink]="link.path" routerLinkActive #rla="routerLinkActive"
-                [activated]="rla.isActive">
-                <mat-icon matListItemIcon>{{ link.icon }}</mat-icon>
-                <span matListItemTitle>{{ link.label }}</span>
-            </a>
-            }
-        </mat-nav-list>
-    </mat-sidenav>
+  <mat-sidenav mode="side" opened class="admin-sidenav">
+    <mat-nav-list>
+      @for (link of navLinks; track link.path) {
+        <a
+          mat-list-item
+          [routerLink]="link.path"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [activated]="rla.isActive"
+        >
+          <mat-icon matListItemIcon>{{ link.icon }}</mat-icon>
+          <span matListItemTitle>{{ link.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
 
-    <mat-sidenav-content class="admin-content">
-        <router-outlet></router-outlet>
-    </mat-sidenav-content>
+  <mat-sidenav-content class="admin-content">
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
 </mat-sidenav-container>

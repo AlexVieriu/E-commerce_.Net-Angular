@@ -1,6 +1,7 @@
 namespace API.Filters;
+// Named ...Attribute per convention; C# strips the suffix, so usage stays [InvalidateCache("...")].
 [AttributeUsage(AttributeTargets.Method)]
-public class InvalidateCache(string pattern) : Attribute, IAsyncActionFilter
+public class InvalidateCacheAttribute(string pattern) : Attribute, IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {

@@ -1,16 +1,7 @@
 namespace Infrastructure.Data;
 
-public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
 {
-    // Explicit field (not a primary constructor) so subclasses like ProductRepository 
-    // can reach it — a primary constructor's field is private.
-    protected readonly StoreContext context;
-
-    public GenericRepository(StoreContext context)
-    {
-        this.context = context;
-    }
-
     // - - - - - -  WRITES (tracked in memory, persisted via UnitOfWork.Complete)  - - - - - -
     public void Add(T entity)
         => context.Set<T>().Add(entity);
@@ -70,12 +61,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     // - - - - - -  PRIVATE HELPERS  - - - - - -
     private IQueryable<T> ApplySpecification(ISpecification<T> spec)
     {
-        return SpecificationEvaluator<T>.GetQuery(context.Set<T>().AsQueryable(), spec);
+        return SpecificationEvaluator.GetQuery(context.Set<T>().AsQueryable(), spec);
     }
 
     private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T, TResult> spec)
     {
-        return SpecificationEvaluator<T>.GetQuery<TResult>(context.Set<T>().AsQueryable(), spec);
+        return SpecificationEvaluator.GetQuery<T, TResult>(context.Set<T>().AsQueryable(), spec);
     }
 
     private async Task<int> CountAsync(ISpecification<T> spec)

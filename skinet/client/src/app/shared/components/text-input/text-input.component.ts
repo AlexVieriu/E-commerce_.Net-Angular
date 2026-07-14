@@ -5,13 +5,7 @@ import { MatInput } from '@angular/material/input';
 
 @Component({
   selector: 'app-text-input',
-  imports: [
-    ReactiveFormsModule,
-    MatFormField,
-    MatInput,
-    MatError,
-    MatLabel
-  ],
+  imports: [ReactiveFormsModule, MatFormField, MatInput, MatError, MatLabel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './text-input.component.html',
   styleUrl: './text-input.component.scss'
@@ -25,11 +19,16 @@ export class TextInputComponent implements ControlValueAccessor {
     this.controlDir.valueAccessor = this;
   }
 
-  writeValue(obj: any): void {
+  // Required by ControlValueAccessor, but intentionally no-ops: the template binds the FormControl
+  // directly (see `control` below), so Angular's own directive handles value and touch propagation.
+  writeValue(): void {
+    // no-op
   }
-  registerOnChange(fn: any): void {
+  registerOnChange(): void {
+    // no-op
   }
-  registerOnTouched(fn: any): void {
+  registerOnTouched(): void {
+    // no-op
   }
 
   get control() {

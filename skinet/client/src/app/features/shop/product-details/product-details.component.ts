@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  linkedSignal
+} from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { MatButton } from '@angular/material/button';
@@ -32,8 +39,10 @@ export class ProductDetailsComponent {
 
   id = input.required<string>();
   product = httpResource<Product>(() => environment.apiUrl + 'products/' + this.id());
-  quantityInCart = computed(() =>
-    this.cartService.cart()?.items.find(x => x.productId === this.product.value()?.id)?.quantity ?? 0
+  quantityInCart = computed(
+    () =>
+      this.cartService.cart()?.items.find((x) => x.productId === this.product.value()?.id)
+        ?.quantity ?? 0
   );
   quantity = linkedSignal(() => this.quantityInCart() || 1);
 

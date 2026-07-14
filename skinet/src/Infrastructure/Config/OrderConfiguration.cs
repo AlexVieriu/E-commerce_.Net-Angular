@@ -12,7 +12,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         // for Enum conversation
         builder.Property(o => o.Status).HasConversion(
             a => a.ToString(),
-            a => (OrderStatus)Enum.Parse(typeof(OrderStatus), a)
+            a => Enum.Parse<OrderStatus>(a)
         );
 
         // builder.Property(x => x.Subtotal).HasColumnType("decimal(18,2)");
