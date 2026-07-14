@@ -1,6 +1,7 @@
 namespace API.Controllers;
 
-public class PaymentsController(
+// `partial` so the [LoggerMessage] source generator can emit the bodies of the log methods below.
+public partial class PaymentsController(
     IPaymentService payService,
     IUnitOfWork unitOfWork,
     ILogger<PaymentsController> logger,
@@ -8,6 +9,21 @@ public class PaymentsController(
     IHubContext<NotificationHub> hubContext) : BaseApiController
 {
     private readonly string _whSecret = stripeOptions.Value.WhSecret;
+
+    // Source-generated logging (CA1848). The generator writes a strongly-typed Action per message, so
+    // the template is parsed once at startup instead of on every call, and value-type args aren't boxed.
+    // Static + an ILogger parameter: the generator can't reach a primary-constructor parameter.
+    [LoggerMessage(Level = LogLevel.Error, Message = "Stripe webhook error")]
+    private static partial void LogStripeWebhookError(ILogger logger, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to handle stripe event")]
+    private static partial void LogStripeEventHandlingFailed(ILogger logger, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to construct stripe event")]
+    private static partial void LogStripeEventConstructionFailed(ILogger logger, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Order not found for PaymentIntent {PaymentIntentId}")]
+    private static partial void LogOrderNotFound(ILogger logger, string paymentIntentId);
 
     [Authorize]
     [HttpPost("{cartId}")]
@@ -51,13 +67,13 @@ public class PaymentsController(
         catch (StripeException ex)
         {
             // This is sent back to Stripe
-            logger.LogError(ex, "Stripe webhook error");
+            LogStripeWebhookError(logger, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, "Stripe webhook error");
         }
         catch (Exception ex)
         {
             // This is sent back to Stripe
-            logger.LogError(ex, "Failed to handle stripe event");
+            LogStripeEventHandlingFailed(logger, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, "Failed to handle stripe event");
         }
     }
@@ -71,7 +87,7 @@ public class PaymentsController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to construct stripe event");
+            LogStripeEventConstructionFailed(logger, ex);
             throw new StripeException("Invalid signature");
         }
     }
@@ -87,7 +103,7 @@ public class PaymentsController(
 
         if (order == null)
         {
-            logger.LogWarning("Order not found for PaymentIntent {PaymentIntentId}", intent.Id);
+            LogOrderNotFound(logger, intent.Id);
             return;
         }
 

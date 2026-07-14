@@ -1,22 +1,19 @@
 <Project>
 
-  <!-- One place for analyzer settings — applies to all 9 projects, src and tests. -->
+  <!-- C# / Roslyn analyzers only — ESLint + Prettier are separate (client/eslint.config.js).
+       Applies to src/** automatically; tests/** only via the Import in tests/Directory.Build.props. -->
   <PropertyGroup>
-    <!-- SDK analyzers already run on every build (default for net5.0+), but AnalysisMode defaults to
-         `Default` — only a handful of CA rules are warnings. `Recommended` turns on many more. -->
+
+    <!-- Analyzers already run by default, but only a handful of rules are warnings. Recommended adds many. -->
     <AnalysisMode>Recommended</AnalysisMode>
-    <!-- Runs the IDExxxx *code style* rules at build, not just in the IDE (off by default).
-         NOTE: an IDE rule only surfaces if .editorconfig raises its severity to warning/error;
-         ours currently sets none, so this is future-proofing rather than active enforcement. -->
+
+    <!-- Runs the IDExxxx style rules at build. Inert until .editorconfig raises one to warning/error. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
-    <!-- Teeth in CI only: the pipeline builds Release, local dev builds Debug.
-         A warning fails the PR without blocking you mid-iteration on your own machine. -->
+    <!-- The teeth: a CA violation is only a warning by default, so the build would still pass.
+         CI builds Release, dev builds Debug — a warning fails the PR without blocking you mid-edit. -->
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
 
-    <!-- CA1848: use LoggerMessage delegates. A high-throughput logging optimisation that trades
-         readability for allocations we don't make enough of to care about. -->
-    <NoWarn>$(NoWarn);CA1848</NoWarn>
   </PropertyGroup>
 
 </Project>

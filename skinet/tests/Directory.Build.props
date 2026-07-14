@@ -1,11 +1,14 @@
 <Project>
 
-  <!-- Inherit the solution-wide analyzer settings, then relax what only applies to tests. -->
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <!-- MSBuild stops at the first Directory.Build.props going up, so tests find THIS one and would
+       never see the solution-wide file. Delete this Import and every analyzer setting is lost here. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
+          Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <!-- CA1707: "identifiers should not contain underscores". Test names are deliberately
-         MethodName_Scenario_ExpectedBehavior (docs/testing.md) — the underscores are the convention. -->
+    <!-- CA1707 (no underscores) fires on every test name, but docs/testing.md mandates
+         MethodName_Scenario_ExpectedBehavior — the rule is wrong here, and only here.
+         `$(NoWarn);` APPENDS; a bare value would overwrite everything the parent set. -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
 

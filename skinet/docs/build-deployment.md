@@ -55,11 +55,15 @@ surface a fresh batch of violations).
 | Rule | Where | Why |
 |---|---|---|
 | `CA1707` | `tests/` only | Test names are `Method_Scenario_Expected` — the underscores *are* the convention |
-| `CA1848` | solution | `LoggerMessage` delegates — a throughput optimisation we don't need |
 | `CA1304/1311/1862` | `ProductSpecification` | It's an **EF expression tree** → runs as SQL. EF **throws** on `StringComparison` overloads |
 | `CA1716` | `ISpecification.Select` | Reserved word in VB/F# only; this solution is C#-only |
 | `consistent-type-definitions` | `eslint.config.js` | Models stay `type` — `interface` allows declaration merging (see `actions/create-model.md`) |
 | all | `**/Migrations/**` | EF-generated; marked `generated_code = true` in `.editorconfig` |
+
+**Not suppressed — fixed:** `CA1848` (use `LoggerMessage` delegates). Its docs say *"Do not suppress a
+warning from this rule"*, and there were only 5 call sites, so `PaymentsController` and
+`ExceptionMiddleware` use source-generated `[LoggerMessage]` partial methods instead. The template is
+parsed once at startup rather than on every call, and args aren't boxed. Both classes must be `partial`.
 
 ## Production Build
 
