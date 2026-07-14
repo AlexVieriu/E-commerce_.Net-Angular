@@ -6,7 +6,7 @@
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
 **LEARN:** Claude implements -> you read every line + do exercise -> write `skinet/questions/sprint-N/task-N-*.md` + one line in `interview-prep.md`.
-**Git:** Branch per task -> development (squash); merge sprint -> main (`--no-ff`). Conventional commits. See `docs/git-workflow.md`.
+**Git:** Branch per task -> development (squash); sprint -> main (**squash** — one commit per sprint, never `--no-ff`). Conventional commits. See `docs/git-workflow.md`.
 **Re-baselined 2026-07-13** (~40% descoped, deadline Aug 30 -> Sep 6). Rationale + velocity math: `progress.md`.
 
 ---
@@ -221,6 +221,7 @@ Every sprint end: E2E run, Azure verify, README update.
 | 1 | Azure Key Vault |
 | 2 | NWebsec, Coverlet |
 | 3 | FluentValidation, Bogus |
+| A | ESLint (`angular-eslint`) + Prettier, Roslyn analyzers (`AnalysisMode=Recommended`). Angular -> 22.0.6 stable |
 | B | Playwright |
 | C | Mermaid |
 | ~~descoped~~ | ~~MailKit / Azure Comms, TestContainers, Serilog + Seq~~ |
@@ -238,6 +239,7 @@ Every sprint end: E2E run, Azure verify, README update.
 | ~~22~~ | ~~Structured logging~~ | ~~"Why not interpolation?"~~ **descoped** |
 | 25 | Angular lazy loading | "Route structure in large app?" |
 | 37 | E2E testing | "Strategy? Page Object Model?" |
+| 54 | Static analysis (ESLint / Roslyn) | "Linter vs formatter? When is the linter *wrong*?" |
 | ~~39~~ | ~~Channel\<T\> + BackgroundService~~ | ~~"Background jobs without Hangfire?"~~ **descoped** |
 | 40 | State machine + audit | "Model order status changes?" |
 | ~~42~~ | ~~Global query filters~~ | ~~"Soft delete in EF Core?"~~ **descoped** |

@@ -27,8 +27,19 @@ export type ApiErrorResponse = {
 }
 ```
 
+## Why `type` and not `interface`
+
+`interface` allows **declaration merging** — two `interface Product` declarations in scope silently fuse
+into one. For a model that mirrors a backend contract, that's a footgun: the type would claim fields the
+API never sends. `type` cannot be merged — what you declare is what you get.
+
+ESLint's `@typescript-eslint/consistent-type-definitions` disagrees and wants `interface`. It is
+**deliberately disabled** in `eslint.config.js` for this reason (T54). Don't "fix" it.
+
 ## Pitfalls
 
-- Using `interface` for plain data — `type` is preferred for DTOs in this codebase.
+- Using `interface` for plain data — `type` is preferred for DTOs in this codebase (see above).
 - Putting models in a feature folder — models go in `shared/models/` only.
 - Property name mismatch with backend DTO — JSON will silently not map.
+- **A hand-written model is an assertion, not a guarantee.** BUG-11/BUG-13 were caused by models that
+  claimed `string` where the API sends `string?`. Match the backend's nullability *exactly*.
