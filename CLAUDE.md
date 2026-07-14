@@ -133,6 +133,13 @@ Never modify these files unless explicitly instructed:
 - Each task/bug → a top entry in `mindset/spikes.md` (Question/Options/Decision/Why + checklist);
   the top entry is the active to-do. Leave Decision + Why blank for the user.
 - New sprint → scaffold empty `mindset/journal/sprint-N.md` from the template in journal.md.
+- Sprint map (`mindset/sprint-map.md`, newest sprint on top) — **written exactly twice per sprint,
+  never in between:**
+  - **Sprint start:** the route tree + one ASCII wireframe per task — the sprint made visible before
+    it's built (~15 min).
+  - **Sprint end:** append an **as-built diff** — what shipped differently from the picture, redrawing
+    only the boxes that moved (~10 min).
+  A snapshot, not a spec. A wireframe that goes stale mid-sprint **stays** stale — that's the point.
 - Never write spike Decisions or journal entries — that's the user's job (skill practice).
 
 # SUPERVISOR MINDSET
