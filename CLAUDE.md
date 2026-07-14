@@ -31,7 +31,15 @@ cite what you used in `## Sources`; don't trust recall alone.
    reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
    paragraphs. Exception: `What confused me` stays a table.
    - # Task N — Concept Name
-   - ## The Questions — the gate's 3 EXPLAIN + 2 BREAK prompts, verbatim. Nothing else.
+   - ## The Ideas — **the spine. 3–5 numbered, load-bearing ideas the task turns on.** Everything below
+     is a *view* of this one list: REBUILD writes where they live, EXPLAIN asks why idea N works, BREAK
+     asks what happens when idea N is violated, Answers tells 1..N as one chain. **Nothing new may appear
+     at test time.**
+   - ## The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** This is the study material,
+     not the answers. Two lists: **LOAD-BEARING** (the ~5-10 files that *are* the task, each tagged with
+     its Idea number) and **MECHANICAL** (the reformat/`--fix`/codegen noise — named so you know to skip it).
+     A 157-file diff must reduce to ~8 files and ~5 ideas here, or the task can't be studied at all.
+   - ## The Questions — the gate's 3 EXPLAIN + 2 BREAK prompts, verbatim. Each tagged with its Idea number.
    - ## Hints — one line per question: `file · what to notice`. A location anchor, NEVER the answer.
      The rung between "I know it" and "just tell me" — without it, every gap becomes a chat dump.
    - ## Answers — written at LEARN, after the sit. **One chain, in order** — each answer sets up the

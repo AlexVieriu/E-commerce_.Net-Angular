@@ -2,12 +2,61 @@
 
 `claude --resume e6d59f3a-3397-41a2-bb04-30084b7e971e`
 
-> **How to use this doc.** Three rungs, in order:
-> 1. Read **`## The Questions`**. Think hard. Answer from memory.
+> **How to use this doc.**
+> 0. **STUDY** — read `## The Ideas` + `## The Change Map`. ~10 min. *This is the textbook.*
+> 1. Read **`## The Questions`**. Think hard. Answer from memory. **25 min, closed book.**
 > 2. Stuck? → **`## Hints`** — a location anchor, not an answer. Connect the dots yourself.
 > 3. Still stuck? → **`## Answers`** — one chain, front to back.
->
-> Then close it and rewrite the answers by hand in **`## Exercise`**. *That's* when you know it.
+> 4. Close it. Rewrite the answers **by hand** in `## Exercise`. *That's* when you know it.
+
+---
+
+## The Ideas — the spine
+
+**Everything in this doc is a view of these five.** Nothing new appears at test time.
+
+| # | Idea |
+|---|---|
+| **1** | **Roslyn is a compiler with a public API.** It must build a syntax tree to compile your code; it *exposes* that tree. An analyzer just reads over its shoulder — which is why analysis is nearly free, and why it all happens at **build** time, never at runtime. |
+| **2** | **So the analyzers were always running.** The SDK ships them and enables them by default for net5.0+. `AnalysisMode` is a **severity dial, not an installer** — it took rules that were already executing and silently discarding findings, and told them to report. *(368 warnings, zero packages.)* |
+| **3** | **A rule matches SYNTAX, not meaning.** It sees the shape `x.ToLower()` and cannot tell that one *executes* in .NET (culture-sensitive → real bug) while the other is a node in an **expression tree** that EF *translates* to SQL (database collation → correct). **Only you can tell them apart** — which is why obeying CA1862 would make EF throw on every product search. |
+| **4** | **Suppressions are a LIST, and lists get silently erased.** `<NoWarn>` **assigns**; `$(NoWarn);X` **appends**. Write it bare and every suppression above it vanishes — **with no error, no warning, nothing.** |
+| **5** | **A warning has no teeth until Release turns it into an error.** By default a CA violation prints and the build *succeeds*. `TreatWarningsAsErrors`, scoped to Release (what CI builds), is what makes the gate a gate instead of a printer. And its `Condition` depends on `$(Configuration)` — which is **empty**, not `"Debug"`, this early in MSBuild. |
+
+**The one-line version:** *a linter reads shapes; only you know meanings — and everything it gets wrong, it gets wrong **silently**.*
+
+---
+
+## The Change Map
+
+*Read this before the cold sit. 157 files changed. **Eight of them are the task.***
+
+**LOAD-BEARING — this *is* T54 (8 files):**
+
+| File | Idea | What it does |
+|---|---|---|
+| `Directory.Build.props` | **2, 5** | `AnalysisMode=Recommended` (the dial) · `EnforceCodeStyleInBuild` · Release-scoped `TreatWarningsAsErrors` (the teeth) |
+| `tests/Directory.Build.props` | **4** | `Import` of the parent (MSBuild stops at the first file found) + `$(NoWarn);CA1707` — tests are named `Method_Scenario_Expected` on purpose |
+| `.editorconfig` | **5** | `dotnet_diagnostic.IDE1006.severity = warning` — a naming *rule's* own severity is **IDE-only**; the build needs the diagnostic |
+| `client/eslint.config.js` | — | Flat config. `prettier` is the **last** element of both `extends` arrays |
+| `client/.prettierrc.json` | — | Formatting only. 100 cols, single quotes |
+| `ProductSpecification.cs` | **3** | Three `[SuppressMessage]`s **with written justifications** — EF *throws* on `StringComparison` in an expression tree |
+| `ProductSpecParams.cs` | **3** | `ToLower()` → **`ToLowerInvariant()`**. A real culture bug: Turkish `"I".ToLower()` is `ı`, so `IPHONE` finds nothing |
+| `address.pipe.ts` | — | The bug the linter found in 4 seconds: `?.address!` — optional chain + non-null assertion → `TypeError` |
+
+**MECHANICAL — skim, don't study (149 files):**
+
+- **Prettier reformat** — ~120 files, whitespace only. Zero behaviour change. *(Its own commit, on purpose.)*
+- **`eslint --fix`** — auto-applied, mostly unused imports.
+- **`ng update` 22.0.0-next.1 → 22.0.6** — forced: `angular-eslint` **cannot install** on a prerelease, because semver sorts `22.0.0-next.1` *below* `22.0.0`. Also stripped 8 `$safeNavigationMigration()` shims it injected (templates diff byte-identical).
+- **`API.csproj` / `Infrastructure.csproj`** — one line each, and it's Idea **4** in the wild: a bare `<NoWarn>CS8618</NoWarn>` that had been **silently wiping** every suppression above it.
+- **`src/demo.ts`** — deleted, dead file.
+- **~40 CA fixes** — `[LoggerMessage]` ×5, static members, `GC.SuppressFinalize`, renamed `InvalidateCacheAttribute`. All mechanical once you accept Idea **2**.
+
+> **The lesson about big diffs:** 157 files sounds unreadable, and it *is* — linearly. But **~95% of a
+> large diff is almost always noise** (reformat, codegen, auto-fix). Find the load-bearing files first and
+> the task shrinks to something a human can hold. **Nobody reads a diff top to bottom. Not you, not a
+> senior, not an interviewer.**
 
 ---
 
