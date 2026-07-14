@@ -98,15 +98,15 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 ## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* · ⏳ CURRENT
 
 > **Spillover from Sprint 3 — highest priority.** The admin CRUD is the headline CV feature.
-> Epic: `Admin Panel`. Order: 28 -> 29 -> 30 -> 31 -> 54.
+> Epic: `Admin Panel`. Order: 54 -> 28 -> 29 -> 30 -> 31.
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
+| 54 | ESLint + `@angular-eslint` + Prettier + Roslyn analyzers: setup + CI | S | -- | Goes first — 29/30/31 are the sprint's biggest Angular PRs, and a gate added after them never sees them |
 | 28 | Dashboard frontend: 3 Material Cards + recent orders table | M | 25,27 | Spillover. Backend (T27) already ships the whole payload in one call |
 | 29 | Product list: Material Table + Paginator, wire to existing GET /api/products | M | 25 | Spillover. Copy the admin-orders table pattern |
 | 30 | Product create/edit: reactive form, Material inputs. Text URL for image (no upload) | M | 25 | Spillover |
 | 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Pulled from S4 — completes CRUD, cheap |
-| 54 | ESLint + `@angular-eslint` + Prettier + Roslyn analyzers: setup + CI | S | -- | **Do first.** Enforces quality on every future PR |
 
 **Points: 8.** Sprint end: full admin CRUD works. Products create/edit/delete. Dashboard renders.
 

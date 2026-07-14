@@ -23,8 +23,7 @@ public static class AddressMappingExtensions
 
     public static Address toEntity(this AddressDto addressDto)
     {
-        if (addressDto == null)
-            throw new ArgumentNullException(nameof(addressDto));
+        ArgumentNullException.ThrowIfNull(addressDto);
 
         return new Address
         {
@@ -39,11 +38,8 @@ public static class AddressMappingExtensions
 
     public static void UpdateFromDto(this Address address, AddressDto addressDto)
     {
-        if (address == null)
-            throw new ArgumentNullException(nameof(address));
-
-        if (addressDto == null)
-            throw new ArgumentNullException(nameof(addressDto));
+        ArgumentNullException.ThrowIfNull(address);
+        ArgumentNullException.ThrowIfNull(addressDto);
 
         address.City = addressDto.City;
         address.State = addressDto.State;

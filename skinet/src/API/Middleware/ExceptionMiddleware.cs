@@ -3,6 +3,10 @@ namespace API.Middleware;
 public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
     ILogger<ExceptionMiddleware> logger)
 {
+    // Cached: a new JsonSerializerOptions per call discards the serializer's internal metadata cache.
+    private static readonly JsonSerializerOptions ErrorJsonOptions =
+        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     // We need to use this spelling "InvokeAsync" to work
     public async Task InvokeAsync(HttpContext context)
     {
@@ -45,9 +49,7 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
                 : new ApiErrorResponse(context.Response.StatusCode, "An unexpected error occurred", null);
         }
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
-        var json = JsonSerializer.Serialize(response, options);
+        var json = JsonSerializer.Serialize(response, ErrorJsonOptions);
 
         return context.Response.WriteAsync(json);
     }

@@ -78,11 +78,11 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 
 ## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* ⏳ CURRENT
 
+- [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers *(first — gates every PR after it)*
 - [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table *(spillover)*
 - [ ] T29 — Product list: Material Table + Paginator *(spillover)*
 - [ ] T30 — Product create/edit: reactive form, Material inputs *(spillover)*
 - [ ] T31 — Product delete: reuse ConfirmationDialogComponent
-- [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers
 
 ## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)*
 

@@ -1,0 +1,19 @@
+<Project>
+
+  <!-- One place for analyzer settings — applies to all 9 projects, src and tests. -->
+  <PropertyGroup>
+    <!-- SDK analyzers are already on but at the lowest tier; Recommended turns on the useful ones. -->
+    <AnalysisMode>Recommended</AnalysisMode>
+    <!-- Makes .editorconfig style rules visible at build, not just in the IDE. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- Teeth in CI only: the pipeline builds Release, local dev builds Debug.
+         A warning fails the PR without blocking you mid-iteration on your own machine. -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+
+    <!-- CA1848: use LoggerMessage delegates. A high-throughput logging optimisation that trades
+         readability for allocations we don't make enough of to care about. -->
+    <NoWarn>$(NoWarn);CA1848</NoWarn>
+  </PropertyGroup>
+
+</Project>

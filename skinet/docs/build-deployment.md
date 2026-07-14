@@ -28,6 +28,34 @@ Backend on `https://localhost:7096`. Angular dev server runs on `https://localho
 
 Dev only: **`https://localhost:7096/scalar/v1`** — interactive OpenAPI UI for hitting endpoints by hand (preferred over curl/PowerShell). For auth-gated routes, run `POST /login` with the `useCookies` query param enabled to set the auth cookie, then call the protected endpoint in the same session (the browser carries the cookie automatically — no token to copy). Admin: `admin@test.com` / user-secret `AdminSettings:Password`.
 
+## Lint & Analyzers (the quality gate)
+
+Both halves are **strict** — a violation fails the PR. Added in T54.
+
+| | Frontend | Backend |
+|---|---|---|
+| Tool | ESLint (`angular-eslint`) + Prettier | Roslyn analyzers (built into the SDK) |
+| Config | `client/eslint.config.js`, `.prettierrc.json` | `Directory.Build.props`, `.editorconfig` |
+| Run it | `npm run lint` · `npm run format` | `dotnet build -c Release` |
+| Gate | CI runs `lint` + `format:check` | `TreatWarningsAsErrors` — **Release only** |
+
+**Why Release only:** CI builds Release, so a Roslyn warning fails the PR there — while your local
+Debug `dotnet run` stays warning-only and doesn't block you mid-edit.
+
+**`NoWarn` must append, never assign.** `<NoWarn>CS8618</NoWarn>` in a `.csproj` *overwrites* what
+`Directory.Build.props` set. Always `<NoWarn>$(NoWarn);CS8618</NoWarn>`.
+
+**Suppressions, and why they exist** (each is written down at the code, not hidden in config):
+
+| Rule | Where | Why |
+|---|---|---|
+| `CA1707` | `tests/` only | Test names are `Method_Scenario_Expected` — the underscores *are* the convention |
+| `CA1848` | solution | `LoggerMessage` delegates — a throughput optimisation we don't need |
+| `CA1304/1311/1862` | `ProductSpecification` | It's an **EF expression tree** → runs as SQL. EF **throws** on `StringComparison` overloads |
+| `CA1716` | `ISpecification.Select` | Reserved word in VB/F# only; this solution is C#-only |
+| `consistent-type-definitions` | `eslint.config.js` | Models stay `type` — `interface` allows declaration merging (see `actions/create-model.md`) |
+| all | `**/Migrations/**` | EF-generated; marked `generated_code = true` in `.editorconfig` |
+
 ## Production Build
 
 ```bash

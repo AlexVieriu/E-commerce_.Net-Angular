@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- Inherit the solution-wide analyzer settings, then relax what only applies to tests. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- CA1707: "identifiers should not contain underscores". Test names are deliberately
+         MethodName_Scenario_ExpectedBehavior (docs/testing.md) — the underscores are the convention. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,7 @@
+# Build output + deps
+dist/
+node_modules/
+.angular/
+
+# Generated
+package-lock.json
