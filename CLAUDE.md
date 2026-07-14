@@ -31,26 +31,26 @@ official docs *before* writing — cite what you used in `## Sources`; don't tru
    reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
    paragraphs. Exception: `What confused me` stays a table.
    - # Task N — Concept Name
-   - ## The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** Study material, not answers.
+   - ## 🗺️ The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** Study material, not answers.
      Opens with **the Ideas** — 3–5 numbered, load-bearing ideas the task turns on; the spine every gate
      question hangs off, so nothing new appears at test time. Then two lists: **LOAD-BEARING** (the ~5–10
      files that *are* the task, each tagged with its Idea) and **MECHANICAL** (reformat / `--fix` / codegen
      noise — named so it gets skipped). A 157-file diff must reduce to ~8 files and ~5 ideas, or the task
      can't be studied at all.
-   - ## Hints — one line per gate question: `file · what to notice`. A location anchor, **never the answer.**
+   - ## 🧭 Hints — one line per gate question: `file · what to notice`. A location anchor, **never the answer.**
      The rung between "I know it" and "just tell me" — without it, every gap becomes a chat dump.
-   - ## Why this approach — one bullet = one decision or trade-off
-   - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
+   - ## ⚖️ Why this approach — one bullet = one decision or trade-off
+   - ## 🌫️ What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
      location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
      **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
      · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
-   - ## Explanation — written at LEARN, after the sit. **One chain, in order** — each idea sets up the
+   - ## 💡 Explanation — written at LEARN, after the sit. **One chain, in order** — each idea sets up the
      next. Disconnected islands is what leaves nothing in your head.
-   - ## Exercise
-   - ## Solution
-   - ## Tests
-   - ## Interview Q&A
-   - ## Sources — official docs backing the claims above (link + what it confirms)
+   - ## ✏️ Exercise
+   - ## ✅ Solution
+   - ## 🧪 Tests
+   - ## 🎤 Interview Q&A
+   - ## 📚 Sources — official docs backing the claims above (link + what it confirms)
 2. Append one line to `skinet/questions/interview-prep.md`:
    `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
 When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
@@ -104,6 +104,18 @@ Single checklist for post-task bookkeeping. Run in order:
 - Before wrapping up, ensure `mindset/daily-log.md` has today's dated section
   (`## YYYY-MM-DD (Day)`, newest on top) covering what was touched — even non-task work (bugs, docs).
 - The user's personal notes ("tomorrow, first thing…", how it felt) stay theirs.
+
+# EMOJI
+Learning docs should be pleasant to open — but a landmark only works if it's rare.
+- **Emoji mark fixed, recurring section headings.** If a heading appears in *every* instance of a doc
+  type, it earns one. A sentence, a table cell, or a one-off heading does not.
+- **Where they go:** `questions/…/task-N-*.md` (🗺️🧭⚖️🌫️💡✏️✅🧪🎤📚) · `journal/sprint-N.md`
+  (🔁 REBUILD · 🧠 EXPLAIN · 💥 BREAK · ✍️ Honest note) · `mindset/the-gate.md` (the six phases) ·
+  `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
+- **Where they don't:** this file · `progress.md` rows · `daily-log.md` · `skinet/docs/**` — contracts,
+  prose, and technical reference someone else may read.
+- **Status markers are always fine, anywhere:** ✅ ⚠️ ❌ 🔴 🟡 🟢 ⏳ — they carry meaning, not decoration.
+- The failure mode is marking *everything*: if every heading is a landmark, none of them are.
 
 # PROTECTED FILES
 Never modify these files unless explicitly instructed:

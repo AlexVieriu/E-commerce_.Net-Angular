@@ -11,7 +11,7 @@
 
 ---
 
-## The Change Map
+## 🗺️ The Change Map
 
 ### The Ideas — the spine
 
@@ -60,7 +60,7 @@
 
 ---
 
-## Hints — where to look
+## 🧭 Hints — where to look
 
 *Location anchors only. These give nothing away — they tell you where to connect the dots.*
 
@@ -78,7 +78,7 @@
 
 ---
 
-## Explanation
+## 💡 Explanation
 
 > **Read this as one chain.** Each link sets up the next. That's the whole point — these aren't nine
 > facts, they're one story about a single idea: **a linter reads shapes, and only you know meanings.**
@@ -176,7 +176,7 @@ This is the hinge of the whole task.
 
 ---
 
-## BREAK — traced
+## 💥 BREAK — traced
 
 **B1 · You obey CA1862.**
 - **It compiles.** The build is green. Nothing warns you.
@@ -203,7 +203,7 @@ This is the hinge of the whole task.
 
 ---
 
-## Why this approach
+## ⚖️ Why this approach
 
 - **Strict, not gradual.** A lint gate you can ignore trains you to ignore it. 368 → 0 in one PR; every PR after it starts from zero.
 - **T54 first in Sprint A, not last.** A gate added *after* T28/29/30/31 — the sprint's three biggest Angular PRs — never sees them.
@@ -214,7 +214,7 @@ This is the hinge of the whole task.
 
 ---
 
-## What confused me
+## 🌫️ What confused me
 
 | Gap | Where | Tier |
 |---|---|---|
@@ -233,7 +233,7 @@ This is the hinge of the whole task.
 
 ---
 
-## Exercise
+## ✏️ Exercise
 
 *Close every other file. Write these by hand.*
 
@@ -243,7 +243,7 @@ This is the hinge of the whole task.
 4. Write both `NoWarn` forms. Say what each produces, and what tells you when the wrong one is used.
 5. A colleague's PR "fixes a linter warning" by adding `StringComparison.Ordinal` to a `.Where()` inside an EF spec. The build is green. **Write the PR review comment.**
 
-## Solution
+## ✅ Solution
 
 1. → `## Explanation` §1. Compiler with a public API · **build time** · analyzers subscribe to the syntax tree it already builds.
 2. → §2. They were already running and already finding them. `AnalysisMode` raised their severity from silent to warning. Zero packages installed.
@@ -251,7 +251,7 @@ This is the hinge of the whole task.
 4. → §4. `$(NoWarn);CA1707` appends; bare assigns and erases. **Nothing tells you.**
 5. → B1. *"This compiles and the build is green, but EF Core throws on `StringComparison` overloads inside an expression tree — it can't translate them. This will 500 on every request that hits this query. The analyzer is right about .NET code and wrong about expression trees; suppress it with a `Justification` instead."*
 
-## Tests
+## 🧪 Tests
 
 - No new unit tests — T54 is a build-gate task. **The gate is its own test**, and it was proven rather than assumed:
   - Injected an unused variable into a `.ts` file → **ESLint rejected it.**
@@ -261,7 +261,7 @@ This is the hinge of the whole task.
 
 ---
 
-## Interview Q&A
+## 🎤 Interview Q&A
 
 **Q: How do you enforce code quality on a .NET + Angular repo?**
 Two languages, two toolchains, one gate. Backend: Roslyn analyzers ship in the SDK and already run on every build — I set `AnalysisMode=Recommended` in a solution-wide `Directory.Build.props` and gave it teeth with `TreatWarningsAsErrors` **scoped to Release**, which is what CI builds. Frontend: ESLint for correctness, Prettier for formatting, with `eslint-config-prettier` loaded last so they don't fight. Both wired into CI, so a warning fails the PR, not the developer mid-edit.
@@ -277,7 +277,7 @@ Three real bugs review had missed: a `?.x!` optional-chain-plus-non-null-asserti
 
 ---
 
-## Sources
+## 📚 Sources
 
 - [Code analysis in .NET](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview) — analyzers ship in the SDK and are **enabled by default** for net5.0+; in `Default` mode *"only a small number of rules are enabled as build warnings"*; `CA` vs `IDE` prefixes; `EnforceCodeStyleInBuild` needs **both** the property **and** a warning/error severity in `.editorconfig`.
 - [Customize the build by folder (MSBuild)](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory) — `Directory.Build.props` is imported **early** in `Microsoft.Common.props`; *"properties defined later are unavailable to it… will evaluate to empty"*; MSBuild **stops at the first** file found walking up (hence the `Import` in `tests/`).
