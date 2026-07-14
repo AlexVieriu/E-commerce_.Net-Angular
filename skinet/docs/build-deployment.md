@@ -45,6 +45,11 @@ Debug `dotnet run` stays warning-only and doesn't block you mid-edit.
 **`NoWarn` must append, never assign.** `<NoWarn>CS8618</NoWarn>` in a `.csproj` *overwrites* what
 `Directory.Build.props` set. Always `<NoWarn>$(NoWarn);CS8618</NoWarn>`.
 
+**`EnforceCodeStyleInBuild` is currently near-inert.** It runs the `IDExxxx` *style* rules at build, but
+an IDE rule only surfaces if `.editorconfig` raises its severity to `warning`/`error` — and ours sets
+none. It's future-proofing, not enforcement. Turning style rules on is a separate decision (it would
+surface a fresh batch of violations).
+
 **Suppressions, and why they exist** (each is written down at the code, not hidden in config):
 
 | Rule | Where | Why |

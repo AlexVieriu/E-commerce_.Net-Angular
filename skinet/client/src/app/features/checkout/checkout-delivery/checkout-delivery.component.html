@@ -5,14 +5,16 @@
     (change)="updateDeliveryMethod($event.value)"
   >
     @for (method of checkoutService.deliveryMethods(); track method.id) {
-      <!-- Not a <label>: mat-radio-button renders its own internal label, and labels can't nest. -->
-      <div class="p-3 border-gray-200 cursor-pointer w-full h-full hover:bg-purple-100">
+      <!-- Not a <label>: mat-radio-button renders its own internal label, and labels can't nest.
+           Padding lives on the *projected content* so it sits inside that internal label and stays
+           clickable — on the outer div it would be a dead ring with a lying cursor-pointer. -->
+      <div class="border-gray-200 w-full h-full hover:bg-purple-100">
         <mat-radio-button
           class="w-full h-full"
           [value]="method"
           [checked]="cartService.selectedDelivery() === method"
         >
-          <div class="flex flex-col w-full h-full">
+          <div class="flex flex-col w-full h-full p-3 cursor-pointer">
             <strong>{{ method.shortName }} - {{ method.price | currency }}</strong>
             <span class="text-sm">{{ method.description }}</span>
           </div>

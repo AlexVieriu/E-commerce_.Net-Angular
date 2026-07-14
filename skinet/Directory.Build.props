@@ -2,9 +2,12 @@
 
   <!-- One place for analyzer settings — applies to all 9 projects, src and tests. -->
   <PropertyGroup>
-    <!-- SDK analyzers are already on but at the lowest tier; Recommended turns on the useful ones. -->
+    <!-- SDK analyzers already run on every build (default for net5.0+), but AnalysisMode defaults to
+         `Default` — only a handful of CA rules are warnings. `Recommended` turns on many more. -->
     <AnalysisMode>Recommended</AnalysisMode>
-    <!-- Makes .editorconfig style rules visible at build, not just in the IDE. -->
+    <!-- Runs the IDExxxx *code style* rules at build, not just in the IDE (off by default).
+         NOTE: an IDE rule only surfaces if .editorconfig raises its severity to warning/error;
+         ours currently sets none, so this is future-proofing rather than active enforcement. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!-- Teeth in CI only: the pipeline builds Release, local dev builds Debug.
