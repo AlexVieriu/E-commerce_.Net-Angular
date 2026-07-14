@@ -79,21 +79,18 @@ When asked to open/create a PR, always output a suggested title and description 
 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
-0. **Run the gate** — `mindset/the-gate.md`. Six phases, ~65 min:
-   `GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` → `GATE: REWRITE`.
+0. **Run the gate** — `mindset/the-gate.md`. **It owns its own mechanics; don't restate them here.**
+   Six phases, ~65 min: `GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` → `GATE: REWRITE`.
    Cap: **3 EXPLAIN + 2 BREAK**, 25-min sit, `BLANK` is a valid result.
+   Its outputs are the journal entry (`mindset/journal/sprint-N.md`) and the questions doc
+   (`skinet/questions/sprint-N/…` — see QUESTIONS & EXERCISES for the scaffold).
    **Nothing below happens until the gate has run — you don't get to tick what you can't explain.**
 1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
 2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
 3. Update any affected docs in `skinet/docs/` (keep them short).
-4. Scaffold a journal stub for the finished task in `mindset/journal/sprint-N.md` — journal.md's
-   template, prompts only, answers BLANK. Scaffold REBUILD `*2` scratch files too (procedure in
-   `mindset/journal.md`). Verify build green. Remind the user to write the entry before starting
-   the next task; don't start it until they have.
-5. Questions & Exercises for non-trivial concepts (see above).
-6. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
+4. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
    technical questions (see that file for the rubric).
-7. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
+5. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
    at the TOP of `mindset/spikes.md` (see MINDSET), so Decision+Why are filled while context is fresh.
 
 # START OF DAY / SESSION
