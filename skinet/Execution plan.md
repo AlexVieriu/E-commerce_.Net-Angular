@@ -172,6 +172,7 @@ If a sprint over-runs, it eats *this* — that is what the buffer is for. **No f
 | 33 | Form errors: `<mat-error>` | Nice UX, no signal |
 | 32 | Memory leak audit | "Likely minimal (signals + httpResource)" — plan's own words |
 | BUG-3 | Checkout address hint on empty required field | UX nicety, not on the money path |
+| BUG-14 | Product page: "Add to cart" disables itself the instant you click it (`[disabled]="quantity() === quantityInCart()"`), so the button reads as broken even though the cart *did* update. Re-enables only when you change the Quantity box. Found Jul 14 during the T54 visual check | Same class as BUG-3 — confusing, but the cart works and it's not on the money path. Working as designed, just designed poorly |
 | 39 | Email: IEmailService + `Channel<T>` BackgroundService | Expensive. Stripe + webhooks + SignalR already prove the async/infra story |
 | 42 | Soft delete + global query filter | Nice EF trick, small payoff |
 | 46 | Unit tests for cancellation/soft-delete/history | Follows its features; T40/41 get tests inline |
