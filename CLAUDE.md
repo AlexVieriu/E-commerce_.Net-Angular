@@ -22,20 +22,25 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-After each completed task — generated **after the cold test**, so the gaps you surfaced drive the
-content (non-trivial concepts only). Verify every technical claim against the official docs *before*
-writing — cite what you used in `## Sources`; don't trust recall alone.
+After each completed task. **`## The Questions` + `## Hints` are written BEFORE the cold test** (they
+give nothing away); **`## Answers` is written AFTER it**, so the gaps you surfaced drive the content
+(non-trivial concepts only). Verify every technical claim against the official docs *before* writing —
+cite what you used in `## Sources`; don't trust recall alone.
 1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
    Default every section to bullet points over paragraph prose — bold-label bullets for connected
    reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
    paragraphs. Exception: `What confused me` stays a table.
    - # Task N — Concept Name
+   - ## The Questions — the gate's 3 EXPLAIN + 2 BREAK prompts, verbatim. Nothing else.
+   - ## Hints — one line per question: `file · what to notice`. A location anchor, NEVER the answer.
+     The rung between "I know it" and "just tell me" — without it, every gap becomes a chat dump.
+   - ## Answers — written at LEARN, after the sit. **One chain, in order** — each answer sets up the
+     next. Five disconnected islands is what leaves nothing in your head.
    - ## Why this approach — one bullet = one decision or trade-off
    - ## What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
      location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
      **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
      · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
-   - ## Explanation
    - ## Exercise
    - ## Solution
    - ## Tests
