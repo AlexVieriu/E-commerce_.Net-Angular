@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { CartService } from './cart.service';
-import { asyncScheduler, catchError, map, of, scheduled, switchMap, tap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { AccountService } from './account.service';
 import { SignalrService } from './signalr.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -22,15 +22,14 @@ export class InitService {
         if (err.status === 401) return of(null);
         throw err;
       }),
-      tap(user => {
+      tap((user) => {
         if (user) this.signalrService.createHubConnection();
       }),
       // Step 2: only fetch cart if authenticated and cart_id exists
-      switchMap(user => {
-        if (!user || !cartId)
-          return of({ user, cart: null });
+      switchMap((user) => {
+        if (!user || !cartId) return of({ user, cart: null });
         return this.cartService.getCartAsync(cartId).pipe(
-          map(cart => ({ user, cart })),
+          map((cart) => ({ user, cart })),
           catchError(() => {
             localStorage.removeItem('cart_id');
             return of({ user, cart: null });

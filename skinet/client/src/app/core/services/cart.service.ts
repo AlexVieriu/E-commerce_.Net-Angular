@@ -11,7 +11,6 @@ import { EMPTY, firstValueFrom, map, switchMap, tap } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-
 export class CartService {
   private readonly baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
@@ -19,8 +18,8 @@ export class CartService {
   readonly cart = this._cart.asReadonly();
 
   itemCount = computed(() => {
-    return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0)
-  })
+    return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0);
+  });
 
   private _selectedDelivery = signal<DeliveryMethod | null>(null);
   readonly selectedDelivery = this._selectedDelivery.asReadonly();
@@ -42,30 +41,31 @@ export class CartService {
       }
     }
 
-    const shipping = delivery ? delivery.price : 0;    
+    const shipping = delivery ? delivery.price : 0;
 
     return {
       subtotal,
       shipping,
       discount: discountValue,
       total: subtotal + shipping - discountValue
-    }
-  })
+    };
+  });
 
   getCartAsync(id: string) {
     return this.http.get<Cart>(this.baseUrl + 'cart?id=' + id).pipe(
-      map(cart => { // map - allows to perform side effects and transform emitted value before passing it downstream
+      map((cart) => {
+        // map - allows to perform side effects and transform emitted value before passing it downstream
         this._cart.set(cart); // Update the `cart` signal with the fetched cart data
         return cart; // Pass the cart data downstream to subscribers
       })
-    )
+    );
   }
 
   setCart(cart: Cart) {
     return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
-      tap(response => {
+      tap((response) => {
         this._cart.set(response);
-      }),
+      })
     );
   }
 
@@ -73,13 +73,16 @@ export class CartService {
     const cart = this.cart();
     if (!cart) return;
 
-    const index = cart.items.findIndex(i => i.productId === productId);
+    const index = cart.items.findIndex((i) => i.productId === productId);
     if (index === -1) return;
 
     const updatedItems = [...cart.items];
 
     if (updatedItems[index].quantity > quantity) {
-      updatedItems[index] = { ...updatedItems[index], quantity: updatedItems[index].quantity - quantity };
+      updatedItems[index] = {
+        ...updatedItems[index],
+        quantity: updatedItems[index].quantity - quantity
+      };
     } else {
       updatedItems.splice(index, 1);
     }
@@ -107,8 +110,7 @@ export class CartService {
   async addItemToCart(item: CartItem | Product, quantity = 1) {
     const cart = this.cart() ?? this.createCart();
 
-    if (this.isProduct(item)) 
-      item = this.mapProductToCartItem(item);
+    if (this.isProduct(item)) item = this.mapProductToCartItem(item);
 
     cart.items = this.addOrUpdateItem(cart.items, item, quantity);
     await firstValueFrom(this.setCart(cart));
@@ -120,7 +122,7 @@ export class CartService {
 
   applyDiscount(code: string) {
     return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code).pipe(
-      switchMap(coupon => {
+      switchMap((coupon) => {
         const cart = this.cart();
         if (!cart) return EMPTY;
         cart.coupon = coupon;
@@ -138,8 +140,9 @@ export class CartService {
 
   // private methods
   private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {
-    const idex = items.findIndex(i => i.productId === item.productId);
-    if (idex === -1) { // not found
+    const idex = items.findIndex((i) => i.productId === item.productId);
+    if (idex === -1) {
+      // not found
       item.quantity = quantity;
       items.push(item);
     } else {

@@ -14,9 +14,10 @@ public class BuggyController : BaseApiController
     public IActionResult GetNotFound()
         => NotFound("Not found(404)");
 
+    // Deliberately unhandled — this endpoint exists to prove ExceptionMiddleware turns it into a 500.
     [HttpGet("internalservererror")]
     public IActionResult GetInternalServerError()
-    => throw new Exception("Internal Server Error(500)");
+    => throw new InvalidOperationException("Internal Server Error(500)");
 
     [HttpPost("validationerror")]
     public IActionResult GetValidationError(CreateProductDTO product)

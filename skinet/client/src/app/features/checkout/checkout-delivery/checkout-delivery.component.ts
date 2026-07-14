@@ -20,17 +20,20 @@ export class CheckoutDeliveryComponent {
   deliveryComplete = output<boolean>();
 
   constructor() {
-    this.checkoutService.getDeliveryMethods().pipe(takeUntilDestroyed()).subscribe({
-      next: methods => {
-        if (this.cartService.cart()?.deliveryMethodId) {
-          const method = methods.find(m => m.id === this.cartService.cart()?.deliveryMethodId);
-          if (method) {
-            this.cartService.setSelectedDelivery(method);
-            this.deliveryComplete.emit(true);
+    this.checkoutService
+      .getDeliveryMethods()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (methods) => {
+          if (this.cartService.cart()?.deliveryMethodId) {
+            const method = methods.find((m) => m.id === this.cartService.cart()?.deliveryMethodId);
+            if (method) {
+              this.cartService.setSelectedDelivery(method);
+              this.deliveryComplete.emit(true);
+            }
           }
-        };
-      }
-    });
+        }
+      });
   }
 
   async updateDeliveryMethod(method: DeliveryMethod) {

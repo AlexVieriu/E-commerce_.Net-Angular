@@ -90,13 +90,13 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
         }
     }
 
-    private long CalculateSubtotal(ShoppingCart cart)
+    private static long CalculateSubtotal(ShoppingCart cart)
     {
         var itemTotal = cart.Items.Sum(i => i.Quantity * i.Price * 100);
         return (long)itemTotal;
     }
 
-    private async Task<long> ApplyDiscountAsync(AppCoupon appCoupon, long amount)
+    private static async Task<long> ApplyDiscountAsync(AppCoupon appCoupon, long amount)
     {
         var couponService = new Stripe.CouponService();
 
@@ -110,7 +110,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
         return Math.Max(amount, 0); // Ensure amount does not go negative
     }
 
-    private async Task CreateUpdatePaymentIntentAsync(ShoppingCart cart, long amount)
+    private static async Task CreateUpdatePaymentIntentAsync(ShoppingCart cart, long amount)
     {
         var serviceIntent = new PaymentIntentService();
 

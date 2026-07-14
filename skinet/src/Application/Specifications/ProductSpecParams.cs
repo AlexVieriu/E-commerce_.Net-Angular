@@ -31,7 +31,9 @@ public class ProductSpecParams : PagingParams
     public string Search
     {
         get => _search ?? "";
-        set => _search = value.ToLower();
+        // Invariant, not current-culture: this runs in .NET, and ToLower() would use the server's
+        // locale — in Turkish, "I".ToLower() is "ı" (dotless), so a search for "IPHONE" would miss.
+        set => _search = value.ToLowerInvariant();
     }
 
 }

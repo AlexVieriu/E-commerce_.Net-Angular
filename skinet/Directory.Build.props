@@ -1,0 +1,26 @@
+<Project>
+
+  <!-- C# / Roslyn analyzers only — ESLint + Prettier are separate (client/eslint.config.js).
+       Applies to src/** automatically; tests/** only via the Import in tests/Directory.Build.props. -->
+  <PropertyGroup>
+
+    <!-- Analyzers already run by default, but only a handful of rules are warnings. Recommended adds many. -->
+    <AnalysisMode>Recommended</AnalysisMode>
+
+    <!-- Lets the IDExxxx style rules reach the build (they're IDE-only by default).
+         Takes BOTH switches: this one, AND a warning/error severity in .editorconfig. A rule left at
+         `suggestion` shows only in the IDE and never fails a build. Live today for IDE1006 (naming). -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- The teeth: a CA violation is only a warning by default, so the build would still pass.
+         Only bites in Release, which is what CI builds — so a warning fails the PR without blocking
+         you mid-edit locally.
+         `-c Release` arrives as a *global* property, so it's already set this early. With no flag,
+         $(Configuration) is EMPTY here (not "Debug" — that default is assigned later), and '' != 'Release',
+         so the teeth stay off. The single quotes are load-bearing: MSBuild requires them for empty values,
+         and an undefined property expands to '' with no error at all. -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+
+  </PropertyGroup>
+
+</Project>

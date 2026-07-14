@@ -5,7 +5,6 @@ import { ShopParams } from '../../shared/models/shopParams';
 import { Product } from '../../shared/models/products';
 import { environment } from '../../../environments/environment';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -43,5 +42,4 @@ export class ShopService {
   getProduct(id: number) {
     return this.http.get<Product>(this.baseUrl + 'products/' + id);
   }
-
 }

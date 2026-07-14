@@ -1,18 +1,13 @@
 # Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
-> **50 tasks | 6 sprints (2 wk each) | Deadline: Aug 30, 2026**
+> **Milestone: `v1.0 — Interview Ready` · Sep 6, 2026**
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
 **Estimates:** S (<1d), M (1-3d), L (1wk+) — without Claude Code.
-**LEARN:** 12 marked tasks. Claude implements -> you read every line + do exercise -> write `skinet/questions/sprint-N/task-N-*.md` + one line in `interview-prep.md`.
-**Git:** Branch per task -> development (squash); merge sprint -> main (`--no-ff`). Conventional commits. See `docs/git-workflow.md`.
-
-**Deadline reality (restart Jun 16 → Aug 30 at 4 days/week):**
-Sprints 1–2 done. Build window Jun 16 – Aug 16 (Sprints 3–6), then Aug 17–30 reserved for interview-deck/Anki prep.
-~36 build-days vs ~32 days of remaining task work — thin but real slack. One slow sprint = one cut task somewhere.
-CV priority if forced to cut: keep Sprint 3 (admin) + Sprint 6 (README); cut from S4/S5 first.
-Never sacrifice working Azure deploy + README. That's what job hunters actually look at.
+**LEARN:** Claude implements -> you read every line + do exercise -> write `skinet/questions/sprint-N/task-N-*.md` + one line in `interview-prep.md`.
+**Git:** Branch per task -> development (squash); sprint -> main (**squash** — one commit per sprint, never `--no-ff`). Conventional commits. See `docs/git-workflow.md`.
+**Re-baselined 2026-07-13** (~40% descoped, deadline Aug 30 -> Sep 6). Rationale + velocity math: `progress.md`.
 
 ---
 
@@ -77,10 +72,10 @@ Sprint end: full test suite green. Verify Azure. Update README.
 
 ---
 
-## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
+## Sprint 3 — Admin Panel *(Jun 16 – Jul 1 · closed Jul 13)*
 
 > Most clickable CV feature. Backend first, then Angular.
-> Pattern: copy ShopComponent's httpResource + Material table. Don't break existing orders/refund.
+> **T28/29/30 spilled → Sprint A.**
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
@@ -98,126 +93,125 @@ Sprint end: full test suite green. Verify Azure. Update README.
 
 Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azure. Update README.
 
-**Time:** Best 5d | Normal 8d | Worst 11d
-- **Best:** FluentValidation in 1d, backend flies (pure C#), Angular copies ShopComponent pattern cleanly. Start Sprint 4 quick wins (31,32).
-- **Normal:** Angular child routes + guards take 2d (junior Angular risk). Refund breaks, you fix it. Dashboard shows real Bogus data.
-- **Worst:** Child routes cause 3d of confusion. Ship product list(29) without form(30). **Never cut this sprint short.** Working admin CRUD is what separates you from "followed a tutorial" devs on CV reviews.
-
 ---
 
-## Sprint 4 — Frontend Quality + UX *(Jul 2 – Jul 17)*
+## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* · ⏳ CURRENT
 
-> Polish existing features. Isolated Angular tasks, easiest first.
-> Order: ESLint(54) -> Lighthouse(55) -> Product delete(31) -> Leak audit(32) -> Forms(33) -> Skeleton(34) -> Images(35) -> Performance(56) -> Playwright(37) -> README(38)
+> **Spillover from Sprint 3 — highest priority.** The admin CRUD is the headline CV feature.
+> Epic: `Admin Panel`. Order: 54 -> 28 -> 29 -> 30 -> 31.
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
-| 54 | ESLint + `@angular-eslint` + Prettier: setup + CI integration. Roslyn analyzers for .NET | S | -- | **Do first.** Enforces quality for rest of sprint and all future PRs |
-| 55 | Lighthouse baseline: run on `/`, `/shop`, `/checkout`, screenshot + record scores | S | -- | 2 hours max. Baseline before T35 so you have before/after numbers |
-| 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Carried from S3. Dep 29 done. |
-| 32 | Memory leak audit: unsubscribed Observables -> `takeUntilDestroyed()` | S | -- | Likely minimal (signals+httpResource). Done early in T17 session |
-| 33 | Form errors: `<mat-error>` on login/register via TextInputComponent | S | -- | |
-| 34 | Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent | M | -- | |
-| 35 | NgOptimizedImage: `ngSrc` + priority/lazy on product images | S | -- | Mostly HTML changes |
-| 56 | Performance pass: MiniProfiler (.NET) + bundle analyzer (Angular), fix top 3 findings, re-run Lighthouse | M | 35 | After T35 so NgOptimizedImage is already in. Compare against T55 baseline |
-| 37 | Playwright E2E: 3 tests (checkout, auth+orders, admin). Timebox 4 days | L | 1 | LEARN: Testing pyramid + Page Object Model |
-| 38 | README update with UX screenshots | S | -- | |
-| BUG-2 | Checkout: declined card can't retry in-session — "card unavailable" (Stripe `elements.submit()` is single-use). Re-init PaymentElement on payment failure | S | -- | Pre-existing. Found during T17/T18 testing |
-| BUG-3 | Checkout: Address "Next" stays disabled with no hint when a required field (e.g. postal code) is empty — Stripe Address Element shows no error until a field is touched. Add a hint/validation cue | S | -- | Pre-existing. Found during checkout testing |
+| 54 | ESLint + `@angular-eslint` + Prettier + Roslyn analyzers: setup + CI | S | -- | Goes first — 29/30/31 are the sprint's biggest Angular PRs, and a gate added after them never sees them |
+| 28 | Dashboard frontend: 3 Material Cards + recent orders table | M | 25,27 | Spillover. Backend (T27) already ships the whole payload in one call |
+| 29 | Product list: Material Table + Paginator, wire to existing GET /api/products | M | 25 | Spillover. Copy the admin-orders table pattern |
+| 30 | Product create/edit: reactive form, Material inputs. Text URL for image (no upload) | M | 25 | Spillover |
+| 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Pulled from S4 — completes CRUD, cheap |
 
-Sprint end: Playwright + backend tests green. Verify deploy.
-
-**Time:** Best 5d | Normal 8d | Worst 11d
-- **Best:** T54+T55 done in 1d, quick wins (31,32,33,35) next day, performance pass fast. Start OrderStatus(40) early.
-- **Normal:** Playwright setup is painful, CI is flaky — run locally only.
-- **Worst:** Playwright eats the sprint. Timebox at 4d, ship 2 tests not 3. **Talking point:** Even 2 E2E tests signals testing maturity that most candidates don't have.
+**Points: 8.** Sprint end: full admin CRUD works. Products create/edit/delete. Dashboard renders.
 
 ---
 
-## Sprint 5 — Domain Expansion *(Jul 18 – Aug 1)*
+## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)*
 
-> Domain modeling depth. Backend comfort zone.
-> Order: Status(40) -> Cancel(41) -> Email(39) -> Soft delete(42) -> Indexes(43) -> Tests(46) -> Integration tests(20)
+> The two things that most separate you from tutorial-followers: E2E tests and a real domain model.
+> Epics: `Testing`, `Domain`. Order: 37 -> 40 -> 41 -> BUG-2.
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
-| 40 | OrderStatus: add Processing/Shipped/Delivered/Cancelled + append-only OrderStatusHistory | M | -- | LEARN: State machine + audit trail. Foundational — unlocks 41 |
-| 41 | Order cancellation: POST cancel, only Pending/PaymentReceived, Stripe refund if paid. Log email (decouple from 39) | M | 40 | |
-| 39 | Email: IEmailService + Channel\<T\> BackgroundService. Dev: log. Prod: MailKit/Azure Comms. Graceful shutdown | M | -- | LEARN: Channel\<T\> producer-consumer. Infrastructure — no blockers |
-| 42 | Soft delete: IsDeleted+DeletedAt, global query filter, admin IgnoreQueryFilters | S | -- | LEARN: EF Core global query filters |
-| 43 | DB indexes: unique PaymentIntentId, BuyerEmail, composite (Brand,Type), Price | S | -- | One migration |
-| 46 | Unit tests: cancellation, soft delete, OrderStatusHistory, discount edges | M | 40,41,42 | |
-| 20 | Integration tests: WebApplicationFactory + TestContainers (SQL+Redis) | L | 19 | Carried from S2. LEARN: TestContainers. Timebox 3 days |
+| 37 | Playwright E2E: 3 tests (checkout, auth+orders, admin). **Timebox 4 days** | L | 1 | LEARN: Testing pyramid + Page Object Model. Ship 2 tests if it drags. Would have caught BUG-12 |
+| 40 | OrderStatus: add Processing/Shipped/Delivered/Cancelled + append-only OrderStatusHistory | M | -- | LEARN: State machine + audit trail. The strongest domain story in the plan |
+| 41 | Order cancellation: POST cancel, only Pending/PaymentReceived, Stripe refund if paid | M | 40 | Log the email, don't build the email service (T39 is descoped) |
+| BUG-2 | Checkout: declined card can't retry in-session — Stripe `elements.submit()` is single-use. Re-init PaymentElement on failure | S | -- | **Money path.** Pre-existing, found during T17/T18 |
 
-Sprint end: full test suite. Test cancel, soft delete, status history. Verify Azure. Update README.
-
-**Time:** Best 5d | Normal 8d | Worst 11d
-- **Best:** State machine is clean, Channel<T> clicks, TestContainers works first try. Pick 1 from S6 "if ahead".
-- **Normal:** Cancellation + Stripe refund edge cases take an extra day. TestContainers setup takes 2d — timebox it.
-- **Worst:** TestContainers flaky. Timebox at 3d, fallback EF InMemory. **Talking point:** OrderStatus history + cancellation = strong domain modeling story.
+**Points: 9.** Sprint end: E2E green. Order status history + cancellation work. Declined card can retry.
 
 ---
 
-## Sprint 6 — Polish + Standout *(Aug 2 – Aug 16)*
+## Sprint C — Ship It *(Aug 11 – Aug 24)*
 
 > Recruiter spends 30 seconds on your repo. README day 1 = highest ROI.
-
-**Core — do in order, 53 always last:**
+> Epics: `Docs`, `Security`. Order: 47 -> 12 -> 52 -> 48 -> 50 -> 43 -> 21 -> 38.
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
-| 47 | README rewrite: overview, stack, diagram, screenshots/GIFs, "how to run", Azure link | M | -- | **DAY 1. Highest ROI.** |
-| 52 | Open redirect: validate returnUrl starts with `/` | S | -- | Security fix — do early |
-| 48 | C4 diagram (Context+Container) in Mermaid -> `docs/architecture.md` | M | -- | |
+| 47 | README rewrite: overview, stack, diagram, screenshots/GIFs, "how to run", Azure link | M | -- | **DAY 1. Highest ROI of anything left.** |
+| 12 | Cart ownership: userId in Redis, verify on read/write. Angular stops nanoid for authed users | M | -- | **IDOR — any client holding a cart id can read/write it.** Was buried in S6 "if ahead"; a known auth hole must not ship |
+| 52 | Open redirect: validate returnUrl starts with `/` | S | -- | Security fix — cheap |
+| 48 | C4 diagram (Context+Container) in Mermaid -> `docs/architecture.md` | M | -- | Gives an interviewer something concrete to ask about |
 | 50 | API docs: `[ProducesResponseType]` + XML summaries | S | -- | |
-| 49 | docker-compose full: SQL Server + Redis + Seq | M | -- | Required before 22 |
-| 51 | RequireConfirmedEmail. Dev: auto-confirm. Prod: via IEmailService | S | 39 | |
-| 53 | Final Azure smoke test: full user + admin journey | S | -- | **Non-negotiable. Last task always.** |
+| 43 | DB indexes: unique PaymentIntentId, BuyerEmail, composite (Brand,Type), Price | S | -- | One migration. Good perf talking point |
+| 21 | Coverage gate: coverlet, fail PR < 60% | S | 19,1 | |
+| 38 | README UX screenshots | S | 47 | Folds into 47 if time is tight |
 
-**If Ahead — top to bottom, stop when out of time:**
+**Points: 11.** Sprint end: README done, security holes closed, docs + diagram shipped.
+
+---
+
+## Buffer *(Aug 25 – Sep 6)* — **DO NOT FILL**
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
-| 10 | Health checks: SQL Server + Redis, `/health` + `/ready` | S | -- | Carried from S1 |
-| 22 | Serilog + Seq: Console (dev), Seq (prod), add Seq to docker-compose | M | 49 | LEARN: Structured logging vs interpolation |
-| 23 | Correlation IDs: middleware -> LogContext -> response headers | S | 22 | |
-| 21 | Coverage gate: coverlet, fail PR < 60% | S | 19,1 | |
-| 2 | Dockerfile multi-stage + `.dockerignore` | M | -- | LEARN: Why `COPY *.csproj` before `COPY .`? |
-| 12 | Cart ownership: userId in Redis, verify on read/write. Angular stops nanoid for authed users | M | -- | Security bug, has Angular side |
-| 11 | Pagination: TotalPages, HasNext, HasPrev on `Pagination<T>` | S | -- | |
-| 36 | Accessibility: axe on home/shop/checkout. Fix ARIA, keyboard nav, focus | M | -- | Just 3 pages |
+| 53 | Final Azure smoke test: full user + admin journey | S | -- | **Non-negotiable. Always last.** |
 
-Sprint end: final deploy + smoke test. Share with someone.
+Everything else in this window: **interview deck + Anki prep + slack for slippage.**
+If a sprint over-runs, it eats *this* — that is what the buffer is for. **No feature work lands here.**
 
-**Time:** Best 4d | Normal 8d | Worst 12d
-- **Best:** README + diagram take 1d each. Work through "if ahead" tasks top to bottom. Apply to jobs.
-- **Normal:** README takes 2d (screenshots, GIFs, wording). C4 diagram needs iteration. Deployed, smoke test passes.
-- **Worst:** Running out of runway. **Hard priority: README(47) > smoke test(53) > diagram(48) > cut everything else.** A mediocre app with a great README beats a polished app nobody can run.
+---
+
+## Descoped for v1.0 — *not shipping by Sep 6*
+
+> Cut consciously on the 2026-07-13 re-baseline. **Not forgotten** — revisit after v1.0 ships.
+
+| # | Task | Why cut |
+|---|------|---------|
+| 55 | Lighthouse baseline | Scores don't get you hired |
+| 56 | Performance pass (MiniProfiler + bundle analyzer) | Depends on 55; premature at this scale |
+| 34 | Skeleton loaders | Polish |
+| 35 | NgOptimizedImage | Polish |
+| 33 | Form errors: `<mat-error>` | Nice UX, no signal |
+| 32 | Memory leak audit | "Likely minimal (signals + httpResource)" — plan's own words |
+| BUG-3 | Checkout address hint on empty required field | UX nicety, not on the money path |
+| BUG-14 | Product page: "Add to cart" disables itself the instant you click it (`[disabled]="quantity() === quantityInCart()"`), so the button reads as broken even though the cart *did* update. Re-enables only when you change the Quantity box. Found Jul 14 during the T54 visual check | Same class as BUG-3 — confusing, but the cart works and it's not on the money path. Working as designed, just designed poorly |
+| 39 | Email: IEmailService + `Channel<T>` BackgroundService | Expensive. Stripe + webhooks + SignalR already prove the async/infra story |
+| 42 | Soft delete + global query filter | Nice EF trick, small payoff |
+| 46 | Unit tests for cancellation/soft-delete/history | Follows its features; T40/41 get tests inline |
+| 20 | Integration tests: WebApplicationFactory + TestContainers | T37 (E2E) buys the same "testing maturity" story for less |
+| 49 | docker-compose full (SQL + Redis + Seq) | Only needed for 22 |
+| 51 | RequireConfirmedEmail | Blocked on 39 |
+| 22 | Serilog + Seq | Talking point, not a demo |
+| 23 | Correlation IDs | Blocked on 22 |
+| 10 | Health checks | Cheap, but nothing depends on it |
+| 2 | Dockerfile multi-stage | Azure deploy already works without it |
+| 11 | Pagination: TotalPages/HasNext/HasPrev | Cosmetic |
+| 36 | Accessibility: axe pass | Real value, no interview signal for these roles |
 
 ---
 
 ## Progress
 
-- [x] Sprint 1 — Security + CI/CD (6 tasks) *(done: Apr 2)*
-- [x] Sprint 2 — Testing + Data Integrity (9 tasks) *(done: May 7)*
-- [ ] Sprint 3 — Admin Panel (8 tasks) *(Jun 16 – Jul 1)*
-- [ ] Sprint 4 — Frontend Quality + UX (7 tasks) *(Jul 2 – Jul 17)*
-- [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jul 18 – Aug 1)*
-- [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Aug 2 – Aug 16)*
-- [ ] Interview-deck / Anki prep *(Aug 17 – Aug 30)*
-  - [ ] *(optional, last priority, post-ship)* **T57 — Preview spike:** on a throwaway branch (never merged/deployed), bump to .NET 11 RC + Angular 23-next, read the migration guide + skim what's new, write interview talking-points notes. Shipping app stays on .NET 10 / Angular 22 GA.
+**Status lives in `skinet/progress.md`** — task checkboxes + daily log. Not duplicated here.
 
 ## Certifications *(never steals build days or run days)*
 
 Uber-day reality: 2 days are 13h drives (cognitive zeros — passive audio only), 1 is a half-day (the real study slot).
 
 - [ ] **AZ-900** — MS Learn path: passive audio on the 13h drives + real study on the half Uber day. **Exam target ~Jul 1.** Mostly review (Azure deploy + Key Vault already done).
-- [ ] **AZ-204** — NO separate study during Sprints 3–6; the project IS the lab (Key Vault, App Service, App Config, Managed Identity, App Insights covered by building). Concentrated study in the **Aug 17–30 prep window** on the gaps only (Cosmos, Functions, Service Bus, Event Grid). **Exam end of Aug, slip to early Sept if Sprint 6 ran over.** Project ships first.
+- [ ] **AZ-204** — **PUSHED PAST v1.0 (re-baseline 2026-07-13).** It was double-booked against the exact
+  hours the re-baseline reclaims from Uber, and the Aug 17–30 study window is now buffer. The project
+  IS the lab (Key Vault, App Service, Managed Identity, App Insights — all covered by building it).
+  **Start studying after v1.0 ships (Sep 6); exam late Sept/Oct.** The portfolio gets interviews; the
+  cert supports it. Not the other way round.
 
 ## When behind (life buffer)
 
-Aug 30 is the **target**, not a cliff. The hard commitment is: ship with a working Azure deploy + great README.
-When a medical check / contract renewal / bad day eats time → **cut the lowest-priority task** (see cut order below), never extend hours or sacrifice sleep/runs. Realistic finish: Aug 30 clean, mid-Sept if life hits. Both fine.
+**Sep 6 is the target, not a cliff.** The hard commitment is: ship with a working Azure deploy + great README.
+When a medical check / contract renewal / bad day eats time → **cut the lowest-priority task**, never extend
+hours or sacrifice sleep/runs.
+
+**The re-baseline already spent every lever** (+1 week, reduced Uber hours, AZ-204 pushed, 40% descoped).
+There is nothing left to trade but scope. If another bad week lands, **cut again immediately** — do not
+absorb it by grinding. Cut order: README (47) > Azure deploy (53) > admin CRUD (28–31) > E2E (37) > rest.
 
 Every sprint end: E2E run, Azure verify, README update.
 
@@ -228,30 +222,36 @@ Every sprint end: E2E run, Azure verify, README update.
 | 1 | Azure Key Vault |
 | 2 | NWebsec, Coverlet |
 | 3 | FluentValidation, Bogus |
-| 4 | Playwright |
-| 5 | MailKit / Azure Comms, TestContainers |
-| 6 | Mermaid, Serilog + Seq *(if ahead)* |
+| A | ESLint (`angular-eslint`) + Prettier, Roslyn analyzers (`AnalysisMode=Recommended`). Angular -> 22.0.6 stable |
+| B | Playwright |
+| C | Mermaid |
+| ~~descoped~~ | ~~MailKit / Azure Comms, TestContainers, Serilog + Seq~~ |
 
 ## LEARN Summary (12 exercises)
 
 | # | Concept | Interview Question |
 |---|---------|-------------------|
-| 2 | Docker multi-stage | "Optimize Docker size/build?" *(S6 if ahead)* |
+| ~~2~~ | ~~Docker multi-stage~~ | ~~"Optimize Docker size/build?"~~ **descoped** |
 | 3 | Config providers | "Manage secrets in .NET?" |
 | 8 | FluentValidation | "Annotations vs FluentValidation?" |
 | 13 | Optimistic concurrency | "Concurrent writes in EF Core?" |
 | 14 | Transaction isolation | "Isolation levels? Serializable?" |
-| 20 | Integration testing | "Testing pyramid? TestContainers?" |
-| 22 | Structured logging | "Why not interpolation?" |
+| ~~20~~ | ~~Integration testing~~ | ~~"Testing pyramid? TestContainers?"~~ **descoped** — T37 (E2E) carries this story |
+| ~~22~~ | ~~Structured logging~~ | ~~"Why not interpolation?"~~ **descoped** |
 | 25 | Angular lazy loading | "Route structure in large app?" |
 | 37 | E2E testing | "Strategy? Page Object Model?" |
-| 39 | Channel\<T\> + BackgroundService | "Background jobs without Hangfire?" |
+| 54 | Static analysis (ESLint / Roslyn) | "Linter vs formatter? When is the linter *wrong*?" |
+| ~~39~~ | ~~Channel\<T\> + BackgroundService~~ | ~~"Background jobs without Hangfire?"~~ **descoped** |
 | 40 | State machine + audit | "Model order status changes?" |
-| 42 | Global query filters | "Soft delete in EF Core?" |
+| ~~42~~ | ~~Global query filters~~ | ~~"Soft delete in EF Core?"~~ **descoped** |
 
-## If Ahead (pick max 2)
+## If Ahead — **suspended until v1.0 ships**
 
-Domain events (M, backend) | Category hierarchy (M) | Wishlist (M) | SEO slugs (M)
+Domain events | Category hierarchy | Wishlist | SEO slugs
+
+> Not a menu right now. The re-baseline has ~2 pts of slack across 8 weeks. If you find yourself
+> "ahead", the correct move is to **pull the buffer forward and ship early**, not to add scope.
+> Revisit this list after Sep 6, while interviewing.
 
 ## Risks
 

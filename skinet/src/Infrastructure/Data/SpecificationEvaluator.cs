@@ -1,12 +1,15 @@
 namespace Infrastructure.Data;
 
-public class SpecificationEvaluator<T> where T : BaseEntity
+// Non-generic + generic methods, so T is inferred at the call site instead of being named twice
+// (SpecificationEvaluator<T>.GetQuery(...) forced the caller to repeat the type — that's CA1000).
+public static class SpecificationEvaluator
 {
     // ApplyCommon builds WHERE + JOINs + ORDER BY; this method adds the steps whose order changes the result.
     // Distinct must run before Skip/Take (dedupe, then page); paging leans on ApplyCommon's ORDER BY so the
     // page window is deterministic (SQL OFFSET/FETCH needs it). Chaining order of Where/Include/OrderBy is
     // NOT a perf lever — the DB optimizer picks the plan.
-    public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+    public static IQueryable<T> GetQuery<T>(IQueryable<T> query, ISpecification<T> spec)
+        where T : BaseEntity
     {
         query = ApplyCommon(query, spec);
 
@@ -19,8 +22,9 @@ public class SpecificationEvaluator<T> where T : BaseEntity
         return query;
     }
 
-    public static IQueryable<TResult> GetQuery<TResult>(IQueryable<T> query,
-                                                        ISpecification<T, TResult> spec)
+    public static IQueryable<TResult> GetQuery<T, TResult>(IQueryable<T> query,
+                                                           ISpecification<T, TResult> spec)
+        where T : BaseEntity
     {
         query = ApplyCommon(query, spec);
 
@@ -38,7 +42,8 @@ public class SpecificationEvaluator<T> where T : BaseEntity
         return projectedQuery;
     }
 
-    private static IQueryable<T> ApplyCommon(IQueryable<T> query, ISpecification<T> spec)
+    private static IQueryable<T> ApplyCommon<T>(IQueryable<T> query, ISpecification<T> spec)
+        where T : BaseEntity
     {
         if (spec.Criteria != null)
             query = query.Where(spec.Criteria);

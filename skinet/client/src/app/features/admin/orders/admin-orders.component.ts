@@ -38,7 +38,13 @@ import { environment } from '../../../../environments/environment';
 })
 export class AdminOrdersComponent {
   displayedColumns: string[] = ['id', 'buyerEmail', 'orderDate', 'total', 'status', 'action'];
-  statusOptions: (OrderStatus | 'All')[] = ['All', 'PaymentReceived', 'PaymentMismatch', 'Refunded', 'Pending'];
+  statusOptions: (OrderStatus | 'All')[] = [
+    'All',
+    'PaymentReceived',
+    'PaymentMismatch',
+    'Refunded',
+    'Pending'
+  ];
 
   private adminService = inject(AdminService);
   private dialogService = inject(DialogService);
@@ -53,26 +59,30 @@ export class AdminOrdersComponent {
       pageSize: p.pageSize
     };
 
-    if (p.filter && p.filter !== 'All')
-      params['status'] = p.filter;
+    if (p.filter && p.filter !== 'All') params['status'] = p.filter;
 
     return { url: environment.apiUrl + 'admin/orders', params };
   });
 
   onPageChanged(event: PageEvent) {
-    this.orderParams.update(p => ({ ...p, pageNumber: event.pageIndex + 1, pageSize: event.pageSize }));
+    this.orderParams.update((p) => ({
+      ...p,
+      pageNumber: event.pageIndex + 1,
+      pageSize: event.pageSize
+    }));
   }
 
   onFilterSelect(event: MatSelectChange) {
-    this.orderParams.update(p => ({ ...p, filter: event.value, pageNumber: 1 }));
+    this.orderParams.update((p) => ({ ...p, filter: event.value, pageNumber: 1 }));
   }
 
   async openConfirmDialog(id: number) {
     const confirmed = await this.dialogService.confirm(
-      'Confirm Refund', 'Are you sure you want to refund this order?');
+      'Confirm Refund',
+      'Are you sure you want to refund this order?'
+    );
 
-    if (confirmed)
-      this.refundOrder(id);
+    if (confirmed) this.refundOrder(id);
   }
 
   refundOrder(id: number) {

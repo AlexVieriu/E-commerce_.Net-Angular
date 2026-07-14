@@ -17,5 +17,8 @@ public interface ISpecification<T>
 // interface 2
 public interface ISpecification<T, TResult> : ISpecification<T>
 {
+    // CA1716 flags `Select` because it's a reserved word in VB/F#, which would force those callers to
+    // escape it. This solution is C#-only, and `Select` is exactly what this is — a LINQ projection.
+    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "C#-only solution; Select is the correct name for a projection.")]
     Expression<Func<T, TResult>>? Select { get; }
 }

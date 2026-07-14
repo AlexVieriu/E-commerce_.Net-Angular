@@ -17,6 +17,6 @@ export class AdminComponent {
   protected readonly navLinks = [
     { path: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { path: 'products', label: 'Products', icon: 'inventory_2' },
-    { path: 'orders', label: 'Orders', icon: 'receipt_long' },
+    { path: 'orders', label: 'Orders', icon: 'receipt_long' }
   ];
 }

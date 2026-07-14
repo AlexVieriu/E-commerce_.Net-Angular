@@ -33,6 +33,9 @@ jobs:
         working-directory: ./skinet
         run: dotnet restore
 
+      # Release build = the analyzer gate (T54). Directory.Build.props sets
+      # TreatWarningsAsErrors only for Release, so any Roslyn warning fails the PR here
+      # while local Debug builds stay warning-only.
       - name: Build
         working-directory: ./skinet
         run: dotnet build --no-restore --configuration Release
@@ -55,7 +58,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x' # Meets Angular 22 requirement (>=24.13.1)
+          node-version: '24.x' # Angular 22 stable requires Node >= 24.15.0
           cache: 'npm'
           cache-dependency-path: skinet/client/package-lock.json
 
@@ -63,8 +66,16 @@ jobs:
         working-directory: ./skinet/client
         run: npm ci
 
-      # Lint returns in T54 (ESLint setup); Angular unit tests are out of scope.
-      # For now CI verifies the Angular app compiles.
+      # The gate (T54). ESLint is configured strict — any error fails the PR.
+      - name: Lint
+        working-directory: ./skinet/client
+        run: npm run lint
+
+      - name: Check formatting
+        working-directory: ./skinet/client
+        run: npm run format:check
+
+      # Angular unit tests are out of scope — UI flows are covered by Playwright (T37).
       - name: Build
         working-directory: ./skinet/client
         run: npm run build
