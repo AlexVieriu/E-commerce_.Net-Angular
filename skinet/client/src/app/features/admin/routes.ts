@@ -14,7 +14,7 @@ export const adminRoutes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'products', component: AdminProductsComponent },
-      { path: 'orders', component: AdminOrdersComponent },
-    ],
-  },
+      { path: 'orders', component: AdminOrdersComponent }
+    ]
+  }
 ];

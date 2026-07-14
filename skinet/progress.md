@@ -21,6 +21,7 @@
 | Jul 13 | T26 merge, BUG-12 | Merged T26 (PR #53). Found + fixed BUG-12: admin orders paginator was dead — Angular sent `pageNumber`, backend binds `PagingParams.PageIndex`, so model binding silently dropped it and page 2+ re-served page 1 (`pageSize` bound fine, which is why it looked alive). Shop already did it right (`shop.service.ts:38`); the admin table skipped the rename. Verified live. Also logged BUG-11 + BUG-12 in `Execution plan.md` — neither was tracked there. |
 | Jul 13 | BUG-11 | Checkout 400 for stateless countries (Romania). Spike said "1-line fix (the validator)" — wrong: `State` was mandatory at **4** layers (TS model, validator, entity, NOT NULL column), so dropping the validator alone would have turned a clean 400 into a `DbUpdateException` **after** Stripe took the money. Root discovery: `MakeAddressStateOptional` (Apr 6) had already fixed the *wrong* entity — `Address` (saved profile), not `ShippingAddress` (owned entity in `Orders`, what checkout uses). Fixed per-country (Option B): `State` required only for US/CA/AU — Stripe's own validated list. New migration both providers; `AddressPipe` now drops empty parts (was rendering `", ,"`). 147 tests green (7 new). Verified live: RO order created, US still enforced. |
 | Jul 13 | BUG-13 | Shipping name persisted as the literal string `"null null"` — `stripe.service.ts` did `user.firstName + ' ' + user.lastName`, and JS coerces null to `"null"`; the seeded admin has neither name, so `"null null"` was saved onto the order. Third lying TS model of the day: `user.ts` declared `firstName: string` / `address: Address` while the backend has `string?` / `user.Address?.toDto()` — the type lie is *why* the concat looked safe. Fixed with a null-safe join + honest types. Verified live (named account prefills, RO/US both clean). Forward-only: orders already saved with `"null null"` keep it. |
+| Jul 14 | T54 *(PR #57 + #58 — merged)* | Lint + analyzer gate, **strict**. Frontend **50 → 0** ESLint errors; backend **368 → 0** Roslyn warnings. `TreatWarningsAsErrors` scoped to **Release** so CI fails the PR on any warning while local Debug stays warning-only. Gate *proven*, not assumed — injected a violation into each half and watched both reject it. **Forced side-quest:** Angular was pinned to `22.0.0-next.1`; semver sorts a prerelease *below* its own release, so `angular-eslint`'s peer range rejected it outright → upgraded to **22.0.6 stable** (+ Node 24.14→24.18), stripping the 8 `$safeNavigationMigration()` shims `ng update` injected (templates diff byte-identical). **Three bugs the linter found that review had not:** `address.pipe.ts` `?.address!` (TypeError on a nullish address); `ProductSpecParams.Search` culture-sensitive `ToLower()` (Turkish `I`→`ı` silently breaks search); `<NoWarn>CS8618</NoWarn>` *assigning* instead of appending, wiping every `Directory.Build.props` suppression. **One bug it tried to create:** CA1862 wanted `StringComparison` inside an EF expression tree — EF *throws* on those overloads, so obeying it would have broken every product search. A self-review pass then caught a regression I'd introduced (delivery `<label>`→`<div>` killed the card's click target) plus two template diagnostics `ng update` had silently suppressed. 147 tests green. Visual check passed (cart empty state, delivery cards, item page) and surfaced **BUG-14** — add-to-cart locks the button until the quantity changes; pre-existing, not from T54 → Descoped. **Gate:** REBUILD **5 PASS / 1 PARTIAL** · EXPLAIN **2 PASS / 3 PARTIAL** · BREAK **4 BLANK** (focus gone ~4h in; a fake PASS is worse than an honest BLANK). Real gaps found: Roslyn's *timing* (build, not runtime), "already running" vs "added", and the analyzer-can't-tell-which trap. **The gate itself broke and got rebuilt (PR #58):** ~30 questions answered incrementally over chat = 4h of ping-pong. Now capped at 3 EXPLAIN + 2 BREAK, 25-min timebox, six non-blendable phases, and a `## The Change Map` STUDY step — because a 157-file diff is unstudiable but an 8-file map isn't. |
 
 ---
 
@@ -45,7 +46,7 @@
 - [x] T17 — Price change detection: cart vs DB, 409 + snackbar + redirect
 - [x] T19 — Expand unit tests: specs, discount edges, validators. Target 80% → achieved 90% Core, 89.3% Application
 
-## Sprint 3 — Admin Panel *(Jun 16 – Jul 1)*
+## Sprint 3 — Admin Panel *(Jun 16 – Jul 1 · closed Jul 13 — **goal not met**, 5/8 delivered)*
 
 - [x] T8 — FluentValidation: auto-validation, CreateOrderDto + CreateProductDTO
 - [x] T24 — Bogus seed: 50+ products, 10+ users, 20+ orders
@@ -55,50 +56,57 @@
 - [x] BUG-12 — Admin orders paginator dead (`pageNumber` → `pageIndex` on the wire)
 - [x] BUG-11 — Checkout 400 for stateless countries (e.g. Romania)
 - [x] BUG-13 — Shipping name saved as literal `"null null"` (JS null-concat in `stripe.service.ts`)
-- [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table
-- [ ] T29 — Product list: Material Table + Paginator
-- [ ] T30 — Product create/edit: reactive form, Material inputs
+- → T28 / T29 / T30 **spilled to Sprint A**
 
-## Sprint 4 — Frontend Quality + UX *(Jul 2 – Jul 17)*
+> **Why it missed:** over-ran 12 days. Backend flew (T27 in a day); the Angular half (T25) + a mid-sprint
+> rescope (T26) + an 11-day energy stop ate the slack. Three real bugs surfaced late and none were planned
+> for. **Lesson: the plan had no room for bugs, and bug-time is not optional.**
 
-- [ ] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers
-- [ ] T55 — Lighthouse baseline: run on `/`, `/shop`, `/checkout`
+## Re-baseline — 2026-07-13
+
+Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned against **measured velocity**.
+
+- **Root cause:** the six "sprints" were **epics**, not **timeboxes** — a themed container can't absorb
+  spillover without breaking its own theme, so each became a mini-waterfall that couldn't end. Now split:
+  sprints = timeboxes (end on the date, whatever fits); epics = labels.
+- **Measured velocity** (Jun 16 → Jul 13, 28 days): ~12 pts / 28 days = **0.43 pts/day** (S=1, M=2, L=4).
+- **Arithmetic:** ~50 pts remaining vs ~30 pts capacity to Sep 6 (55 days @ ~0.55 pts/day with Uber hours
+  reduced) → **~22 pts (~40%) descoped.**
+- **Levers spent:** Aug 30 → **Sep 6** (+1 wk, hard limit) · Uber hours reduced · **AZ-204 pushed past v1.0**
+  (it was double-booked against the same hours).
+- **No slack left.** One more bad week = cut again immediately, don't grind. Cut order: README(47) >
+  deploy(53) > admin CRUD(28–31) > E2E(37) > rest.
+
+## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* ⏳ CURRENT
+
+- [x] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers *(first — gates every PR after it)*
+- [ ] T28 — Dashboard frontend: 3 Material Cards + recent orders table *(spillover)*
+- [ ] T29 — Product list: Material Table + Paginator *(spillover)*
+- [ ] T30 — Product create/edit: reactive form, Material inputs *(spillover)*
 - [ ] T31 — Product delete: reuse ConfirmationDialogComponent
-- [ ] T32 — Memory leak audit: `takeUntilDestroyed()`
-- [ ] T33 — Form errors: `<mat-error>` on login/register
-- [ ] T34 — Skeleton loaders: SkeletonCardComponent + SkeletonRowComponent
-- [ ] T35 — NgOptimizedImage: `ngSrc` + priority/lazy
-- [ ] T56 — Performance pass: MiniProfiler + bundle analyzer, fix top 3, re-run Lighthouse
-- [ ] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin)
-- [ ] T38 — README update with UX screenshots
 
-## Sprint 5 — Domain Expansion *(Jul 18 – Aug 1)*
+## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)*
 
+- [ ] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin) — timebox 4d
 - [ ] T40 — OrderStatus: Processing/Shipped/Delivered/Cancelled + OrderStatusHistory
 - [ ] T41 — Order cancellation: POST cancel + Stripe refund
-- [ ] T39 — Email: IEmailService + Channel\<T\> BackgroundService
-- [ ] T42 — Soft delete: IsDeleted+DeletedAt + global query filter
-- [ ] T43 — DB indexes: unique PaymentIntentId, BuyerEmail, composite
-- [ ] T46 — Unit tests: cancellation, soft delete, OrderStatusHistory
-- [ ] T20 — Integration tests: WebApplicationFactory + TestContainers
+- [ ] BUG-2 — Checkout: declined card can't retry in-session (money path)
 
-## Sprint 6 — Polish + Standout *(Aug 2 – Aug 16)*
+## Sprint C — Ship It *(Aug 11 – Aug 24)*
 
-- [ ] T47 — README rewrite: overview, stack, diagram, screenshots/GIFs
+- [ ] T47 — README rewrite *(day 1, highest ROI)*
+- [ ] T12 — Cart ownership: userId in Redis, verify on read/write *(IDOR — must not ship)*
 - [ ] T52 — Open redirect: validate returnUrl starts with `/`
 - [ ] T48 — C4 diagram (Context+Container) in Mermaid
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
-- [ ] T49 — docker-compose full: SQL Server + Redis + Seq
-- [ ] T51 — RequireConfirmedEmail
-- [ ] T53 — Final Azure smoke test
+- [ ] T43 — DB indexes: unique PaymentIntentId, BuyerEmail, composite
+- [ ] T21 — Coverage gate: coverlet, fail PR < 60%
+- [ ] T38 — README UX screenshots
 
-### If Ahead
+## Buffer *(Aug 25 – Sep 6)* — DO NOT FILL
 
-- [ ] T10 — Health checks: SQL Server + Redis
-- [ ] T22 — Serilog + Seq
-- [ ] T23 — Correlation IDs
-- [ ] T21 — Coverage gate: fail PR < 60%
-- [ ] T2 — Dockerfile multi-stage
-- [ ] T12 — Cart ownership: userId in Redis
-- [ ] T11 — Pagination: TotalPages, HasNext, HasPrev
-- [ ] T36 — Accessibility: axe on home/shop/checkout
+- [ ] T53 — Final Azure smoke test *(non-negotiable, always last)*
+- [ ] Interview deck + Anki prep + slack
+
+> Descoped for v1.0 (~22 pts): see `Execution plan.md`.
+

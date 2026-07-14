@@ -2,8 +2,8 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CartService } from '../../../core/services/cart.service';
 import { ConfirmationToken } from '@stripe/stripe-js/dist/api/confirmation-tokens';
-import { AddressPipe } from "../../../shared/pipes/address.pipe";
-import { CardPipe } from "../../../shared/pipes/card.pipe";
+import { AddressPipe } from '../../../shared/pipes/address.pipe';
+import { CardPipe } from '../../../shared/pipes/card.pipe';
 
 @Component({
   selector: 'app-checkout-review',

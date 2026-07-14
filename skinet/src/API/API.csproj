@@ -4,7 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>CS8618</NoWarn>
+    <!-- $(NoWarn); appends — a bare assignment would wipe out Directory.Build.props' suppressions. -->
+    <NoWarn>$(NoWarn);CS8618</NoWarn>
     <UserSecretsId>93e61eaa-a174-4895-aa1b-ed1f82fa1760</UserSecretsId>
   </PropertyGroup>
 

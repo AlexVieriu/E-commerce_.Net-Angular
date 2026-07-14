@@ -64,8 +64,8 @@ public class BaseSpecification<T> : ISpecification<T>
 
     // Merge two predicates into one (left AND right). Each lambda has its own parameter,
     // so we rebind both to a single shared parameter — otherwise EF can't read the tree.
-    private Expression<Func<T, bool>> CombineWithAnd(Expression<Func<T, bool>> left,
-                                                     Expression<Func<T, bool>> right)
+    private static Expression<Func<T, bool>> CombineWithAnd(Expression<Func<T, bool>> left,
+                                                            Expression<Func<T, bool>> right)
     {
         var parameter = Expression.Parameter(typeof(T));
 
@@ -81,7 +81,7 @@ public class BaseSpecification<T> : ISpecification<T>
     }
 
     // ExpressionVisitor that swaps one parameter node for another while walking the tree.
-    private class ReplaceParameterVisitor : ExpressionVisitor
+    private sealed class ReplaceParameterVisitor : ExpressionVisitor
     {
         private readonly ParameterExpression _oldParameter;
         private readonly ParameterExpression _newParameter;

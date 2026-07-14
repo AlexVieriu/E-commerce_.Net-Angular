@@ -9,15 +9,7 @@ import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-product-item',
-  imports: [
-    MatCard,
-    MatCardContent,
-    MatCardActions,
-    MatIcon,
-    CurrencyPipe,
-    MatButton,
-    RouterLink
-  ],
+  imports: [MatCard, MatCardContent, MatCardActions, MatIcon, CurrencyPipe, MatButton, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-item.component.html',
   styleUrl: './product-item.component.scss'
@@ -26,5 +18,4 @@ export class ProductItemComponent {
   product = input<Product>();
 
   cartService = inject(CartService);
-
 }

@@ -42,15 +42,16 @@ public class CacheAttribute(int timeToLiveInMinutes) : Attribute, IAsyncActionFi
     }
 
     // cache key ex: "/api/products?brandId=1&typeId=2"
-    private string GenerateCacheKeyFromRequest(HttpRequest request)
+    // Invariant culture: a cache key must be byte-identical regardless of the server's locale.
+    private static string GenerateCacheKeyFromRequest(HttpRequest request)
     {
         var keyBuilder = new StringBuilder();
 
-        keyBuilder.Append($"{request.Path}");
+        keyBuilder.Append(CultureInfo.InvariantCulture, $"{request.Path}");
 
         foreach (var (key, value) in request.Query.OrderBy(x => x.Key))
         {
-            keyBuilder.Append($"|{key}-{value}");
+            keyBuilder.Append(CultureInfo.InvariantCulture, $"|{key}-{value}");
         }
 
         return keyBuilder.ToString();

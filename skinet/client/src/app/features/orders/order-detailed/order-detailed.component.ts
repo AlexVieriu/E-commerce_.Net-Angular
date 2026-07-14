@@ -1,7 +1,7 @@
 import { AccountService } from '../../../core/services/account.service';
 import { Router } from '@angular/router';
-import { AddressPipe } from "../../../shared/pipes/address.pipe";
-import { CardPipe } from "../../../shared/pipes/card.pipe";
+import { AddressPipe } from '../../../shared/pipes/address.pipe';
+import { CardPipe } from '../../../shared/pipes/card.pipe';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { CurrencyPipe, DatePipe } from '@angular/common';
@@ -27,11 +27,11 @@ export class OrderDetailedComponent {
       ? environment.apiUrl + 'admin/orders/' + this.id()
       : environment.apiUrl + 'orders/' + this.id()
   );
-  buttonText = computed(() => this.accountService.isAdmin() ? 'Return to Admin' : 'Return to Orders');
+  buttonText = computed(() =>
+    this.accountService.isAdmin() ? 'Return to Admin' : 'Return to Orders'
+  );
 
   onReturnClick() {
-    this.accountService.isAdmin()
-      ? this.router.navigateByUrl('/admin/orders')
-      : this.router.navigateByUrl('/orders');
+    this.router.navigateByUrl(this.accountService.isAdmin() ? '/admin/orders' : '/orders');
   }
 }

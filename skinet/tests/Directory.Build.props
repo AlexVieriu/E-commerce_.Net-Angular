@@ -1,0 +1,23 @@
+<Project>
+
+  <!-- MSBuild stops at the first Directory.Build.props going up, so tests find THIS one and would
+       never see the solution-wide file. Delete this Import and every analyzer setting is lost here. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
+          Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- CA1707 (no underscores) fires on every test name, but docs/testing.md mandates
+         MethodName_Scenario_ExpectedBehavior — the rule is wrong here, and only here.
+
+         NoWarn is a semicolon-separated LIST, and <NoWarn>…</NoWarn> ASSIGNS it — it does not append.
+         `$(NoWarn)` means "whatever the list already holds", so writing it back in keeps the old entries:
+
+             <NoWarn>$(NoWarn);CA1707</NoWarn>  ->  ";CA1707;xUnit1051"   both kept
+             <NoWarn>CA1707</NoWarn>            ->  "CA1707"              xUnit1051 silently erased
+
+         Nothing warns you when a suppression is dropped this way — you just get a wall of unrelated
+         errors. It's what kept CA1848 alive despite being "suppressed" (see API/Infrastructure.csproj). -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>

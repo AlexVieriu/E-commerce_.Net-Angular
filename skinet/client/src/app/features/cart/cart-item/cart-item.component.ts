@@ -29,4 +29,3 @@ export class CartItemComponent {
     this.cartService.removeItemFromCart(this.item().productId, this.item().quantity);
   }
 }
-

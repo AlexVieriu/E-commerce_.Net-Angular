@@ -8,10 +8,12 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 ## ✅ After each task (before opening the PR)
 
 - [ ] `dotnet test` green locally
+- [ ] `dotnet build -c Release` clean — **Release is where analyzer warnings become errors** (T54)
+- [ ] `npm run lint` + `npm run format` clean (frontend)
 - [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
-CI re-runs `dotnet test` + `npm run build` on the task PR — the backstop, not the first check.
+CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
 
 ## ✅ Before `development` → `main` (deploy gate)
 
@@ -33,6 +35,15 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 > stuck **Pending** → admin orders table → "sync" icon → expect **PaymentReceived** + SignalR
 > notification (if that session is still connected). Then run one checkout **with** `stripe listen`
 > running to confirm the webhook path still works unchanged.
+>
+> _BUG-11 (stateless-country checkout):_ check out with a **Romanian** address (Stripe's Address Element
+> shows no state field) → order must be **created**, and render without a dangling comma. Then a **US**
+> address **with** a state → must still succeed. State is required only for US/CA/AU; a regression here
+> is a 400 on the money path, so it belongs in the deploy gate, not just the unit tests.
+>
+> _BUG-12 (admin paging):_ `/admin/orders` → click page 2 → the rows must **change**. The wire param is
+> `pageIndex`, not `pageNumber` — model binding drops an unknown name silently, so this fails with no
+> error anywhere.
 
 **Infra** — confirm against Azure *before* the push (app boots without them but fails on first cart/cache use or payment):
 - [ ] App Service **Redis** connection string set (not `localhost`)

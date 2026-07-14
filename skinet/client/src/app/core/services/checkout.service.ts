@@ -18,11 +18,11 @@ export class CheckoutService {
       return scheduled([this.deliveryMethods()], asyncScheduler);
 
     return this.http.get<DeliveryMethod[]>(this.baseUrl + 'payments/delivery-methods').pipe(
-      map(methods => {
+      map((methods) => {
         const sorted = methods.sort((a, b) => b.price - a.price);
         this.deliveryMethods.set(sorted);
         return sorted;
       })
-    )
+    );
   }
 }
