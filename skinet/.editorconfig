@@ -1,13 +1,37 @@
 [*.{cs,vb}]
-dotnet_naming_rule.private_members_with_underscore.symbols  = private_fields
-dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
-dotnet_naming_rule.private_members_with_underscore.severity = suggestion
 
+# Naming: private INSTANCE fields must be _camelCase (_whSecret, _cart, _redisDB).
+#
+# The `severity` on a naming *rule* below is IDE-only — the docs are explicit that it "is not
+# understood by the C# or VB compilers, hence not respected during build". To enforce it on a build
+# you must set the IDE1006 diagnostic severity instead, and it must be `warning` or `error`.
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/naming-rules
+dotnet_diagnostic.IDE1006.severity = warning
+
+# The symbols the rule applies to: private fields.
 dotnet_naming_symbols.private_fields.applicable_kinds           = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 
-dotnet_naming_style.prefix_underscore.capitalization = camel_case
+# ...but NOT private static/const ones. Those are PascalCase here by convention
+# (ErrorJsonOptions, LowStockThreshold), and without this exclusion the rule flags every one.
+# `static` also covers `const`, which is implicitly static.
+dotnet_naming_symbols.private_static_fields.applicable_kinds           = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers         = static
+
+# The style: leading underscore, camelCase.
+dotnet_naming_style.prefix_underscore.capitalization  = camel_case
 dotnet_naming_style.prefix_underscore.required_prefix = _
+
+# Rule 1 — private instance fields must match the style.
+dotnet_naming_rule.private_members_with_underscore.symbols  = private_fields
+dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.severity = warning
+
+# Rule 2 — private static/const fields: exempt. More specific rules win, so this beats rule 1.
+dotnet_naming_rule.private_static_fields_none.symbols  = private_static_fields
+dotnet_naming_rule.private_static_fields_none.style    = prefix_underscore
+dotnet_naming_rule.private_static_fields_none.severity = none
 
 # EF writes these; we don't hand-edit them, so analyzers shouldn't grade them.
 [**/Migrations/**.cs]
