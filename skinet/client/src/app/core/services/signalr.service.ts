@@ -20,8 +20,7 @@ export class SignalrService {
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection.start()
-      .catch(err => console.log(err));
+    this.hubConnection.start().catch((err) => console.log(err));
 
     // Listen for messages from the server: PaymentController.cs -> HandlePaymentIntentSucceeded()
     this.hubConnection.on('OrderCompleteNotification', (order: Order) => {
@@ -31,7 +30,7 @@ export class SignalrService {
 
   stopHubConnection() {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
-      this.hubConnection.stop().catch(err => console.log(err));
+      this.hubConnection.stop().catch((err) => console.log(err));
     }
   }
-}   
+}

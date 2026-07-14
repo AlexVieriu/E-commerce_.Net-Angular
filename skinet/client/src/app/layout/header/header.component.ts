@@ -9,7 +9,7 @@ import { CartService } from '../../core/services/cart.service';
 import { AccountService } from '../../core/services/account.service';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
-import { IsAdminDirective } from "../../shared/directives/is-admin.directive";
+import { IsAdminDirective } from '../../shared/directives/is-admin.directive';
 
 @Component({
   selector: 'app-header',
@@ -41,6 +41,6 @@ export class HeaderComponent {
       next: () => {
         this.router.navigateByUrl('/');
       }
-    })
+    });
   }
 }

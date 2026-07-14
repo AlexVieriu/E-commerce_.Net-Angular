@@ -20,7 +20,8 @@ import { MatIcon } from '@angular/material/icon';
     MatInput,
     CurrencyPipe,
     FormsModule,
-    MatIcon],
+    MatIcon
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './order-summary.component.html',
   styleUrl: './order-summary.component.scss'

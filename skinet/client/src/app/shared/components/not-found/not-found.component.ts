@@ -5,15 +5,9 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-not-found',
-  imports: [
-    MatIcon,
-    MatButton,
-    RouterLink
-  ],
+  imports: [MatIcon, MatButton, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './not-found.component.html',
   styleUrl: './not-found.component.scss'
 })
-export class NotFoundComponent {
-
-}
+export class NotFoundComponent {}

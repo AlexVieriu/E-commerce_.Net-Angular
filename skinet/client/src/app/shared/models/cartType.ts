@@ -1,11 +1,11 @@
-import { CartItem } from "./cartItem"
-import { Coupon } from "./coupon";
+import { CartItem } from './cartItem';
+import { Coupon } from './coupon';
 
 export type CartType = {
-    id: string,
-    items: CartItem[],
-    deliveryMethodId?: number,
-    paymentIntentId?: string,
-    clientSecret?: string,
-    coupon?: Coupon;
-}
+  id: string;
+  items: CartItem[];
+  deliveryMethodId?: number;
+  paymentIntentId?: string;
+  clientSecret?: string;
+  coupon?: Coupon;
+};
