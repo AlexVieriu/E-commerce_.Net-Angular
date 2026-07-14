@@ -79,6 +79,10 @@ When asked to open/create a PR, always output a suggested title and description 
 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
+0. **Run the gate** — `mindset/the-gate.md`. Six phases, ~65 min:
+   `GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` → `GATE: REWRITE`.
+   Cap: **3 EXPLAIN + 2 BREAK**, 25-min sit, `BLANK` is a valid result.
+   **Nothing below happens until the gate has run — you don't get to tick what you can't explain.**
 1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
 2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
 3. Update any affected docs in `skinet/docs/` (keep them short).
