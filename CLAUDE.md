@@ -53,8 +53,8 @@ When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution
   the gate + doc review, so review tweaks fold in.
 - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
   (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
-- PR to `main` at sprint end only → **merge commit (`--no-ff`)**, titled `Sprint N — <name>`
-  (groups tasks under the sprint; pushing `main` deploys to Azure — verify first)
+- PR to `main` at sprint end only → **squash** (exactly one commit per sprint), titled `Sprint N — <name>`
+  (task/bug lines go in the commit body; pushing `main` deploys to Azure — verify first)
 - Never commit directly to `main` or `development`
 - For forgotten changes on a completed task: `fix/task-N-description` from `development` (squash-merge)
 - Full flow + commands: `skinet/docs/git-workflow.md`
