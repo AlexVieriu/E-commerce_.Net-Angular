@@ -170,7 +170,7 @@ If a sprint over-runs, it eats *this* — that is what the buffer is for. **No f
 | 34 | Skeleton loaders | Polish |
 | 35 | NgOptimizedImage | Polish |
 | 33 | Form errors: `<mat-error>` | Nice UX, no signal |
-| fix/T27 | Dashboard preview sizes: recent orders 5→15, low-stock 10→15 (`DashboardService.cs`) | Cosmetic (fill the screen). Backend caps + 2 test asserts; deferred from T28 (2026-07-15). `fix/task-27-dashboard-preview-sizes` — also in `backlog.md`; do if ahead |
+| fix/T27 | Dashboard preview sizes: recent orders 5→15, low-stock 10→15 (`DashboardService.cs`) | Cosmetic (fill the screen). Backend caps + 2 test asserts; deferred from T28 (2026-07-15). `fix/task-27-dashboard-preview-sizes` — do if ahead |
 | 32 | Memory leak audit | "Likely minimal (signals + httpResource)" — plan's own words |
 | BUG-3 | Checkout address hint on empty required field | UX nicety, not on the money path |
 | BUG-14 | Product page: "Add to cart" disables itself the instant you click it (`[disabled]="quantity() === quantityInCart()"`), so the button reads as broken even though the cart *did* update. Re-enables only when you change the Quantity box. Found Jul 14 during the T54 visual check | Same class as BUG-3 — confusing, but the cart works and it's not on the money path. Working as designed, just designed poorly |

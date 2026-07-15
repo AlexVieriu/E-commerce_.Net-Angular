@@ -23,8 +23,8 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-After each completed task — the full flow is in `mindset/the-gate.md` (two tiers, **one file**). This is the
-**full-gate** doc; a **light-touch** task just needs `## Read First` + one `## 🎤 Interview Q&A` line.
+After each completed task — the full flow is in `mindset/the-gate.md` (**one file**). Run the gate only for a
+**new concept you'd have to explain in an interview**; mechanical tasks skip it (build, verify, tick).
 `## Read First` + `## Change Map` + `## Hints` are scaffolded first (study material — give nothing away);
 **you** write `## 🔁 REBUILD / 🧠 EXPLAIN / 💥 BREAK` inline; Claude fills the rest from the gaps you hit.
 Verify every technical claim against official docs *before* writing — cite in `## Sources`; don't trust recall.
@@ -40,8 +40,8 @@ Verify every technical claim against official docs *before* writing — cite in 
      **MECHANICAL** (reformat / codegen noise — named so it's skipped). A 157-file diff → ~8 files, ~5 ideas.
    - ## 🧭 Hints — one line per attempt: `file · what to notice`. A location anchor, **never the answer.**
    - ## 🔁 REBUILD — *you write.* The key lines, cold.
-   - ## 🧠 EXPLAIN — *you write.* Why it works, 1–2 lines.
-   - ## 💥 BREAK — *you write.* What fails in prod if done wrong.
+   - ## 🧠 EXPLAIN — *you write.* **3–4 clear, self-contained** "why does it work?" questions (Claude scaffolds), answered 1–2 lines each.
+   - ## 💥 BREAK — *you write.* **1–2 clear** "what fails in prod?" questions (Claude scaffolds), each naming a concrete failure.
    - ## ⚖️ Why this approach — one bullet = one decision or trade-off.
    - ## 🌫️ What confused me — your real gaps. Lead with a triage table, tag each: **OWN** (explain cold) ·
      **RECOGNIZE** (re-derive, don't memorize) · **LET GO** (trivia) + a location anchor.
@@ -75,7 +75,7 @@ When asked to open/create a PR, always output a suggested title and description 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
 0. **THE GATE — read `mindset/the-gate.md` and follow it.**
-   Two tiers (full gate vs light touch — pick per task, default light); everything in **one file**, the
+   Run the gate for a new interview-explainable concept only (mechanical tasks skip it); all in **one file**, the
    questions doc (`skinet/questions/sprint-N/task-N-*.md`; sections in QUESTIONS & EXERCISES). The loop:
    solve → learn → gap → log → merge. Attempt → stuck → Claude answers **now** → move on. No ping-pong.
    **Nothing below happens until the gate has run — you don't tick what you can't explain.**
@@ -105,7 +105,7 @@ Learning docs should be pleasant to open — but a landmark only works if it's r
 - **Emoji mark fixed, recurring section headings.** If a heading appears in *every* instance of a doc
   type, it earns one. A sentence, a table cell, or a one-off heading does not.
 - **Where they go:** `questions/…/task-N-*.md` (📂🗺️🧭🔁🧠💥⚖️🌫️💡✏️✅🧪🎤📚) · `mindset/the-gate.md`
-  (🍃 light · 🎯 full) · `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
+  (🎯 the gate) · `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
 - **Where they don't:** this file · `progress.md` rows · `daily-log.md` · `skinet/docs/**` — contracts,
   prose, and technical reference someone else may read.
 - **Status markers are always fine, anywhere:** ✅ ⚠️ ❌ 🔴 🟡 🟢 ⏳ — they carry meaning, not decoration.
@@ -124,6 +124,18 @@ Never modify these files unless explicitly instructed:
   docs/backend/payment.md; git/PR → docs/git-workflow.md; verification + deploy gate → docs/testing.md.
 
 # MINDSET (scaffold only — never write the user's thinking)
+The `mindset/` folder is the learning-process system — six files, one per workflow moment. **This
+section is the map; the step-by-step trigger lives in the section named in the last column.**
+
+| File | What it's for | Fires (→ section) | Who writes |
+|---|---|---|---|
+| `energy-protocol.md` | energy level → task type | START OF DAY | Claude routes |
+| `sprint-map.md` | the sprint drawn (routes + wireframes) | sprint start & end (MINDSET) | Claude draws |
+| `spikes.md` | decide the approach before coding | before a task (AFTER EACH TASK #5) | you: Decision+Why · Claude scaffolds |
+| `the-gate.md` | prove you learned it | AFTER EACH TASK #0 | you attempt · Claude fills |
+| `daily-log.md` | manager-facing day record | AFTER EACH TASK #2 · END OF DAY | Claude logs |
+| `question-tally.md` | junior/mid interview calibration | AFTER EACH TASK #4 | Claude appends |
+
 - Each task/bug → a top entry in `mindset/spikes.md` (Question/Options/Decision/Why + checklist);
   the top entry is the active to-do. Leave Decision + Why blank for the user.
 - Sprint map (`mindset/sprint-map.md`, newest sprint on top) — **written exactly twice per sprint,
