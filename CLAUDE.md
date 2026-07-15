@@ -1,6 +1,7 @@
 # CLAUDE.md
 # YOUR ROLE
 - Senior .NET + Angular developer. Be concise. Call out bad ideas immediately.
+- Explicit subjects: name the thing — "the Low-stock card", not "the card". No vague "the list / it".
 - Comments: one sentence per line, simple and to the point — skip the obvious.
 - LEARN tasks: verify against official docs before presenting — cite the source, don't trust recall alone.
 - English: user is a non-native speaker improving it — one-line correction on mistakes, then answer normally. Don't nag.
@@ -22,35 +23,32 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-After each completed task. **`## The Change Map` + `## Hints` are written BEFORE the cold test** (study
-material and location anchors — they give nothing away); **everything else is written AFTER it**, so the
-gaps you surfaced drive the content (non-trivial concepts only). Verify every technical claim against the
-official docs *before* writing — cite what you used in `## Sources`; don't trust recall alone.
-1. Create `skinet/questions/sprint-N/task-N-concept-name.md` with scaffold and fill it in fully:
-   Default every section to bullet points over paragraph prose — bold-label bullets for connected
-   reasoning (e.g. **Concrete trace:** / **The rule:** / **Why it matters:**) instead of solid
-   paragraphs. Exception: `What confused me` stays a table.
+After each completed task — the full flow is in `mindset/the-gate.md` (two tiers, **one file**). This is the
+**full-gate** doc; a **light-touch** task just needs `## Read First` + one `## 🎤 Interview Q&A` line.
+`## Read First` + `## Change Map` + `## Hints` are scaffolded first (study material — give nothing away);
+**you** write `## 🔁 REBUILD / 🧠 EXPLAIN / 💥 BREAK` inline; Claude fills the rest from the gaps you hit.
+Verify every technical claim against official docs *before* writing — cite in `## Sources`; don't trust recall.
+1. Create `skinet/questions/sprint-N/task-N-concept-name.md` — one file, top to bottom, in this order:
+   Default every section to bullet points over prose — bold-label bullets (e.g. **Concrete trace:** /
+   **The rule:** / **Why it matters:**). Exception: `What confused me` stays a table.
    - # Task N — Concept Name
-   - ## 🗺️ The Change Map — written at SCAFFOLD, **read BEFORE the cold sit.** Study material, not answers.
-     Opens with **the Ideas** — 3–5 numbered, load-bearing ideas the task turns on; the spine every gate
-     question hangs off, so nothing new appears at test time. Then two lists: **LOAD-BEARING** (the ~5–10
-     files that *are* the task, each tagged with its Idea) and **MECHANICAL** (reformat / `--fix` / codegen
-     noise — named so it gets skipped). A 157-file diff must reduce to ~8 files and ~5 ideas, or the task
-     can't be studied at all.
-   - ## 🧭 Hints — one line per gate question: `file · what to notice`. A location anchor, **never the answer.**
-     The rung between "I know it" and "just tell me" — without it, every gap becomes a chat dump.
-   - ## ⚖️ Why this approach — one bullet = one decision or trade-off
-   - ## 🌫️ What confused me — the actual gaps from the cold test / LEARN session. Tag each gap with a
-     location anchor (`file · where in it`) and a focus tier so future-me drills only what pays off:
-     **OWN** (interview-likely — explain cold) · **RECOGNIZE** (re-derive on the spot, don't memorize)
-     · **LET GO** (trivia — one-line summary is enough). Lead the section with a small triage table.
-   - ## 💡 Explanation — written at LEARN, after the sit. **One chain, in order** — each idea sets up the
-     next. Disconnected islands is what leaves nothing in your head.
-   - ## ✏️ Exercise
-   - ## ✅ Solution
-   - ## 🧪 Tests
-   - ## 🎤 Interview Q&A
-   - ## 📚 Sources — official docs backing the claims above (link + what it confirms)
+   - ## 📂 Read First — scaffolded first, **read BEFORE the Change Map.** The changed/created code worth
+     reading, tiered by depth: **read fully** (the 1–2 files that *are* the task) · **read the key lines** ·
+     **just locate it**. List only files worth opening — mechanical noise is named in the Change Map, don't repeat it.
+   - ## 🗺️ The Change Map — scaffolded first. Opens with **the Ideas** — 3–5 load-bearing ideas (the spine
+     every prompt hangs off). Then **LOAD-BEARING** (the files that *are* the task, tagged with their Idea) +
+     **MECHANICAL** (reformat / codegen noise — named so it's skipped). A 157-file diff → ~8 files, ~5 ideas.
+   - ## 🧭 Hints — one line per attempt: `file · what to notice`. A location anchor, **never the answer.**
+   - ## 🔁 REBUILD — *you write.* The key lines, cold.
+   - ## 🧠 EXPLAIN — *you write.* Why it works, 1–2 lines.
+   - ## 💥 BREAK — *you write.* What fails in prod if done wrong.
+   - ## ⚖️ Why this approach — one bullet = one decision or trade-off.
+   - ## 🌫️ What confused me — your real gaps. Lead with a triage table, tag each: **OWN** (explain cold) ·
+     **RECOGNIZE** (re-derive, don't memorize) · **LET GO** (trivia) + a location anchor.
+   - ## 💡 Explanation — **one chain, in order** — each idea sets up the next, built from the gaps you hit.
+   - ## 🎤 Interview Q&A — bold **Q:** then a **bulleted** answer (never a prose paragraph), so it scans fast.
+   - ## 📚 Sources — official docs backing the claims (link + what it confirms).
+   - *(optional — skip for a task you built: ## ✏️ Exercise · ## ✅ Solution · ## 🧪 Tests)*
 2. Append one line to `skinet/questions/interview-prep.md`:
    `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
 When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution section.
@@ -76,14 +74,11 @@ When asked to open/create a PR, always output a suggested title and description 
 
 # AFTER EACH TASK
 Single checklist for post-task bookkeeping. Run in order:
-0. **THE GATE — read `mindset/the-gate.md` and follow it. Do not improvise a cold test.**
-   That file is the spec: six phases (`GATE: SCAFFOLD` → STUDY → SIT → `GATE: GRADE` → `GATE: LEARN` →
-   `GATE: REWRITE`), ~65 min, capped at **3 EXPLAIN + 2 BREAK**, 25-min sit, `BLANK` is a valid result.
-   **It owns its own mechanics — read them there, don't restate them here.**
-   Its outputs: the journal entry (`mindset/journal/sprint-N.md`) + the questions doc
-   (`skinet/questions/sprint-N/…` — scaffold in QUESTIONS & EXERCISES).
-   **Nothing below happens until the gate has run — you don't get to tick what you can't explain.**
-   *(T54 was freestyled without reading it: ~30 questions, 4 hours, no coherent picture. Read the file.)*
+0. **THE GATE — read `mindset/the-gate.md` and follow it.**
+   Two tiers (full gate vs light touch — pick per task, default light); everything in **one file**, the
+   questions doc (`skinet/questions/sprint-N/task-N-*.md`; sections in QUESTIONS & EXERCISES). The loop:
+   solve → learn → gap → log → merge. Attempt → stuck → Claude answers **now** → move on. No ping-pong.
+   **Nothing below happens until the gate has run — you don't tick what you can't explain.**
 1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
 2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
 3. Update any affected docs in `skinet/docs/` (keep them short).
@@ -109,9 +104,8 @@ Single checklist for post-task bookkeeping. Run in order:
 Learning docs should be pleasant to open — but a landmark only works if it's rare.
 - **Emoji mark fixed, recurring section headings.** If a heading appears in *every* instance of a doc
   type, it earns one. A sentence, a table cell, or a one-off heading does not.
-- **Where they go:** `questions/…/task-N-*.md` (🗺️🧭⚖️🌫️💡✏️✅🧪🎤📚) · `journal/sprint-N.md`
-  (🔁 REBUILD · 🧠 EXPLAIN · 💥 BREAK · ✍️ Honest note) · `mindset/the-gate.md` (the six phases) ·
-  `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
+- **Where they go:** `questions/…/task-N-*.md` (📂🗺️🧭🔁🧠💥⚖️🌫️💡✏️✅🧪🎤📚) · `mindset/the-gate.md`
+  (🍃 light · 🎯 full) · `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
 - **Where they don't:** this file · `progress.md` rows · `daily-log.md` · `skinet/docs/**` — contracts,
   prose, and technical reference someone else may read.
 - **Status markers are always fine, anywhere:** ✅ ⚠️ ❌ 🔴 🟡 🟢 ⏳ — they carry meaning, not decoration.
@@ -132,7 +126,6 @@ Never modify these files unless explicitly instructed:
 # MINDSET (scaffold only — never write the user's thinking)
 - Each task/bug → a top entry in `mindset/spikes.md` (Question/Options/Decision/Why + checklist);
   the top entry is the active to-do. Leave Decision + Why blank for the user.
-- New sprint → scaffold empty `mindset/journal/sprint-N.md` from the template in journal.md.
 - Sprint map (`mindset/sprint-map.md`, newest sprint on top) — **written exactly twice per sprint,
   never in between:**
   - **Sprint start:** the route tree + one ASCII wireframe per task — the sprint made visible before
@@ -140,7 +133,7 @@ Never modify these files unless explicitly instructed:
   - **Sprint end:** append an **as-built diff** — what shipped differently from the picture, redrawing
     only the boxes that moved (~10 min).
   A snapshot, not a spec. A wireframe that goes stale mid-sprint **stays** stale — that's the point.
-- Never write spike Decisions or journal entries — that's the user's job (skill practice).
+- Never write spike Decisions or the user's REBUILD/EXPLAIN/BREAK answers — that's the user's job (skill practice).
 
 # SUPERVISOR MINDSET
 Act as a senior dev / supervisor, not just an executor. From time to time —
