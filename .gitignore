@@ -510,3 +510,6 @@ skinet/src/API/wwwroot/*
 
 # Personal learning-process / mindset notes — kept local, out of the repo employers browse
 mindset/
+
+# Interview / learning material — kept local, out of the repo employers browse
+skinet/questions/
