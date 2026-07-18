@@ -16,6 +16,8 @@ import { Pagination } from '../../../shared/models/pagination';
 import { Product } from '../../../shared/models/products';
 import { ShopParams } from '../../../shared/models/shopParams';
 import { ShopService } from '../../../core/services/shop.service';
+import { DialogService } from '../../../core/services/dialog.service';
+import { SnackbarService } from '../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-admin-products',
@@ -46,6 +48,8 @@ export class AdminProductsComponent {
   ];
 
   private shopService = inject(ShopService);
+  private dialogService = inject(DialogService);
+  private snack = inject(SnackbarService);
   // Reuse the shop's cached brand/type endpoints (root singletons) — no duplicate fetch.
   brands = this.shopService.brands;
   types = this.shopService.types;
@@ -92,5 +96,33 @@ export class AdminProductsComponent {
       pageNumber: event.pageIndex + 1,
       pageSize: event.pageSize
     }));
+  }
+
+  async onDelete(product: Product) {
+    // Cancel, Esc and backdrop-click all resolve to undefined — only an explicit confirm deletes.
+    const confirmed = await this.dialogService.confirm(
+      'Delete product',
+      `Delete "${product.name}"? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    this.shopService.deleteProduct(product.id).subscribe({
+      next: () => {
+        this.snack.success('Product deleted');
+
+        // Deleting the only row on a page past the first would leave an empty page — step back instead.
+        const rows = this.products.value()?.data.length ?? 0;
+        const page = this.productParams().pageNumber;
+
+        if (rows === 1 && page > 1) {
+          // The params signal is the resource's request — changing it *is* the refetch.
+          this.productParams.update((p) => ({ ...p, pageNumber: page - 1 }));
+        } else {
+          // DeleteProduct carries [InvalidateCache], so the refetch reads fresh data (BUG-15).
+          this.products.reload();
+        }
+      }
+    });
   }
 }

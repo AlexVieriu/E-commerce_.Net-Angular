@@ -17,7 +17,8 @@ Two `CreatePagedResult` overloads — wraps results in `Pagination<T>`, returns 
 - Inherit `BaseApiController`.
 - Inject `IUnitOfWork`. Never inject `IGenericRepository<T>` directly.
 - Auth at class level: `[Authorize]`. Role restriction: `[Authorize(Roles = "Admin")]`.
-- `[Cache(minutes)]` on GET endpoints. `[InvalidateCache("api/route|")]` on mutations.
+- `[Cache(minutes)]` on GET endpoints. `[InvalidateCache("api/route")]` on mutations — no trailing `"|"`,
+  it would skip the by-id keys (`caching.md`).
 
 ```csharp
 public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
@@ -26,7 +27,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(...) { ... }
 
-    [InvalidateCache("api/products|")]
+    [InvalidateCache("api/products")]
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(CreateProductDTO productDto) { ... }
