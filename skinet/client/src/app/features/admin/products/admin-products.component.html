@@ -124,7 +124,6 @@
           <ng-container matColumnDef="action">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let product">
-              <!-- Edit wired in T30; delete stays disabled until T31. -->
               <div class="flex gap-3">
                 <button
                   matTooltip="Edit"
@@ -133,7 +132,7 @@
                 >
                   <mat-icon class="text-purple-500">edit</mat-icon>
                 </button>
-                <button matTooltip="Delete" mat-icon-button disabled>
+                <button matTooltip="Delete" mat-icon-button (click)="onDelete(product)">
                   <mat-icon class="text-red-500">delete</mat-icon>
                 </button>
               </div>
