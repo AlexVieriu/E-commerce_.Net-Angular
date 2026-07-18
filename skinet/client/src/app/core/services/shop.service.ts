@@ -2,7 +2,7 @@ import { httpResource, HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Pagination } from '../../shared/models/pagination';
 import { ShopParams } from '../../shared/models/shopParams';
-import { Product } from '../../shared/models/products';
+import { Product, ProductToCreate } from '../../shared/models/products';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -41,5 +41,13 @@ export class ShopService {
 
   getProduct(id: number) {
     return this.http.get<Product>(this.baseUrl + 'products/' + id);
+  }
+
+  createProduct(product: ProductToCreate) {
+    return this.http.post<Product>(this.baseUrl + 'products', product);
+  }
+
+  updateProduct(id: number, product: ProductToCreate) {
+    return this.http.put<Product>(this.baseUrl + 'products/' + id, product);
   }
 }
