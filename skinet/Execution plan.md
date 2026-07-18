@@ -107,6 +107,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 | 29 | Product list: Material Table + Paginator, wire to existing GET /api/products | M | 25 | Spillover. Copy the admin-orders table pattern |
 | 30 | Product create/edit: reactive form, Material inputs. Text URL for image (no upload) | M | 25 | Spillover |
 | 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Pulled from S4 — completes CRUD, cheap |
+| BUG-15 | Edit form shows **stale** product — a PUT didn't clear the by-id cache, so `/products/:id/edit` re-served old data for up to the 10-min TTL (list looked fresh) | S | 30 | Found Jul 18 smoke-testing T30; pre-existing, the edit UI just exposed it. Two causes: **(1)** invalidation pattern `"api/products\|"` (trailing `\|`) matched list keys but not by-id keys `/api/products/72` → dropped the `\|`. **(2)** cache keys kept the raw path, so `/api/Products/72` (capital, Scalar) and `/api/products/72` (app) were different keys the case-sensitive Redis pattern couldn't both match → lowercased the path. Bonus: brands/types no longer go stale on create. `fix(bug-15)` |
 
 **Points: 8.** Sprint end: full admin CRUD works. Products create/edit/delete. Dashboard renders.
 
