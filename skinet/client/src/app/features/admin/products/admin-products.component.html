@@ -5,21 +5,28 @@
     <h2 class="text-2xl font-semibold">Products</h2>
 
     <div class="flex flex-wrap items-center gap-3">
-      <form (ngSubmit)="onSearchChange()" class="relative flex items-center">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-56">
+        <mat-label>Search</mat-label>
         <input
-          type="search"
-          class="block w-56 p-2 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg"
+          matInput
           placeholder="Search by name"
           name="search"
           [ngModel]="searchInput()"
           (ngModelChange)="searchInput.set($event)"
+          (keyup.enter)="onSearchChange()"
         />
-        <button mat-icon-button type="submit" class="absolute inset-y-0 right-0 flex items-center">
+        <button
+          matSuffix
+          mat-icon-button
+          type="button"
+          aria-label="Search"
+          (click)="onSearchChange()"
+        >
           <mat-icon>search</mat-icon>
         </button>
-      </form>
+      </mat-form-field>
 
-      <mat-form-field appearance="outline" class="w-40">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
         <mat-label>Brand</mat-label>
         <mat-select
           multiple
@@ -32,7 +39,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="w-40">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
         <mat-label>Type</mat-label>
         <mat-select
           multiple
@@ -45,7 +52,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="w-44">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
         <mat-label>Sort</mat-label>
         <mat-select [value]="productParams().sort" (selectionChange)="onSortChange($event)">
           @for (option of sortOptions; track option.value) {
@@ -53,6 +60,13 @@
           }
         </mat-select>
       </mat-form-field>
+
+      <!-- 56px matches the outline field box height; the shared match-input-height class relies on a
+           CSS var that isn't in scope outside a mat-form-field, so it collapses the button. -->
+      <button mat-flat-button routerLink="/admin/products/new" class="h-14 px-6">
+        <mat-icon>add</mat-icon>
+        New product
+      </button>
     </div>
   </div>
 
@@ -110,9 +124,13 @@
           <ng-container matColumnDef="action">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let product">
-              <!-- Disabled until T30 (edit) / T31 (delete) wire them; the column shape is set now. -->
+              <!-- Edit wired in T30; delete stays disabled until T31. -->
               <div class="flex gap-3">
-                <button matTooltip="Edit" mat-icon-button disabled>
+                <button
+                  matTooltip="Edit"
+                  mat-icon-button
+                  [routerLink]="['/admin/products', product.id, 'edit']"
+                >
                   <mat-icon class="text-purple-500">edit</mat-icon>
                 </button>
                 <button matTooltip="Delete" mat-icon-button disabled>

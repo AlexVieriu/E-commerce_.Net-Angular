@@ -31,23 +31,23 @@ Verify every technical claim against official docs *before* writing — cite in 
 1. Create `skinet/questions/sprint-N/task-N-concept-name.md` — one file, top to bottom, in this order:
    Default every section to bullet points over prose — bold-label bullets (e.g. **Concrete trace:** /
    **The rule:** / **Why it matters:**). Exception: `What confused me` stays a table.
-   - # Task N — Concept Name
-   - ## 📂 Read First — scaffolded first, **read BEFORE the Change Map.** The changed/created code worth
+   - `# Task N — Concept Name`
+   - `## 📂 Read First` — scaffolded first, **read BEFORE the Change Map.** The changed/created code worth
      reading, tiered by depth: **read fully** (the 1–2 files that *are* the task) · **read the key lines** ·
      **just locate it**. List only files worth opening — mechanical noise is named in the Change Map, don't repeat it.
-   - ## 🗺️ The Change Map — scaffolded first. Opens with **the Ideas** — 3–5 load-bearing ideas (the spine
+   - `## 🗺️ The Change Map` — scaffolded first. Opens with **the Ideas** — 3–5 load-bearing ideas (the spine
      every prompt hangs off). Then **LOAD-BEARING** (the files that *are* the task, tagged with their Idea) +
      **MECHANICAL** (reformat / codegen noise — named so it's skipped). A 157-file diff → ~8 files, ~5 ideas.
-   - ## 🧭 Hints — one line per attempt: `file · what to notice`. A location anchor, **never the answer.**
-   - ## 🔁 REBUILD — *you write.* The key lines, cold.
-   - ## 🧠 EXPLAIN — *you write.* **3–4 clear, self-contained** "why does it work?" questions (Claude scaffolds), answered 1–2 lines each.
-   - ## 💥 BREAK — *you write.* **1–2 clear** "what fails in prod?" questions (Claude scaffolds), each naming a concrete failure.
-   - ## ⚖️ Why this approach — one bullet = one decision or trade-off.
-   - ## 🌫️ What confused me — your real gaps. Lead with a triage table, tag each: **OWN** (explain cold) ·
+   - `## 🧭 Hints` — one line per attempt: `file · what to notice`. A location anchor, **never the answer.**
+   - `## 🔁 REBUILD` — *you write.* The key lines, cold.
+   - `## 🧠 EXPLAIN` — *you write.* **3–4 clear, self-contained** "why does it work?" questions (Claude scaffolds), answered 1–2 lines each.
+   - `## 💥 BREAK` — *you write.* **1–2 clear** "what fails in prod?" questions (Claude scaffolds), each naming a concrete failure.
+   - `## ⚖️ Why this approach` — one bullet = one decision or trade-off.
+   - `## 🌫️ What confused me` — your real gaps. Lead with a triage table, tag each: **OWN** (explain cold) ·
      **RECOGNIZE** (re-derive, don't memorize) · **LET GO** (trivia) + a location anchor.
-   - ## 💡 Explanation — **one chain, in order** — each idea sets up the next, built from the gaps you hit.
-   - ## 🎤 Interview Q&A — bold **Q:** then a **bulleted** answer (never a prose paragraph), so it scans fast.
-   - ## 📚 Sources — official docs backing the claims (link + what it confirms).
+   - `## 💡 Explanation` — **one chain, in order** — each idea sets up the next, built from the gaps you hit.
+   - `## 🎤 Interview Q&A` — bold **Q:** then a **bulleted** answer (never a prose paragraph), so it scans fast.
+   - `## 📚 Sources` — official docs backing the claims (link + what it confirms).
    - *(optional — skip for a task you built: ## ✏️ Exercise · ## ✅ Solution · ## 🧪 Tests)*
 2. Append one line to `skinet/questions/interview-prep.md`:
    `- [Concept](sprint-N/task-N-concept-name.md) — one-line answer`
@@ -59,6 +59,8 @@ When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution
   the same work.
 - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
   the gate + doc review, so review tweaks fold in.
+- **🔴 NEVER merge a task/bug PR until the user confirms the cold test + gate are done, or waives it.
+  That call is the user's, never Claude's.**
 - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
   (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
 - PR to `main` at sprint end only → **squash** (exactly one commit per sprint), titled `Sprint N — <name>`
@@ -105,7 +107,7 @@ Learning docs should be pleasant to open — but a landmark only works if it's r
 - **Emoji mark fixed, recurring section headings.** If a heading appears in *every* instance of a doc
   type, it earns one. A sentence, a table cell, or a one-off heading does not.
 - **Where they go:** `questions/…/task-N-*.md` (📂🗺️🧭🔁🧠💥⚖️🌫️💡✏️✅🧪🎤📚) · `mindset/the-gate.md`
-  (🎯 the gate) · `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why).
+  (🎯 the gate) · `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why · 📋 Checklist).
 - **Where they don't:** this file · `progress.md` rows · `daily-log.md` · `skinet/docs/**` — contracts,
   prose, and technical reference someone else may read.
 - **Status markers are always fine, anywhere:** ✅ ⚠️ ❌ 🔴 🟡 🟢 ⏳ — they carry meaning, not decoration.

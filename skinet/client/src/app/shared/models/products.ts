@@ -8,3 +8,6 @@ export type Product = {
   brand: string;
   quantityInStock: number;
 };
+
+// Create/update payload — same shape as the backend CreateProductDTO (no id; id rides in the PUT url).
+export type ProductToCreate = Omit<Product, 'id'>;
