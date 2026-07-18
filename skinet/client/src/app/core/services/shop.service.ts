@@ -50,4 +50,8 @@ export class ShopService {
   updateProduct(id: number, product: ProductToCreate) {
     return this.http.put<Product>(this.baseUrl + 'products/' + id, product);
   }
+
+  deleteProduct(id: number) {
+    return this.http.delete<void>(this.baseUrl + 'products/' + id); // 204 No Content
+  }
 }
