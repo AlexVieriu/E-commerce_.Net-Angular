@@ -41,13 +41,16 @@ public class CacheAttribute(int timeToLiveInMinutes) : Attribute, IAsyncActionFi
         }
     }
 
-    // cache key ex: "/api/products?brandId=1&typeId=2"
+    // cache key ex: "/api/products|brandId-1|typeId-2"
     // Invariant culture: a cache key must be byte-identical regardless of the server's locale.
+    // Path lowercased: routing is case-insensitive, so "/api/Products/72" and "/api/products/72"
+    // are the same resource. Without this they'd cache under different keys and InvalidateCache
+    // (a single-case Redis pattern, case-sensitive) would miss whichever case it wasn't written for.
     private static string GenerateCacheKeyFromRequest(HttpRequest request)
     {
         var keyBuilder = new StringBuilder();
 
-        keyBuilder.Append(CultureInfo.InvariantCulture, $"{request.Path}");
+        keyBuilder.Append(CultureInfo.InvariantCulture, $"{request.Path.ToString().ToLowerInvariant()}");
 
         foreach (var (key, value) in request.Query.OrderBy(x => x.Key))
         {
