@@ -2,9 +2,11 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { httpResource } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
-import { MatIconButton } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
@@ -20,7 +22,10 @@ import { ShopService } from '../../../core/services/shop.service';
   imports: [
     CurrencyPipe,
     FormsModule,
+    RouterLink,
+    MatButton,
     MatFormFieldModule,
+    MatInputModule,
     MatIcon,
     MatIconButton,
     MatPaginatorModule,
