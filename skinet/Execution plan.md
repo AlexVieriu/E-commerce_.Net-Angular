@@ -95,7 +95,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* · ⏳ CURRENT
+## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* · ✅ CLOSED Jul 27
 
 > **Spillover from Sprint 3 — highest priority.** The admin CRUD is the headline CV feature.
 > Epic: `Admin Panel`. Order: 54 -> 28 -> 29 -> 30 -> 31.
