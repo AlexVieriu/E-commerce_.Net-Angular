@@ -83,7 +83,7 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - **No slack left.** One more bad week = cut again immediately, don't grind. Cut order: README(47) >
   deploy(53) > admin CRUD(28–31) > E2E(37) > rest.
 
-## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27)* ⏳ CURRENT
+## Sprint A — Finish the Admin Panel *(Jul 14 – Jul 27 · closed Jul 27 — **goal met**, 5/5 + 2 unplanned bugs)*
 
 - [x] T54 — ESLint + `@angular-eslint` + Prettier + Roslyn analyzers *(first — gates every PR after it)*
 - [x] T28 — Dashboard frontend: 5 Material Cards + recent orders + low-stock table *(spillover)*
