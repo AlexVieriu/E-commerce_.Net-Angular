@@ -15,7 +15,7 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 - **architecture.md** — Clean architecture layers (Core → Application → Infrastructure → API)
 - **data-layer.md** — StoreContext, GenericRepository, UnitOfWork, migrations
 - **specifications.md** — Specification pattern (ISpecification, BaseSpecification)
-- **api-patterns.md** — BaseApiController conventions, ApiErrorResponse
+- **api-patterns.md** — BaseApiController conventions, ApiErrorResponse, FluentValidation (validators + `ValidationFilter`)
 - **controllers.md** — controller specifics / endpoint conventions
 - **error-handling.md** — ExceptionMiddleware, problem details
 - **auth.md** — cookie Identity, roles, ClaimsPrincipal extensions
@@ -27,7 +27,7 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 
 - **architecture.md** — standalone components, lazy routes, core/shared/features split
 - **state-management.md** — signal-based state in services (cart, account)
-- **interceptors.md** — auth / loading / error interceptors
+- **interceptors.md** — auth / loading / error interceptors, incl. the full status-code → action table
 - **guards.md** — auth / admin / emptycart / orderComplete route guards
-- **error-handling.md** — error interceptor, snackbar, server-error/not-found pages
+- **error-handling.md** — `ValidationError`, `server-error` component, `ApiErrorResponse` typing (downstream of the interceptor — status-code table lives in interceptors.md)
 - **actions/** — step-by-step how-tos: `create-component`, `create-service`, `create-route`, `create-model`

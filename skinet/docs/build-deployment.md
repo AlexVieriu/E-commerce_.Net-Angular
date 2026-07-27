@@ -24,6 +24,10 @@ cd client && ng serve
 
 Backend on `https://localhost:7096`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL from `environment.development.ts` — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
 
+## Manual API testing (Scalar)
+
+Dev only: **`https://localhost:7096/scalar/v1`** — interactive OpenAPI UI for hitting endpoints by hand (preferred over curl/PowerShell). For auth-gated routes, run `POST /login` with the `useCookies` query param enabled to set the auth cookie, then call the protected endpoint in the same session (the browser carries the cookie automatically — no token to copy). Admin: `admin@test.com` / user-secret `AdminSettings:Password`.
+
 ## Production Build
 
 ```bash
@@ -31,6 +35,18 @@ cd client && ng build
 ```
 
 Output goes to `src/API/wwwroot` (set by `angular.json` `outputPath`). Served same-origin by .NET via `UseStaticFiles` + `FallbackController`, so prod uses the relative `apiUrl: 'api/'` from `environment.ts`.
+
+## Production environment (live)
+
+Deployed to App Service **`skinet-2025-test`** (RG `skinet-2025-rg-test`, Poland Central). Push to `main` → GitHub Actions builds + deploys → live on the `…azurewebsites.net` URL.
+
+| Concern | Reality |
+|---|---|
+| **Database** | Serverless Azure SQL `skinet-test` (free tier). **Auto-pauses when idle** — the first request after idle resumes it (~30–60s). `UseSqlServer` has `EnableRetryOnFailure` so startup survives the transient `40613` instead of 500.30 (BUG-8). |
+| **Redis** | **Upstash** (serverless). In App Service → Connection strings as `Redis` (Custom): `host:6379,password=…,ssl=True,abortConnect=False`. **Not** in Key Vault. |
+| **Admin user** | `admin@test.com`, password from Key Vault `AdminSettings:Password`, **re-synced on every startup** — rotate the secret + restart to change it (BUG-9). |
+| **Security headers** | CSP allows `js.stripe.com` (script/frame), `hooks.stripe.com` (frame), `api.stripe.com` (connect); COEP overridden to `unsafe-none` so Stripe Elements load (BUG-7). Fonts are self-hosted, not the Google CDN (BUG-6). |
+| **Stripe webhook** | Stripe Dashboard endpoint → `…azurewebsites.net/api/payments/webhook`; signing secret = Key Vault `StripeSettings:WhSecret`. |
 
 ## SQLite → SqlServer Switch
 
@@ -47,8 +63,8 @@ dotnet ef database update --context SqlServerStoreContext
 |---|---|---|
 | `StripeSettings:SecretKey` | User Secrets | Azure Key Vault |
 | `StripeSettings:WhSecret` | User Secrets (update each Stripe CLI session) | Azure Key Vault |
-| `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | Azure Key Vault |
-| `ConnectionStrings:SqlServerAzureConnection` | not used in dev | Azure Key Vault |
+| `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | App Service → Connection strings (Upstash) |
+| `ConnectionStrings:SqlServerAzureConnection` | not used in dev | App Service → Connection strings (SQLServer) |
 | `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
 | `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
 
@@ -72,7 +88,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 | `skinet-2025-test` (managed identity) | Key Vault | Secrets User | App reads secrets at runtime |
 | `oidc-msi-aef5` | App Service | Website Contributor | CI/CD deploys code |
 
-- Permission model: **Vault access policy** (not Azure RBAC)
+- Permission model: **Azure RBAC** (`Key Vault Secrets User` role on the managed identity), not vault access policy
 - If Key Vault is unavailable at startup, app falls back to App Service settings (`try/catch` in `Program.cs`)
 
 ### Dev setup (first time)
@@ -93,7 +109,7 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 - SQLite for Development, SqlServer for Production — set by `ASPNETCORE_ENVIRONMENT`.
 - Never put secrets in `appsettings.json` or `appsettings.Development.json`.
 - `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
-- Seeding runs in all environments; idempotent by design — checks for existing data before inserting.
+- Baseline seeding (admin + JSON products) runs in all environments; idempotent — checks for existing data first. Bulk demo data (`BogusSeeder`) is opt-in via `dotnet run -- --seed` and Development-only. See `docs/backend/data-layer.md`.
 
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 

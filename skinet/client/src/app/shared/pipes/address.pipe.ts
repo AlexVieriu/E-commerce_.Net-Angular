@@ -16,17 +16,20 @@ export class AddressPipe implements PipeTransform {
       const { line1, line2, city, state, postal_code, country } =
         (value as ConfirmationToken['shipping'])?.address!;
 
-      return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
-              ${city}, ${state}, ${postal_code}, ${country}`;
+      return this.format([value.name, line1, line2, city, state, postal_code, country]);
     }
     else if (value && 'line1' in value) {
       const { line1, line2, city, state, postalCode, country } = (value as ShippingAddress)!;
 
-      return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''}, 
-             ${city}, ${state}, ${postalCode}, ${country}`;
+      return this.format([value.name, line1, line2, city, state, postalCode, country]);
     }
     else
       return 'Unknown Address';
+  }
+
+  // Drop empty parts (line2, and state for stateless countries) so we never render ", ,".
+  private format(parts: (string | null | undefined)[]): string {
+    return parts.filter(part => !!part?.trim()).join(', ');
   }
 }
 

@@ -35,6 +35,15 @@ src/app/
 
 All features lazy-loaded via `loadComponent` / `loadChildren`. Child routes in `features/<name>/routes.ts`.
 
+**Shell + child routes pattern** (`features/admin/`) — a parent component (`AdminComponent`) renders
+persistent layout (sidebar) plus a `<router-outlet>`; its route's `children` array swaps content into
+that outlet as the URL changes (dashboard/products/orders). The parent and children never reference each
+other directly — the Router matches the URL against `routes.ts` and inserts the matched component into
+the outlet. One `canActivate` on the parent route guards the whole subtree, since reaching any child
+requires the Router to first activate the guarded parent segment. Empty-path redirects into the default
+child (`'' → 'dashboard'`) must use `pathMatch: 'full'` — with the default `'prefix'`, an empty path
+matches every URL under it, causing an infinite redirect loop.
+
 ## Rules / Constraints
 
 - Standalone components only — no NgModules.

@@ -64,6 +64,7 @@ Sprint end: verify local + Azure deploy. Update README.
 | BUG-7 | Stripe Elements blocked by CSP + COEP on prod artifact — allow Stripe origins, COEP `unsafe-none` | M | -- | Same root cause as BUG-6. `fix(bug-7)` |
 | BUG-8 | App 500.30 on startup when serverless Azure SQL is idle-paused — `MigrateAsync` hits transient SQL 40613, no retry resiliency | S | -- | Found smoke-testing live Azure. `fix(bug-8)`: `EnableRetryOnFailure` on `UseSqlServer` |
 | BUG-9 | Admin password not config-driven — seed only created-if-missing, so rotating Key Vault `AdminSettings:Password` never updated the existing admin (locked out, unrecoverable) | S | -- | Found logging into live admin. `fix(bug-9)`: seed resets admin password from config on startup |
+| BUG-10 | Top loading bar stuck spinning on live — busy/loading counter never returns to 0 (likely SignalR connect counted by `loadingInterceptor`) | S | -- | Found in Sprint 2 live smoke. **Deferred** (frontend polish). `fix(bug-10)` |
 
 > BUG-4..8 are deploy-hardening defects surfaced while smoke-testing the Sprint 2 release on Azure / the prod artifact (`:7096`); the dev server (`:4200`) sends no security headers and dev uses SQLite, so they stayed hidden until the real deploy.
 
@@ -87,10 +88,13 @@ Sprint end: full test suite green. Verify Azure. Update README.
 | 24 | Bogus seed: 50+ products, 10+ users, 20+ orders. `dotnet run -- --seed` | M | -- | Need data before admin pages |
 | 27 | Dashboard backend: `GET /api/admin/dashboard` (counts, revenue, lowStock, recent) | S | -- | Pure C#, finish all backend before Angular |
 | 25 | Admin layout: parent + sidebar + child routes (/admin/dashboard, /products, /orders) | M | -- | LEARN: Lazy loading + child routes. Verify orders still work |
-| 26 | Order status update: `PUT /api/admin/orders/{id}/status` + Material dropdown | S | 25 | |
+| 26 | Payment status reconciliation: `POST /api/admin/orders/{id}/sync-payment-status` — re-sync from Stripe | S | 25 | Reuses webhook match/mismatch logic; no free-form entry. Fulfillment status (Shipped/Delivered) admin control rides with T40 |
 | 28 | Dashboard frontend: 3 Material Cards + recent orders table | M | 25,27 | |
 | 29 | Product list: Material Table + Paginator, wire to existing GET /api/products | M | 25 | Copy existing admin table pattern |
 | 30 | Product create/edit: reactive form, Material inputs. Text URL for image (no upload) | M | 25 | |
+| BUG-11 | Checkout 400 for stateless countries (e.g. Romania) — `ShippingAddressValidator` requires `State`, Stripe's Address Element omits it | S | -- | Found in Sprint 2 live smoke. Money path. `fix(bug-11)` |
+| BUG-12 | Admin orders paginator dead — Angular sends `pageNumber`, backend binds `PagingParams.PageIndex`, so page 2+ silently re-serves page 1 | S | 25 | Found Jul 13 reviewing T26. Shop does it right (`shop.service.ts:38`); admin skipped the rename. `fix(bug-12)` |
+| BUG-13 | Shipping name persisted as the literal string `"null null"` — `stripe.service.ts:69` does `user.firstName + ' ' + user.lastName`, and JS coerces null to `"null"` | S | -- | Found Jul 13 verifying BUG-11. Seeded admin has no first/last name. `user.ts` lies (`firstName: string` vs `AppUser.FirstName` = `string?`). `fix(bug-13)` |
 
 Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azure. Update README.
 
@@ -201,6 +205,7 @@ Sprint end: final deploy + smoke test. Share with someone.
 - [ ] Sprint 5 — Domain Expansion (7 tasks) *(Jul 18 – Aug 1)*
 - [ ] Sprint 6 — Polish + Standout (7 core + 8 if-ahead) *(Aug 2 – Aug 16)*
 - [ ] Interview-deck / Anki prep *(Aug 17 – Aug 30)*
+  - [ ] *(optional, last priority, post-ship)* **T57 — Preview spike:** on a throwaway branch (never merged/deployed), bump to .NET 11 RC + Angular 23-next, read the migration guide + skim what's new, write interview talking-points notes. Shipping app stays on .NET 10 / Angular 22 GA.
 
 ## Certifications *(never steals build days or run days)*
 
