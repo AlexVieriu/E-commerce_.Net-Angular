@@ -3,7 +3,8 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<NoWarn>CS8618</NoWarn>
+		<!-- $(NoWarn); appends — a bare assignment would wipe out Directory.Build.props' suppressions. -->
+		<NoWarn>$(NoWarn);CS8618</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Bogus" Version="35.6.5" />

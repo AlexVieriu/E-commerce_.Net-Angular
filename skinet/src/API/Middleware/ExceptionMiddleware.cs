@@ -1,8 +1,17 @@
 namespace API.Middleware;
 
-public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
+// `partial` so the [LoggerMessage] source generator can emit the body of LogUnhandledException.
+public partial class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
     ILogger<ExceptionMiddleware> logger)
 {
+    // Cached: a new JsonSerializerOptions per call discards the serializer's internal metadata cache.
+    private static readonly JsonSerializerOptions ErrorJsonOptions =
+        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    // Source-generated logging (CA1848) — template parsed once, no boxing of the args.
+    [LoggerMessage(Level = LogLevel.Error, Message = "Unhandled exception for {Method} {Path}")]
+    private static partial void LogUnhandledException(ILogger logger, Exception ex, string method, string path);
+
     // We need to use this spelling "InvokeAsync" to work
     public async Task InvokeAsync(HttpContext context)
     {
@@ -28,6 +37,13 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
             context.Response.StatusCode = (int)HttpStatusCode.Conflict;
             response = new ApiErrorResponse(context.Response.StatusCode, ex.Message, null);
         }
+        else if (ex is DbUpdateConcurrencyException)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+            // EF's own message quotes affected-row counts — write one the admin can act on.
+            response = new ApiErrorResponse(context.Response.StatusCode,
+                "This product was changed by someone else. Reload and try again.", null);
+        }
         else if (ex is InvalidOperationException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -37,17 +53,14 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
         else
         {
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            logger.LogError(ex, "Unhandled exception for {Method} {Path}",
-                context.Request.Method, context.Request.Path);
+            LogUnhandledException(logger, ex, context.Request.Method, context.Request.Path);
 
             response = env.IsDevelopment()
                 ? new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace)
                 : new ApiErrorResponse(context.Response.StatusCode, "An unexpected error occurred", null);
         }
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
-        var json = JsonSerializer.Serialize(response, options);
+        var json = JsonSerializer.Serialize(response, ErrorJsonOptions);
 
         return context.Response.WriteAsync(json);
     }

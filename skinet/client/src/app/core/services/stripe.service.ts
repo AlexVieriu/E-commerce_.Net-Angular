@@ -1,5 +1,13 @@
 import { inject, Injectable } from '@angular/core';
-import { ConfirmationToken, loadStripe, Stripe, StripeAddressElement, StripeAddressElementOptions, StripeElements, StripePaymentElement } from '@stripe/stripe-js';
+import {
+  ConfirmationToken,
+  loadStripe,
+  Stripe,
+  StripeAddressElement,
+  StripeAddressElementOptions,
+  StripeElements,
+  StripePaymentElement
+} from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from './cart.service';
@@ -35,10 +43,11 @@ export class StripeService {
       const stripe = await this.getStripeInstance();
       if (stripe) {
         const cart = await firstValueFrom(this.createOrUpdatePaymentIntent());
-        this.elements = stripe.elements(
-          { clientSecret: cart.clientSecret, appearance: { labels: 'floating' } })
-      }
-      else {
+        this.elements = stripe.elements({
+          clientSecret: cart.clientSecret,
+          appearance: { labels: 'floating' }
+        });
+      } else {
         throw new Error('Stripe has not been loaded');
       }
     }
@@ -63,7 +72,7 @@ export class StripeService {
       const elements = await this.initializeElements();
       if (elements) {
         const user = this.accountService.currentUser();
-        let defaultValues: StripeAddressElementOptions['defaultValues'] = {};
+        const defaultValues: StripeAddressElementOptions['defaultValues'] = {};
 
         // Never concatenate directly — a user with no first/last name would yield the
         // literal string "null null", which then gets saved onto the order (BUG-13).
@@ -80,7 +89,7 @@ export class StripeService {
             state: user.address.state,
             country: user.address.country,
             postal_code: user.address.postalCode
-          }
+          };
         }
 
         const options: StripeAddressElementOptions = {
@@ -100,12 +109,9 @@ export class StripeService {
     const elements = await this.initializeElements();
     const result = await elements.submit();
 
-    if (result.error)
-      throw new Error(result.error.message);
-    if (stripe)
-      return await stripe.createConfirmationToken({ elements });
-    else
-      throw new Error("Stripe not available");
+    if (result.error) throw new Error(result.error.message);
+    if (stripe) return await stripe.createConfirmationToken({ elements });
+    else throw new Error('Stripe not available');
   }
 
   async confirmPayment(confirmationToken: ConfirmationToken) {
@@ -119,9 +125,9 @@ export class StripeService {
           confirmation_token: confirmationToken.id
         },
         redirect: 'if_required'
-      })
+      });
     else {
-      throw new Error("Unable to load Stripe");
+      throw new Error('Unable to load Stripe');
     }
   }
 
@@ -129,16 +135,14 @@ export class StripeService {
     const cart = this.cartService.cart();
     const hasClientSecret = cart?.clientSecret ? true : false;
 
-    if (!cart)
-      throw new Error('Problem with cart');
+    if (!cart) throw new Error('Problem with cart');
 
     return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
-      switchMap(cart => {
-        if (!hasClientSecret)
-          return this.cartService.setCart(cart);
+      switchMap((cart) => {
+        if (!hasClientSecret) return this.cartService.setCart(cart);
         return of(cart);
       })
-    )
+    );
   }
 
   disposeElements() {

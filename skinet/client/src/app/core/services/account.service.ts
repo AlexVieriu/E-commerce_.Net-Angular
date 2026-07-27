@@ -26,9 +26,9 @@ export class AccountService {
     // adding a parameter named 'useCookies' with the value 'true'
     params = params.append('useCookies', true);
 
-    return this.http.post<User>(this.baseUrl + 'login', values, { params }).pipe(
-      tap(() => this.signalrService.createHubConnection())
-    );
+    return this.http
+      .post<User>(this.baseUrl + 'login', values, { params })
+      .pipe(tap(() => this.signalrService.createHubConnection()));
   }
 
   register(values: RegisterCredentials) {
@@ -37,7 +37,7 @@ export class AccountService {
 
   getUserInfo() {
     return this.http.get<User>(this.baseUrl + 'account/user-info').pipe(
-      map(user => {
+      map((user) => {
         this._currentUser.set(user);
         return user;
       })
@@ -45,9 +45,9 @@ export class AccountService {
   }
 
   logout() {
-    return this.http.post(this.baseUrl + 'account/logout', {}).pipe(
-      tap(() => this.clearCurrentUser())
-    );
+    return this.http
+      .post(this.baseUrl + 'account/logout', {})
+      .pipe(tap(() => this.clearCurrentUser()));
   }
 
   // Drop client-side auth state without an API call. Used when a request 401s
@@ -60,9 +60,8 @@ export class AccountService {
   updateAddress(address: Address) {
     return this.http.post(this.baseUrl + 'account/address', address).pipe(
       tap(() => {
-        this._currentUser.update(user => {
-          if (user)
-            user.address = address;
+        this._currentUser.update((user) => {
+          if (user) user.address = address;
           return user;
         });
       })

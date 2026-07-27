@@ -76,6 +76,11 @@ dotnet run --project src/API                              # baseline (admin + pr
   and generates the `UPDATE` itself. `Update()` (`Attach` + `EntityState.Modified`) is only for a
   **detached** entity the context has never tracked — e.g. one built from a deserialized request body.
   Calling `Update()` on an already-tracked entity is redundant.
+- 🔴 **Never `Update()` a detached entity that carries a concurrency token.** `Attach` has no load-time
+  snapshot, so EF takes the values you handed it as *both* current and original — the token's `WHERE`
+  compares the submitted value against itself. On a match it silently skips the check; on a mismatch it
+  throws `DbUpdateConcurrencyException` with no concurrency involved (BUG-16 — `QuantityInStock` is
+  `[ConcurrencyCheck]`). Load with `GetByIdAsync`, map onto the tracked entity, save.
 
 ## Common Mistakes
 

@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { SnackbarService } from '../services/snackbar.service';
 
-export const emptycartGuard: CanActivateFn = (route, state) => {
+export const emptycartGuard: CanActivateFn = () => {
   const cartService = inject(CartService);
   const router = inject(Router);
   const snackbar = inject(SnackbarService);

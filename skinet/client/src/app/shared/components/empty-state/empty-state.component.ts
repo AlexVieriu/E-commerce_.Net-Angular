@@ -11,15 +11,14 @@ import { BusyService } from '../../../core/services/busy.service';
   styleUrl: './empty-state.component.scss'
 })
 
-  // Inside Cart component
-  // Displayed when the cart is empty
+// Inside Cart component
+// Displayed when the cart is empty
 export class EmptyStateComponent {
   busyService = inject(BusyService); // to not display the empty cart before all products are loaded
   message = input.required<string>();
   icon = input.required<string>();
   actionText = input.required<string>();
   action = output<void>();
-
 
   onAction() {
     this.action.emit();

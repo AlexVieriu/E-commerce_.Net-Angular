@@ -13,7 +13,7 @@ public class ProductSpecification_SearchSort_Tests
         var result = ApplySpec(spec, products);
 
         result.Should().HaveCount(2);
-        result.Should().OnlyContain(p => p.Name.ToLower().Contains("board"));
+        result.Should().OnlyContain(p => p.Name.Contains("board", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

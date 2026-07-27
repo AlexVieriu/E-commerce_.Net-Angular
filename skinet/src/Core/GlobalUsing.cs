@@ -3,4 +3,5 @@ global using Core.Entities.OrderAggregate;
 global using Core.Interfaces;
 global using Microsoft.AspNetCore.Identity;
 global using System.ComponentModel.DataAnnotations;
+global using System.Diagnostics.CodeAnalysis;
 global using System.Linq.Expressions;

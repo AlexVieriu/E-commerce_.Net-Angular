@@ -1,0 +1,163 @@
+<div class="min-h-screen">
+  @let productsData = products.value();
+
+  <div class="flex flex-wrap justify-between items-center gap-4 mt-2 max-w-screen-2xl mx-auto">
+    <h2 class="text-2xl font-semibold">Products</h2>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-56">
+        <mat-label>Search</mat-label>
+        <input
+          matInput
+          placeholder="Search by name"
+          name="search"
+          [ngModel]="searchInput()"
+          (ngModelChange)="searchInput.set($event)"
+          (keyup.enter)="onSearchChange()"
+        />
+        <button
+          matSuffix
+          mat-icon-button
+          type="button"
+          aria-label="Search"
+          (click)="onSearchChange()"
+        >
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
+        <mat-label>Brand</mat-label>
+        <mat-select
+          multiple
+          [value]="productParams().brands"
+          (selectionChange)="onBrandsChange($event)"
+        >
+          @for (brand of brands.value(); track brand) {
+            <mat-option [value]="brand">{{ brand }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
+        <mat-label>Type</mat-label>
+        <mat-select
+          multiple
+          [value]="productParams().types"
+          (selectionChange)="onTypesChange($event)"
+        >
+          @for (type of types.value(); track type) {
+            <mat-option [value]="type">{{ type }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
+        <mat-label>Sort</mat-label>
+        <mat-select [value]="productParams().sort" (selectionChange)="onSortChange($event)">
+          @for (option of sortOptions; track option.value) {
+            <mat-option [value]="option.value">{{ option.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- 56px matches the outline field box height; the shared match-input-height class relies on a
+           CSS var that isn't in scope outside a mat-form-field, so it collapses the button. -->
+      <button mat-flat-button routerLink="/admin/products/new" class="h-14 px-6">
+        <mat-icon>add</mat-icon>
+        New product
+      </button>
+    </div>
+  </div>
+
+  @if (products.isLoading()) {
+    <div class="flex justify-center p-8">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (products.error()) {
+    <div class="p-4">
+      <p class="text-red-500">Could not load products.</p>
+      <button mat-icon-button matTooltip="Try again" (click)="products.reload()">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  } @else {
+    <div class="p-4">
+      <div class="mat-elevation-z8">
+        <table mat-table [dataSource]="productsData?.data ?? []" class="bg-white w-full">
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef>Image</th>
+            <td mat-cell *matCellDef="let product">
+              <img
+                [src]="product.pictureUrl"
+                [alt]="product.name"
+                class="w-12 h-12 object-cover rounded"
+              />
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let product">{{ product.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="brand">
+            <th mat-header-cell *matHeaderCellDef>Brand</th>
+            <td mat-cell *matCellDef="let product">{{ product.brand }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let product">{{ product.type }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef>Price</th>
+            <td mat-cell *matCellDef="let product">{{ product.price | currency }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="stock">
+            <th mat-header-cell *matHeaderCellDef>Stock</th>
+            <td mat-cell *matCellDef="let product">{{ product.quantityInStock }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let product">
+              <div class="flex gap-3">
+                <button
+                  matTooltip="Edit"
+                  mat-icon-button
+                  [routerLink]="['/admin/products', product.id, 'edit']"
+                >
+                  <mat-icon class="text-purple-500">edit</mat-icon>
+                </button>
+                <button matTooltip="Delete" mat-icon-button (click)="onDelete(product)">
+                  <mat-icon class="text-red-500">delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+
+        @if (productsData?.count === 0) {
+          <p class="p-6 text-center text-gray-500 bg-white">No products match this filter.</p>
+        }
+
+        <mat-paginator
+          class="bg-white"
+          [pageSizeOptions]="[5, 10, 20]"
+          [length]="productsData?.count ?? 0"
+          [pageSize]="productParams().pageSize"
+          [pageIndex]="productParams().pageNumber - 1"
+          (page)="onPageChanged($event)"
+          showFirstLastButtons
+        >
+        </mat-paginator>
+      </div>
+    </div>
+  }
+</div>

@@ -18,14 +18,16 @@ public class StoreContext : IdentityDbContext<AppUser>
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    // Named `builder` to match IdentityDbContext.OnModelCreating(ModelBuilder builder) — a mismatched
+    // override parameter name breaks callers who pass it by name.
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
 
         // Apply database-specific configurations (to be overridden in derived classes)
-        ApplyDatabaseSpecificConfigurations(modelBuilder);
+        ApplyDatabaseSpecificConfigurations(builder);
 
         // -- Old code --
         // .ApplyConfigurationsFromAssembly : applies configuration from all IEntityTypeConfiguration instances that are defined in provided assembly 

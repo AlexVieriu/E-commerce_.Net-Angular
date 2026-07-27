@@ -9,7 +9,7 @@ import { Order } from '../../shared/models/order/order';
 })
 export class OrderService {
   baseUrl = environment.apiUrl;
-  private http = inject(HttpClient)
+  private http = inject(HttpClient);
   orderComplete = false;
   // Order created during checkout (before payment confirm). Lets the success page
   // fall back to fetching it by id if the SignalR push is delayed or lost.

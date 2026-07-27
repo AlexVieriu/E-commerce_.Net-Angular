@@ -12,7 +12,7 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
             .GetEntityWithSpec(OrderSpecification.ByPaymentIntent(cart.PaymentIntentId));
         if (existingOrder != null) return existingOrder;
 
-        if (!cart.Items.Any())
+        if (cart.Items.Count == 0)
             throw new InvalidOperationException("Cannot create order from an empty cart.");
 
         var items = new List<OrderItem>();

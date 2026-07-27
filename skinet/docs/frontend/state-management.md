@@ -36,6 +36,23 @@ Coupon state lives on `cart().coupon` — not a separate signal. Use `applyDisco
 `_currentUser: User | null` → `isAdmin = computed(() => currentUser()?.roles.includes('Admin') ?? false)`.
 Set by `getUserInfo()` on init. Cleared by `logout()`.
 
+## Read-only server views: `httpResource`
+
+For a component that only **reads** server data (no shared mutable state), skip the service-signal
+pattern above and use `httpResource` directly in the component. It fetches when its URL/params change
+and exposes `.value()`, `.isLoading()`, `.error()`, and `.reload()` — the loading/error/refresh states
+come for free.
+
+```typescript
+// component — read-only view (admin-orders, admin-dashboard)
+dashboard = httpResource<Dashboard>(() => environment.apiUrl + 'admin/dashboard');
+// template: @if (dashboard.isLoading()) … @else if (dashboard.error()) … @else { dashboard.value() }
+```
+
+Use a `core/services/` signal instead when the data is **shared** or **mutated** across the app (cart,
+current user). A dashboard nobody else reads doesn't need a service. Mutations still go through a service:
+`admin-dashboard` reads via `httpResource`, but a refund/sync would call `AdminService`, then `.reload()`.
+
 ## Rules / Constraints
 
 - Never call `.set()` / `.update()` on a service signal from a component.

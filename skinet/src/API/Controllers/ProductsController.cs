@@ -2,6 +2,11 @@ namespace API.Controllers;
 
 public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
 {
+    // Invalidation pattern for every products cache key. No trailing "|" on purpose:
+    // list keys look like "/api/products|query...", by-id keys like "/api/products/72".
+    // A trailing "|" matches only the list keys, leaving the by-id (edit) view stale (BUG-15).
+    private const string ProductsCachePattern = "api/products";
+
     [Cache(10)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
@@ -25,7 +30,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
         return Ok(product);
     }
 
-    [InvalidateCache("api/products|")]
+    [InvalidateCache(ProductsCachePattern)]
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(CreateProductDTO productDto)
@@ -38,16 +43,19 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest();
     }
 
-    [InvalidateCache("api/products|")]
+    [InvalidateCache(ProductsCachePattern)]
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Product>> UpdateProduct(int id, CreateProductDTO productDto)
     {
-        if (!unitOfWork.Repository<Product>().Exists(id))
-            return BadRequest("Can't update product");
+        // Load the TRACKED entity first — EF needs the original stock to build the [ConcurrencyCheck]
+        // WHERE clause(BUG-16).
+        var product = await unitOfWork.Repository<Product>().GetByIdAsync(id);
 
-        var product = productDto.ToEntity(id);
-        unitOfWork.Repository<Product>().Update(product);
+        if (product == null)
+            return NotFound();
+
+        productDto.MapTo(product);
 
         if (await unitOfWork.Complete())
             return Ok(product);
@@ -55,7 +63,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
             return BadRequest("Problem updating the product");
     }
 
-    [InvalidateCache("api/products|")]
+    [InvalidateCache(ProductsCachePattern)]
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteProduct(int id)

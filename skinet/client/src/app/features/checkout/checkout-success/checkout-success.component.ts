@@ -21,8 +21,8 @@ const SIGNALR_FALLBACK_MS = 5000;
     DatePipe,
     AddressPipe,
     CurrencyPipe,
-    CardPipe,
-],
+    CardPipe
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './checkout-success.component.html',
   styleUrl: './checkout-success.component.scss'
@@ -40,10 +40,12 @@ export class CheckoutSuccessComponent {
     const fallbackTimer = setTimeout(() => {
       if (this.signalrService.orderSignal() || !orderId) return;
       firstValueFrom(this.orderService.getOrderDetailed(orderId))
-        .then(order => {
+        .then((order) => {
           if (!this.signalrService.orderSignal()) this.signalrService.orderSignal.set(order);
         })
-        .catch(() => { /* leave spinner; nothing better to show */ });
+        .catch(() => {
+          /* leave spinner; nothing better to show */
+        });
     }, SIGNALR_FALLBACK_MS);
 
     inject(DestroyRef).onDestroy(() => {

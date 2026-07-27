@@ -1,19 +1,32 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { OrderSummaryComponent } from "../../shared/components/order-summary/order-summary.component";
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal
+} from '@angular/core';
+import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatButton } from '@angular/material/button';
 import { StripeService } from '../../core/services/stripe.service';
-import { ConfirmationToken, StripeAddressElement, StripeAddressElementChangeEvent, StripePaymentElement, StripePaymentElementChangeEvent } from '@stripe/stripe-js';
+import {
+  ConfirmationToken,
+  StripeAddressElement,
+  StripeAddressElementChangeEvent,
+  StripePaymentElement,
+  StripePaymentElementChangeEvent
+} from '@stripe/stripe-js';
 import { SnackbarService } from '../../core/services/snackbar.service';
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { Address } from '../../shared/models/address';
 import { AccountService } from '../../core/services/account.service';
 import { firstValueFrom } from 'rxjs';
-import { CheckoutDeliveryComponent } from "./checkout-delivery/checkout-delivery.component";
-import { CheckoutReviewComponent } from "./checkout-review/checkout-review.component";
+import { CheckoutDeliveryComponent } from './checkout-delivery/checkout-delivery.component';
+import { CheckoutReviewComponent } from './checkout-review/checkout-review.component';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -55,8 +68,11 @@ export class CheckoutComponent {
 
   // as the elements get completed we update our signal
   // inline type annotation - Angular signal (we use it instead of interface)
-  completionStatus = signal<{ address: boolean, card: boolean, delivery: boolean }>
-    ({ address: false, card: false, delivery: false });
+  completionStatus = signal<{ address: boolean; card: boolean; delivery: boolean }>({
+    address: false,
+    card: false,
+    delivery: false
+  });
 
   constructor() {
     afterNextRender(async () => {
@@ -68,9 +84,10 @@ export class CheckoutComponent {
         this.paymentElement = await this.stripeService.createPaymentElement();
         this.paymentElement?.mount('#payment-element');
         this.paymentElement.on('change', this.handlePaymentChange);
-      }
-      catch (error: unknown) {
-        this.snackBar.error(error instanceof Error ? error.message : 'Failed to load payment elements');
+      } catch (error: unknown) {
+        this.snackBar.error(
+          error instanceof Error ? error.message : 'Failed to load payment elements'
+        );
       }
     });
 
@@ -78,15 +95,15 @@ export class CheckoutComponent {
   }
 
   handleAddressChange = (event: StripeAddressElementChangeEvent) => {
-    this.completionStatus.update(state => ({ ...state, address: event.complete }));
-  }
+    this.completionStatus.update((state) => ({ ...state, address: event.complete }));
+  };
 
   handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
-    this.completionStatus.update(state => ({ ...state, card: event.complete }));
-  }
+    this.completionStatus.update((state) => ({ ...state, card: event.complete }));
+  };
 
   handleDeliveryChange(event: boolean) {
-    this.completionStatus.update(state => ({ ...state, delivery: event }));
+    this.completionStatus.update((state) => ({ ...state, delivery: event }));
   }
 
   onSaveAddressCheckboxChange(event: MatCheckboxChange) {
@@ -94,34 +111,33 @@ export class CheckoutComponent {
   }
 
   async onStepChange(event: StepperSelectionEvent) {
-    // index = 1 -> i moved to the next step 
+    // index = 1 -> i moved to the next step
     if (event.selectedIndex === 1) {
       if (this.saveAddress()) {
         // update the user account Address from the API
-        const address = await this.getAddressFromStripeAddress() as Address;
-        address && firstValueFrom(this.accountService.updateAddress(address));
+        const address = (await this.getAddressFromStripeAddress()) as Address;
+        if (address) firstValueFrom(this.accountService.updateAddress(address));
       }
     }
 
     if (event.selectedIndex === 2)
       await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
 
-    if (event.selectedIndex === 3)
-      await this.getConfirmationToken();
+    if (event.selectedIndex === 3) await this.getConfirmationToken();
   }
 
   async getConfirmationToken() {
     try {
       // check if every status in completionStatus(address, card, delivery) is true
-      const everyStatusTrue = Object.values(this.completionStatus()).every(status => status == true);
+      const everyStatusTrue = Object.values(this.completionStatus()).every(
+        (status) => status == true
+      );
       if (everyStatusTrue) {
         const result = await this.stripeService.createToken();
-        if (result.error)
-          throw new Error(result.error.message);
+        if (result.error) throw new Error(result.error.message);
         this.confirmationToken.set(result.confirmationToken);
       }
-    }
-    catch (error: unknown) {
+    } catch (error: unknown) {
       this.snackBar.error(error instanceof Error ? error.message : 'Something went wrong');
     }
   }
@@ -136,8 +152,8 @@ export class CheckoutComponent {
         // that loses on slow clients), leaving the order stuck Pending with no SignalR push.
         // Bonus: price/stock validation now runs *before* the customer is charged.
         const order = await this.createOrderModel();
-        const createdOrder = await firstValueFrom(this.orderService.createOrder(order)) as Order;
-        if (!createdOrder) throw new Error("Order creation failed");
+        const createdOrder = (await firstValueFrom(this.orderService.createOrder(order))) as Order;
+        if (!createdOrder) throw new Error('Order creation failed');
         this.orderService.createdOrder = createdOrder;
 
         const result = await this.stripeService.confirmPayment(this.confirmationToken()!);
@@ -147,25 +163,19 @@ export class CheckoutComponent {
           this.cartService.deleteCart();
           this.cartService.setSelectedDelivery(null);
           this.router.navigateByUrl('/checkout/success');
-        }
-        else if (result.error)
-          throw new Error(result.error.message);
-        else
-          throw new Error("Something went wrong with the payment confirmation");
+        } else if (result.error) throw new Error(result.error.message);
+        else throw new Error('Something went wrong with the payment confirmation');
       }
-    }
-    catch (error: unknown) {
+    } catch (error: unknown) {
       if (error instanceof HttpErrorResponse && error.status === 409) return;
       this.snackBar.error(error instanceof Error ? error.message : 'Something went wrong');
       stepper.previous(); // go to Step 2, then can go to Step 3 to generate new token
-    }
-    finally {
+    } finally {
       this.loading.set(false);
     }
   }
 
   private async getAddressFromStripeAddress(): Promise<Address | ShippingAddress | null> {
-
     const result = await this.addressElement?.getValue();
     const address = result?.value.address;
     if (address) {
@@ -177,19 +187,17 @@ export class CheckoutComponent {
         state: address.state,
         postalCode: address.postal_code,
         country: address.country
-      }
-    }
-    else
-      return null;
+      };
+    } else return null;
   }
 
   private async createOrderModel(): Promise<OrderToCreate> {
     const cart = this.cartService.cart();
-    const shippingAddress = await this.getAddressFromStripeAddress() as ShippingAddress;
+    const shippingAddress = (await this.getAddressFromStripeAddress()) as ShippingAddress;
     const card = this.confirmationToken()?.payment_method_preview.card;
 
     if (!cart?.id || !cart.deliveryMethodId || !shippingAddress || !card)
-      throw new Error("Problem creating order");
+      throw new Error('Problem creating order');
 
     return {
       cartId: cart.id,
@@ -200,8 +208,7 @@ export class CheckoutComponent {
         expYear: card.exp_year
       },
       deliveryMethodId: cart.deliveryMethodId,
-      shippingAddress,
-    }
+      shippingAddress
+    };
   }
-
 }

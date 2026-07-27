@@ -30,7 +30,7 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStor
         return new SqlServerStoreContext(optionsBuilder.Options);
     }
 
-    private void TestConnection(string connectionString)
+    private static void TestConnection(string connectionString)
     {
         try
         {
@@ -53,7 +53,7 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStor
         }
     }
 
-    private string GetBasePath()
+    private static string GetBasePath()
     {
         // Look for appsettings.json in current directory or parent directories
         var currentDir = Directory.GetCurrentDirectory();

@@ -6,21 +6,15 @@ import { AccountService } from '../../../core/services/account.service';
 import { Router } from '@angular/router';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { ValidationError } from '../../../shared/models/validationError';
-import { TextInputComponent } from "../../../shared/components/text-input/text-input.component";
+import { TextInputComponent } from '../../../shared/components/text-input/text-input.component';
 
 @Component({
   selector: 'app-register',
-  imports: [
-    ReactiveFormsModule,
-    MatCard,
-    MatButton,
-    TextInputComponent
-  ],
+  imports: [ReactiveFormsModule, MatCard, MatButton, TextInputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
-
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private accountService = inject(AccountService);
@@ -33,7 +27,7 @@ export class RegisterComponent {
     lastName: ['', Validators.required],
     email: ['', Validators.required],
     password: ['', Validators.required]
-  })
+  });
 
   onSubmit() {
     this.accountService.register(this.registerForm.getRawValue()).subscribe({
@@ -44,6 +38,6 @@ export class RegisterComponent {
       error: (err: unknown) => {
         if (err instanceof ValidationError) this.validationErrors.set(err.errors);
       }
-    })
+    });
   }
 }
