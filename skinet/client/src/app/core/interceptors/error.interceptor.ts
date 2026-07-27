@@ -36,11 +36,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       }
       if (err.status === 409) {
         snackbar.error(err.error.message);
-        const cartId = cartService.cart()?.id;
-        if (cartId) {
-          cartService.getCartAsync(cartId).subscribe(() => router.navigateByUrl('/cart'));
-        } else {
-          router.navigateByUrl('/cart');
+        // Two conflicts share 409: checkout's price change (POST /orders) and a product-edit concurrency loss.
+        // Only checkout touches the cart.
+        if (req.method === 'POST' && req.url.endsWith('/orders')) {
+          const cartId = cartService.cart()?.id;
+          const goToCart = () => router.navigateByUrl('/cart');
+
+          if (cartId) cartService.getCartAsync(cartId).subscribe(goToCart);
+          else goToCart();
         }
       }
       if (err.status === 404) {

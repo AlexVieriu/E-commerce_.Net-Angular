@@ -48,11 +48,14 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Product>> UpdateProduct(int id, CreateProductDTO productDto)
     {
-        if (!unitOfWork.Repository<Product>().Exists(id))
-            return BadRequest("Can't update product");
+        // Load the TRACKED entity first — EF needs the original stock to build the [ConcurrencyCheck]
+        // WHERE clause(BUG-16).
+        var product = await unitOfWork.Repository<Product>().GetByIdAsync(id);
 
-        var product = productDto.ToEntity(id);
-        unitOfWork.Repository<Product>().Update(product);
+        if (product == null)
+            return NotFound();
+
+        productDto.MapTo(product);
 
         if (await unitOfWork.Complete())
             return Ok(product);

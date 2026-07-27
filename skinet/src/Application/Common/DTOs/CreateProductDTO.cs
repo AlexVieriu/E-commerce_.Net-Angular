@@ -22,15 +22,16 @@ public class CreateProductDTO
         QuantityInStock = QuantityInStock
     };
 
-    public Product ToEntity(int id) => new Product
+    // Maps onto an entity the context is already TRACKING, so EF keeps the original values it loaded.
+    // Handing EF a detached entity instead makes [ConcurrencyCheck] compare the new stock to itself (BUG-16).
+    public void MapTo(Product product)
     {
-        Id = id,
-        Name = Name,
-        Description = Description,
-        Price = Price,
-        PictureUrl = PictureUrl,
-        Type = Type,
-        Brand = Brand,
-        QuantityInStock = QuantityInStock
-    };
+        product.Name = Name;
+        product.Description = Description;
+        product.Price = Price;
+        product.PictureUrl = PictureUrl;
+        product.Type = Type;
+        product.Brand = Brand;
+        product.QuantityInStock = QuantityInStock;
+    }
 }

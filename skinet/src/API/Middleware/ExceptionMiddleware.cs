@@ -37,6 +37,13 @@ public partial class ExceptionMiddleware(IHostEnvironment env, RequestDelegate n
             context.Response.StatusCode = (int)HttpStatusCode.Conflict;
             response = new ApiErrorResponse(context.Response.StatusCode, ex.Message, null);
         }
+        else if (ex is DbUpdateConcurrencyException)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+            // EF's own message quotes affected-row counts — write one the admin can act on.
+            response = new ApiErrorResponse(context.Response.StatusCode,
+                "This product was changed by someone else. Reload and try again.", null);
+        }
         else if (ex is InvalidOperationException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
