@@ -42,10 +42,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           const cartId = cartService.cart()?.id;
           const goToCart = () => router.navigateByUrl('/cart');
 
-          if (cartId)
-            cartService.getCartAsync(cartId).subscribe(goToCart);
-          else
-            goToCart();
+          if (cartId) cartService.getCartAsync(cartId).subscribe(goToCart);
+          else goToCart();
         }
       }
       if (err.status === 404) {
