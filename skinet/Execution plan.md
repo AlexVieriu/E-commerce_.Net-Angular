@@ -59,7 +59,7 @@ Sprint end: verify local + Azure deploy. Update README.
 | BUG-7 | Stripe Elements blocked by CSP + COEP on prod artifact — allow Stripe origins, COEP `unsafe-none` | M | -- | Same root cause as BUG-6. `fix(bug-7)` |
 | BUG-8 | App 500.30 on startup when serverless Azure SQL is idle-paused — `MigrateAsync` hits transient SQL 40613, no retry resiliency | S | -- | Found smoke-testing live Azure. `fix(bug-8)`: `EnableRetryOnFailure` on `UseSqlServer` |
 | BUG-9 | Admin password not config-driven — seed only created-if-missing, so rotating Key Vault `AdminSettings:Password` never updated the existing admin (locked out, unrecoverable) | S | -- | Found logging into live admin. `fix(bug-9)`: seed resets admin password from config on startup |
-| BUG-10 | Top loading bar stuck spinning on live — busy/loading counter never returns to 0 (likely SignalR connect counted by `loadingInterceptor`) | S | -- | Found in Sprint 2 live smoke. **Deferred** (frontend polish). `fix(bug-10)` |
+| BUG-10 | Top loading bar stuck spinning on live — busy/loading counter never returns to 0 (likely SignalR connect counted by `loadingInterceptor`) | S | -- | Found in Sprint 2 live smoke. **Deferred** → tracked in *Pull-in candidates* (rank 1). `fix(bug-10)` |
 
 > BUG-4..8 are deploy-hardening defects surfaced while smoke-testing the Sprint 2 release on Azure / the prod artifact (`:7096`); the dev server (`:4200`) sends no security headers and dev uses SQLite, so they stayed hidden until the real deploy.
 
@@ -107,10 +107,10 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 | 29 | Product list: Material Table + Paginator, wire to existing GET /api/products | M | 25 | Spillover. Copy the admin-orders table pattern |
 | 30 | Product create/edit: reactive form, Material inputs. Text URL for image (no upload) | M | 25 | Spillover |
 | 31 | Product delete: reuse ConfirmationDialogComponent | S | 29 | Pulled from S4 — completes CRUD, cheap |
-| BUG-15 | Edit form shows **stale** product — a PUT didn't clear the by-id cache, so `/products/:id/edit` re-served old data for up to the 10-min TTL (list looked fresh) | S | 30 | Found Jul 18 smoke-testing T30; pre-existing, the edit UI just exposed it. Two causes: **(1)** invalidation pattern `"api/products\|"` (trailing `\|`) matched list keys but not by-id keys `/api/products/72` → dropped the `\|`. **(2)** cache keys kept the raw path, so `/api/Products/72` (capital, Scalar) and `/api/products/72` (app) were different keys the case-sensitive Redis pattern couldn't both match → lowercased the path. Bonus: brands/types no longer go stale on create. `fix(bug-15)` |
-| BUG-16 | **Editing a product's stock always 500s** — `PUT /products/{id}` throws `DbUpdateConcurrencyException` ("expected 1 row, affected 0") whenever `QuantityInStock` changes; every other field saves fine | S | 30 | Found Jul 18 smoke-testing T31. `QuantityInStock` is `[ConcurrencyCheck]` (`Product.cs:6`, from T13/T14), but `UpdateProduct` (`ProductsController.cs:49`) checks `Exists(id)` and then calls `Update()` on a **detached** entity from `ToEntity(id)` — EF has no original values, so it puts the *new* stock in the `WHERE` clause and matches 0 rows. Fix: load the tracked entity, map the DTO onto it, save — which also makes the concurrency check actually work instead of firing on every stock edit. Admin can't change stock at all until this lands. `fix(bug-16)` |
+| BUG-15 | Edit form shows **stale** product — a PUT didn't clear the by-id cache, so `/products/:id/edit` re-served old data for up to the 10-min TTL (list looked fresh) | S | 30 | Found Jul 18 smoke-testing T30; pre-existing, the edit UI exposed it. Two causes: the `[InvalidateCache]` pattern's trailing `\|` matched list keys but not by-id (`/api/products/72`); and raw-path keys made `/api/Products/72` (Scalar) and `/api/products/72` (app) different keys. Fixed: dropped the `\|`, lowercased the path. Full story → `progress.md`. `fix(bug-15)` |
+| BUG-16 | **Editing a product's stock always 500s** — `PUT /products/{id}` throws `DbUpdateConcurrencyException` whenever `QuantityInStock` changes; every other field saves fine | S | 30 | Found Jul 18 smoke-testing T31. `QuantityInStock` is `[ConcurrencyCheck]` (`Product.cs:6`, T13/T14), but `UpdateProduct` (`ProductsController.cs:49`) calls `Update()` on a **detached** entity — EF has no originals, so it puts the *new* stock in the `WHERE` and matches 0 rows. Fix: load the tracked entity, map the DTO onto it, save — which also makes the check work instead of firing on every stock edit. **Blocks all stock edits.** Approach → `spikes.md`. `fix(bug-16)` |
 
-**Points: 8.** Sprint end: full admin CRUD works. Products create/edit/delete. Dashboard renders.
+**Points: 10** *(8 planned + 2 unplanned bugs — BUG-15, BUG-16)*. Sprint end: full admin CRUD works. Products create/edit/delete. Dashboard renders.
 
 ---
 
@@ -161,6 +161,45 @@ If a sprint over-runs, it eats *this* — that is what the buffer is for. **No f
 
 ---
 
+## Pull-in candidates *(if a sprint finishes early)*
+
+> **Not committed work.** Fires only when a sprint's committed scope is done **with days left in that
+> sprint's own timebox** — realistically after Sprint C finishes early (~Aug 10–17).
+> **Ranks 1–4 are a real priority order** (ranked by how badly a live demo suffers) — take them in order.
+> Below rank 4, order is meaningless: pick by the size of the gap you actually have.
+> **One item, then re-assess.** Never "I have 3 days, take four."
+> 🔴 **The Buffer (Aug 25 – Sep 6) is never the window.** It absorbs slippage — do not raid it.
+> **Everything here is a known defect or cleanup — never a new feature.** That line is the whole rule;
+> see *Post-v1.0* below.
+
+| Rank | # | Task | E | Dep | Notes |
+|---|---|------|---|-----|-------|
+| 1 | BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 (likely SignalR counted by `loadingInterceptor`) | S | -- | Most visible defect — every page reads as hung. Found in Sprint 2 live smoke. `fix(bug-10)` |
+| 2 | BUG-14 | Product page: "Add to cart" disables on click (`[disabled]="quantity() === quantityInCart()"`) — reads as broken though the cart *did* update | S | -- | Primary shopping flow, every demo hits it. Designed poorly, not broken. Found Jul 14 (T54 visual check) |
+| 3 | 33 | Wire `<mat-error>` validation on the register + checkout forms | S | -- | Bad input is silently rejected — the server says no, the form says nothing |
+| 4 | BUG-3 | Checkout: hint on an empty required address field | S | -- | Money-path UX, cheap |
+| — | 10 | Health-check endpoints | S | -- | Cheap, and the serverless-SQL idle-pause history (BUG-8) is worth a probe |
+| — | 22 | Serilog structured logging *(log to App Service, no Seq)* | M | -- | If the live demo breaks, there's nothing to diagnose with |
+| — | 35 | `NgOptimizedImage` on catalog images | S | -- | Cheap; image-heavy catalog, real Angular talking point |
+| — | 2 | Multi-stage Dockerfile | M | -- | Azure deploy works without it; decent interview signal |
+| — | 42 | Soft delete + EF global query filter | M | -- | T31 hard-deletes products — real-shop correctness gap |
+| — | fix/T27 | Dashboard preview sizes: recent orders 5→15, low-stock 10→15 (`DashboardService.cs`) | S | -- | Cosmetic (fill the screen). Backend caps + 2 test asserts. Deferred from T28 (2026-07-15). `fix/task-27-dashboard-preview-sizes` |
+| — | fix/T30 | `register`/`login` template-only members → `protected` (match the T30 convention) | S | -- | Cosmetic, zero runtime effect. Leaves `product-form` the last file off the Angular style guide. `fix/task-30-access-modifiers` |
+| — | fix/T29 | Unify the paging param name (`pageIndex` vs `pageNumber`) across shop + admin | S | -- | Naming consistency only; BUG-12 already fixed the real break. `fix/task-29-paginate-one-name` |
+| — | fix/BUG-16 | Move the checkout cart-reload from `errorInterceptor` into the checkout's own error handler; interceptor keeps only the 409 snackbar | S | BUG-16 | Unwinds a compromise, not a bug. The `POST …/orders` check keeps a product-edit 409 off `/cart` — but that's domain logic in a cross-cutting interceptor, and URL-sniffing fails *silently* on a route rename. Money-path edit — do it clean, not mid stock-fix. `fix/bug-16-interceptor-domain-logic` |
+| — | fix/401-ctx | Replace the 401 URL sniff (`!req.url.includes('account/user-info')`) with an `HttpContextToken` set on the user-info call | S | -- | Same class as fix/BUG-16, different domain → its own PR. Same silent-break-on-rename. Auth-redirect *belongs* in the interceptor, so kill the URL *signal*, not the logic. `fix/401-userinfo-httpcontext` |
+| — | fix/interceptor-hardening | `errorInterceptor` cleanups — guard `err.error?.…` derefs; flag the mixed `throw` vs `return throwError` | S | -- | Default-leave, capture only. Low risk (`ExceptionMiddleware` always writes a body; the split is intentional). Only worth doing if already in the file. `fix/interceptor-hardening` |
+| — | docs | Spike retrofit — add `Why (best answer)` to the ~11 decision blocks (T30/T29/fix-paginate/T26/T25/T8/T54); fill the 4 `<your call>` Decisions (T27, T24, SQLitePCLRaw, backlog ClientSecret) from PR history; unify the two Decision styles | M | -- | Blocked (BUG-11/T27/T24/SQLitePCLRaw/backlog) until the user writes `Why (by me)` first — Claude writing it spends the attempt. Do at sprint close, with the as-built diff + Anki (raised 2026-07-18) |
+
+**Post-v1.0 — *not* pull-in candidates:** Domain events | Category hierarchy | Wishlist | SEO slugs
+
+> Suspended until v1.0 ships. **New scope is never the answer to being ahead** — if you finish early, the
+> move is to pull the buffer forward and ship early. Fixing a known defect above is *not* new scope;
+> adding a wishlist is. That distinction is the only thing separating the table above from feature creep.
+> Revisit this list after Sep 6, while interviewing.
+
+---
+
 ## Descoped for v1.0 — *not shipping by Sep 6*
 
 > Cut consciously on the 2026-07-13 re-baseline. **Not forgotten** — revisit after v1.0 ships.
@@ -170,26 +209,18 @@ If a sprint over-runs, it eats *this* — that is what the buffer is for. **No f
 | 55 | Lighthouse baseline | Scores don't get you hired |
 | 56 | Performance pass (MiniProfiler + bundle analyzer) | Depends on 55; premature at this scale |
 | 34 | Skeleton loaders | Polish |
-| 35 | NgOptimizedImage | Polish |
-| 33 | Form errors: `<mat-error>` | Nice UX, no signal |
-| fix/T27 | Dashboard preview sizes: recent orders 5→15, low-stock 10→15 (`DashboardService.cs`) | Cosmetic (fill the screen). Backend caps + 2 test asserts; deferred from T28 (2026-07-15). `fix/task-27-dashboard-preview-sizes` — do if ahead |
-| fix/T30 | `register`/`login`: template-only members (`registerForm`, `validationErrors`, `onSubmit`) → `protected`, matching the T30 convention | Cosmetic, zero runtime effect. T30's modifier tidy (2026-07-16) left `product-form` the only file following the Angular style guide; these two are now the odd ones out. `fix/task-30-access-modifiers` — user's call: **after T31** |
-| docs | **Spike retrofit** — add `Why (best answer)` to the ~11 qualifying decision blocks (T30, T29, fix/paginate, T26, T25, T8, T54); fill the 4 Decisions still on `<your call>` (T27, T24, SQLitePCLRaw, backlog ClientSecret) from PR history; unify the two Decision styles (blockquoted vs bare) | Polishing the record of *shipped* work while unshipped work waits. **Blocked** for BUG-11/T27/T24/SQLitePCLRaw/backlog until the user writes `Why (by me)` — Claude writing it first spends the attempt permanently. Do at **sprint close**, alongside the as-built diff + Anki (raised 2026-07-18) |
 | 32 | Memory leak audit | "Likely minimal (signals + httpResource)" — plan's own words |
-| BUG-3 | Checkout address hint on empty required field | UX nicety, not on the money path |
-| BUG-14 | Product page: "Add to cart" disables itself the instant you click it (`[disabled]="quantity() === quantityInCart()"`), so the button reads as broken even though the cart *did* update. Re-enables only when you change the Quantity box. Found Jul 14 during the T54 visual check | Same class as BUG-3 — confusing, but the cart works and it's not on the money path. Working as designed, just designed poorly |
 | 39 | Email: IEmailService + `Channel<T>` BackgroundService | Expensive. Stripe + webhooks + SignalR already prove the async/infra story |
-| 42 | Soft delete + global query filter | Nice EF trick, small payoff |
 | 46 | Unit tests for cancellation/soft-delete/history | Follows its features; T40/41 get tests inline |
 | 20 | Integration tests: WebApplicationFactory + TestContainers | T37 (E2E) buys the same "testing maturity" story for less |
 | 49 | docker-compose full (SQL + Redis + Seq) | Only needed for 22 |
 | 51 | RequireConfirmedEmail | Blocked on 39 |
-| 22 | Serilog + Seq | Talking point, not a demo |
 | 23 | Correlation IDs | Blocked on 22 |
-| 10 | Health checks | Cheap, but nothing depends on it |
-| 2 | Dockerfile multi-stage | Azure deploy already works without it |
 | 11 | Pagination: TotalPages/HasNext/HasPrev | Cosmetic |
 | 36 | Accessibility: axe pass | Real value, no interview signal for these roles |
+
+> **Dependency note:** 22 (Serilog) moved to *Pull-in candidates*. If it ever lands, 23 (correlation IDs) and 49
+> (docker-compose with Seq) become live options again — neither is committed either way.
 
 ---
 
@@ -218,6 +249,12 @@ hours or sacrifice sleep/runs.
 There is nothing left to trade but scope. If another bad week lands, **cut again immediately** — do not
 absorb it by grinding. Cut order: README (47) > Azure deploy (53) > admin CRUD (28–31) > E2E (37) > rest.
 
+**Committed vs capacity (2026-07-18):** Sprint A **10** + B **9** + C **11** = **30 pts** against the
+re-baseline's ~30 pts of capacity → **zero slack.** Sprint A's 2 unplanned bug points (BUG-15, BUG-16)
+already spent what little existed. **Sprint B is the pinch:** 9 pts committed against ~6–8 pts of
+capacity in 14 days — over-committed before it starts, which is why T37 carries a 4-day timebox and a
+"ship 2 tests if it drags" escape hatch.
+
 Every sprint end: E2E run, Azure verify, README update.
 
 ## Tech Stack Additions
@@ -230,33 +267,26 @@ Every sprint end: E2E run, Azure verify, README update.
 | A | ESLint (`angular-eslint`) + Prettier, Roslyn analyzers (`AnalysisMode=Recommended`). Angular -> 22.0.6 stable |
 | B | Playwright |
 | C | Mermaid |
-| ~~descoped~~ | ~~MailKit / Azure Comms, TestContainers, Serilog + Seq~~ |
+| *if pulled in* | Serilog (App Service logs, no Seq), Docker multi-stage, EF global query filters |
+| ~~descoped~~ | ~~MailKit / Azure Comms, TestContainers~~ |
 
-## LEARN Summary (12 exercises)
+## LEARN Summary (8 committed · 3 more if pulled in)
 
 | # | Concept | Interview Question |
 |---|---------|-------------------|
-| ~~2~~ | ~~Docker multi-stage~~ | ~~"Optimize Docker size/build?"~~ **descoped** |
+| 2 | Docker multi-stage | "Optimize Docker size/build?" — *pull-in candidate* |
 | 3 | Config providers | "Manage secrets in .NET?" |
 | 8 | FluentValidation | "Annotations vs FluentValidation?" |
 | 13 | Optimistic concurrency | "Concurrent writes in EF Core?" |
 | 14 | Transaction isolation | "Isolation levels? Serializable?" |
 | ~~20~~ | ~~Integration testing~~ | ~~"Testing pyramid? TestContainers?"~~ **descoped** — T37 (E2E) carries this story |
-| ~~22~~ | ~~Structured logging~~ | ~~"Why not interpolation?"~~ **descoped** |
+| 22 | Structured logging | "Why not interpolation?" — *pull-in candidate* |
 | 25 | Angular lazy loading | "Route structure in large app?" |
 | 37 | E2E testing | "Strategy? Page Object Model?" |
 | 54 | Static analysis (ESLint / Roslyn) | "Linter vs formatter? When is the linter *wrong*?" |
 | ~~39~~ | ~~Channel\<T\> + BackgroundService~~ | ~~"Background jobs without Hangfire?"~~ **descoped** |
 | 40 | State machine + audit | "Model order status changes?" |
-| ~~42~~ | ~~Global query filters~~ | ~~"Soft delete in EF Core?"~~ **descoped** |
-
-## If Ahead — **suspended until v1.0 ships**
-
-Domain events | Category hierarchy | Wishlist | SEO slugs
-
-> Not a menu right now. The re-baseline has ~2 pts of slack across 8 weeks. If you find yourself
-> "ahead", the correct move is to **pull the buffer forward and ship early**, not to add scope.
-> Revisit this list after Sep 6, while interviewing.
+| 42 | Global query filters | "Soft delete in EF Core?" — *pull-in candidate* |
 
 ## Risks
 
@@ -272,6 +302,10 @@ Domain events | Category hierarchy | Wishlist | SEO slugs
 | Email not ready for cancel | Log "would send", decoupled |
 | No time for Reviews | Cut. README+diagram+smoke = min Sprint 6 |
 | Falling behind | Cut lowest task. Never cut README or sprint-end verify |
+
+> **This table is a Sprint 1–3 artifact.** Several rows name sprints that no longer exist (S5, Sprint 6),
+> tasks that were descoped (20, 39), or risks already resolved (CSP/Material, secrets rotation, admin
+> refactor). Kept as the record of what was feared up front — **not** a live risk register.
 
 ## Skipped
 
