@@ -169,8 +169,20 @@ public class CreateProductDto_Validation_Tests
     }
 
     [Fact]
-    public void CreateProductDto_ToEntityWithId_ShouldSetId()
+    public void CreateProductDto_MapTo_ShouldOverwriteEveryFieldButKeepTheId()
     {
+        var existing = new Product
+        {
+            Id = 42,
+            Name = "Old hat",
+            Description = "old desc",
+            Price = 1m,
+            PictureUrl = "/old.png",
+            Type = "Old",
+            Brand = "Old",
+            QuantityInStock = 1
+        };
+
         var dto = new CreateProductDTO
         {
             Name = "Hat",
@@ -182,9 +194,16 @@ public class CreateProductDto_Validation_Tests
             QuantityInStock = 5
         };
 
-        var product = dto.ToEntity(42);
+        dto.MapTo(existing);
 
-        product.Id.Should().Be(42);
-        product.Name.Should().Be("Hat");
+        // The id rides in the PUT url, never the body — mapping must not touch the tracked entity's key.
+        existing.Id.Should().Be(42);
+        existing.Name.Should().Be("Hat");
+        existing.Description.Should().Be("desc");
+        existing.Price.Should().Be(10m);
+        existing.PictureUrl.Should().Be("/img.png");
+        existing.Type.Should().Be("Hats");
+        existing.Brand.Should().Be("Core");
+        existing.QuantityInStock.Should().Be(5);
     }
 }
