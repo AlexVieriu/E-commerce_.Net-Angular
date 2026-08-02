@@ -63,9 +63,10 @@ When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution
   That call is the user's, never Claude's.**
 - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
   (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
-- PR to `main` at sprint end only → **squash** (exactly one commit per sprint), titled `Sprint N — <name>`
+- Release to `main` at sprint end only — **no PR** (`main` is an orphan branch): `read-tree` from
+  `development` + exactly one commit per sprint, titled `Sprint N — <name>`
   (task/bug lines go in the commit body; pushing `main` deploys to Azure — verify first)
-- Never commit directly to `main` or `development`
+- Never commit directly to `development`; never to `main` except that sprint release
 - For forgotten changes on a completed task: `fix/task-N-description` from `development` (squash-merge)
 - Full flow + commands: `skinet/docs/git-workflow.md`
 
