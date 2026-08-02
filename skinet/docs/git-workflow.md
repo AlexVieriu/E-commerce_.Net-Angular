@@ -24,19 +24,31 @@ gh pr merge <pr> --squash --delete-branch     # development = 1 clean commit per
 
 ## Sprint flow (sprint end)
 
+🔴 **No PR here — `main` is an orphan branch.** It shares no commit with `development`, so GitHub
+cannot diff them and `gh pr create --base main --head development` 404s (`no history in common`).
+That is by design: an orphan `main` is what keeps its log to one commit per sprint. The release is a
+**tree replacement**, not a merge.
+
 ```bash
 # 1. all sprint tasks squash-merged into development
-# 2. run the deploy gate in testing.md (local verify)
-# 3. PR body = the sprint's items as `feat(task-N): …` / `fix(bug-N): …` lines (becomes the commit body)
-gh pr create --base main --head development --title "Sprint N — <name>" --body "<task + bug lines>"
-gh pr merge <pr> --squash                        # SQUASH — exactly one commit per sprint. NEVER --merge
-# 4. push to main triggers Azure deploy → run the Azure half of the checklist
+# 2. run the deploy gate in testing.md (local verify) — a Release build, not just Debug
+git switch main && git pull
+git read-tree --reset -u development   # take development's tree wholesale — no 3-way merge, no conflicts
+git diff development --stat            # MUST be empty — proves main now matches development exactly
+git commit -m "Sprint N — <name>" -m "feat(task-N): …
+fix(bug-N): …"                         # body = the sprint's items, one line each
+git push origin main                   # 3. triggers Azure deploy → run the Azure half of the checklist
 ```
+
+`read-tree --reset -u` overwrites the index and working tree from another branch without trying to
+merge — the reason it can't conflict. `git merge --squash --allow-unrelated-histories` is the obvious
+alternative and it **fails**: it still runs a 3-way diff, so files added independently on both branches
+come back as add/add conflicts.
 
 ## Why squash to main (STRICT)
 
 - **Squash → development:** collapses WIP noise into one readable commit per task.
-- **Squash → main:** **exactly one commit per sprint.** `main` is the recruiter-/interviewer-facing
+- **Tree replacement → main:** **exactly one commit per sprint.** `main` is the recruiter-/interviewer-facing
   history — it must read as a tidy list of sprints, never 20+ task commits. The granular work
   stays on `development` and in PRs. Put the sprint's items in the commit **body** as
   `feat(task-N): …` and `fix(bug-N): …` lines so each sprint maps to `Execution plan.md`.
@@ -54,7 +66,9 @@ gh pr merge <pr> --squash                        # SQUASH — exactly one commit
 
 ## Rules
 
-- Never commit directly to `main` or `development`.
+- Never commit directly to `development` — always a branch + PR.
+- Never commit directly to `main` **except the sprint release itself**, which has no other mechanic
+  (orphan branch, see Sprint flow). One such commit per sprint, at a verified sprint end. Nothing else.
 - `main` = **one squashed commit per sprint**, with a `feat(task-N): …` / `fix(bug-N): …` body. Squash only, never `--merge`.
 - Every Sprint / Task / bug fix tracked in `Execution plan.md` is squash-merged — each maps to a `task-N` / `bug-N` reference.
 - `main` push = production deploy — only at a **verified** sprint end (checklist green first).

@@ -114,7 +114,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)*
+## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)* · ⏳ CURRENT
 
 > The two things that most separate you from tutorial-followers: E2E tests and a real domain model.
 > Epics: `Testing`, `Domain`. Order: 37 -> 40 -> 41 -> BUG-2.
@@ -178,6 +178,7 @@ If a sprint over-runs, it eats *this* — that is what the buffer is for. **No f
 | 2 | BUG-14 | Product page: "Add to cart" disables on click (`[disabled]="quantity() === quantityInCart()"`) — reads as broken though the cart *did* update | S | -- | Primary shopping flow, every demo hits it. Designed poorly, not broken. Found Jul 14 (T54 visual check) |
 | 3 | 33 | Wire `<mat-error>` validation on the register + checkout forms | S | -- | Bad input is silently rejected — the server says no, the form says nothing |
 | 4 | BUG-3 | Checkout: hint on an empty required address field | S | -- | Money-path UX, cheap |
+| — | ci/audit | Scheduled weekly CI run (`on: schedule`) so NuGet/npm advisories surface on their own | S | -- | NU1903 (Jul 27) was found **while deploying**, not by CI: advisories resolve at restore time against a live feed, so a *new* CVE against *unchanged* code is invisible until someone happens to build. ~5 lines in `ci-cd.yml`. Turns a blocked release into a Monday email. `chore/scheduled-dependency-audit` |
 | — | 10 | Health-check endpoints | S | -- | Cheap, and the serverless-SQL idle-pause history (BUG-8) is worth a probe |
 | — | 22 | Serilog structured logging *(log to App Service, no Seq)* | M | -- | If the live demo breaks, there's nothing to diagnose with |
 | — | 35 | `NgOptimizedImage` on catalog images | S | -- | Cheap; image-heavy catalog, real Angular talking point |
@@ -230,11 +231,11 @@ If a sprint over-runs, it eats *this* — that is what the buffer is for. **No f
 
 ## Certifications *(never steals build days or run days)*
 
-Uber-day reality: 2 days are 13h drives (cognitive zeros — passive audio only), 1 is a half-day (the real study slot).
+Capacity: 2 days off per week — the only study slots outside project days, and not reliably usable.
 
-- [ ] **AZ-900** — MS Learn path: passive audio on the 13h drives + real study on the half Uber day. **Exam target ~Jul 1.** Mostly review (Azure deploy + Key Vault already done).
+- [ ] **AZ-900** — MS Learn path: passive audio + real study on the days off. **Exam target ~Jul 1.** Mostly review (Azure deploy + Key Vault already done).
 - [ ] **AZ-204** — **PUSHED PAST v1.0 (re-baseline 2026-07-13).** It was double-booked against the exact
-  hours the re-baseline reclaims from Uber, and the Aug 17–30 study window is now buffer. The project
+  hours the re-baseline reclaims for build days, and the Aug 17–30 study window is now buffer. The project
   IS the lab (Key Vault, App Service, Managed Identity, App Insights — all covered by building it).
   **Start studying after v1.0 ships (Sep 6); exam late Sept/Oct.** The portfolio gets interviews; the
   cert supports it. Not the other way round.
@@ -245,7 +246,7 @@ Uber-day reality: 2 days are 13h drives (cognitive zeros — passive audio only)
 When a medical check / contract renewal / bad day eats time → **cut the lowest-priority task**, never extend
 hours or sacrifice sleep/runs.
 
-**The re-baseline already spent every lever** (+1 week, reduced Uber hours, AZ-204 pushed, 40% descoped).
+**The re-baseline already spent every lever** (+1 week, reclaimed build hours, AZ-204 pushed, 40% descoped).
 There is nothing left to trade but scope. If another bad week lands, **cut again immediately** — do not
 absorb it by grinding. Cut order: README (47) > Azure deploy (53) > admin CRUD (28–31) > E2E (37) > rest.
 
