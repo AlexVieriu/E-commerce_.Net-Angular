@@ -117,7 +117,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 ## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)* · ⏳ CURRENT
 
 > The two things that most separate you from tutorial-followers: E2E tests and a real domain model.
-> Epics: `Testing`, `Domain`. Order: 37 -> 40 -> 41 -> BUG-2.
+> Epics: `Testing`, `Domain`. Order: 37 -> BUG-18 -> 40 -> 41 -> BUG-2 -> BUG-17.
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
@@ -125,8 +125,10 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 | 40 | OrderStatus: add Processing/Shipped/Delivered/Cancelled + append-only OrderStatusHistory | M | -- | LEARN: State machine + audit trail. The strongest domain story in the plan |
 | 41 | Order cancellation: POST cancel, only Pending/PaymentReceived, Stripe refund if paid | M | 40 | Log the email, don't build the email service (T39 is descoped) |
 | BUG-2 | Checkout: declined card can't retry in-session — Stripe `elements.submit()` is single-use. Re-init PaymentElement on failure | S | -- | **Money path.** Pre-existing, found during T17/T18 |
+| BUG-17 | Logout then hit `/checkout` (empty cart) → lands on `/cart`, not the login page — the redirect silently never fires | S | 37 | Found Aug 4 by `auth-orders.spec.ts` (T37), left red on purpose. `auth.guard.ts` calls `router.navigate()` imperatively instead of returning a `UrlTree`; races `emptycart.guard.ts`'s own imperative navigate and loses. Full story → `progress.md`. `fix(bug-17)` |
+| BUG-18 | **Cart leaks between users** — `GET/POST/DELETE /api/cart` take the cart id from the client, so any authenticated user can read or overwrite **any** cart by id (IDOR); logout also leaves the previous user's items in the `_cart` signal and `cart_id` in `localStorage` | S | 37 | Found Aug 5 smoke-testing BUG-17. Root cause: cart identity is **client-owned** (`cart_id`, `init.service.ts:17`) while `CartController` is `[Authorize]` — a half-migration between anonymous and user-owned carts. Fix: derive the key server-side from `User.GetEmail()`, drop the `id` param (`CartController.cs:7,17,26`), delete every `cart_id` read/write client-side, clear `_cart` on logout. Orders are **not** affected (`OrdersController.cs:9` scopes `ByEmail`). **Blast radius is wider than the cart controller:** the same client-supplied id reaches `POST /api/payments/{cartId}` (`PaymentsController.cs:30`) and `CreateOrderDto.CartId` → `OrderService.cs:7,103`, so it also allows creating a payment intent against — and **placing an order from** — another user's cart, deleting theirs in the process. Money path. Cross-layer (API + client + tests). **Security — outranks T40.** `fix(bug-18)` |
 
-**Points: 9.** Sprint end: E2E green. Order status history + cancellation work. Declined card can retry.
+**Points: 11** *(10 planned + 1 unplanned bug — BUG-18)*. Sprint end: E2E green (BUG-17 tracked, not blocking). Order status history + cancellation work. Declined card can retry. Cart no longer leaks between users.
 
 ---
 
