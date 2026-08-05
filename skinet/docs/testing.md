@@ -61,7 +61,67 @@ Both local and Azure green → sprint is closed. See `git-workflow.md` for the m
 
 # Reference — writing tests
 
-xUnit (.NET), v3 + FluentAssertions + Moq. No Angular unit tests — UI flows covered by Playwright E2E (Task 37).
+xUnit (.NET), v3 + FluentAssertions + Moq. No Angular unit tests — UI flows covered by Playwright E2E (`skinet/e2e/`, Task 37).
+
+## Playwright E2E (`skinet/e2e/`)
+
+Local-only (never CI — see `mindset/spikes.md` T37 Decision 1). Needs Docker's `redis` container
+running first (`docker compose up -d redis`); `global-setup.ts` starts it automatically if not.
+
+```bash
+cd skinet/e2e
+npx playwright test              # all 3 tests: checkout, auth+orders, admin pagination
+npx playwright test --ui         # interactive UI mode
+npx playwright show-report       # last run's HTML report
+```
+
+`webServer` starts `dotnet run` + `ng serve` itself and `global-setup.ts` seeds demo data
+(`dotnet run -- --seed`) before the suite runs — no manual setup beyond Redis.
+
+### Layout
+
+```
+skinet/e2e/                    own npm project (own package.json + node_modules)
+├── playwright.config.ts       the wiring: baseURL, webServer, projects -- read this first
+├── global-setup.ts            runs once, before any browser opens
+├── tests/                     WHAT to test -- the story
+│   ├── *.spec.ts              one file per flow
+│   └── setup/*.setup.ts       not tests: log in once, save the session
+├── pages/                     HOW to reach it -- the only place selectors live
+│   └── *.ts                   one class per page or widget (page object)
+├── support/                   shared constants (credentials, API URL) -- no selectors
+└── generated, git-ignored:
+    playwright/.auth/*.json    saved logins, written by tests/setup/
+    test-results/              traces + screenshots of failures
+    playwright-report/         the HTML report
+```
+
+### What runs when
+
+```
+npx playwright test
+  |
+  +-- global-setup.ts    docker compose up -d redis; dotnet run -- --seed (seeds, then exits)
+  |
+  +-- webServer[]        starts API :7096 + Angular :4200, waits until both answer,
+  |                      stops both when the run ends
+  |
+  +-- projects           a dependency graph, not a list:
+
+        setup-customer --+-------------------> checkout ---------+
+                         |                                       v
+                         +-----------------------------> customer-orders
+
+        setup-admin ---------------------------------> admin
+```
+
+- `tests/setup/customer.setup.ts` logs in once and writes `playwright/.auth/customer.json`.
+- `checkout` and `customer-orders` name that file as their `storageState` — they open already logged in.
+- `dependencies` also forces order: a project runs after everything it lists, even when you run it
+  alone with `--project=`.
+
+⚠️ `testMatch` in the config maps a **file name** to a project. Renaming a spec file unhooks it
+from its project and its `dependencies`. Smallest page object to copy: `pages/CartPage.ts`.
 
 ## Test projects
 
