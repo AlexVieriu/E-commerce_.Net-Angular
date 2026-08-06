@@ -7,7 +7,8 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 
 ## ✅ After each task (before opening the PR)
 
-- [ ] `dotnet test` green locally
+- [ ] `dotnet test` green locally — **needs Redis up** (`docker compose up -d redis`); `API.Tests` runs
+      against the real thing, so without it those tests fail on a connection error, not an assertion
 - [ ] `dotnet build -c Release` clean — **Release is where analyzer warnings become errors** (T54)
 - [ ] `npm run lint` + `npm run format` clean (frontend)
 - [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches
