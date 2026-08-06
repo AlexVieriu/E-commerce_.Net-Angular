@@ -54,6 +54,10 @@ public static class ApplicationServicesExtensions
                 provider.GetRequiredService<SqlServerStoreContext>());
         }
 
+        // CartService keys Redis by the caller, so Infrastructure needs the current user.
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IOrderService, OrderService>();

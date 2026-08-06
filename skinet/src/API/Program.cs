@@ -102,3 +102,7 @@ await app.SeedDatabaseAsync(runSeed);
 if (runSeed) return;
 
 app.Run();
+
+// Top-level statements compile to an internal Program class; WebApplicationFactory<Program> in
+// API.Tests needs it public to boot the real host in-process.
+public partial class Program { }

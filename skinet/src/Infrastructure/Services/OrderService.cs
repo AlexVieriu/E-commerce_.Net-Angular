@@ -4,7 +4,7 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
 {
     public async Task<Order?> CreateOrderAsync(string email, CreateOrderDto orderDto)
     {
-        var cart = await cartService.GetCartAsync(orderDto.CartId);
+        var cart = await cartService.GetCartAsync();
         if (cart == null) return null;
         if (cart.PaymentIntentId == null) return null;
 
@@ -100,7 +100,7 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
 
         // Cart is no longer needed — delete it from Redis.
         // Fire-and-forget: cart deletion failure doesn't invalidate an already-saved order.
-        await cartService.DeleteCartAsync(orderDto.CartId);
+        await cartService.DeleteCartAsync();
 
         return order;
     }

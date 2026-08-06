@@ -7,6 +7,7 @@ import { RegisterCredentials } from '../../shared/models/registerCredentials';
 import { map, tap } from 'rxjs';
 import { Address } from '../../shared/models/address';
 import { SignalrService } from './signalr.service';
+import { CartService } from './cart.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class AccountService {
   private readonly baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
   private signalrService = inject(SignalrService);
+  private cartService = inject(CartService);
   private _currentUser = signal<User | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
   isAdmin = computed(() => this.currentUser()?.roles.includes('Admin') ?? false);
@@ -52,9 +54,11 @@ export class AccountService {
 
   // Drop client-side auth state without an API call. Used when a request 401s
   // (cookie expired or cleared out-of-band) so the UI reflects logged-out state.
+  // The cart goes with it — it is the previous user's, whichever path got us here.
   clearCurrentUser() {
     this._currentUser.set(null);
     this.signalrService.stopHubConnection();
+    this.cartService.clearLocalCart();
   }
 
   updateAddress(address: Address) {

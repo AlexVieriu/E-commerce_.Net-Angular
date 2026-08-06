@@ -1,16 +1,16 @@
 namespace API.Controllers;
 
+// No endpoint takes a cart id. The cart is whichever one belongs to the authenticated caller,
+// resolved inside CartService — so there is nothing for a client to forge (BUG-18).
 [Authorize]
 public class CartController(ICartService cartService) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<ShoppingCart>> GetCartById(string id)
+    public async Task<ActionResult<ShoppingCart>> GetCart()
     {
-        var cart = await cartService.GetCartAsync(id);
+        var cart = await cartService.GetCartAsync();
 
-        return Ok(cart ?? new ShoppingCart { Id = id });
-        // id will be stored on the client side and when the client will update the cart
-        // we will send the shopping cart with that id        
+        return Ok(cart ?? new ShoppingCart { Id = string.Empty });
     }
 
     [HttpPost]
@@ -23,9 +23,9 @@ public class CartController(ICartService cartService) : BaseApiController
     }
 
     [HttpDelete]
-    public async Task<ActionResult> DeleteCart(string id)
+    public async Task<ActionResult> DeleteCart()
     {
-        await cartService.DeleteCartAsync(id);
+        await cartService.DeleteCartAsync();
         return NoContent();
     }
 }

@@ -51,8 +51,8 @@ export class CartService {
     };
   });
 
-  getCartAsync(id: string) {
-    return this.http.get<Cart>(this.baseUrl + 'cart?id=' + id).pipe(
+  getCartAsync() {
+    return this.http.get<Cart>(this.baseUrl + 'cart').pipe(
       map((cart) => {
         // map - allows to perform side effects and transform emitted value before passing it downstream
         this._cart.set(cart); // Update the `cart` signal with the fetched cart data
@@ -95,15 +95,9 @@ export class CartService {
   }
 
   deleteCart() {
-    this.http.delete(this.baseUrl + 'cart?id=' + this.cart()?.id).subscribe({
-      next: () => {
-        localStorage.removeItem('cart_id');
-        this._cart.set(null);
-      },
-      error: () => {
-        localStorage.removeItem('cart_id');
-        this._cart.set(null);
-      }
+    this.http.delete(this.baseUrl + 'cart').subscribe({
+      next: () => this._cart.set(null),
+      error: () => this._cart.set(null)
     });
   }
 
@@ -118,6 +112,13 @@ export class CartService {
 
   setSelectedDelivery(method: DeliveryMethod | null) {
     this._selectedDelivery.set(method);
+  }
+
+  // Drops the cart from memory without calling the server — the cart belongs to the user and must
+  // still be there at their next login. Stops the next person on this browser seeing it (BUG-18).
+  clearLocalCart() {
+    this._cart.set(null);
+    this._selectedDelivery.set(null);
   }
 
   applyDiscount(code: string) {
@@ -152,9 +153,7 @@ export class CartService {
   }
 
   private createCart(): Cart {
-    const cart = new Cart();
-    localStorage.setItem('cart_id', cart.id);
-    return cart;
+    return new Cart();
   }
 
   // type guard

@@ -1,11 +1,9 @@
 import { CartItem } from './cartItem';
 import { CartType } from './cartType';
-import { nanoid } from 'nanoid';
 import { Coupon } from './coupon';
 
+// No id: the server keys the cart by the logged-in user, so the client never names it (BUG-18).
 export class Cart implements CartType {
-  // nanoid(10) //=> "IRFa-VaY2b"
-  id = nanoid(); //=> "V1StGXR8_Z5jdHi6B-myT"
   items: CartItem[] = [];
 
   // Added for Stripe integration

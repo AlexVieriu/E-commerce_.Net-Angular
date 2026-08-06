@@ -34,4 +34,14 @@ public static class ClaimsPrincipleExtensions
 
         return email;
     }
+
+    // Identity writes the user id to NameIdentifier by default (ClaimsIdentityOptions.UserIdClaimType).
+    // Preferred over the email as a storage key: stable, non-PII, and not guessable.
+    public static string GetUserId(this ClaimsPrincipal user)
+    {
+        var id = user.FindFirstValue(ClaimTypes.NameIdentifier) ??
+            throw new AuthenticationException("User id claim not found");
+
+        return id;
+    }
 }

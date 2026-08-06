@@ -120,6 +120,7 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 
 - [ ] T47 — README rewrite *(day 1, highest ROI)*
 - [ ] T12 — Cart ownership: userId in Redis, verify on read/write *(IDOR — must not ship)*
+      — **expected to be closed by BUG-18**; same work
 - [ ] T52 — Open redirect: validate returnUrl starts with `/`
 - [ ] T48 — C4 diagram (Context+Container) in Mermaid
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries

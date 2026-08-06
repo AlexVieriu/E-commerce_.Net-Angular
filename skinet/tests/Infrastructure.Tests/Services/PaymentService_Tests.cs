@@ -35,7 +35,7 @@ public class PaymentService_Tests
             DeliveryMethodId = 1
         };
 
-        mockCartService.Setup(x => x.GetCartAsync("test-cart"))
+        mockCartService.Setup(x => x.GetCartAsync())
                        .ReturnsAsync(cart);
 
         // Mock delivery method repository
