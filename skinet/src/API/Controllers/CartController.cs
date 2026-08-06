@@ -10,7 +10,7 @@ public class CartController(ICartService cartService) : BaseApiController
     {
         var cart = await cartService.GetCartAsync();
 
-        return Ok(cart ?? new ShoppingCart { Id = string.Empty });
+        return Ok(cart ?? new ShoppingCart());
     }
 
     [HttpPost]

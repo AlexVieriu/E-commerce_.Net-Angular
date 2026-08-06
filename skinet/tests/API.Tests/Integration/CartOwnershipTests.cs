@@ -6,23 +6,25 @@ namespace API.Tests.Integration;
 public class CartOwnershipTests(CustomWebApplicationFactory factory)
     : IClassFixture<CustomWebApplicationFactory>
 {
-    private static ShoppingCart CartWith(string claimedId) => new()
+    // Posted as an anonymous object rather than a ShoppingCart, so the request can carry an `id`
+    // the server type doesn't have — which is exactly what a hand-rolled attacker would send.
+    // System.Text.Json drops the unknown property, and these tests prove that is all it does.
+    private static object CartClaiming(string id) => new
     {
-        // The server ignores this. Sent anyway because that is the thing under test.
-        Id = claimedId,
-        Items =
-        [
-            new CartItem
+        id,
+        items = new[]
+        {
+            new
             {
-                ProductId = 1,
-                ProductName = "Test Product",
-                Price = 100m,
-                Quantity = 2,
-                PictureUrl = "/test.png",
-                Brand = "Test",
-                Type = "Test"
+                productId = 1,
+                productName = "Test Product",
+                price = 100m,
+                quantity = 2,
+                pictureUrl = "/test.png",
+                brand = "Test",
+                type = "Test"
             }
-        ]
+        }
     };
 
     [Fact]
@@ -32,7 +34,7 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
         var alice = await factory.CreateAuthenticatedClientAsync();
         var mallory = await factory.CreateAuthenticatedClientAsync();
 
-        var saved = await alice.PostAsJsonAsync("api/cart", CartWith("cart:alice"));
+        var saved = await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:alice"));
         saved.EnsureSuccessStatusCode();
 
         // Act: Mallory asks for "the cart"
@@ -49,7 +51,7 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
         var alice = await factory.CreateAuthenticatedClientAsync();
         var mallory = await factory.CreateAuthenticatedClientAsync();
 
-        (await alice.PostAsJsonAsync("api/cart", CartWith("cart:alice"))).EnsureSuccessStatusCode();
+        (await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:alice"))).EnsureSuccessStatusCode();
 
         // The old exploit, verbatim: pass someone else's key on the query string.
         // The parameter no longer exists, so the value is inert.
@@ -66,8 +68,8 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
         var mallory = await factory.CreateAuthenticatedClientAsync();
 
         // Both claim the same cart id. Under the old design this was one cart.
-        (await alice.PostAsJsonAsync("api/cart", CartWith("cart:shared"))).EnsureSuccessStatusCode();
-        (await mallory.PostAsJsonAsync("api/cart", CartWith("cart:shared"))).EnsureSuccessStatusCode();
+        (await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:shared"))).EnsureSuccessStatusCode();
+        (await mallory.PostAsJsonAsync("api/cart", CartClaiming("cart:shared"))).EnsureSuccessStatusCode();
 
         // Mallory empties "hers"
         (await mallory.DeleteAsync("api/cart")).EnsureSuccessStatusCode();

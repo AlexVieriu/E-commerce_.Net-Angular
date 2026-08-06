@@ -16,7 +16,6 @@ public class OrderService_HappyPathTests
         AppCoupon? coupon = null)
     => new()
     {
-        Id = "cart-happy",
         PaymentIntentId = paymentIntentId,
         DeliveryMethodId = deliveryMethodId,
         Coupon = coupon,
@@ -261,7 +260,6 @@ public class OrderService_ConcurrencyTests
 
     private static ShoppingCart MakeCart(int productId, int deliveryMethodId, string paymentIntentId = "pi_test_123") => new()
     {
-        Id = "test-cart",
         PaymentIntentId = paymentIntentId,
         DeliveryMethodId = deliveryMethodId,
         Items =

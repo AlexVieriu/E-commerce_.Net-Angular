@@ -123,7 +123,9 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
                 PaymentMethodTypes = ["card"]
             };
 
-            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = $"{cart.Id}-{Guid.NewGuid()}" });
+            // Was prefixed with the cart id, which no longer exists. The GUID was already what made
+            // this unique per call, so the key is unchanged in effect.
+            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = Guid.NewGuid().ToString() });
             cart.PaymentIntentId = intent.Id;
             cart.ClientSecret = intent.ClientSecret;
         }

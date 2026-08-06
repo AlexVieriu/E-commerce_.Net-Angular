@@ -19,7 +19,6 @@ public class PaymentService_Tests
 
         var cart = new ShoppingCart
         {
-            Id = "test-cart",
             Items = new List<CartItem>
             {
                 new() {

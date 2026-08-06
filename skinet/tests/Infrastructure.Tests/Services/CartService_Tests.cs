@@ -23,7 +23,7 @@ public class CartService_Tests
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockDatabase = new Mock<IDatabase>();
 
-        var expectedCart = new ShoppingCart() { Id = string.Empty };
+        var expectedCart = new ShoppingCart();
         var serializedCart = JsonSerializer.Serialize(expectedCart);
 
         // Setup must happen BEFORE new CartService() — constructor calls redis.GetDatabase()
@@ -73,7 +73,6 @@ public class CartService_Tests
 
         var cart = new ShoppingCart
         {
-            Id = "test-cart",
             Items = new List<CartItem>
             {
                 new() {
@@ -88,8 +87,7 @@ public class CartService_Tests
             }
         };
 
-        // What Redis holds after the save: same cart, Id discarded.
-        var storedCart = JsonSerializer.Serialize(new ShoppingCart { Id = string.Empty, Items = cart.Items });
+        var storedCart = JsonSerializer.Serialize(new ShoppingCart { Items = cart.Items });
 
         // CartService calls StringSetAsync(key, value, TimeSpan) — TimeSpan implicitly converts to Expiration,
         // resolving to the newer IDatabaseAsync overload: StringSetAsync(RedisKey, RedisValue, Expiration, ValueCondition, CommandFlags)
@@ -130,16 +128,17 @@ public class CartService_Tests
                         Times.Once);
     }
 
-    // The BUG-18 regression test: a client can send any Id it likes and it changes nothing.
+    // The BUG-18 regression test: the cart lands on the caller's key, whoever the caller is.
+    // The other half — "a client cannot send an id" — is now enforced by the type: ShoppingCart
+    // has no Id, so there is nothing to pass here. The wire-level version lives in API.Tests.
     [Fact]
-    public async Task SetCartAsync_ShouldStoreUnderTheCallersKey_AndDiscardTheClientId()
+    public async Task SetCartAsync_ShouldStoreUnderTheCallersKey()
     {
         // Arrange
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockDatabase = new Mock<IDatabase>();
 
-        // A cart claiming to belong to somebody else.
-        var cart = new ShoppingCart { Id = "cart:victim-42" };
+        var cart = new ShoppingCart();
 
         RedisKey savedKey = default;
         RedisValue savedValue = default;
@@ -166,9 +165,9 @@ public class CartService_Tests
         // Act
         await cartService.SetCartAsync(cart);
 
-        // Assert: written under the caller's key, and the id the client sent is gone from the payload
+        // Assert: written under the caller's key, and the stored payload carries no id of its own
         savedKey.ToString().Should().Be(TestUserKey);
-        JsonSerializer.Deserialize<ShoppingCart>(savedValue.ToString())!.Id.Should().BeEmpty();
+        savedValue.ToString().Should().NotContain("\"id\"");
     }
 
     [Fact]
@@ -178,7 +177,7 @@ public class CartService_Tests
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockDatabase = new Mock<IDatabase>();
 
-        var shoppingCart = new ShoppingCart() { Id = string.Empty };
+        var shoppingCart = new ShoppingCart();
 
         // CartService calls the newer overload: StringSetAsync(RedisKey, RedisValue, Expiration, ValueCondition, CommandFlags)
         // Must use As<IDatabaseAsync>() because it is an explicit interface implementation

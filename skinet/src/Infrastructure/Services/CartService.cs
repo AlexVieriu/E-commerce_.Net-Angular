@@ -20,10 +20,8 @@ public class CartService(IConnectionMultiplexer redis, ICurrentUser currentUser)
 
     public async Task<ShoppingCart?> SetCartAsync(ShoppingCart cart)
     {
-        // Whatever Id the client sent is discarded — the Redis key is the cart's identity now,
-        // so nothing is stored under Id and nothing goes back to the client.
-        cart.Id = string.Empty;
-
+        // The cart carries no id at all, so an `id` in the request body is just an unknown JSON
+        // property and is dropped on binding. The key below is the cart's only identity.
         var created = await _redisDB.StringSetAsync(
           CartKey, JsonSerializer.Serialize(cart), TimeSpan.FromDays(30));
 
