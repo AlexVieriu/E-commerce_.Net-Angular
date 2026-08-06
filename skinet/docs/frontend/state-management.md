@@ -28,7 +28,13 @@ count = this.cartService.itemCount; // use as count() in template
 | `_cart` | `Cart \| null` | `itemCount`, `totals` |
 | `_selectedDelivery` | `DeliveryMethod \| null` | included in `totals` |
 
-Cart persisted in Redis via API. Cart ID stored in `localStorage` (`cart_id`), loaded by `InitService`.
+Cart persisted in Redis via API, keyed server-side by the logged-in user. **The client holds no cart
+id** — `Cart` has no `id` field and nothing is written to `localStorage`. `InitService` fetches the cart
+whenever a user is authenticated; that is the whole condition.
+
+`AccountService.clearCurrentUser()` calls `cartService.clearLocalCart()`, so logout (and any 401) drops
+the cart from memory without deleting it server-side — it is still there at the next login, and the next
+person on that browser sees nothing (BUG-18).
 Coupon state lives on `cart().coupon` — not a separate signal. Use `applyDiscount(code)` / `removeCoupon()` on the service.
 
 ## AccountService Signals

@@ -102,9 +102,10 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
       (`CartController.cs:7,17,26`), so any authenticated user can read **or overwrite** any cart by
       id — an IDOR. Logout compounds it: `_cart` and `cart_id` survive, so the next person on that
       browser sees the previous user's items. Root cause: cart identity is client-owned while the
-      controller is `[Authorize]` — half-migrated between anonymous and user-owned carts. Fix: derive
-      the key from `User.GetEmail()` server-side, drop the `id` param, delete `cart_id` entirely,
-      clear `_cart` on logout. The same client-supplied id also reaches `POST /api/payments/{cartId}`
+      controller is `[Authorize]` — half-migrated between anonymous and user-owned carts. Fix: drop the
+      key parameter from `ICartService` itself, so `CartService` derives `cart:{user id}` from a new
+      `ICurrentUser` seam and every old call site stops compiling; delete `cart_id` entirely, clear
+      `_cart` on logout. The same client-supplied id also reaches `POST /api/payments/{cartId}`
       and `CreateOrderDto.CartId` (`OrderService.cs:7,103`), so it extends to paying for and **placing
       an order from** another user's cart — money path. Order history is **not** affected. Found Aug 5
       smoke-testing BUG-17. **Security — do before T40.**

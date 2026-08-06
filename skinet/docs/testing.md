@@ -123,6 +123,41 @@ npx playwright test
 ⚠️ `testMatch` in the config maps a **file name** to a project. Renaming a spec file unhooks it
 from its project and its `dependencies`. Smallest page object to copy: `pages/CartPage.ts`.
 
+## API integration tests (`tests/API.Tests/`)
+
+The real API in-process — real pipeline, real cookie auth, real controllers, **real Redis**. Sits between
+unit tests (everything mocked) and Playwright (real browser). Use it to prove an **endpoint contract** —
+who can reach what — without paying for a browser.
+
+Needs Redis running (`docker compose up -d redis`). Nothing else.
+
+```
+CustomWebApplicationFactory
+├── real       pipeline · auth cookies · controllers · DI · Redis
+└── swapped    throwaway SQLite file per run   (migrations apply on boot, file deleted after)
+               fake Stripe + admin settings    (StripeSettings is ValidateOnStart — no boot without them,
+                                                and no dependency on your user-secrets)
+```
+
+`CreateAuthenticatedClientAsync()` registers a fresh GUID-email user, logs in, and returns a client with
+**its own cookie jar**. Call it twice and one test acts as two people:
+
+```csharp
+var alice   = await factory.CreateAuthenticatedClientAsync();
+var mallory = await factory.CreateAuthenticatedClientAsync();
+```
+
+Two traps, both already handled in the factory — don't undo them:
+
+- **Clients must use `https://localhost`.** The Identity cookie is `SecurePolicy.Always`, so a cookie
+  container won't replay it over `http` and every call 401s *after a successful login*. TestServer
+  ignores the scheme; the client still has to ask for it. Use `CreateWebClient()`, not `CreateClient()`.
+- **`SqliteConnection.ClearAllPools()` before deleting the temp DB.** EF pools connections, so the file
+  stays locked and teardown throws on every test.
+
+`Program.cs` ends with `public partial class Program { }` — top-level statements make `Program` internal,
+and `WebApplicationFactory<Program>` needs it public.
+
 ## Test projects
 
 ```
@@ -130,7 +165,7 @@ tests/
 ├── Core.Tests/           # Entity + domain logic
 ├── Application.Tests/    # DTOs, specs, mapping, validators
 ├── Infrastructure.Tests/ # Services (mocked Redis, InMemory EF)
-└── API.Tests/            # (placeholder — controllers covered by Playwright)
+└── API.Tests/            # Endpoint contracts end-to-end (real host, real Redis)
 ```
 
 Shared helpers in `tests/Tests.Shared/`.
@@ -139,7 +174,7 @@ Shared helpers in `tests/Tests.Shared/`.
 
 Target ~80% backend. What's intentionally **not** covered:
 
-- API controllers → Playwright E2E (Task 37)
+- API controllers → `API.Tests` (endpoint contracts) + Playwright E2E (Task 37)
 - `PaymentService` / `CouponService` → `[ExcludeFromCodeCoverage]`: they call Stripe SDK classes directly with no DI seam. Architectural fix: inject an `IStripeClient` abstraction (deferred).
 
 Snapshot percentages live in `progress.md` (Task 19 log), not here — they go stale.
@@ -152,6 +187,9 @@ dotnet test
 
 # Specific project
 dotnet test tests/Core.Tests
+
+# Integration only (needs Redis up)
+dotnet test tests/API.Tests
 
 # With coverage (requires dotnet-coverage tool)
 dotnet-coverage collect "dotnet test" --output coverage.xml --output-format cobertura
@@ -167,11 +205,12 @@ reportgenerator -reports:coverage.xml -targetdir:coverage-report -reporttypes:Te
 - Every new service with business logic → tests in the same PR
 - Every new spec or mapping → tests in the same PR
 - Infrastructure bootstrapping (factories, seed, config) → no unit tests
-- Controllers → no unit tests (Playwright)
+- Controllers → no unit tests. Ownership/auth contracts → `API.Tests`; user flows → Playwright
 - Stripe services → no unit tests (no DI seam)
 
 ## Rules
 
 - Use FluentAssertions (`.Should().Be(...)`) — not raw `Assert.Equal`.
 - Infrastructure tests use InMemory EF for OrderService, mock Redis for CartService.
-- Never call real external APIs (Stripe, Redis) in unit tests.
+- Never call real external APIs (Stripe, Redis) in unit tests. `API.Tests` is the exception by design:
+  it uses real Redis. Stripe stays faked there too — nothing in it reaches Stripe.
