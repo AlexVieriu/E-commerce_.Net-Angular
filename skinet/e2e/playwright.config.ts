@@ -70,9 +70,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/admin.json' }
     },
     {
-      // No storageState and no dependencies on purpose: this spec logs two people in and one out
-      // by hand, because the logout is what BUG-18 broke. Starting pre-authenticated would skip
-      // the exact step under test.
+      // No storageState, no dependencies: this spec does its own logins and logout,
+      // because the logout is the step under test (BUG-18).
       name: 'cart-ownership',
       testMatch: /cart-ownership\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] }

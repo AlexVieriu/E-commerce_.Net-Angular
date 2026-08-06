@@ -114,8 +114,7 @@ export class CartService {
     this._selectedDelivery.set(method);
   }
 
-  // Drops the cart from memory without calling the server — the cart belongs to the user and must
-  // still be there at their next login. Stops the next person on this browser seeing it (BUG-18).
+  // Drops the cart from memory only — the server keeps it for the user's next login (BUG-18).
   clearLocalCart() {
     this._cart.set(null);
     this._selectedDelivery.set(null);

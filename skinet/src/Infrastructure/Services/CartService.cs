@@ -5,7 +5,7 @@ public class CartService(IConnectionMultiplexer redis, ICurrentUser currentUser)
     // IDatabase is from Redis
     private readonly IDatabase _redisDB = redis.GetDatabase();
 
-    // The one place a cart key is built. Prefixed so carts don't sit loose in the Redis root keyspace.
+    // The one place a cart key is built. Prefixed to keep carts out of the Redis root keyspace.
     private string CartKey => $"cart:{currentUser.Id}";
 
     public async Task<bool> DeleteCartAsync()
@@ -20,8 +20,8 @@ public class CartService(IConnectionMultiplexer redis, ICurrentUser currentUser)
 
     public async Task<ShoppingCart?> SetCartAsync(ShoppingCart cart)
     {
-        // The cart carries no id at all, so an `id` in the request body is just an unknown JSON
-        // property and is dropped on binding. The key below is the cart's only identity.
+        // An `id` in the request body is an unknown property and is dropped on binding.
+        // CartKey is the cart's only identity.
         var created = await _redisDB.StringSetAsync(
           CartKey, JsonSerializer.Serialize(cart), TimeSpan.FromDays(30));
 

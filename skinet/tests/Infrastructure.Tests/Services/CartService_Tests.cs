@@ -129,8 +129,7 @@ public class CartService_Tests
     }
 
     // The BUG-18 regression test: the cart lands on the caller's key, whoever the caller is.
-    // The other half — "a client cannot send an id" — is now enforced by the type: ShoppingCart
-    // has no Id, so there is nothing to pass here. The wire-level version lives in API.Tests.
+    // The other half — "a client cannot send an id" — is enforced by the type: ShoppingCart has none.
     [Fact]
     public async Task SetCartAsync_ShouldStoreUnderTheCallersKey()
     {

@@ -34,8 +34,7 @@ public class CreateOrderDto_Validation_Tests
         _validator.TestValidate(ValidDto()).ShouldNotHaveAnyValidationErrors();
     }
 
-    // ShouldFail_WhenCartIdIsEmpty is gone with the property: the DTO no longer carries a cart id,
-    // so there is nothing to validate (BUG-18).
+    // ShouldFail_WhenCartIdIsEmpty went with the property — no cart id left to validate (BUG-18).
 
     [Theory]
     [InlineData(0)]

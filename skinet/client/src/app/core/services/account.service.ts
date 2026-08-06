@@ -4,7 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { User } from '../../shared/models/user';
 import { LoginCredentials } from '../../shared/models/loginCredentials';
 import { RegisterCredentials } from '../../shared/models/registerCredentials';
-import { map, tap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { Address } from '../../shared/models/address';
 import { SignalrService } from './signalr.service';
 import { CartService } from './cart.service';
@@ -28,9 +28,17 @@ export class AccountService {
     // adding a parameter named 'useCookies' with the value 'true'
     params = params.append('useCookies', true);
 
-    return this.http
-      .post<User>(this.baseUrl + 'login', values, { params })
-      .pipe(tap(() => this.signalrService.createHubConnection()));
+    return this.http.post<User>(this.baseUrl + 'login', values, { params }).pipe(
+      tap(() => this.signalrService.createHubConnection()),
+      // The cart loads with the session — the mirror of clearCurrentUser() (BUG-18).
+      // catchError: a cart that fails to load must not fail the login.
+      switchMap((response) =>
+        this.cartService.getCartAsync().pipe(
+          catchError(() => of(null)),
+          map(() => response)
+        )
+      )
+    );
   }
 
   register(values: RegisterCredentials) {

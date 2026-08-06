@@ -1,7 +1,6 @@
 namespace API.Controllers;
 
-// No endpoint takes a cart id. The cart is whichever one belongs to the authenticated caller,
-// resolved inside CartService — so there is nothing for a client to forge (BUG-18).
+// No endpoint takes a cart id — CartService resolves the caller's own cart (BUG-18).
 [Authorize]
 public class CartController(ICartService cartService) : BaseApiController
 {

@@ -2,13 +2,9 @@ using Microsoft.Data.Sqlite;
 
 namespace API.Tests;
 
-// Boots the real API in-process over the real pipeline: real Redis, real cookie auth, real controllers.
-// Only two things are swapped: a throwaway SQLite file per run, and fake Stripe/admin settings so the
-// host starts without a developer's user-secrets.
-//
-// Requires Redis on localhost:6379 (docker-compose already provides it). Cart keys are cart:{userId}
-// and every test user is created with a fresh GUID email, so runs never collide with each other or
-// with dev data.
+// Boots the real API in-process: real pipeline, real Redis, real cookie auth.
+// Swapped: a throwaway SQLite file per run, and fake Stripe/admin settings so the host starts
+// without a developer's user-secrets. Needs Redis on localhost:6379.
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     // Meets the app's own password policy: 12+ chars, upper, digit, non-alphanumeric.

@@ -1,14 +1,15 @@
 namespace API.Tests.Integration;
 
 // BUG-18 at the API layer: two real users, two cookie jars, one Redis.
-// The unit tests prove CartService derives the key; these prove the derivation survives the whole
-// pipeline — cookie auth, model binding, DI — which is where the bug actually lived.
+// The unit tests prove CartService derives the key; these prove it survives the real pipeline.
 public class CartOwnershipTests(CustomWebApplicationFactory factory)
     : IClassFixture<CustomWebApplicationFactory>
 {
-    // Posted as an anonymous object rather than a ShoppingCart, so the request can carry an `id`
-    // the server type doesn't have — which is exactly what a hand-rolled attacker would send.
-    // System.Text.Json drops the unknown property, and these tests prove that is all it does.
+    // xUnit v3 wants every cancellable call to take the test's token (xUnit1051).
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    // An anonymous object, not a ShoppingCart, so it can carry an `id` the server type doesn't have —
+    // what a hand-rolled attacker would send. These tests prove the property is simply dropped.
     private static object CartClaiming(string id) => new
     {
         id,
@@ -34,11 +35,11 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
         var alice = await factory.CreateAuthenticatedClientAsync();
         var mallory = await factory.CreateAuthenticatedClientAsync();
 
-        var saved = await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:alice"));
+        var saved = await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:alice"), Ct);
         saved.EnsureSuccessStatusCode();
 
         // Act: Mallory asks for "the cart"
-        var mallorysCart = await mallory.GetFromJsonAsync<ShoppingCart>("api/cart");
+        var mallorysCart = await mallory.GetFromJsonAsync<ShoppingCart>("api/cart", Ct);
 
         // Assert: she gets her own, which is empty — Alice's two items are not in it
         mallorysCart.Should().NotBeNull();
@@ -51,11 +52,11 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
         var alice = await factory.CreateAuthenticatedClientAsync();
         var mallory = await factory.CreateAuthenticatedClientAsync();
 
-        (await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:alice"))).EnsureSuccessStatusCode();
+        (await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:alice"), Ct)).EnsureSuccessStatusCode();
 
         // The old exploit, verbatim: pass someone else's key on the query string.
         // The parameter no longer exists, so the value is inert.
-        var response = await mallory.GetFromJsonAsync<ShoppingCart>("api/cart?id=cart:alice");
+        var response = await mallory.GetFromJsonAsync<ShoppingCart>("api/cart?id=cart:alice", Ct);
 
         response.Should().NotBeNull();
         response!.Items.Should().BeEmpty();
@@ -68,14 +69,14 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
         var mallory = await factory.CreateAuthenticatedClientAsync();
 
         // Both claim the same cart id. Under the old design this was one cart.
-        (await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:shared"))).EnsureSuccessStatusCode();
-        (await mallory.PostAsJsonAsync("api/cart", CartClaiming("cart:shared"))).EnsureSuccessStatusCode();
+        (await alice.PostAsJsonAsync("api/cart", CartClaiming("cart:shared"), Ct)).EnsureSuccessStatusCode();
+        (await mallory.PostAsJsonAsync("api/cart", CartClaiming("cart:shared"), Ct)).EnsureSuccessStatusCode();
 
         // Mallory empties "hers"
-        (await mallory.DeleteAsync("api/cart")).EnsureSuccessStatusCode();
+        (await mallory.DeleteAsync("api/cart", Ct)).EnsureSuccessStatusCode();
 
         // Alice's is untouched
-        var alicesCart = await alice.GetFromJsonAsync<ShoppingCart>("api/cart");
+        var alicesCart = await alice.GetFromJsonAsync<ShoppingCart>("api/cart", Ct);
 
         alicesCart.Should().NotBeNull();
         alicesCart!.Items.Should().HaveCount(1);
@@ -86,7 +87,7 @@ public class CartOwnershipTests(CustomWebApplicationFactory factory)
     {
         var anonymous = factory.CreateWebClient();
 
-        var response = await anonymous.GetAsync("api/cart");
+        var response = await anonymous.GetAsync("api/cart", Ct);
 
         // No cookie means no cart to derive — the endpoint must not fall back to anything.
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);

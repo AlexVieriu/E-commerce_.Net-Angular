@@ -1,7 +1,7 @@
 namespace Core.Entities;
 
-// No Id: the cart is identified by its Redis key, which CartService derives from the authenticated
-// caller. Carrying an id here would mean the client could send one, which is exactly BUG-18.
+// No Id: the cart is its Redis key, and CartService derives that from the caller.
+// An id here would be one the client could send — that was BUG-18.
 public class ShoppingCart
 {
     public List<CartItem> Items { get; set; } = [];

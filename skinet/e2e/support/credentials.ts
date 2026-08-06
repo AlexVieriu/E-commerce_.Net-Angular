@@ -3,9 +3,8 @@
 export const CUSTOMER_EMAIL = 'e2e.customer@skinet-test.local';
 export const CUSTOMER_PASSWORD = 'Pa$$w0rd12!@';
 
-// Two accounts of their own for the cart-ownership spec (BUG-18). It needs a second person, and it
-// must not share CUSTOMER_EMAIL with the checkout spec — both touch a cart, and the suite runs
-// fullyParallel, so a shared account would make them flaky against each other.
+// Two accounts for the cart-ownership spec (BUG-18) — it needs a second person.
+// Kept apart from CUSTOMER_EMAIL: both touch a cart, and the suite runs fullyParallel.
 export const CART_A_EMAIL = 'e2e.cart.a@skinet-test.local';
 export const CART_B_EMAIL = 'e2e.cart.b@skinet-test.local';
 export const CART_PASSWORD = 'Pa$$w0rd12!@';
