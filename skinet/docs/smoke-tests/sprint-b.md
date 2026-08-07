@@ -62,7 +62,7 @@ It is one continuous story. Steps 2–8 depend on A's cart being left alone, so 
 | 9 | A untouched | log out, log in as A | A's cart is unchanged — B's checkout never touched it |
 | 10 | admin refund | admin → `/admin/orders` → refund B's order | status becomes Refunded |
 | 11 | logout | user menu → Logout | badge clears; auth cookie gone (DevTools → Application → Cookies) |
-| 12 | 401 path | delete the auth cookie, then click Cart | bounced to login, cart cleared |
+| 12 | 401 path | delete the auth cookie, then **change an item's quantity** in the cart | bounced to login, navbar back to Login/Register, cart cleared |
 
 ### Why the order matters
 
@@ -75,6 +75,12 @@ It is one continuous story. Steps 2–8 depend on A's cart being left alone, so 
   deleted the victim's cart.
 - **Step 12 covers the 401 path, not the Logout button.** The cart is cleared in
   `AccountService.clearCurrentUser()`, which both paths call — clicking Logout alone doesn't prove it.
+- **Step 12 needs a write, not a navigation.** Deleting the cookie leaves `_currentUser` and `_cart`
+  untouched in memory, and `/cart` has no guard and fetches nothing (`app.routes.ts`,
+  `CartComponent`) — so simply opening the cart sends no request and nothing 401s. The redirect is
+  driven by an HTTP *response*, so the check needs a real call: change a quantity.
+  A refresh (F5) is not a substitute either — the interceptor deliberately skips the redirect for
+  `account/user-info`, so startup clears the session silently instead of bouncing you.
 
 ### What no manual check covers
 
