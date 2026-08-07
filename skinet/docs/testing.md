@@ -11,7 +11,9 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
       against the real thing, so without it those tests fail on a connection error, not an assertion
 - [ ] `dotnet build -c Release` clean — **Release is where analyzer warnings become errors** (T54)
 - [ ] `npm run lint` + `npm run format` clean (frontend)
-- [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches
+- [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches.
+      Write the steps down in `smoke-tests/sprint-<n>.md` as you go: a check you can't hand to
+      someone else is a check you'll re-derive from scratch at the deploy gate
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
 CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
@@ -27,7 +29,12 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 - [ ] register → login → cart → checkout (Stripe `4242 4242 4242 4242`) → admin → refund → logout
 - [ ] Logout → cookie cleared (DevTools → Application → Cookies)
 
-**This sprint's behaviors** — swap to the tasks just completed; past sprints are locked by the test suite.
+**This sprint's behaviors** — the full per-task steps live in `smoke-tests/sprint-<n>.md`, one file per
+sprint. Run the current sprint's file here. Past sprints are locked by the test suite; the entries below
+predate the folder and stay until their sprint file exists.
+> _Sprint B:_ see [`smoke-tests/sprint-b.md`](smoke-tests/sprint-b.md) — BUG-18 cart ownership (12 steps,
+> in order; needs `stripe listen` and two accounts).
+>
 > _Sprint 2:_ Price change T17 — reach the **Payment** step, then edit that product's `Price` in
 > `data/store.db` → expect **409 + redirect to cart, no charge**. Idempotency (T16/T18) + concurrency
 > (T13/T14) have no clean manual check → just confirm `dotnet test` is green.
