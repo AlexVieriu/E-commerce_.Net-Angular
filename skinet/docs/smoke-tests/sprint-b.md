@@ -82,6 +82,13 @@ It is one continuous story. Steps 2–8 depend on A's cart being left alone, so 
   A refresh (F5) is not a substitute either — the interceptor deliberately skips the redirect for
   `account/user-info`, so startup clears the session silently instead of bouncing you.
 
+### Known noise, not a failure
+
+Going to `/checkout` with the cookie deleted redirects to login **and** shows a red snackbar. The
+redirect is the interceptor doing its job; the snackbar is `checkout.component.ts`'s catch printing the
+raw `HttpErrorResponse` text (`… 401 Unauthorized`), which reads like a login error but isn't one.
+Pre-existing, unrelated to BUG-18.
+
 ### What no manual check covers
 
 An attacker sending a forged cart id can't be reproduced in a browser — the parameter no longer
