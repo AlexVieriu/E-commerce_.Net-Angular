@@ -42,11 +42,11 @@ Verify every technical claim against official docs *before* writing — cite in 
    - `## 🔁 REBUILD` — *you write.* The key lines, cold.
    - `## 🧠 EXPLAIN` — *you write.* **3–4 clear, self-contained** "why does it work?" questions (Claude scaffolds), answered 1–2 lines each.
    - `## 💥 BREAK` — *you write.* **1–2 clear** "what fails in prod?" questions (Claude scaffolds), each naming a concrete failure.
-   - `## ⚖️ Why this approach` — one bullet = one decision or trade-off.
+   - `## ⚖️ Why this approach` — a table: one row = one decision or trade-off (shape in `the-gate.md`).
    - `## 🌫️ What confused me` — your real gaps. Lead with a triage table, tag each: **OWN** (explain cold) ·
      **RECOGNIZE** (re-derive, don't memorize) · **LET GO** (trivia) + a location anchor.
    - `## 💡 Explanation` — **one chain, in order** — each idea sets up the next, built from the gaps you hit.
-   - `## 🎤 Interview Q&A` — bold **Q:** then a **bulleted** answer (never a prose paragraph), so it scans fast.
+   - `## 🎤 Interview Q&A` — numbered **Q1:** / **Q2:** then a **bulleted** answer (never prose), so you can say "stuck on Q4".
    - `## 📚 Sources` — official docs backing the claims (link + what it confirms).
    - *(optional — skip for a task you built: ## ✏️ Exercise · ## ✅ Solution · ## 🧪 Tests)*
 2. Append one line to `skinet/questions/interview-prep.md`:
@@ -76,7 +76,8 @@ When asked to open/create a PR, always output a suggested title and description 
 - Description: bullet-point summary of what changed and why.
 
 # AFTER EACH TASK
-Single checklist for post-task bookkeeping. Run in order:
+Single checklist for post-task bookkeeping. **Push + open the draft PR before step 0** (see GIT) —
+the gate and the doc review are both read against its diff. Run in order:
 0. **THE GATE — read `mindset/the-gate.md` and follow it.**
    Run the gate for a new interview-explainable concept only (mechanical tasks skip it); all in **one file**, the
    questions doc (`skinet/questions/sprint-N/task-N-*.md`; sections in QUESTIONS & EXERCISES). The loop:
