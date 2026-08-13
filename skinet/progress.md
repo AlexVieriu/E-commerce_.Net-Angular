@@ -96,7 +96,7 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [x] BUG-15 — Product edit served stale cache (by-id key never invalidated)
 - [x] BUG-16 — Editing a product's stock always 500s (concurrency check vs detached update)
 
-## Sprint B — E2E Tests + IDOR Fix *(Jul 28 – Aug 11)*
+## Sprint B — E2E Tests + IDOR Fix *(Jul 28 – Aug 11 · closed Aug 13 — **goal met**, 2/2 + T12 and T20 absorbed)*
 
 - [x] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin) — timebox 4d
 - [x] BUG-18 — Cart leaks between users. `/api/cart` takes the cart id from the client
@@ -117,6 +117,8 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [ ] T38 — README screenshots + GIFs *(folded into T47)*
 - [ ] T48 — C4 diagram (Context+Container) in Mermaid → `docs/architecture.md`
 - [ ] T52 — Open redirect: validate `returnUrl` starts with `/`
+- [ ] BUG-19 — Coupon discount read off the client cart (`OrderService.cs:108`); the charge is safe, the
+      `Order` row is not *(same class as BUG-18 — trust the id, re-read the value)*
 - [ ] T43 — DB indexes: BuyerEmail, composite (Brand,Type), Price *(unique PaymentIntentId already exists)*
 - [ ] BUG-10 — Top loading bar spins forever *(1d timebox — root cause unproven)*
 - [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`)
