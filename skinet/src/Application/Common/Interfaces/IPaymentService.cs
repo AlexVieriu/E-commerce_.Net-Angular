@@ -2,7 +2,8 @@ namespace Application.Common.Interfaces;
 
 public interface IPaymentService
 {
-    Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId);
+    // No cart id: the cart is resolved from the authenticated caller (BUG-18).
+    Task<ShoppingCart?> CreateOrUpdatePaymentIntent();
     Task<string> RefundPayment(string paymentIntentId);
 
     // Shared by the webhook (has the paid amount already) and the admin sync endpoint

@@ -9,7 +9,6 @@ public class CreateOrderDto_Validation_Tests
 
     private static CreateOrderDto ValidDto() => new()
     {
-        CartId = "cart-123",
         DeliveryMethodId = 1,
         ShippingAddress = new ShippingAddress
         {
@@ -35,14 +34,7 @@ public class CreateOrderDto_Validation_Tests
         _validator.TestValidate(ValidDto()).ShouldNotHaveAnyValidationErrors();
     }
 
-    [Fact]
-    public void ShouldFail_WhenCartIdIsEmpty()
-    {
-        var dto = ValidDto();
-        dto.CartId = "";
-
-        _validator.TestValidate(dto).ShouldHaveValidationErrorFor(x => x.CartId);
-    }
+    // ShouldFail_WhenCartIdIsEmpty went with the property — no cart id left to validate (BUG-18).
 
     [Theory]
     [InlineData(0)]

@@ -4,6 +4,7 @@ global using API.Conventions;
 global using API.Errors;
 global using API.Extensions;
 global using API.Filters;
+global using API.Services;
 global using API.Settings;
 global using Microsoft.Extensions.Options;
 global using API.Middleware;

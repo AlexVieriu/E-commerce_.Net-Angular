@@ -1,8 +1,9 @@
 namespace Core.Entities;
 
+// No Id: the cart is its Redis key, and CartService derives that from the caller.
+// An id here would be one the client could send — that was BUG-18.
 public class ShoppingCart
 {
-    public required string Id { get; set; }
     public List<CartItem> Items { get; set; } = [];
 
     // properties for integration with Stripe

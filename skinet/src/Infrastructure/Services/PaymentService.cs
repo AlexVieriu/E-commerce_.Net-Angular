@@ -12,10 +12,10 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
     private readonly ICartService _cartService = cartService;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId)
+    public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent()
     {
-        // get cart from Redis
-        var cart = await _cartService.GetCartAsync(cartId) ?? throw new InvalidOperationException("Cart unavailable");
+        // get the caller's cart from Redis
+        var cart = await _cartService.GetCartAsync() ?? throw new InvalidOperationException("Cart unavailable");
 
         var shippingPrice = await GetShippingPriceAsync(cart) ?? 0;
 
@@ -123,7 +123,9 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
                 PaymentMethodTypes = ["card"]
             };
 
-            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = $"{cart.Id}-{Guid.NewGuid()}" });
+            // Was prefixed with the cart id, which no longer exists. The GUID was already what made
+            // this unique per call, so the key is unchanged in effect.
+            var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = Guid.NewGuid().ToString() });
             cart.PaymentIntentId = intent.Id;
             cart.ClientSecret = intent.ClientSecret;
         }

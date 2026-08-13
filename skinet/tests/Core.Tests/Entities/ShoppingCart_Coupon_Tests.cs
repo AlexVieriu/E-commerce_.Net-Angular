@@ -5,7 +5,7 @@ public class ShoppingCart_Coupon_Tests
     [Fact]
     public void ShoppingCart_Coupon_ShouldBeNullByDefault()
     {
-        var cart = new ShoppingCart { Id = "cart-1" };
+        var cart = new ShoppingCart();
 
         cart.Coupon.Should().BeNull();
     }
@@ -13,7 +13,7 @@ public class ShoppingCart_Coupon_Tests
     [Fact]
     public void ShoppingCart_ShouldAttachAmountOffCoupon()
     {
-        var cart = new ShoppingCart { Id = "cart-1" };
+        var cart = new ShoppingCart();
         var coupon = new AppCoupon
         {
             Id = "coup1",
@@ -34,7 +34,7 @@ public class ShoppingCart_Coupon_Tests
     [Fact]
     public void ShoppingCart_ShouldAttachPercentOffCoupon()
     {
-        var cart = new ShoppingCart { Id = "cart-1" };
+        var cart = new ShoppingCart();
         var coupon = new AppCoupon
         {
             Id = "coup2",
@@ -55,7 +55,6 @@ public class ShoppingCart_Coupon_Tests
     {
         var cart = new ShoppingCart
         {
-            Id = "cart-1",
             Coupon = new AppCoupon
             {
                 Id = "c1", Name = "10% Off", PromotionCode = "SAVE10", PercentOff = 10m
@@ -72,7 +71,6 @@ public class ShoppingCart_Coupon_Tests
     {
         var cart = new ShoppingCart
         {
-            Id = "cart-1",
             DeliveryMethodId = 2,
             PaymentIntentId = "pi_abc123",
             ClientSecret = "secret_xyz"
@@ -88,7 +86,6 @@ public class ShoppingCart_Coupon_Tests
     {
         var cart = new ShoppingCart
         {
-            Id = "cart-1",
             Coupon = new AppCoupon
             {
                 Id = "c1", Name = "$5 Off", PromotionCode = "FIVE", AmountOff = 5m

@@ -9,34 +9,71 @@ How code flows from a task to a sprint release. Pairs with the deploy gate in `t
 | `main` | Sprint releases only — **exactly one squashed commit per sprint** (descriptive body). Push = Azure deploy. | **squash** |
 | `development` | Integration — one **squashed commit per task**. | squash |
 | `feature/<n>-<slug>` | One per task, from `development`. | — |
-| `fix/task-<n>-<slug>` | Forgotten changes on a done task, from `development`. | squash |
+| `fix/bug-<n>-<slug>` | One per bug in `Execution plan.md`, from `development`. | squash |
+| `fix/task-<n>-<slug>` | Forgotten changes on an already-merged task, from `development`. | squash |
 
 ## Task flow (during a sprint)
 
+One branch, one PR, one squashed commit. The PR is opened **as a draft** once the implementation is
+done — a draft cannot be merged, which is the guardrail. It is also the branch's before/after
+(`git diff development...HEAD`), and the gate and the doc review are both read against it.
+
 ```bash
 git switch development && git pull
-git switch -c feature/<n>-<slug>
-# work; commit freely — messy WIP commits are fine, they get squashed
-git push -u origin feature/<n>-<slug>
-gh pr create --base development --title "feat(task-<n>): <desc>" --body "..."
-gh pr merge <pr> --squash --delete-branch     # development = 1 clean commit per task
+git switch -c fix/bug-<n>-<slug>              # or feature/<n>-<slug>
+
+# 1. Work. Commit as often as you like — messy WIP commits are fine, they all squash at merge.
+
+# 2. Implementation done -> run "After each task" in testing.md:
+#    dotnet test · dotnet build -c Release · lint + format · smoke -> smoke-tests/sprint-<n>.md
+
+# 3. Push and open the PR as a DRAFT. Body #1: what changed and why, in bullets.
+git push -u origin fix/bug-<n>-<slug>
+gh pr create --base development --draft --title "fix(bug-<n>): <desc>" --body-file <file>
+
+# 4. The gate -> mindset/the-gate.md, read against that diff.
+#    Expect more commits here; the gate finds things.
+
+# 5. Gate cleared -> edit the PR body against the final diff, then the bookkeeping:
+#    progress.md · mindset/daily-log.md · docs/ · mindset/question-tally.md
+
+# 6. 🔴 Your sign-off — never Claude's call.
+gh pr ready <pr>
+gh pr merge <pr> --squash --delete-branch     # 1 clean commit on development; deletes local + remote
+
+# 7. Scaffold the next spike at the top of mindset/spikes.md
 ```
+
+The PR keeps the individual commits and the review browsable forever, so deleting the branch loses
+nothing — `development` gets the one clean commit.
 
 ## Sprint flow (sprint end)
 
+🔴 **No PR here — `main` is an orphan branch.** It shares no commit with `development`, so GitHub
+cannot diff them and `gh pr create --base main --head development` 404s (`no history in common`).
+That is by design: an orphan `main` is what keeps its log to one commit per sprint. The release is a
+**tree replacement**, not a merge.
+
 ```bash
 # 1. all sprint tasks squash-merged into development
-# 2. run the deploy gate in testing.md (local verify)
-# 3. PR body = the sprint's items as `feat(task-N): …` / `fix(bug-N): …` lines (becomes the commit body)
-gh pr create --base main --head development --title "Sprint N — <name>" --body "<task + bug lines>"
-gh pr merge <pr> --squash                        # SQUASH — exactly one commit per sprint. NEVER --merge
-# 4. push to main triggers Azure deploy → run the Azure half of the checklist
+# 2. run the deploy gate in testing.md (local verify) — a Release build, not just Debug
+git switch main && git pull
+git read-tree --reset -u development   # take development's tree wholesale — no 3-way merge, no conflicts
+git diff development --stat            # MUST be empty — proves main now matches development exactly
+git commit -m "Sprint N — <name>" -m "feat(task-N): …
+fix(bug-N): …"                         # body = the sprint's items, one line each
+git push origin main                   # 3. triggers Azure deploy → run the Azure half of the checklist
 ```
+
+`read-tree --reset -u` overwrites the index and working tree from another branch without trying to
+merge — the reason it can't conflict. `git merge --squash --allow-unrelated-histories` is the obvious
+alternative and it **fails**: it still runs a 3-way diff, so files added independently on both branches
+come back as add/add conflicts.
 
 ## Why squash to main (STRICT)
 
 - **Squash → development:** collapses WIP noise into one readable commit per task.
-- **Squash → main:** **exactly one commit per sprint.** `main` is the recruiter-/interviewer-facing
+- **Tree replacement → main:** **exactly one commit per sprint.** `main` is the recruiter-/interviewer-facing
   history — it must read as a tidy list of sprints, never 20+ task commits. The granular work
   stays on `development` and in PRs. Put the sprint's items in the commit **body** as
   `feat(task-N): …` and `fix(bug-N): …` lines so each sprint maps to `Execution plan.md`.
@@ -54,7 +91,9 @@ gh pr merge <pr> --squash                        # SQUASH — exactly one commit
 
 ## Rules
 
-- Never commit directly to `main` or `development`.
+- Never commit directly to `development` — always a branch + PR.
+- Never commit directly to `main` **except the sprint release itself**, which has no other mechanic
+  (orphan branch, see Sprint flow). One such commit per sprint, at a verified sprint end. Nothing else.
 - `main` = **one squashed commit per sprint**, with a `feat(task-N): …` / `fix(bug-N): …` body. Squash only, never `--merge`.
 - Every Sprint / Task / bug fix tracked in `Execution plan.md` is squash-merged — each maps to a `task-N` / `bug-N` reference.
 - `main` push = production deploy — only at a **verified** sprint end (checklist green first).
