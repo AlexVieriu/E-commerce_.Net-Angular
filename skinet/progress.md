@@ -124,6 +124,8 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`)
 - [ ] T33 — `<mat-error>` on the checkout forms *(register already has it via `app-text-input`)*
 - [ ] BUG-3 — Checkout: hint on an empty required address field
+- [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(they move into T20b's
+      integration harness and Playwright; the gate currently grows every sprint and shrinks never)*
 - [ ] Sprint B Anki deck
 - [x] T12 — Cart ownership — **closed by BUG-18**, same work
 
