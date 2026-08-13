@@ -17,9 +17,8 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
 CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
-It supplies Redis itself, as a `services:` container on the `.NET Build & Test` job — that is the one piece
-of local setup CI has to reproduce, so a test that needs a new external service needs a new service block
-there too, or it goes green locally and red on the PR.
+It runs Redis as a `services:` container on the `.NET Build & Test` job. A test that needs a new external
+service needs a new service block there too, or it goes green locally and red on the PR.
 
 ## ✅ Before `development` → `main` (deploy gate)
 
@@ -158,16 +157,21 @@ var alice   = await factory.CreateAuthenticatedClientAsync();
 var mallory = await factory.CreateAuthenticatedClientAsync();
 ```
 
-Two traps, both already handled in the factory — don't undo them:
+Three traps, all already handled in the factory — don't undo them:
 
 - **Clients must use `https://localhost`.** The Identity cookie is `SecurePolicy.Always`, so a cookie
   container won't replay it over `http` and every call 401s *after a successful login*. TestServer
   ignores the scheme; the client still has to ask for it. Use `CreateWebClient()`, not `CreateClient()`.
 - **`SqliteConnection.ClearAllPools()` before deleting the temp DB.** EF pools connections, so the file
   stays locked and teardown throws on every test.
+- **Settings read *eagerly* must be environment variables, not `ConfigureAppConfiguration`.**
+  `AddApplicationServices` reads `StripeSettings:SecretKey` while `Program.cs` is still running, before
+  the factory has added any source. Locally your user-secrets fill the gap and it looks fine; on CI there
+  are none and the host won't boot. Env vars are in place that early and outrank user-secrets. Keep
+  per-instance values (the SQLite path) out of them — parallel test classes would share one.
 
-`Program.cs` ends with `public partial class Program { }` — top-level statements make `Program` internal,
-and `WebApplicationFactory<Program>` needs it public.
+`API.csproj` carries `<InternalsVisibleTo Include="API.Tests" />` — top-level statements make `Program`
+internal, and `WebApplicationFactory<Program>` has to name it.
 
 ## Test projects
 

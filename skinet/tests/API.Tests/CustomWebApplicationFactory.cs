@@ -13,11 +13,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     private readonly string _dbFile =
         Path.Combine(Path.GetTempPath(), $"skinet-tests-{Guid.NewGuid():N}.db");
 
-    // AddApplicationServices reads StripeSettings:SecretKey EAGERLY, while Program.cs is still
-    // running — before ConfigureAppConfiguration below has added a thing. Environment variables are
-    // the only source already in place that early, and they outrank user secrets, which is also what
-    // stops this harness from silently borrowing a developer's real Stripe keys.
-    // Both values are constants, so setting them once per process is safe under parallel test classes.
+    // Read eagerly in AddApplicationServices, before ConfigureAppConfiguration below exists.
+    // Environment variables are the only source in place that early, and they beat user secrets.
+    // Constants, so setting them once per process is safe.
     static CustomWebApplicationFactory()
     {
         Environment.SetEnvironmentVariable("StripeSettings__SecretKey", "sk_test_fake");
@@ -31,11 +29,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureAppConfiguration((_, config) =>
         {
-            // Everything here is read lazily — the Redis multiplexer and the DbContext options
-            // resolve on first use, and the admin password during seeding, all after the host is
-            // built and this source is in place. The db path is per-instance, so unlike the Stripe
-            // keys above it must never become an environment variable: parallel classes would
-            // overwrite each other's database.
+            // All read lazily, after the host is built — so this source is in time.
+            // The db path is per-instance: as an environment variable, parallel classes would share it.
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = $"Data Source={_dbFile}",

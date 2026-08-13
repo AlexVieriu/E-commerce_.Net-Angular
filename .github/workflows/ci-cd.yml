@@ -21,15 +21,14 @@ jobs:
     permissions:
       contents: read
 
-    # API.Tests boots the real app against real Redis (BUG-18) — the cart lives there,
-    # so a fake would prove nothing about ownership. The port maps onto the runner,
-    # which is why CustomWebApplicationFactory's "localhost" needs no override here.
+    # API.Tests runs against real Redis (BUG-18) — a fake proves nothing about cart ownership.
+    # The port maps onto the runner, so the test factory's "localhost" works unchanged.
     services:
       redis:
         image: redis:8-alpine
         ports:
           - 6379:6379
-        # Without the health gate the tests can start before Redis accepts connections.
+        # Or the tests start before Redis accepts connections.
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s
@@ -59,8 +58,7 @@ jobs:
         working-directory: ./skinet
         run: dotnet test --no-build --configuration Release --verbosity normal
 
-      # MSBuild reports only "N tests failed" and points at a log file that dies with the runner.
-      # Without this a red PR tells you nothing you can act on.
+      # MSBuild reports only "N tests failed" and names a log file that dies with the runner.
       - name: Dump test logs on failure
         if: failure()
         working-directory: ./skinet
