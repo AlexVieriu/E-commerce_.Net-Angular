@@ -5,7 +5,7 @@ Stripe integration: payment intents, webhooks, refunds.
 ## Checkout Flow (UI → Order → Stripe → Webhook)
 
 ```
-Delivery step → StripeService.createOrUpdatePaymentIntent() → POST /api/payments/{cartId}
+Delivery step → StripeService.createOrUpdatePaymentIntent() → POST /api/payments
                   → PaymentsController.CreateOrUpdatePaymentIntent → PaymentService.CreateOrUpdatePaymentIntent
                   → Stripe PaymentIntentService.CreateAsync → cart.PaymentIntentId + ClientSecret (Redis)
 
@@ -27,7 +27,7 @@ so the webhook always has an order to find. A slow client could otherwise let
 
 ## PaymentService Flow
 
-`CreateOrUpdatePaymentIntent(cartId)`:
+`CreateOrUpdatePaymentIntent()` — no cart id parameter; the cart is the caller's (see `auth.md`):
 1. Load cart from Redis.
 2. Get shipping price from `DeliveryMethod`.
 3. Re-fetch item prices from DB — corrects stale Stripe values.
@@ -39,7 +39,7 @@ so the webhook always has an order to find. A slow client could otherwise let
 
 | Method | Route | Auth | Notes |
 |---|---|---|---|
-| POST | `/api/payments/{cartId}` | `[Authorize]` | Create/update PaymentIntent, return cart |
+| POST | `/api/payments` | `[Authorize]` | Create/update PaymentIntent for the caller's cart, return it |
 | GET | `/api/payments/delivery-methods` | No | All delivery methods |
 | POST | `/api/payments/webhook` | No | Stripe webhook — verified by signature |
 

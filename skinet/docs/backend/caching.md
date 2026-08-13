@@ -4,10 +4,10 @@ Response caching via Redis. Cache keyed by request path + sorted query params.
 
 ## Redis Databases
 
-| DB | Purpose |
-|---|---|
-| `0` | Shopping cart (`CartService`) |
-| `1` | Response cache (`ResponseCacheService`) |
+| DB | Purpose | Key |
+|---|---|---|
+| `0` | Shopping cart (`CartService`) | `cart:{user id}` — derived from the caller, never sent by the client (see `auth.md`) |
+| `1` | Response cache (`ResponseCacheService`) | request path + sorted query params, below |
 
 ## Cache Key Format
 

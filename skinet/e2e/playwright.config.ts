@@ -68,6 +68,13 @@ export default defineConfig({
       testMatch: /admin-orders\.spec\.ts/,
       dependencies: ['setup-admin'], // log in as admin first
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/admin.json' }
+    },
+    {
+      // No storageState, no dependencies: this spec does its own logins and logout,
+      // because the logout is the step under test (BUG-18).
+      name: 'cart-ownership',
+      testMatch: /cart-ownership\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] }
     }
   ]
 });

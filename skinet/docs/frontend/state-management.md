@@ -28,7 +28,29 @@ count = this.cartService.itemCount; // use as count() in template
 | `_cart` | `Cart \| null` | `itemCount`, `totals` |
 | `_selectedDelivery` | `DeliveryMethod \| null` | included in `totals` |
 
-Cart persisted in Redis via API. Cart ID stored in `localStorage` (`cart_id`), loaded by `InitService`.
+Cart persisted in Redis via API, keyed server-side by the logged-in user. **The client holds no cart
+id** — `Cart` has no `id` field and nothing is written to `localStorage`.
+
+The cart is session state: it loads with the session and clears with it. Three moments, and you need
+all three — `InitService` runs only at app startup, so login must load the cart itself.
+
+| Moment | What runs | Effect on `_cart` |
+|---|---|---|
+| app startup | `InitService.init()` | authenticated → fetch from the server |
+| login | `AccountService.login()` | fetch from the server |
+| logout, or any 401 | `AccountService.clearCurrentUser()` | cleared in memory only — the server keeps it |
+
+```
+BEFORE (BUG-18)                        AFTER
+localStorage: cart_id                  auth cookie
+      |                                     |
+      v                                     v
+GET /api/cart?id=<client string>       GET /api/cart
+the browser owned the cart             the user owns the cart
+-> survived logout, so the next        -> logout clears it from memory;
+   person inherited it                    the server still has it at next login
+```
+
 Coupon state lives on `cart().coupon` — not a separate signal. Use `applyDiscount(code)` / `removeCoupon()` on the service.
 
 ## AccountService Signals
@@ -61,6 +83,8 @@ current user). A dashboard nobody else reads doesn't need a service. Mutations s
 
 ## Common Mistakes
 
+- Clearing the cart on logout but not loading it on login — the badge stays empty until the user
+  refreshes the page, because `InitService` only runs at app startup. Clear and load must be paired.
 - Calling `.set()` from a component — bypasses service logic.
 - Using `BehaviorSubject` for new state — use signals.
 - Forgetting `asReadonly()` — signal appears readonly but isn't enforced.

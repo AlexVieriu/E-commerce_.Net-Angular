@@ -21,6 +21,20 @@ jobs:
     permissions:
       contents: read
 
+    # API.Tests runs against real Redis (BUG-18) — a fake proves nothing about cart ownership.
+    # The port maps onto the runner, so the test factory's "localhost" works unchanged.
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        # Or the tests start before Redis accepts connections.
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v6
 
@@ -43,6 +57,17 @@ jobs:
       - name: Test
         working-directory: ./skinet
         run: dotnet test --no-build --configuration Release --verbosity normal
+
+      # MSBuild reports only "N tests failed" and names a log file that dies with the runner.
+      - name: Dump test logs on failure
+        if: failure()
+        working-directory: ./skinet
+        run: |
+          for f in $(find . -path '*/TestResults/*.log'); do
+            echo "::group::$f"
+            cat "$f"
+            echo "::endgroup::"
+          done
 
   # ── CI: Angular ─────────────────────────────────────────────────────────────
   # npm ci installs exactly what is in package-lock.json (reproducible builds).

@@ -6,7 +6,6 @@ public class CreateOrderDtoValidator : AbstractValidator<CreateOrderDto>
 {
     public CreateOrderDtoValidator()
     {
-        RuleFor(x => x.CartId).NotEmpty();
         RuleFor(x => x.DeliveryMethodId)
             .GreaterThan(0).WithMessage("A delivery method must be selected");
         RuleFor(x => x.ShippingAddress)

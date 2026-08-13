@@ -137,7 +137,7 @@ export class StripeService {
 
     if (!cart) throw new Error('Problem with cart');
 
-    return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
+    return this.http.post<Cart>(this.baseUrl + 'payments', {}).pipe(
       switchMap((cart) => {
         if (!hasClientSecret) return this.cartService.setCart(cart);
         return of(cart);

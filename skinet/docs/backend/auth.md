@@ -31,6 +31,32 @@ app.MapGroup("api").MapIdentityApi<AppUser>();
 | `GetUserByEmailAsync(user)` | Loads user by email claim, throws `AuthenticationException` if not found |
 | `GetUserByEmailWithAddressAsync(user)` | Same + `.Include(x => x.Address)` |
 | `GetEmail(user)` | Extracts `ClaimTypes.Email`, throws if missing |
+| `GetUserId(user)` | Extracts `ClaimTypes.NameIdentifier`, throws if missing |
+
+## Object-level authorization
+
+`[Authorize]` answers *"are you someone?"*. It does **not** answer *"is this record yours?"*. Any endpoint
+that takes a record id from the client and returns user-owned data must answer the second question too —
+otherwise any logged-in user can read another's data by changing an id (OWASP API1:2023, "IDOR").
+
+**The rule here: don't check the id — remove it.** Derive the key from the caller, so there is no
+parameter to forge and no check a future endpoint can forget.
+
+```
+              request body / query string  ──✗  never a source of identity
+   auth cookie ──> ICurrentUser.Id ──> "cart:{userId}" ──> Redis
+```
+
+`ICurrentUser` (one property, `Id`) lives in `Application`; `CurrentUser` implements it in `API` over
+`IHttpContextAccessor`, because `HttpContext` lives there and `Infrastructure` cannot reference `API`.
+Registered with `AddHttpContextAccessor()` in `ApplicationServicesExtensions`.
+
+**Why the user id and not the email:** stable across an email change, not PII in a Redis key or a log
+line, and not guessable.
+
+**It throws when there is no authenticated user.** `HttpContext` is null outside a request, so anything
+running in the background — the Stripe webhook is `[AllowAnonymous]` — must not depend on `ICurrentUser`.
+Failing loudly beats silently reading `cart:`.
 
 ## Roles
 
@@ -72,7 +98,11 @@ app.MapGroup("api").MapIdentityApi<AppUser>();
 - Always use `ClaimsPrincipalExtensions` to load users.
 - `user-info` returns 204 (not 401) when unauthenticated — frontend polls this on startup.
 - `SlidingExpiration = false` — 24h absolute, forces re-login daily.
+- Never accept a key for user-owned data from the client. Derive it from `ICurrentUser`.
 
 ## Common Mistakes
 
 - Calling `UserManager.FindByEmailAsync` in a controller (misses `.Include(Address)`).
+- Treating `[Authorize]` as ownership. It only proves the caller is *a* user — BUG-18 shipped with
+  `[Authorize]` on every cart endpoint and still let anyone read anyone's cart.
+- Using the email as a storage key. It is PII, it changes, and it is guessable.

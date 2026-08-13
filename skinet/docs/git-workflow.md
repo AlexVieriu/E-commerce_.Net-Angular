@@ -9,18 +9,43 @@ How code flows from a task to a sprint release. Pairs with the deploy gate in `t
 | `main` | Sprint releases only — **exactly one squashed commit per sprint** (descriptive body). Push = Azure deploy. | **squash** |
 | `development` | Integration — one **squashed commit per task**. | squash |
 | `feature/<n>-<slug>` | One per task, from `development`. | — |
-| `fix/task-<n>-<slug>` | Forgotten changes on a done task, from `development`. | squash |
+| `fix/bug-<n>-<slug>` | One per bug in `Execution plan.md`, from `development`. | squash |
+| `fix/task-<n>-<slug>` | Forgotten changes on an already-merged task, from `development`. | squash |
 
 ## Task flow (during a sprint)
 
+One branch, one PR, one squashed commit. The PR is opened **as a draft** once the implementation is
+done — a draft cannot be merged, which is the guardrail. It is also the branch's before/after
+(`git diff development...HEAD`), and the gate and the doc review are both read against it.
+
 ```bash
 git switch development && git pull
-git switch -c feature/<n>-<slug>
-# work; commit freely — messy WIP commits are fine, they get squashed
-git push -u origin feature/<n>-<slug>
-gh pr create --base development --title "feat(task-<n>): <desc>" --body "..."
-gh pr merge <pr> --squash --delete-branch     # development = 1 clean commit per task
+git switch -c fix/bug-<n>-<slug>              # or feature/<n>-<slug>
+
+# 1. Work. Commit as often as you like — messy WIP commits are fine, they all squash at merge.
+
+# 2. Implementation done -> run "After each task" in testing.md:
+#    dotnet test · dotnet build -c Release · lint + format · smoke -> smoke-tests/sprint-<n>.md
+
+# 3. Push and open the PR as a DRAFT. Body #1: what changed and why, in bullets.
+git push -u origin fix/bug-<n>-<slug>
+gh pr create --base development --draft --title "fix(bug-<n>): <desc>" --body-file <file>
+
+# 4. The gate -> mindset/the-gate.md, read against that diff.
+#    Expect more commits here; the gate finds things.
+
+# 5. Gate cleared -> edit the PR body against the final diff, then the bookkeeping:
+#    progress.md · mindset/daily-log.md · docs/ · mindset/question-tally.md
+
+# 6. 🔴 Your sign-off — never Claude's call.
+gh pr ready <pr>
+gh pr merge <pr> --squash --delete-branch     # 1 clean commit on development; deletes local + remote
+
+# 7. Scaffold the next spike at the top of mindset/spikes.md
 ```
+
+The PR keeps the individual commits and the review browsable forever, so deleting the branch loses
+nothing — `development` gets the one clean commit.
 
 ## Sprint flow (sprint end)
 

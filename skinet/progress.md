@@ -30,6 +30,7 @@
 | Jul 27 | BUG-16 | Editing a product's `QuantityInStock` always 500d. `QuantityInStock` is `[ConcurrencyCheck]` (T13/T14), but `UpdateProduct` called `Exists(id)` — a `SELECT EXISTS` that **loads nothing** — then `Update()` on a **detached** entity from `ToEntity(id)`. `Attach` has no load-time snapshot, so EF took the submitted stock as *both* current and original and emitted `WHERE Id=7 AND QuantityInStock=42` against a row holding 10 → 0 rows → `DbUpdateConcurrencyException`. The check had never worked on this endpoint: it compared the new value **against itself** since T13, passing by accident whenever stock was unchanged — which is exactly why editing names/prices always worked and why T30's smoke test never caught it. Fixed (spike Decision 1a): load the tracked entity via `GetByIdAsync`, 404 if null, map the DTO onto it (`CreateProductDTO.MapTo`, renamed from `UpdateFromDto`), save — the `Exists(id)` it replaces makes the extra SELECT net zero. Decision 2a: `DbUpdateConcurrencyException` → **409** in `ExceptionMiddleware` ("changed by someone else, reload and try again"); the `errorInterceptor`'s 409 branch, already owned by `PriceChangedException`, now gates its cart-reload + `/cart` redirect on `POST …/orders`, so an admin conflict stays on the form. New `ProductUpdate_Concurrency_Tests` (two `StoreContext`s) proves a real conflict still throws. **Known limit, accepted:** the original is captured microseconds before the UPDATE, so it guards the request's SELECT→UPDATE window, *not* form-open→save think-time — two admins on stale forms still last-write-wins silently; catching that needs the rejected `Guid Version` (spike option d), deferred. 149 tests green. Gate run — `questions/sprint-A/bug-16-*`. |
 | Jul 27 | Sprint A → live | Sprint A closed (goal met, 5/5 + 2 unplanned bugs) and `main` brought current after **two sprints** of drift — it still sat at Sprint 2 (Jun 18), so Sprint 3 had never been released. Landed as **one squashed commit per sprint** (`Sprint 3 — Admin Panel`, then `Sprint A — Finish the Admin Panel`); both Azure deploys green. **`main` shares no git history with `development`** (orphan branch from the Jun 18 rewrite), so GitHub refuses any PR between them — `git-workflow.md`'s documented `gh pr create --base main --head development` **cannot work**; the real mechanic is `git read-tree --reset -u <branch>` + commit + direct push. The pre-deploy Release build then **caught a live blocker**: `System.Security.Cryptography.Xml` 10.0.9 had picked up **five high-severity advisories** since Jul 13 — unchanged code, changed advisory DB — and `TreatWarningsAsErrors` (Release-only, from T54) turned `NU1903` into 20 build errors, which would have failed the Azure publish. Fixed by bumping to 10.0.10 (`fix/deps`, PR #69) and back-porting that one line into the Sprint 3 commit so it stays a valid rollback target. CI never flagged it because NuGet resolves advisories at restore time against a live feed — a scheduled nightly run would have caught it days earlier (logged as a follow-up). |
 | Aug 4 | T37 | Playwright E2E — the repo's first browser tests. 3 specs (checkout through a real Stripe test card, auth+orders, admin pagination), 8 page objects, and a self-starting environment: `globalSetup` brings up Redis and seeds, `webServer` starts `dotnet run` + `ng serve` and tears both down, so `npx playwright test` is the entire command. Auth via one `storageState` per role captured by two `setup` projects (spike Decision 2c); `customer-orders` **depends on `checkout`**, so the order it asserts on is *created by its own dependency* rather than found in seed data — the assertion can't pass on leftovers or fail on a clean DB. Stripe's Address + Payment Elements driven with `frameLocator()` targeting the exact iframe `title` (Decision 3a): Stripe mounts ~11 frames per page and most are untitled, so position-based selection is not viable; the titles are **undocumented** (Stripe's own automated-testing page discourages this entirely), making them an observed detail that a Stripe update can break. A dedicated register test uses a `Date.now()` email + empty `storageState` so the real registration path runs every time instead of silently falling through to login. Two genuine races surfaced and fixed inside the suite: the mat-stepper's "Next" can be clicked while enabled yet not advance (Angular hasn't processed Stripe's async `change` event — fixed with a 5×1s retry loop asserting `aria-selected`), and `page.goto('/cart')` could abort the in-flight add-to-cart write (fixed by waiting for the cart badge to read `1`). Both are the same rule: **assert the result, don't trust the action.** **Found BUG-17** — after logout, `/checkout` lands on `/cart` instead of the login page, because `authGuard` and `emptycartGuard` both redirect *imperatively* rather than returning a `UrlTree`, and the synchronous one wins the race; Angular's docs name this anti-pattern explicitly. Left **red on purpose**, logged, scoped to `fix/bug-17`. 6/7 green. Also flagged: `trace: 'on-first-retry'` is dead config locally (`retries: 0` off CI) → switch to `retain-on-failure`. Gate run — `questions/sprint-B/task-37-playwright-e2e.md`. |
+| Aug 13 | BUG-18 *(PR #72)* | Cart IDOR closed at the source: the key parameter is **gone** from `ICartService`, so `CartService` derives `cart:{ICurrentUser.Id}` and the old exploit no longer compiles — 8 call sites across `CartController`/`OrderService`/`PaymentService` had to change, and that failing build *was* the audit of who had been trusting a client id. Spike Decisions 1c/2c/3c: close all three doors (cart, `POST /payments/{cartId}`, `CreateOrderDto.CartId` — the money path), delete the parameter rather than compare owners, and prove it with **both** an integration test and an E2E. `ICurrentUser` is declared in **Application** and implemented in **API** (`CurrentUser`, wrapping `IHttpContextAccessor`), so Infrastructure never learns HTTP exists; `Id` **throws** rather than returning null, because `$"cart:{null}"` is `"cart:"` — one valid Redis key shared by every caller without an identity. `ShoppingCart.Id` **deleted**, not ignored, so a forged `id` is an unknown property with nowhere to bind; `cart_id` + the `nanoid` package removed from the client. **Second bug the fix exposed:** the E2E's "B's cart is empty" passed for the wrong reason — only app bootstrap ever fetched the cart, so after login a real user saw an empty cart until F5. `login()` now pipes into `getCartAsync()`, `clearCurrentUser()` drops the local cart, and a **positive** assertion was added (log A back in, the item returns). Absorbed T20's `WebApplicationFactory` harness — real pipeline, real cookie auth, real Redis, with SQLite and fake Stripe settings swapped — and **closes T12**. 152 tests green, Release clean. **Gate run** — `questions/sprint-B/bug-18-object-level-authorization.md`: REBUILD **PASS** (one defect — a field initializer instead of an expression-bodied property, which would have thrown while the DI container built every `[AllowAnonymous]` webhook request) · EXPLAIN **3 PASS / 1 PARTIAL** · BREAK **2 PARTIAL**. **Found, not fixed:** `OrderService.CalculateDiscount` reads `AmountOff`/`PercentOff` straight off the client-supplied `cart.Coupon`. The amount charged is safe (`PaymentService` re-reads the coupon from Stripe by id) and `ReconcileOrderPayment` flags the mismatch, but the `Order` row records a discount that never happened → scoped to `fix/bug-19-coupon-discount-from-source`. |
 
 ---
 
@@ -95,42 +96,63 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [x] BUG-15 — Product edit served stale cache (by-id key never invalidated)
 - [x] BUG-16 — Editing a product's stock always 500s (concurrency check vs detached update)
 
-## Sprint B — Testing + Domain Depth *(Jul 28 – Aug 10)*
+## Sprint B — E2E Tests + IDOR Fix *(Jul 28 – Aug 11)*
 
 - [x] T37 — Playwright E2E: 3 tests (checkout, auth+orders, admin) — timebox 4d
-- [ ] BUG-18 — Cart leaks between users. `/api/cart` takes the cart id from the client
+- [x] BUG-18 — Cart leaks between users. `/api/cart` takes the cart id from the client
       (`CartController.cs:7,17,26`), so any authenticated user can read **or overwrite** any cart by
       id — an IDOR. Logout compounds it: `_cart` and `cart_id` survive, so the next person on that
       browser sees the previous user's items. Root cause: cart identity is client-owned while the
-      controller is `[Authorize]` — half-migrated between anonymous and user-owned carts. Fix: derive
-      the key from `User.GetEmail()` server-side, drop the `id` param, delete `cart_id` entirely,
-      clear `_cart` on logout. The same client-supplied id also reaches `POST /api/payments/{cartId}`
+      controller is `[Authorize]` — half-migrated between anonymous and user-owned carts. Fix: drop the
+      key parameter from `ICartService` itself, so `CartService` derives `cart:{user id}` from a new
+      `ICurrentUser` seam and every old call site stops compiling; delete `cart_id` entirely, clear
+      `_cart` on logout. The same client-supplied id also reaches `POST /api/payments/{cartId}`
       and `CreateOrderDto.CartId` (`OrderService.cs:7,103`), so it extends to paying for and **placing
       an order from** another user's cart — money path. Order history is **not** affected. Found Aug 5
-      smoke-testing BUG-17. **Security — do before T40.**
-- [ ] T40 — OrderStatus: Processing/Shipped/Delivered/Cancelled + OrderStatusHistory
-- [ ] T41 — Order cancellation: POST cancel + Stripe refund
-- [ ] BUG-2 — Checkout: declined card can't retry in-session (money path)
-- [ ] BUG-17 — Logout → `/checkout` doesn't redirect to login when the cart is empty (`auth.guard.ts`
-      calls `router.navigate()` imperatively instead of returning a `UrlTree`; races `emptycart.guard.ts`'s
-      own imperative navigate and loses — lands on `/cart`, no login redirect). Found live by T37's
-      `auth-orders.spec.ts` (currently red, correctly).
+      smoke-testing BUG-17. Also delivers T20's `WebApplicationFactory` harness and **closes T12**.
 
-## Sprint C — Ship It *(Aug 11 – Aug 24)*
+## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25)*
 
-- [ ] T47 — README rewrite *(day 1, highest ROI)*
-- [ ] T12 — Cart ownership: userId in Redis, verify on read/write *(IDOR — must not ship)*
-- [ ] T52 — Open redirect: validate returnUrl starts with `/`
-- [ ] T48 — C4 diagram (Context+Container) in Mermaid
-- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
-- [ ] T43 — DB indexes: unique PaymentIntentId, BuyerEmail, composite
+- [ ] T47 — README **create** *(days 1–2, highest ROI — no README exists today)*
+- [ ] T38 — README screenshots + GIFs *(folded into T47)*
+- [ ] T48 — C4 diagram (Context+Container) in Mermaid → `docs/architecture.md`
+- [ ] T52 — Open redirect: validate `returnUrl` starts with `/`
+- [ ] T43 — DB indexes: BuyerEmail, composite (Brand,Type), Price *(unique PaymentIntentId already exists)*
+- [ ] BUG-10 — Top loading bar spins forever *(1d timebox — root cause unproven)*
+- [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`)
+- [ ] T33 — `<mat-error>` on the checkout forms *(register already has it via `app-text-input`)*
+- [ ] BUG-3 — Checkout: hint on an empty required address field
+- [ ] Sprint B Anki deck
+- [x] T12 — Cart ownership — **closed by BUG-18**, same work
+
+## Sprint D — Order Domain *(Aug 26 – Sep 8)*
+
+- [ ] T40 — OrderStatus + append-only OrderStatusHistory *(3d — spike first: one enum or two?)*
+- [ ] T41 — Order cancellation: POST cancel + Stripe refund *(refund plumbing already exists)*
+- [ ] BUG-2 — Checkout: declined card can't retry in-session *(money path)*
+- [ ] BUG-17 — Logout → `/checkout` doesn't redirect to login *(`auth.guard.ts` navigates instead of
+      returning a `UrlTree`, and loses the race with `emptycart.guard.ts`). Found by T37, currently red.*
+- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries *(re-sized M — 27 endpoints, 0 attributes)*
 - [ ] T21 — Coverage gate: coverlet, fail PR < 60%
-- [ ] T38 — README UX screenshots
+- [ ] Sprint C Anki deck
 
-## Buffer *(Aug 25 – Sep 6)* — DO NOT FILL
+## Sprint E — Production Hardening *(Sep 9 – Sep 22)* — **v1.0 ships**
+
+- [ ] T22 — Serilog structured logging *(App Service, no Seq)*
+- [ ] T23 — Correlation IDs — one id per request, on every log line
+- [ ] T42 — Soft delete + EF global query filter *(`ProductsController.cs:76` hard-deletes today)*
+- [ ] T20b — Extend the API integration harness: auth, orders, payments happy paths
+- [ ] T10 — Health-check endpoints
+- [ ] Scheduled weekly CI advisory run (`on: schedule`)
+- [ ] T49 — `docker-compose.yml`: Redis + SQL Server *(one-command local startup)*
+- [ ] T35 — `NgOptimizedImage` on catalog images
+- [ ] fix/BUG-16 — move the checkout cart-reload out of `errorInterceptor`
+- [ ] fix/401-ctx — `HttpContextToken` instead of the 401 URL sniff
+
+## Interview Prep *(Sep 23 – Sep 30)* — DO NOT FILL
 
 - [ ] T53 — Final Azure smoke test *(non-negotiable, always last)*
-- [ ] Interview deck + Anki prep + slack
+- [ ] Sprint D + E Anki · full interview deck · re-read every gate doc · slack
 
 > Descoped for v1.0 (~22 pts): see `Execution plan.md`.
 

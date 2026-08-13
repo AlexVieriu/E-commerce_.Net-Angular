@@ -26,10 +26,10 @@ public partial class PaymentsController(
     private static partial void LogOrderNotFound(ILogger logger, string paymentIntentId);
 
     [Authorize]
-    [HttpPost("{cartId}")]
-    public async Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent(string cartId)
+    [HttpPost]
+    public async Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent()
     {
-        var cart = await payService.CreateOrUpdatePaymentIntent(cartId);
+        var cart = await payService.CreateOrUpdatePaymentIntent();
 
         if (cart == null)
             return BadRequest("Problem with your cart");

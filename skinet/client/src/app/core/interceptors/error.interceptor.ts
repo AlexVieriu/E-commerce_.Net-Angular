@@ -39,11 +39,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         // Two conflicts share 409: checkout's price change (POST /orders) and a product-edit concurrency loss.
         // Only checkout touches the cart.
         if (req.method === 'POST' && req.url.endsWith('/orders')) {
-          const cartId = cartService.cart()?.id;
           const goToCart = () => router.navigateByUrl('/cart');
 
-          if (cartId) cartService.getCartAsync(cartId).subscribe(goToCart);
-          else goToCart();
+          // Refresh from the server first — a 409 means the cart in memory is stale.
+          // Navigate either way, so a failed refresh doesn't strand the user on checkout.
+          cartService.getCartAsync().subscribe({ next: goToCart, error: goToCart });
         }
       }
       if (err.status === 404) {

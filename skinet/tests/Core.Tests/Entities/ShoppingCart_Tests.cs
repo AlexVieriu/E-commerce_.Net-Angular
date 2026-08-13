@@ -7,7 +7,7 @@ public class ShoppingCart_Tests
     public void ShoppingCart_Items_ShouldInitializeAsEmptyList()
     {
         // Arrange & Act
-        var cart = new ShoppingCart() { Id = "test-cart" };
+        var cart = new ShoppingCart();
 
         // Assert
         cart.Items.Should().NotBeNull();
@@ -18,7 +18,7 @@ public class ShoppingCart_Tests
     public void ShoppingCart_ShouldAddItems()
     {
         // Arrange
-        var cart = new ShoppingCart { Id = "test-cart" };
+        var cart = new ShoppingCart();
         var item = new CartItem
         {
             ProductId = 1,
@@ -42,7 +42,7 @@ public class ShoppingCart_Tests
     public void ShoppingCart_ShouldUpdateQuantity_WhenSameProductAddedAgain()
     {
         // Arrange
-        var cart = new ShoppingCart { Id = "test-cart" };
+        var cart = new ShoppingCart();
         cart.Items.Add(new CartItem
         {
             ProductId = 1,
@@ -68,7 +68,7 @@ public class ShoppingCart_Tests
     public void ShoppingCart_ShouldRemoveItem()
     {
         // Arrange
-        var cart = new ShoppingCart { Id = "test-cart" };
+        var cart = new ShoppingCart();
         var item = new CartItem
         {
             ProductId = 1,
