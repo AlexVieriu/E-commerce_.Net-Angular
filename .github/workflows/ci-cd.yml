@@ -59,6 +59,18 @@ jobs:
         working-directory: ./skinet
         run: dotnet test --no-build --configuration Release --verbosity normal
 
+      # MSBuild reports only "N tests failed" and points at a log file that dies with the runner.
+      # Without this a red PR tells you nothing you can act on.
+      - name: Dump test logs on failure
+        if: failure()
+        working-directory: ./skinet
+        run: |
+          for f in $(find . -path '*/TestResults/*.log'); do
+            echo "::group::$f"
+            cat "$f"
+            echo "::endgroup::"
+          done
+
   # ── CI: Angular ─────────────────────────────────────────────────────────────
   # npm ci installs exactly what is in package-lock.json (reproducible builds).
   test-frontend:
