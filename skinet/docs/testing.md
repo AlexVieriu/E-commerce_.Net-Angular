@@ -17,6 +17,9 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
 CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
+It supplies Redis itself, as a `services:` container on the `.NET Build & Test` job — that is the one piece
+of local setup CI has to reproduce, so a test that needs a new external service needs a new service block
+there too, or it goes green locally and red on the PR.
 
 ## ✅ Before `development` → `main` (deploy gate)
 

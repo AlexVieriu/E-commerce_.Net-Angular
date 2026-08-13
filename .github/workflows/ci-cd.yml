@@ -21,6 +21,21 @@ jobs:
     permissions:
       contents: read
 
+    # API.Tests boots the real app against real Redis (BUG-18) — the cart lives there,
+    # so a fake would prove nothing about ownership. The port maps onto the runner,
+    # which is why CustomWebApplicationFactory's "localhost" needs no override here.
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        # Without the health gate the tests can start before Redis accepts connections.
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v6
 
