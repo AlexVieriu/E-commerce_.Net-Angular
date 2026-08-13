@@ -124,6 +124,8 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`)
 - [ ] T33 — `<mat-error>` on the checkout forms *(register already has it via `app-text-input`)*
 - [ ] BUG-3 — Checkout: hint on an empty required address field
+- [ ] Rotate the Azure SQL password + audit the server firewall *(weak password on a publicly resolvable
+      host — do it right after the Sprint B Azure smoke, never mid-deploy)*
 - [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(they move into T20b's
       integration harness and Playwright; the gate currently grows every sprint and shrinks never)*
 - [ ] Sprint B Anki deck
