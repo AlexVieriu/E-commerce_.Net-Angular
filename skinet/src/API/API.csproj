@@ -23,8 +23,14 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>    
+  <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Top-level statements make Program internal. The test project names it in
+         WebApplicationFactory<Program>, so it needs to see this assembly's internals. -->
+    <InternalsVisibleTo Include="API.Tests" />
   </ItemGroup>
 
 </Project>

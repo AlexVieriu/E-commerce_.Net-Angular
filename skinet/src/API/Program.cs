@@ -102,6 +102,3 @@ await app.SeedDatabaseAsync(runSeed);
 if (runSeed) return;
 
 app.Run();
-
-// Top-level statements make Program internal; WebApplicationFactory<Program> needs it public.
-public partial class Program { }

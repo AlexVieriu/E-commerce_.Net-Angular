@@ -2,7 +2,6 @@ namespace Infrastructure.Services;
 
 public class CartService(IConnectionMultiplexer redis, ICurrentUser currentUser) : ICartService
 {
-    // IDatabase is from Redis
     private readonly IDatabase _redisDB = redis.GetDatabase();
 
     // The one place a cart key is built. Prefixed to keep carts out of the Redis root keyspace.
