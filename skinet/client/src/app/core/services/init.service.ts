@@ -14,8 +14,6 @@ export class InitService {
   private signalrService = inject(SignalrService);
 
   init() {
-    const cartId = localStorage.getItem('cart_id');
-
     // Step 1: check auth first — cart requires authentication
     return this.accountService.getUserInfo().pipe(
       catchError((err: HttpErrorResponse) => {
@@ -25,15 +23,12 @@ export class InitService {
       tap((user) => {
         if (user) this.signalrService.createHubConnection();
       }),
-      // Step 2: only fetch cart if authenticated and cart_id exists
+      // Step 2: the cart belongs to the user, so being authenticated is the whole condition
       switchMap((user) => {
-        if (!user || !cartId) return of({ user, cart: null });
-        return this.cartService.getCartAsync(cartId).pipe(
+        if (!user) return of({ user, cart: null });
+        return this.cartService.getCartAsync().pipe(
           map((cart) => ({ user, cart })),
-          catchError(() => {
-            localStorage.removeItem('cart_id');
-            return of({ user, cart: null });
-          })
+          catchError(() => of({ user, cart: null }))
         );
       })
     );

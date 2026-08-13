@@ -16,7 +16,6 @@ public class OrderService_HappyPathTests
         AppCoupon? coupon = null)
     => new()
     {
-        Id = "cart-happy",
         PaymentIntentId = paymentIntentId,
         DeliveryMethodId = deliveryMethodId,
         Coupon = coupon,
@@ -37,7 +36,6 @@ public class OrderService_HappyPathTests
 
     private static CreateOrderDto MakeOrderDto(int deliveryMethodId = 1) => new()
     {
-        CartId = "cart-happy",
         DeliveryMethodId = deliveryMethodId,
         ShippingAddress = new ShippingAddress
         {
@@ -80,8 +78,8 @@ public class OrderService_HappyPathTests
 
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart());
-        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
+        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
 
@@ -102,7 +100,7 @@ public class OrderService_HappyPathTests
 
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync((ShoppingCart?)null);
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync((ShoppingCart?)null);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
 
@@ -118,7 +116,7 @@ public class OrderService_HappyPathTests
 
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync("cart-happy"))
+        cartMock.Setup(x => x.GetCartAsync())
             .ReturnsAsync(MakeCart(paymentIntentId: null!));
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
@@ -155,8 +153,8 @@ public class OrderService_HappyPathTests
             Id = "coup1", Name = "$20 Off", PromotionCode = "SAVE20", AmountOff = 20m
         };
         var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart(coupon: coupon));
-        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: coupon));
+        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
 
@@ -194,8 +192,8 @@ public class OrderService_HappyPathTests
             Id = "coup2", Name = "10% Off", PromotionCode = "SAVE10", PercentOff = 10m
         };
         var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart(coupon: coupon));
-        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: coupon));
+        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
 
@@ -231,8 +229,8 @@ public class OrderService_HappyPathTests
 
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync("cart-happy")).ReturnsAsync(MakeCart());
-        cartMock.Setup(x => x.DeleteCartAsync(It.IsAny<string>())).ReturnsAsync(true);
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
+        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
 
@@ -262,7 +260,6 @@ public class OrderService_ConcurrencyTests
 
     private static ShoppingCart MakeCart(int productId, int deliveryMethodId, string paymentIntentId = "pi_test_123") => new()
     {
-        Id = "test-cart",
         PaymentIntentId = paymentIntentId,
         DeliveryMethodId = deliveryMethodId,
         Items =
@@ -282,7 +279,6 @@ public class OrderService_ConcurrencyTests
 
     private static CreateOrderDto MakeOrderDto(int deliveryMethodId) => new()
     {
-        CartId = "test-cart",
         DeliveryMethodId = deliveryMethodId,
         ShippingAddress = new ShippingAddress
         {
@@ -332,10 +328,10 @@ public class OrderService_ConcurrencyTests
         await ctx2.Products.FindAsync(1);
 
         var cart1 = new Mock<ICartService>();
-        cart1.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1));
+        cart1.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(1, 1));
 
         var cart2 = new Mock<ICartService>();
-        cart2.Setup(x => x.GetCartAsync("test-cart")).ReturnsAsync(MakeCart(1, 1, "pi_test_456"));
+        cart2.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(1, 1, "pi_test_456"));
 
         var service1 = new OrderService(new UnitOfWork(ctx1), cart1.Object);
         var service2 = new OrderService(new UnitOfWork(ctx2), cart2.Object);

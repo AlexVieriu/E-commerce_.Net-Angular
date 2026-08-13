@@ -196,11 +196,10 @@ export class CheckoutComponent {
     const shippingAddress = (await this.getAddressFromStripeAddress()) as ShippingAddress;
     const card = this.confirmationToken()?.payment_method_preview.card;
 
-    if (!cart?.id || !cart.deliveryMethodId || !shippingAddress || !card)
+    if (!cart || !cart.deliveryMethodId || !shippingAddress || !card)
       throw new Error('Problem creating order');
 
     return {
-      cartId: cart.id,
       paymentSummary: {
         last4: +card.last4,
         brand: card.brand,

@@ -53,11 +53,19 @@ All endpoints, auth requirements, and return types.
 
 | Method | Route | Returns | Notes |
 |---|---|---|---|
-| GET | `/api/cart?id={cartId}` | `ShoppingCart` | Returns empty cart with same `id` if not found |
+| GET | `/api/cart` | `ShoppingCart` | Empty cart if none stored |
 | POST | `/api/cart` | `ShoppingCart` | Full cart in body; 400 if Redis write fails |
-| DELETE | `/api/cart?id={cartId}` | `204 NoContent` | 400 if Redis delete fails |
+| DELETE | `/api/cart` | `204 NoContent` | |
 
-**Cart id:** generated client-side (nanoid), stored in `localStorage`. Sent as query param on GET/DELETE.
+**No endpoint takes a cart id.** `CartService` derives the Redis key from the authenticated caller, so
+there is no parameter a client could point at someone else's cart (BUG-18 — see `auth.md`).
+
+```
+client                  CartController          CartService            Redis
+  |  GET /api/cart  -->  (no parameter)  -->  cart:{userId}  -->  [ the caller's cart ]
+                                                    ^
+                                          ICurrentUser, from the auth cookie
+```
 
 ## CouponsController
 

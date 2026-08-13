@@ -21,4 +21,9 @@ export class HeaderNav {
     await this.userMenuButton.click();
     await this.page.getByRole('menuitem', { name: 'Logout' }).click();
   }
+
+  // The cart icon badge. Absent when the cart is empty.
+  async expectCartCount(count: string) {
+    await expect(this.page.locator('.mat-badge-content')).toHaveText(count);
+  }
 }
