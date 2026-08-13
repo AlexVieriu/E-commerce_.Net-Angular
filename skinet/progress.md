@@ -114,6 +114,16 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 
 ## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25)*
 
+**Start here.** Only #1 is order-critical; the rest can flex with the day's energy.
+
+| # | Item | Needs | Why here |
+|---|---|---|---|
+| 1 | Rotate the Azure SQL password + audit the firewall | ~10 min, any energy | The live URL is public now and the password is weak. Do it first whatever the day looks like |
+| 2 | BUG-19 — read the coupon discount from Stripe | small, energy 3+ | Same lesson as BUG-18, one field over — the pairing is the interview story |
+| 3 | T47 + T38 — the README | 2d, energy 3–4 | The actual sprint. Highest ROI left in the plan |
+| 4 | T48 → T52 → T43 → BUG-10 → BUG-14 → T33 → BUG-3 | — | Plan order, unchanged |
+| — | Deploy-gate cleanup | mechanical | Slot into any low-energy gap |
+
 - [ ] T47 — README **create** *(days 1–2, highest ROI — no README exists today)*
 - [ ] T38 — README screenshots + GIFs *(folded into T47)*
 - [ ] T48 — C4 diagram (Context+Container) in Mermaid → `docs/architecture.md`
