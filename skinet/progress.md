@@ -139,7 +139,7 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
       host — do it right after the Sprint B Azure smoke, never mid-deploy)*
 - [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(they move into T20b's
       integration harness and Playwright; the gate currently grows every sprint and shrinks never)*
-- [ ] Sprint B Anki deck
+- [x] Sprint B Anki deck — 29 cards *(`questions/sprint-B/sprint-B-interview/`, local-only)*
 - [x] T12 — Cart ownership — **closed by BUG-18**, same work
 
 ## Sprint D — Order Domain *(Aug 26 – Sep 8)*
