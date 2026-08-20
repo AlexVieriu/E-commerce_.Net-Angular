@@ -7,6 +7,18 @@ deploy gate. Automated coverage and the gate checklist live in [`../../testing.m
 |---|---|
 | [`bug-19-coupon-trust.md`](bug-19-coupon-trust.md) | Coupon validated once, trusted forever — 3 tests |
 
+## Read first
+
+Skim the checkout timeline in [`../../backend/payment.md`](../../backend/payment.md) — **what fires
+when, and who writes the cart.** Nearly every confusing reading traces to one of these three:
+
+- The payment intent is created on **`/checkout` page load**, not at the Payment step. That first one
+  has `deliveryMethodId` still null, so it carries **$0 shipping**.
+- `POST /api/cart` always sends Angular's **in-memory** cart, and four different actions trigger it —
+  so a cart you changed server-side can be silently overwritten.
+- A rejected coupon leaves the cart **visually unchanged** (`applyCouponCode` has no error handler),
+  so a code that 400'd looks like it applied.
+
 ## Before any file
 
 | Service | Start it | Verify |
