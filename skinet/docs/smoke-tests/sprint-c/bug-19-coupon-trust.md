@@ -1,6 +1,15 @@
 # BUG-19 — coupon validated once, trusted forever
 
 Setup and the Scalar tamper steps: [`README.md`](README.md).
+What fires when, and who writes the cart: [`payment.md`](../../backend/payment.md) — **read it first if a
+reading surprises you.** Where each test hooks into that timeline:
+
+| Test | Hooks in at |
+|---|---|
+| **A** | Confirmation — the intent already exists and is correct; tamper, then submit |
+| **B** | after Shipping — tamper, then re-price with `POST /api/payments` from Scalar |
+| **C** | `/checkout` page load — the very first `POST /api/payments` refuses |
+| **D** | the coupon box — no tampering at all |
 
 A coupon is checked when the customer types the code, and trusted from then on. Three tests, three ways
 that goes wrong:
