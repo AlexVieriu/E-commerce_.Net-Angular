@@ -148,6 +148,20 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 - `UseStaticFiles()` must come BEFORE `UseRateLimiter()` — otherwise Angular chunks get throttled and return 429.
 - Baseline seeding (admin + JSON products) runs in all environments; idempotent — checks for existing data first. Bulk demo data (`BogusSeeder`) is opt-in via `dotnet run -- --seed` and Development-only. See `docs/backend/data-layer.md`.
 
+## Dependency upgrades
+
+Routine for most packages. **`Stripe.net` is the exception — a major bump is an API migration, not a version bump.**
+
+- Stripe's policy: *"Each SDK version uses the API version that is current at the time of its release"*
+  ([sdks/versioning](https://docs.stripe.com/sdks/versioning)). Breaking API releases ship **twice a year**,
+  and the SDK major rides along.
+- **It cannot be pinned away.** Stripe documents that strongly-typed SDKs (.NET / Java / Go) *cannot* target a
+  different API version, so the SDK version **is** the wire version.
+- Therefore: never let `Stripe.net` ride along in a blanket "latest GA" refresh. Read that release's changelog,
+  then run the coupon + payment smoke in `testing.md` — **the test suite cannot see these breaks** (no DI seam,
+  `[ExcludeFromCodeCoverage]`).
+- BUG-20 is the worked example: `fix(deps)` #50 bumped 51→52 and silently killed every coupon for two months.
+
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 
 Added via `UseSecurityHeaders()` in `Program.cs`. Applies to all responses.

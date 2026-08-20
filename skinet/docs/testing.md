@@ -30,6 +30,10 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 - [ ] App loads, no console errors, seed data shows
 - [ ] register → login → cart → checkout (Stripe `4242 4242 4242 4242`) → admin → refund → logout
 - [ ] Logout → cookie cleared (DevTools → Application → Cookies)
+- [ ] **Apply a coupon** — one percent-off (`gimme10`) and one amount-off (`gimme5`); both must resolve,
+      and a nonsense code must still be rejected. No automated test can reach `CouponService`: it calls
+      `new PromotionCodeService()` directly, has no DI seam, and is `[ExcludeFromCodeCoverage]`. BUG-20
+      left every coupon broken for two months because this line did not exist
 
 **This sprint's behaviors** — the full per-task steps live in `smoke-tests/sprint-<n>.md`, one file per
 sprint. Run the current sprint's file here. Past sprints are locked by the test suite; the entries below

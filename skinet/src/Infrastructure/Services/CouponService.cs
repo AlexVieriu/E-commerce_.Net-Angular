@@ -11,7 +11,15 @@ public class CouponService : ICouponService
     {
         // From here - Stripe code
         var promotionService = new PromotionCodeService();
-        var options = new PromotionCodeListOptions { Code = code };
+        var options = new PromotionCodeListOptions
+        {
+            Code = code,
+            // Only a live code may be redeemed; two codes can share the same string.
+            Active = true,
+            // `promotion.coupon` is an expandable reference — unexpanded it arrives as a bare id string,
+            // leaving the Coupon object null. List endpoints need the `data.` prefix. (BUG-20)
+            Expand = ["data.promotion.coupon"]
+        };
 
         var promotionCodes = await promotionService.ListAsync(options);
 
