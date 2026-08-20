@@ -41,6 +41,12 @@ box; in production it's curl or Postman and nothing changes.
 3. `POST /api/cart` → paste it as the body → change one field → **Send**.
 4. Expect **200** with your changed value echoed back.
 
+⚠️ **Leave `/checkout` before you tamper.** While that page is open, Angular holds its own copy of
+the cart and writes it back on several actions — moving between steps, or leaving the Stripe payment
+element and coming back. That copy predates your forge, so it silently restores the old value or nulls
+`deliveryMethodId` / `paymentIntentId`, and your next reading looks like the fix failed. Navigate to
+`/cart` first, tamper in Scalar, and confirm the `POST` response echoes every field you care about.
+
 ⚠️ Always send the **whole** cart body — `items`, `deliveryMethodId`, `paymentIntentId`,
 `clientSecret`, `coupon`. `SetCartAsync` overwrites the Redis key, so anything you drop is gone and the
 order won't create.

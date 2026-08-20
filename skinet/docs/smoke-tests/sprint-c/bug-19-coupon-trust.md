@@ -211,9 +211,20 @@ had `shipping = 0`, which looks like a third wrong number and isn't. On UPS1 the
 
 $85 gone, on a discount that expired months ago.
 
-Verified 2026-08-20, exactly as above: the retired `BLACKFRIDAY50` coupon id produced a **10000**
-charge while the UI and the order both showed $5.00 off. An earlier run with a 90%-off coupon charged
-**$28.00** against an order recorded at **$185.00**, status **PaymentMismatch** (order #38).
+Verified 2026-08-20, both runs:
+
+| Run | Coupon id on the cart | Stripe `"amount"` |
+|---|---|---|
+| Bug present | retired `BLACKFRIDAY50` | **10000** — $100.00 on a $185 order |
+| After the fix | same forged id | **18500** — $185.00 ✅ |
+
+The lookup keyed on `promotionCode: "gimme5"` and never read the planted id. An earlier bug-present run
+with a 90%-off coupon charged **$28.00** against an order recorded at **$185.00**, status
+**PaymentMismatch** (order #38).
+
+⚠️ This test took four attempts before the reading was trustworthy — every failure was the checkout
+page overwriting the forged cart, not the fix. See **Leave `/checkout` before you tamper** in
+[`README.md`](README.md).
 
 ---
 
