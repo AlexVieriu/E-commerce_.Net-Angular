@@ -117,7 +117,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
         // The lookup returns dollars; this method works in cents.
         if (coupon.AmountOff.HasValue)
             amount -= (long)(coupon.AmountOff.Value * 100);
-        if (coupon.PercentOff.HasValue)
+        else if (coupon.PercentOff.HasValue)
             amount -= (long)(amount * (coupon.PercentOff.Value / 100));
 
         return Math.Max(amount, 0); // Ensure amount does not go negative
