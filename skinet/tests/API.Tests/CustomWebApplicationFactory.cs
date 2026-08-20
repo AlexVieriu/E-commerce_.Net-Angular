@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace API.Tests;
 
@@ -9,6 +12,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     // Meets the app's own password policy: 12+ chars, upper, digit, non-alphanumeric.
     private const string TestPassword = "Pa$$w0rd12!@";
+
+    // Shared with the host — tests drive the coupon lookup through this.
+    public StubCouponService Coupons { get; } = new();
 
     private readonly string _dbFile =
         Path.Combine(Path.GetTempPath(), $"skinet-tests-{Guid.NewGuid():N}.db");
@@ -37,6 +43,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["ConnectionStrings:Redis"] = "localhost",
                 ["AdminSettings:Password"] = TestPassword
             });
+        });
+
+        // Runs after the app's registrations, so this wins.
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<ICouponService>();
+            services.AddSingleton<ICouponService>(Coupons);
         });
     }
 

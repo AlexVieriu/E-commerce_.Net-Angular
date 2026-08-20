@@ -1,6 +1,7 @@
 global using API.Controllers;
 global using API.Extensions;
 global using Application.Common.DTOs;
+global using Application.Common.Interfaces;
 global using Application.Specifications;
 global using Core.Entities;
 global using FluentAssertions;
