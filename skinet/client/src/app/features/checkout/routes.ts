@@ -6,7 +6,11 @@ import { orderCompleteGuard } from '../../core/guards/order-complete.guard';
 import { emptycartGuard } from '../../core/guards/emptycart.guard';
 
 export const checkoutRoutes: Route[] = [
-  { path: '', component: CheckoutComponent, canActivate: [authGuard, emptycartGuard] },
+  {
+    path: '',
+    component: CheckoutComponent,
+    canActivate: [authGuard, emptycartGuard]
+  },
   {
     path: 'success',
     component: CheckoutSuccessComponent,
