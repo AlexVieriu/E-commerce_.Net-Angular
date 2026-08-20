@@ -150,14 +150,19 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 
 ## Dependency upgrades
 
-Routine for most packages. **`Stripe.net` is the exception — a major bump is an API migration, not a version bump.**
+Routine for most packages. **Two exceptions:**
 
+**`Stripe.net` — a major bump is an API migration, not a version bump.**
 Stripe's policy: *"Each SDK version uses the API version that is current at the time of its release"*
 ([sdks/versioning](https://docs.stripe.com/sdks/versioning)) — and strongly-typed SDKs (.NET/Java/Go)
 *cannot* target a different version, so the SDK version **is** the wire version. Never let it ride a blanket
 "latest GA" refresh: read the changelog, then run the coupon + payment smoke in `testing.md`, because
 **the test suite cannot see these breaks**. BUG-20 is the worked example — `fix(deps)` #50 bumped 51→52 and
 silently killed every coupon for two months.
+
+**`xunit.v3` — held at 3.2.2** *(4.0.0 attempted 2026-08-18)*. v4 drops VSTest, so `dotnet test` fails on the
+.NET 10 SDK. Neither opt-in clears it (`<TestingPlatformDotnetTestSupport>`, root `dotnet.config`) while
+`Microsoft.NET.Test.Sdk` is referenced. A real migration for zero production benefit.
 
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 
