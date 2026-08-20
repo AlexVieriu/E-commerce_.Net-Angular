@@ -243,9 +243,13 @@ stripe payment_intents list --limit 1
 
 | Source | Today (bug present) | After the fix |
 |---|---|---|
-| Stripe `"amount"` | **9000** — $90.00 (18000 − 50%, $0 shipping) | **18000** — no discount |
-| Order page | Discount $90.00 · Total $90.00 | Discount $0.00 · Total $180.00 |
-| Order status | **PaymentReceived** | **PaymentReceived** |
+| Opening `/checkout` | loads normally | **409** — "Your coupon is no longer valid", back to `/cart` |
+| The cart | still shows Discount $90.00 | coupon **gone**, Total **$180.00** |
+| Stripe `"amount"` | **9000** — $90.00 (18000 − 50%, $0 shipping) | **no intent is created** |
+| Order | Discount $90.00 · Total $90.00 | **no order** until you check out again at $180 |
+
+After the fix this test stops at step 4 — there is nothing left to submit. The payment element needs an
+intent, so the refusal lands the moment the checkout page renders, not at the Payment step.
 
 **This is the worst of the three.** A and B leave the order total and the charge disagreeing, so
 `ReconcileOrderPayment` raises `PaymentMismatch`. Here they agree exactly — the order is internally
@@ -267,6 +271,33 @@ Verified 2026-08-20: charge **9000** on a retired 50% campaign, zero tampering. 
 row above is the prediction — the order wasn't submitted, so confirm it on the next run.
 
 ---
+
+## Test D — cents survive the conversion
+
+**After the fix only.** `gimme5` is $5.00 and `gimme10` is 10%, so neither can catch a coupon amount
+being truncated to whole dollars. Nothing automated reaches this — `CouponService` calls Stripe directly.
+
+**1. A coupon with cents:**
+
+```bash
+stripe coupons create --amount-off 550 --currency usd --duration once --name GIMME550
+
+stripe promotion_codes create   -d "promotion[type]=coupon"   -d "promotion[coupon]=<coupon-id>"   -d code=gimme550
+```
+
+**2. Apply it** — cart → **Angular Blue Boots** ($180) → `gimme550`.
+
+**3. Read both numbers:**
+
+| Source | Wrong (truncated) | Right |
+|---|---|---|
+| Cart · Discount | $5.00 | **$5.50** |
+| Stripe `"amount"` after the Payment step | 18500 | **18450** |
+
+$180.00 − $5.50 + $10.00 delivery = $184.50. A truncating conversion overcharges by 50¢ and nothing
+flags it, because the order and the charge agree on the wrong number.
+
+**4. Clean up:** `stripe coupons delete <coupon-id>`.
 
 ## Why none of Stripe's guards stop any of this
 
