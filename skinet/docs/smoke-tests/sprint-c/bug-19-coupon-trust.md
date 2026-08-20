@@ -159,13 +159,16 @@ Confirm it's really dead: cart → apply `BLACKFRIDAY50` → **400 invalid code*
 **4. Months later — a normal cart** — fresh cart, **Angular Blue Boots** ($180), apply `gimme5`.
 Expect Discount $5.00.
 
-**5. Stop on Shipping** — Checkout → Address → **Shipping**, pick a delivery method, then **stop**.
+**5. Stop on Shipping** — Checkout → Address → **Shipping**, pick **UPS1 ($10)**, then **stop**.
 
 ⚠️ Pick delivery **before** tampering. `updateDeliveryMethod` POSTs the whole cart from Angular's
-in-memory copy (`checkout-delivery.component.ts:39`), which would overwrite your forged id.
+in-memory copy (`checkout-delivery.component.ts:39`), which would overwrite your forged id. It only
+fires when you *click* a method, so stepping through Shipping again without re-clicking is safe.
 
-The payment intent does not exist yet — that's the point. Test A tampered *after* it was created; this
-one tampers *before*.
+⚠️ **An intent already exists by now.** `afterNextRender` builds the payment element as soon as
+`/checkout` renders (`checkout.component.ts:78`), and that needs an intent — so `POST /api/payments`
+fired before you touched a single step, while `deliveryMethodId` was still null. That first intent
+carries **$0 shipping**. Step 7 replaces it; ignore anything you read before then.
 
 **6. Replay the old id** — tamper, one field:
 
@@ -177,9 +180,13 @@ Leave `amountOff: 5` and `promotionCode: "gimme5"` alone — the point is that t
 `gimme5` while the charge won't. `paymentIntentId` and `clientSecret` are `null` here; send them as
 they came.
 
-**7. Move to Payment** — fires `POST /api/payments` → `ApplyDiscountAsync` (`PaymentService.cs:103`)
-calls `GetAsync(appCoupon.Id)`. Stripe still has that coupon and returns 50% off. The UI still shows
-Discount $5.00.
+**7. Re-price the intent** — in Scalar: `POST /api/payments`, **empty body**, Send.
+
+Do this from Scalar, not by stepping into Payment in the app. It recomputes from the Redis cart, so the
+forged id and your chosen delivery are both in play, and nothing re-POSTs the cart over your forge.
+
+With the bug this ran `GetAsync(appCoupon.Id)` — Stripe still has that coupon and returns 50% off,
+while the UI keeps showing Discount $5.00.
 
 **8. Read the charge:**
 
@@ -187,9 +194,10 @@ Discount $5.00.
 stripe payment_intents list --limit 1
 ```
 
-⚠️ Read it **after** the forge. Re-entering Payment *updates* the existing intent
-(`PaymentService.cs:132`, `else` branch), so an amount read earlier is stale. An intent created before a
-delivery method is picked has `shipping = 0`, which looks like a third wrong number and isn't.
+⚠️ Read it **after** step 7. `POST /api/payments` *updates* the existing intent
+(`PaymentService.cs:132`, `else` branch), so any amount read earlier is stale — and the page-load intent
+had `shipping = 0`, which looks like a third wrong number and isn't. On UPS1 the arithmetic is
+18000 − 500 + 1000; a 17500 means you are still reading the page-load intent.
 
 **9. Place the order** — Confirmation → **Submit order** → `4242 4242 4242 4242`.
 
