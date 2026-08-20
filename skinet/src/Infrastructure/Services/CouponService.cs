@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Infrastructure.Services;
 
 // CouponService calls Stripe SDK (PromotionCodeService) directly via `new` — no DI seam.

@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-
 namespace API.Tests;
 
 // Boots the real API in-process: real pipeline, real Redis, real cookie auth.

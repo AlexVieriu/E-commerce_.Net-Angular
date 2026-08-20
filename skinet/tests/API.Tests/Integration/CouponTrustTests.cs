@@ -1,5 +1,3 @@
-using Core.Entities.OrderAggregate;
-
 namespace API.Tests.Integration;
 
 // BUG-19 at the API layer: POST /api/cart stores the body verbatim, so a customer can forge

@@ -62,7 +62,8 @@ public class PaymentService_Tests
         var mockUnitOfWork = new Mock<IUnitOfWork>();
         mockUnitOfWork.Setup(x => x.Complete()).ReturnsAsync(true);
 
-        var sut = new PaymentService(new Mock<ICartService>().Object, mockUnitOfWork.Object);
+        var sut = new PaymentService(new Mock<ICartService>().Object, mockUnitOfWork.Object,
+            Mock.Of<ICouponService>());
         var order = CreateOrder(subtotal: 50m, discount: 0m, deliveryPrice: 10m);
 
         // total = 60.00 -> 6000 cents
@@ -78,7 +79,8 @@ public class PaymentService_Tests
         var mockUnitOfWork = new Mock<IUnitOfWork>();
         mockUnitOfWork.Setup(x => x.Complete()).ReturnsAsync(true);
 
-        var sut = new PaymentService(new Mock<ICartService>().Object, mockUnitOfWork.Object);
+        var sut = new PaymentService(new Mock<ICartService>().Object, mockUnitOfWork.Object,
+            Mock.Of<ICouponService>());
         var order = CreateOrder(subtotal: 50m, discount: 0m, deliveryPrice: 10m);
 
         // total = 60.00 -> 6000 cents, Stripe paid 5000
