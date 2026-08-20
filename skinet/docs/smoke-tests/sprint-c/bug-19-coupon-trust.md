@@ -292,8 +292,14 @@ consistent and completely wrong. No flag, no log, no admin screen shows it.
 20 — Stripe returns `valid: false` and nothing reads it. `grep` for `Valid`, `RedeemBy`,
 `MaxRedemptions`, `TimesRedeemed` across `src/` returns **nothing**.
 
-Verified 2026-08-20: charge **9000** on a retired 50% campaign, zero tampering. The `PaymentReceived`
-row above is the prediction — the order wasn't submitted, so confirm it on the next run.
+Verified 2026-08-20, both runs:
+
+| Run | What happened |
+|---|---|
+| Bug present | charge **9000** on a retired 50% campaign, zero tampering, **nothing flagged** |
+| After the fix | `/checkout` refused on load: *"Your coupon is no longer valid. Your cart has been updated."* ✅ |
+
+The worst of the three is now the most visible — it is the only one the customer is told about.
 
 ---
 
