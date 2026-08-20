@@ -135,7 +135,7 @@ API change that caused BUG-20, where the fix was `Expand = ["data.promotion.coup
 "coupon": { "name": "BLACKFRIDAY50", "percentOff": 50, "id": "<coupon-id>", ... }
 ```
 
-`<coupon-id>` is what they save. **The shop put it there** (`CouponService.cs:38`).
+`<coupon-id>` is what they save. **The shop put it there** (`CouponService.cs:43`).
 
 **3. The campaign ends** — deactivate the code (Stripe can't delete promotion codes, only deactivate):
 
@@ -148,7 +148,7 @@ false` is rejected as a stray positional argument, and `--active=false` reports 
 `active: true`. Verify with `stripe promotion_codes retrieve <promo-id>`.
 
 Confirm it's really dead: cart → apply `BLACKFRIDAY50` → **400 invalid code**. `Active = true`
-(`CouponService.cs:18`) filters it out. As far as the shop is concerned, the campaign is over.
+(`CouponService.cs:22`) filters it out. As far as the shop is concerned, the campaign is over.
 
 **4. Months later — a normal cart** — fresh cart, **Angular Blue Boots** ($180), apply `gimme5`.
 Expect Discount $5.00.

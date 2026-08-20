@@ -9,6 +9,10 @@ public class CouponService : ICouponService
 {
     public async Task<AppCoupon?> GetCouponFromPromoCode(string code)
     {
+        // A blank code leaves `Code` unset, which drops the filter instead of matching nothing.
+        // Stripe would then return every live promotion code for FirstOrDefault to pick one. (BUG-19)
+        if (string.IsNullOrWhiteSpace(code)) return null;
+
         // From here - Stripe code
         var promotionService = new PromotionCodeService();
         var options = new PromotionCodeListOptions
@@ -32,7 +36,8 @@ public class CouponService : ICouponService
             return new AppCoupon
             {
                 Name = promotionCode.Promotion.Coupon.Name,
-                AmountOff = promotionCode.Promotion.Coupon.AmountOff / 100,  // Stripe uses cents, so we divide it by 100
+                // Stripe sends cents as a long, so `100m` is what keeps $5.50 from truncating to $5.00.
+                AmountOff = promotionCode.Promotion.Coupon.AmountOff / 100m,
                 PercentOff = promotionCode.Promotion.Coupon.PercentOff,
                 PromotionCode = promotionCode.Code,
                 Id = promotionCode.Promotion.Coupon.Id
