@@ -118,7 +118,7 @@ Sprint end: test CRUD products, dashboard stats, refund still works. Verify Azur
 
 ---
 
-## Sprint B — E2E Tests + IDOR Fix *(Jul 28 – Aug 11)* · ⏳ CURRENT
+## Sprint B — E2E Tests + IDOR Fix *(Jul 28 – Aug 11)* · ✅ CLOSED Aug 13 *(+2d)*
 
 > Browser tests, and the security hole the first one of them uncovered.
 > Epic: `Testing`. Order: 37 -> BUG-18.
@@ -135,11 +135,13 @@ users — proven at the API and in the browser.
 
 ---
 
-## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25 · 10 working days)*
+## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25 · 10 working days)* · ⏳ CURRENT
 
 > A recruiter spends 30 seconds on the repo and 2 minutes on the live demo. This sprint makes both
 > survive that. **There is no README today** — T47 writes the first one.
-> Epics: `Docs`, `UX`. Order: 47+38 -> 48 -> 52 -> 43 -> BUG-10 -> BUG-14 -> 33 -> BUG-3.
+> Epics: `Docs`, `UX`. Order: **rotate the SQL password -> BUG-19** -> 47+38 -> 48 -> 52 -> 43 ->
+> BUG-10 -> BUG-14 -> 33 -> BUG-3. Only the first is order-critical; the rest flex with the day's energy.
+> The start-here table in `progress.md` is the same order — keep them in step.
 
 | # | Task | E | Est | Dep | Notes |
 |---|------|---|-----|-----|-------|
@@ -148,17 +150,26 @@ users — proven at the API and in the browser.
 | 48 | C4 diagram (Context+Container) in Mermaid -> `docs/architecture.md` | M | **1d** | -- | Cheaper than it looks: `docs/backend/architecture.md` + `docs/frontend/architecture.md` already hold the prose (100 lines, 0 diagrams) — this is drawing what's already written |
 | 52 | Open redirect: validate `returnUrl` starts with `/` | S | **0.5d** | -- | Security fix — cheap. Set in `auth.guard.ts:19` + `error.interceptor.ts:32`, consumed in `login.component.ts:26` |
 | BUG-19 | Coupon discount taken from the client-supplied cart, not from Stripe | S | **0.5d** | -- | Found Aug 13 during BUG-18. `CalculateDiscount` (`OrderService.cs:108`) reads `AmountOff`/`PercentOff` off `cart.Coupon`. The **charge** is safe — `PaymentService.cs:103` re-reads the coupon from Stripe by id, and `ReconcileOrderPayment` flags a mismatch — but the `Order` row records a discount that never happened. Same class as BUG-18: trust the id, re-read the value. `fix(bug-19)` |
+| BUG-20 | **Every coupon rejected — `GET /api/coupons/{code}` always 400** | S | **✅ Aug 18** | -- | `promotion.coupon` is expandable: unexpanded it arrives as a bare id, so Stripe.net leaves the `Coupon` object null and `CouponService.cs:22`'s guard never passes. Broke at `fix(deps)` #50 — **an SDK version pins the API version, so a dependency refresh was an API migration.** No test can reach it (no DI seam, `[ExcludeFromCodeCoverage]`). Fix: `Expand` + `Active = true`. `fix(bug-20)` |
 | 43 | DB indexes: BuyerEmail, composite (Brand,Type), Price | S | **0.5d** | -- | One migration. Unique `PaymentIntentId` already exists (`OrderConfiguration.cs:22`) |
 | BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 | S | **1d timebox** | -- | ⬅ pull-in **rank 1**. ⚠️ Root cause not yet identified — `loading.interceptor.ts` already decrements in `finalize`, which fires on error *and* unsubscribe. Reproduce first, then fix. `fix(bug-10)` |
 | BUG-14 | Product page: "Add to cart" disables on click — reads as broken though the cart did update | S | **0.5d** | -- | ⬅ pull-in **rank 2**. Confirmed: `product-details.component.html:22` `[disabled]="quantity() === quantityInCart()"`. `fix(bug-14)` |
 | 33 | Wire `<mat-error>` validation on the checkout forms | S | **0.5d** | -- | ⬅ pull-in **rank 3**. Register already covered — it uses `<app-text-input>`, which renders `mat-error`. Verify that before starting |
 | BUG-3 | Checkout: hint on an empty required address field | S | **0.5d** | -- | ⬅ pull-in **rank 4**. Money-path UX, cheap. `fix(bug-3)` |
 | 12 | ~~Cart ownership: userId in Redis~~ | — | **0** | -- | ✅ **CLOSED by BUG-18** — same work, already shipped and proven |
-| — | Rotate the Azure SQL password + audit the server firewall | S | **0.5d** | -- | **FIRST — right after the Sprint B Azure smoke.** `skinet-2025-test-server` runs a weak password on a publicly resolvable host, so the server firewall is the only other control. New password → update the App Service `SqlServerAzureConnection` → restart → re-smoke. Never mid-deploy: rotating a live connection string is how a green sprint becomes a 500 |
+| — | Rotate the Azure SQL password + audit the server firewall | S | **~10min** | -- | **FIRST — right after the Sprint B Azure smoke.** `skinet-2025-test-server` runs a weak password on a publicly resolvable host, so the server firewall is the only other control. New password → update the App Service `SqlServerAzureConnection` → restart → re-smoke. Never mid-deploy: rotating a live connection string is how a green sprint becomes a 500 |
 | — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.5d** | -- | The gate grows a manual entry per sprint and nothing ever removes one — by Sprint E it is a 30-min ritual nobody runs honestly. Sprint 2 price change / Sprint 3 payment sync / BUG-11 belong in **T20b**'s harness (Sprint E); BUG-12 belongs in Playwright. This row moves them and deletes the blockquotes |
 | — | Sprint B Anki deck | — | **1d** | -- | 1 day per sprint |
 
-**Points: 7 · Est 7.5d of 10 — 2.5d slack.** Sprint end: README live with screenshots, C4 diagram
+**Points: 7 · Est 8.5d of 10 — 1.5d slack.** *(Rows sum to 8.5d; the old "7.5d / 2.5d" counted the Anki
+day as both work and slack.)*
+
+⚠️ **Burn-down 2026-08-18 — over-committed.** 6 working days left (Aug 18–21, 24–25) vs ~7.5d of work →
+**~1.5d over before any unplanned bug**, and Sprints A and B each produced two.
+**Decision (the user): cut nothing, re-assess at sprint end.** With no cut the overflow lands on whatever
+runs last, so **T47 must not be last** — start it by Aug 20; let BUG-3/T33 slip if something must.
+
+Sprint end: README live with screenshots, C4 diagram
 published, open redirect closed, indexes shipped, and the four defects a live demo actually shows.
 
 ---
@@ -301,19 +312,21 @@ The Aug 10 re-baseline bought ~3.5 weeks. **That was the last lever** — after 
 If a bad week lands, **cut immediately** — do not absorb it by grinding.
 **Cut order (first to go, left):** T41 > T48 > T50 > T21 > T35. **Never cut:** T47 README, T40, BUG-2, T53.
 
-**Committed vs capacity (2026-08-10):**
+**Committed vs capacity (2026-08-10 · Sprint C row corrected 2026-08-18):**
 
 | Window | Days | Work | Slack |
 |---|---|---|---|
-| Sprint C · Aug 12–25 | 10 | 7.5d | 2.5d |
+| Sprint C · Aug 12–25 | 10 | 8.5d | 1.5d |
 | Sprint D · Aug 26 – Sep 8 | 10 | 8d | 2d |
 | Sprint E · Sep 9–22 | 10 | 8.5d | 1.5d |
-| **Build total** | **30** | **24d** | **6d** |
+| **Build total** | **30** | **25d** | **5d** |
 | Interview Prep · Sep 23–30 | 6 | T53 + deck | — |
 
-**6 days of slack.** Sprints A and B each produced 2 unplanned bugs; this budget assumes that happens
-again and still lands. Slack is protection, not capacity — the first sprint to fill it is the one that
-puts the README or T40 at risk.
+**5 days of slack** *(was 6 — the Sprint C row said 7.5d while its own task rows summed to 8.5d)*.
+Sprints A and B each produced 2 unplanned bugs; this budget assumes that happens again and still lands.
+Slack is protection, not capacity — the first sprint to fill it is the one that puts the README or T40 at
+risk. **Sprint C has already spent its 1.5d** (Sprint B ran +2d into it) — see the burn-down in that
+sprint's section.
 
 Every sprint end: E2E run, Azure verify, README update.
 
