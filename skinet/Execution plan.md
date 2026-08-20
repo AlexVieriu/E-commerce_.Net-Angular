@@ -154,6 +154,8 @@ users — proven at the API and in the browser.
 | 33 | Wire `<mat-error>` validation on the checkout forms | S | **0.5d** | -- | ⬅ pull-in **rank 3**. Register already covered — it uses `<app-text-input>`, which renders `mat-error`. Verify that before starting |
 | BUG-3 | Checkout: hint on an empty required address field | S | **0.5d** | -- | ⬅ pull-in **rank 4**. Money-path UX, cheap. `fix(bug-3)` |
 | 12 | ~~Cart ownership: userId in Redis~~ | — | **0** | -- | ✅ **CLOSED by BUG-18** — same work, already shipped and proven |
+| — | Rotate the Azure SQL password + audit the server firewall | S | **0.5d** | -- | **FIRST — right after the Sprint B Azure smoke.** `skinet-2025-test-server` runs a weak password on a publicly resolvable host, so the server firewall is the only other control. New password → update the App Service `SqlServerAzureConnection` → restart → re-smoke. Never mid-deploy: rotating a live connection string is how a green sprint becomes a 500 |
+| — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.5d** | -- | The gate grows a manual entry per sprint and nothing ever removes one — by Sprint E it is a 30-min ritual nobody runs honestly. Sprint 2 price change / Sprint 3 payment sync / BUG-11 belong in **T20b**'s harness (Sprint E); BUG-12 belongs in Playwright. This row moves them and deletes the blockquotes |
 | — | Sprint B Anki deck | — | **1d** | -- | 1 day per sprint |
 
 **Points: 7 · Est 7.5d of 10 — 2.5d slack.** Sprint end: README live with screenshots, C4 diagram
