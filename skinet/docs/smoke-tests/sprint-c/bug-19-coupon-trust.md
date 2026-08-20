@@ -128,10 +128,7 @@ Steps 1–3 set up the shop's history. **Step 4 is where the attacker starts.**
 ```bash
 stripe coupons create --percent-off 50 --duration once --name BLACKFRIDAY50
 
-stripe promotion_codes create \
-  -d "promotion[type]=coupon" \
-  -d "promotion[coupon]=<coupon-id>" \
-  -d code=BLACKFRIDAY50
+stripe promotion_codes create -d "promotion[type]=coupon" -d "promotion[coupon]=<coupon-id>" -d code=BLACKFRIDAY50
 ```
 
 ⚠️ `-d "promotion[coupon]="`, not `--coupon`. The coupon moved under a `promotion` object — the same
@@ -291,7 +288,7 @@ being truncated to whole dollars. Nothing automated reaches this — `CouponServ
 ```bash
 stripe coupons create --amount-off 550 --currency usd --duration once --name GIMME550
 
-stripe promotion_codes create   -d "promotion[type]=coupon"   -d "promotion[coupon]=<coupon-id>"   -d code=gimme550
+stripe promotion_codes create -d "promotion[type]=coupon" -d "promotion[coupon]=<coupon-id>" -d code=gimme550
 ```
 
 **2. Apply it** — cart → **Angular Blue Boots** ($180) → `gimme550`.

@@ -23,6 +23,11 @@ exactly like a broken payment flow.
 ⚠️ `stripe listen` prints event *types* only, never amounts. To read a charge:
 `stripe payment_intents list --limit 1` (or add `--print-json` to `listen`).
 
+⚠️ Every command here is on **one line** on purpose. PowerShell has no backslash line
+continuation — pasting a bash-style multi-line command runs the first line, then reports
+`The term '-d' is not recognized`. Also replace `<coupon-id>` / `<promo-id>` with real ids;
+the CLI does not expand placeholders.
+
 ## The tamper move
 
 The Angular page is not the client — HTTP is. Any logged-in user can send `POST /api/cart` themselves
