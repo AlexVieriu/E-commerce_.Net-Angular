@@ -11,6 +11,9 @@ that goes wrong:
 | **B** | `coupon.id` | **$100 on a $185 order** | looks normal | PaymentMismatch |
 | **C** | nothing | **$90 on a $180 order** | agrees with the charge | **no** |
 
+**All four verified after the fix on 2026-08-20** — A: order #42 $185.00 `PaymentReceived` · B: charge
+18500 · C: refused at `/checkout` · D: Discount $5.50.
+
 A and B ride `POST /api/cart`, which writes the request body to Redis verbatim. **C needs nobody.**
 
 ## Coupons used
@@ -327,6 +330,10 @@ stripe promotion_codes create -d "promotion[type]=coupon" -d "promotion[coupon]=
 
 $180.00 − $5.50 + $10.00 delivery = $184.50. A truncating conversion overcharges by 50¢ and nothing
 flags it, because the order and the charge agree on the wrong number.
+
+Verified 2026-08-20 after the fix: coupon `JFAGydmA` (`amount_off: 550`) via code `gimme550` showed
+Discount **$5.50** on the cart ✅. Before the `100m` change this read $5.00 — and no test, manual or
+automated, would have caught it, because `gimme5` and `gimme10` are both whole amounts.
 
 **4. Clean up:** `stripe coupons delete <coupon-id>`.
 
