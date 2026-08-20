@@ -34,6 +34,7 @@ Expect: Subtotal $180.00 · Discount $5.00 · Delivery $10.00 · Total $185.00.
 
 **2. Reach the Payment step** — Checkout → Address → Shipping (pick a method) → **Payment**. Entering
 this step fires `POST /api/payments`, so the Stripe intent now exists with the **real** $5 off.
+Fill the card in **here**: `4242 4242 4242 4242`, any future expiry, any CVC.
 
 **3. Record the honest charge:**
 
@@ -44,7 +45,7 @@ stripe payment_intents list --limit 1
 Write down `"amount": 18500` — 18000 subtotal − 500 coupon + 1000 delivery. That is what Stripe will
 actually take.
 
-**4. Move to Confirmation** — the last tab. **Do not submit yet.** This step only creates the Stripe
+**4. Move to Confirmation** — the last step of the stepper. **Do not submit yet.** This step only creates the Stripe
 card token; it never touches the payment intent, which is why it's the safe moment to tamper.
 
 **5. Tamper** ([the steps](README.md#the-tamper-move)) — `GET /api/cart` returns:
@@ -81,8 +82,9 @@ card token; it never touches the payment intent, which is why it's the safe mome
 "amountOff": 5     →     "amountOff": 999
 ```
 
-**6. Place the order** — checkout tab → **Submit order** → `4242 4242 4242 4242`, any future expiry,
-any CVC. Don't refresh first, and don't step back to Payment.
+**6. Place the order** — switch back to the **browser tab running the app** (you tampered in the Scalar
+one), then **Submit order** on the Confirmation step. The card is already entered from step 2.
+Don't refresh first, and don't step back to Payment.
 
 **7. Read the damage** — open the order from `/orders`:
 
@@ -94,8 +96,15 @@ any CVC. Don't refresh first, and don't step back to Payment.
 
 Three numbers for one order, and the only true one is Stripe's.
 
-Verified 2026-08-20: order page **−$999.00** / **−$809.00**, Stripe **18500**, status
-**PaymentMismatch**.
+Verified 2026-08-20, both runs:
+
+| Run | Order | Discount | Total | Status |
+|---|---|---|---|---|
+| Bug present | **#37** | −$999.00 | −$809.00 | **PaymentMismatch** |
+| After the fix | **#42** | **$5.00** | **$185.00** | **PaymentReceived** ✅ |
+
+The forged `999` never reached the order, and `PaymentReceived` is itself the proof that the order
+total and the Stripe charge agree.
 
 ---
 
