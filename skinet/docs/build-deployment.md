@@ -152,15 +152,12 @@ dotnet user-secrets set "StripeSettings:WhSecret" "<new-whsec-from-cli>"
 
 Routine for most packages. **`Stripe.net` is the exception — a major bump is an API migration, not a version bump.**
 
-- Stripe's policy: *"Each SDK version uses the API version that is current at the time of its release"*
-  ([sdks/versioning](https://docs.stripe.com/sdks/versioning)). Breaking API releases ship **twice a year**,
-  and the SDK major rides along.
-- **It cannot be pinned away.** Stripe documents that strongly-typed SDKs (.NET / Java / Go) *cannot* target a
-  different API version, so the SDK version **is** the wire version.
-- Therefore: never let `Stripe.net` ride along in a blanket "latest GA" refresh. Read that release's changelog,
-  then run the coupon + payment smoke in `testing.md` — **the test suite cannot see these breaks** (no DI seam,
-  `[ExcludeFromCodeCoverage]`).
-- BUG-20 is the worked example: `fix(deps)` #50 bumped 51→52 and silently killed every coupon for two months.
+Stripe's policy: *"Each SDK version uses the API version that is current at the time of its release"*
+([sdks/versioning](https://docs.stripe.com/sdks/versioning)) — and strongly-typed SDKs (.NET/Java/Go)
+*cannot* target a different version, so the SDK version **is** the wire version. Never let it ride a blanket
+"latest GA" refresh: read the changelog, then run the coupon + payment smoke in `testing.md`, because
+**the test suite cannot see these breaks**. BUG-20 is the worked example — `fix(deps)` #50 bumped 51→52 and
+silently killed every coupon for two months.
 
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 

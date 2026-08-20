@@ -150,7 +150,7 @@ users — proven at the API and in the browser.
 | 48 | C4 diagram (Context+Container) in Mermaid -> `docs/architecture.md` | M | **1d** | -- | Cheaper than it looks: `docs/backend/architecture.md` + `docs/frontend/architecture.md` already hold the prose (100 lines, 0 diagrams) — this is drawing what's already written |
 | 52 | Open redirect: validate `returnUrl` starts with `/` | S | **0.5d** | -- | Security fix — cheap. Set in `auth.guard.ts:19` + `error.interceptor.ts:32`, consumed in `login.component.ts:26` |
 | BUG-19 | Coupon discount taken from the client-supplied cart, not from Stripe | S | **0.5d** | -- | Found Aug 13 during BUG-18. `CalculateDiscount` (`OrderService.cs:108`) reads `AmountOff`/`PercentOff` off `cart.Coupon`. The **charge** is safe — `PaymentService.cs:103` re-reads the coupon from Stripe by id, and `ReconcileOrderPayment` flags a mismatch — but the `Order` row records a discount that never happened. Same class as BUG-18: trust the id, re-read the value. `fix(bug-19)` |
-| BUG-20 | **Every coupon rejected — `GET /api/coupons/{code}` always 400** | S | **✅ Aug 18** | -- | Found Aug 18 setting up BUG-19's smoke test. `promotion.coupon` is an **expandable** field: unexpanded, Stripe sends a bare id string, so Stripe.net leaves the `Coupon` object null and `CouponService.cs:22`'s guard is never true. Broke at `fix(deps)` #50 (Jun 26), which bumped Stripe.net 51→52 — **and an SDK version pins the API version, so a "refresh to latest GA" silently performed an API migration.** Undetectable by the suite: `CouponService` has no DI seam and is `[ExcludeFromCodeCoverage]`. Fix: `Expand = ["data.promotion.coupon"]` + `Active = true`. `fix(bug-20)` |
+| BUG-20 | **Every coupon rejected — `GET /api/coupons/{code}` always 400** | S | **✅ Aug 18** | -- | `promotion.coupon` is expandable: unexpanded it arrives as a bare id, so Stripe.net leaves the `Coupon` object null and `CouponService.cs:22`'s guard never passes. Broke at `fix(deps)` #50 — **an SDK version pins the API version, so a dependency refresh was an API migration.** No test can reach it (no DI seam, `[ExcludeFromCodeCoverage]`). Fix: `Expand` + `Active = true`. `fix(bug-20)` |
 | 43 | DB indexes: BuyerEmail, composite (Brand,Type), Price | S | **0.5d** | -- | One migration. Unique `PaymentIntentId` already exists (`OrderConfiguration.cs:22`) |
 | BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 | S | **1d timebox** | -- | ⬅ pull-in **rank 1**. ⚠️ Root cause not yet identified — `loading.interceptor.ts` already decrements in `finalize`, which fires on error *and* unsubscribe. Reproduce first, then fix. `fix(bug-10)` |
 | BUG-14 | Product page: "Add to cart" disables on click — reads as broken though the cart did update | S | **0.5d** | -- | ⬅ pull-in **rank 2**. Confirmed: `product-details.component.html:22` `[disabled]="quantity() === quantityInCart()"`. `fix(bug-14)` |
@@ -161,18 +161,13 @@ users — proven at the API and in the browser.
 | — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.5d** | -- | The gate grows a manual entry per sprint and nothing ever removes one — by Sprint E it is a 30-min ritual nobody runs honestly. Sprint 2 price change / Sprint 3 payment sync / BUG-11 belong in **T20b**'s harness (Sprint E); BUG-12 belongs in Playwright. This row moves them and deletes the blockquotes |
 | — | Sprint B Anki deck | — | **1d** | -- | 1 day per sprint |
 
-**Points: 7 · Est 8.5d of 10 — 1.5d slack.** *(The rows above sum to 8.5d including the 1d Anki deck; the
-old "7.5d / 2.5d slack" counted the Anki day as slack and as work at once.)*
+**Points: 7 · Est 8.5d of 10 — 1.5d slack.** *(Rows sum to 8.5d; the old "7.5d / 2.5d" counted the Anki
+day as both work and slack.)*
 
-⚠️ **Burn-down 2026-08-18 — the sprint is over-committed.** Aug 12–13 went to closing Sprint B and Aug 14–17
-produced no sprint work. **6 working days remain (Aug 18–21, 24–25) against ~7.5d of unstarted work** — the
-Anki deck and the SQL rotation are the only rows done → **~1.5d over, before a single unplanned bug**, and
-Sprints A and B each produced two.
-
-**Decision (the user, Aug 18): cut nothing now — re-assess at sprint end.** Recorded as taken with the
-arithmetic above in view. The consequence to watch: with no cut, the overflow lands on whatever is last in
-the order, so **T47 must not be last** — start it by Aug 20 whatever else has shipped, and let BUG-3/T33
-be what slips into Sprint D if something has to.
+⚠️ **Burn-down 2026-08-18 — over-committed.** 6 working days left (Aug 18–21, 24–25) vs ~7.5d of work →
+**~1.5d over before any unplanned bug**, and Sprints A and B each produced two.
+**Decision (the user): cut nothing, re-assess at sprint end.** With no cut the overflow lands on whatever
+runs last, so **T47 must not be last** — start it by Aug 20; let BUG-3/T33 slip if something must.
 
 Sprint end: README live with screenshots, C4 diagram
 published, open redirect closed, indexes shipped, and the four defects a live demo actually shows.
