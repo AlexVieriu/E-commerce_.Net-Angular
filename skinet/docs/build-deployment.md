@@ -159,6 +159,14 @@ Stripe's policy: *"Each SDK version uses the API version that is current at the 
 **the test suite cannot see these breaks**. BUG-20 is the worked example — `fix(deps)` #50 bumped 51→52 and
 silently killed every coupon for two months.
 
+**Held back deliberately — `xunit.v3` 4.0.0 / `xunit.runner.visualstudio` 4.0.0** *(attempted 2026-08-18)*.
+v4 drops VSTest, so `dotnet test` fails on the .NET 10 SDK with *"Testing with VSTest target is no longer
+supported by Microsoft.Testing.Platform"*. Neither documented opt-in clears it —
+`<TestingPlatformDotnetTestSupport>` nor a root `dotnet.config` `[dotnet.test.runner]` — because
+`Microsoft.NET.Test.Sdk` (VSTest) is still referenced by all four test projects and conflicts with MTP.
+A real migration: drop `Microsoft.NET.Test.Sdk`, convert all four projects, and update how `ci-cd.yml`
+invokes tests and collects logs. **Not worth it for zero production benefit — stay on 3.2.2.**
+
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 
 Added via `UseSecurityHeaders()` in `Program.cs`. Applies to all responses.
