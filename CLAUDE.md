@@ -96,7 +96,7 @@ the gate and the doc review are both read against its diff. Run in order:
 4. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
    technical questions (see that file for the rubric).
 5. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
-   at the TOP of `mindset/spikes.md` (see MINDSET), so Decision+Why are filled while context is fresh.
+   in `mindset/spikes/sprint-N/` (see MINDSET), so Decision+Why are filled while context is fresh.
 
 # START OF DAY / SESSION
 - At the start of the day's first work session, ask ONE line:
@@ -116,7 +116,7 @@ Learning docs should be pleasant to open — but a landmark only works if it's r
 - **Emoji mark fixed, recurring section headings.** If a heading appears in *every* instance of a doc
   type, it earns one. A sentence, a table cell, or a one-off heading does not.
 - **Where they go:** `questions/…/task-N-*.md` (📂🗺️🧭🔁🧠💥⚖️🌫️💡✏️✅🧪🎤📚) · `mindset/the-gate.md`
-  (🎯 the gate) · `mindset/spikes.md` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why · 📋 Checklist).
+  (🎯 the gate) · `mindset/spikes/**` (❓ Question · ⚖️ Options · ✅ Decision · 💬 Why · 📋 Checklist).
 - **Where they don't:** this file · `progress.md` rows · `daily-log.md` · `skinet/docs/**` — contracts,
   prose, and technical reference someone else may read.
 - **Status markers are always fine, anywhere:** ✅ ⚠️ ❌ 🔴 🟡 🟢 ⏳ — they carry meaning, not decoration.
@@ -135,20 +135,21 @@ Never modify these files unless explicitly instructed:
   docs/backend/payment.md; git/PR → docs/git-workflow.md; verification + deploy gate → docs/testing.md.
 
 # MINDSET (scaffold only — never write the user's thinking)
-The `mindset/` folder is the learning-process system — six files, one per workflow moment. **This
+The `mindset/` folder is the learning-process system — six entries, one per workflow moment. **This
 section is the map; the step-by-step trigger lives in the section named in the last column.**
 
 | File | What it's for | Fires (→ section) | Who writes |
 |---|---|---|---|
 | `energy-protocol.md` | energy level → task type | START OF DAY | Claude routes |
 | `sprint-map.md` | the sprint drawn (routes + wireframes) | sprint start & end (MINDSET) | Claude draws |
-| `spikes.md` | decide the approach before coding | before a task (AFTER EACH TASK #5) | you: Decision+Why · Claude scaffolds |
+| `spikes/` | decide the approach before coding | before a task (AFTER EACH TASK #5) | you: Decision+Why · Claude scaffolds |
 | `the-gate.md` | prove you learned it | AFTER EACH TASK #0 | you attempt · Claude fills |
 | `daily-log.md` | manager-facing day record | AFTER EACH TASK #2 · END OF DAY | Claude logs |
 | `question-tally.md` | junior/mid interview calibration | AFTER EACH TASK #4 | Claude appends |
 
-- Each task/bug → a top entry in `mindset/spikes.md` (Question/Options/Decision/Why + checklist);
-  the top entry is the active to-do. Leave Decision + Why blank for the user.
+- Each task/bug → its own file in `mindset/spikes/sprint-N/` (Question/Options/Decision/Why + checklist).
+  The current sprint gets a folder, one file per item; past sprints collapse to one file each.
+  Leave Decision + Why blank for the user.
 - Sprint map (`mindset/sprint-map.md`, newest sprint on top) — **written exactly twice per sprint,
   never in between:**
   - **Sprint start:** the route tree + one ASCII wireframe per task — the sprint made visible before

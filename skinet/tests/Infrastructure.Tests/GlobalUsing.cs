@@ -2,6 +2,7 @@ global using Application.Common.Interfaces;
 global using Application.Common.DTOs;
 global using Core.Entities;
 global using Core.Entities.OrderAggregate;
+global using Core.Exceptions;
 global using Core.Interfaces;
 global using FluentAssertions;
 global using Infrastructure.Data;

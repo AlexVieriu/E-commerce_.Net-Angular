@@ -1,16 +1,16 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Infrastructure.Services;
 
 // PaymentService and its private helpers call Stripe SDK classes (PaymentIntentService,
-// RefundService, CouponService) directly via `new` — there is no DI seam to mock.
+// RefundService) directly via `new` — there is no DI seam to mock.
 // Unit testing would require a full Stripe test-mode sandbox (real HTTP calls).
 // Architectural fix: inject an IStripeClient abstraction
 [ExcludeFromCodeCoverage]
-public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : IPaymentService
+public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
+    ICouponService couponService) : IPaymentService
 {
     private readonly ICartService _cartService = cartService;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ICouponService _couponService = couponService;
 
     public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent()
     {
@@ -24,7 +24,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
         var subtotal = CalculateSubtotal(cart);
 
         if (cart.Coupon != null)
-            subtotal = await ApplyDiscountAsync(cart.Coupon, subtotal);
+            subtotal = await ApplyDiscountAsync(cart, subtotal);
 
         var total = subtotal + shippingPrice;
 
@@ -96,15 +96,28 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork) : 
         return (long)itemTotal;
     }
 
-    private static async Task<long> ApplyDiscountAsync(AppCoupon appCoupon, long amount)
+    // The charge follows the same rule as the order: re-read by promotion code, never by the
+    // cart's id, which the client can forge. (BUG-19)
+    private async Task<long> ApplyDiscountAsync(ShoppingCart cart, long amount)
     {
-        var couponService = new Stripe.CouponService();
+        var coupon = await _couponService.GetCouponFromPromoCode(cart.Coupon!.PromotionCode);
 
-        var coupon = await couponService.GetAsync(appCoupon.Id);
+        if (coupon == null)
+        {
+            // Retired campaign. Drop it and re-price, so no intent is created at the old total.
+            cart.Coupon = null;
+            cart.PaymentIntentId = null;
+            cart.ClientSecret = null;
+            await _cartService.SetCartAsync(cart);
 
+            throw new PriceChangedException(
+                "Your coupon is no longer valid. Your cart has been updated.");
+        }
+
+        // The lookup returns dollars; this method works in cents.
         if (coupon.AmountOff.HasValue)
-            amount -= (long)coupon.AmountOff;
-        if (coupon.PercentOff.HasValue)
+            amount -= (long)(coupon.AmountOff.Value * 100);
+        else if (coupon.PercentOff.HasValue)
             amount -= (long)(amount * (coupon.PercentOff.Value / 100));
 
         return Math.Max(amount, 0); // Ensure amount does not go negative

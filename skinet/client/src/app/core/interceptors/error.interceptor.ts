@@ -36,9 +36,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       }
       if (err.status === 409) {
         snackbar.error(err.error.message);
-        // Two conflicts share 409: checkout's price change (POST /orders) and a product-edit concurrency loss.
-        // Only checkout touches the cart.
-        if (req.method === 'POST' && req.url.endsWith('/orders')) {
+        // Checkout 409s on a price change or a dead coupon (POST /orders, POST /payments).
+        // A product-edit concurrency loss shares the status but never touches the cart.
+        if (
+          req.method === 'POST' &&
+          (req.url.endsWith('/orders') || req.url.endsWith('/payments'))
+        ) {
           const goToCart = () => router.navigateByUrl('/cart');
 
           // Refresh from the server first — a 409 means the cart in memory is stale.

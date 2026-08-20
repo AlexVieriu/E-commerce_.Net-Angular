@@ -1,10 +1,16 @@
 global using API.Controllers;
 global using API.Extensions;
 global using Application.Common.DTOs;
+global using Application.Common.Interfaces;
 global using Application.Specifications;
 global using Core.Entities;
+global using Core.Entities.OrderAggregate;
 global using FluentAssertions;
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Mvc.Testing;
+global using Microsoft.AspNetCore.TestHost;
+global using Microsoft.Data.Sqlite;
 global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.DependencyInjection.Extensions;
 global using System.Net.Http.Json;
