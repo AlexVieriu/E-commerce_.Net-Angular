@@ -37,6 +37,10 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 **This sprint's behaviors** — the full per-task steps live in `smoke-tests/sprint-<n>.md`, one file per
 sprint. Run the current sprint's file here. Past sprints are locked by the test suite; the entries below
 predate the folder and stay until their sprint file exists.
+> _Sprint C:_ see [`smoke-tests/sprint-c/`](smoke-tests/sprint-c/README.md) — one file per task or bug.
+> BUG-19 coupon trust is 4 tests; needs `stripe listen` and a throwaway Stripe campaign. Test D needs a
+> coupon with **cents** — `gimme5` and `gimme10` are whole amounts and cannot catch a truncated conversion.
+>
 > _Sprint B:_ see [`smoke-tests/sprint-b.md`](smoke-tests/sprint-b.md) — BUG-18 cart ownership (12 steps,
 > in order; needs `stripe listen` and two accounts).
 >

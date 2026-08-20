@@ -85,6 +85,8 @@ export class CheckoutComponent {
         this.paymentElement?.mount('#payment-element');
         this.paymentElement.on('change', this.handlePaymentChange);
       } catch (error: unknown) {
+        // A dead coupon 409s here; the interceptor already messaged and left for the cart.
+        if (error instanceof HttpErrorResponse && error.status === 409) return;
         this.snackBar.error(
           error instanceof Error ? error.message : 'Failed to load payment elements'
         );
@@ -120,8 +122,14 @@ export class CheckoutComponent {
       }
     }
 
-    if (event.selectedIndex === 2)
-      await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+    if (event.selectedIndex === 2) {
+      try {
+        await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+      } catch (error: unknown) {
+        if (error instanceof HttpErrorResponse && error.status === 409) return;
+        throw error;
+      }
+    }
 
     if (event.selectedIndex === 3) await this.getConfirmationToken();
   }

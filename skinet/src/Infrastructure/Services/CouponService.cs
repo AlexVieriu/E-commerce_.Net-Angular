@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Infrastructure.Services;
 
 // CouponService calls Stripe SDK (PromotionCodeService) directly via `new` — no DI seam.
@@ -9,6 +7,9 @@ public class CouponService : ICouponService
 {
     public async Task<AppCoupon?> GetCouponFromPromoCode(string code)
     {
+        // Unset `Code` drops the filter, so Stripe would return every live code. (BUG-19)
+        if (string.IsNullOrWhiteSpace(code)) return null;
+
         // From here - Stripe code
         var promotionService = new PromotionCodeService();
         var options = new PromotionCodeListOptions
@@ -32,7 +33,8 @@ public class CouponService : ICouponService
             return new AppCoupon
             {
                 Name = promotionCode.Promotion.Coupon.Name,
-                AmountOff = promotionCode.Promotion.Coupon.AmountOff / 100,  // Stripe uses cents, so we divide it by 100
+                // `100m`, not 100: AmountOff is a long, so integer division would drop the cents.
+                AmountOff = promotionCode.Promotion.Coupon.AmountOff / 100m,
                 PercentOff = promotionCode.Promotion.Coupon.PercentOff,
                 PromotionCode = promotionCode.Code,
                 Id = promotionCode.Promotion.Coupon.Id
