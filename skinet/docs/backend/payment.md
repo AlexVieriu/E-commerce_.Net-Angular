@@ -79,7 +79,8 @@ PaymentService.ApplyDiscountAsync   ─┴─→ ICouponService.GetCouponFromPro
   is also valid"*, so an expired or fully-redeemed coupon is already filtered out.
   ([promotion code object](https://docs.stripe.com/api/promotion_codes/object))
 - **A blank code is a failed lookup.** An unset `Code` filter is dropped, not matched — Stripe would
-  return every live code for `FirstOrDefault` to pick one.
+  return every live code for `FirstOrDefault` to pick one. Model validation rejects a blank `PromotionCode` at the
+  boundary, so this guard is the second line — it covers any caller that skips model binding.
 - **Units:** `GetCouponFromPromoCode` returns **dollars** (`AmountOff / 100m` — decimal division, or the
   cents truncate). `OrderService` works in dollars; `PaymentService` multiplies back to cents.
 

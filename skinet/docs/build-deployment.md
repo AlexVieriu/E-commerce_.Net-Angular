@@ -22,7 +22,7 @@ dotnet run --project src/API
 cd client && ng serve
 ```
 
-Backend on `https://localhost:7096`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL from `environment.development.ts` — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
+Backend on `https://localhost:7096`, pinned by `applicationUrl` in `launchSettings.json` (added Aug 21 — before that nothing set it, so a fresh clone got Kestrel's defaults and the client could not reach the API). **The port is not free to change:** `environment.development.ts` hardcodes `https://localhost:7096` for both `apiUrl` and `hubUrl`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
 
 ## Manual API testing (Scalar)
 

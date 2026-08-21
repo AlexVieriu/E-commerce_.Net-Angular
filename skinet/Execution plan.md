@@ -138,40 +138,34 @@ users — proven at the API and in the browser.
 ## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25 · 10 working days)* · ⏳ CURRENT
 
 > A recruiter spends 30 seconds on the repo and 2 minutes on the live demo. This sprint makes both
-> survive that. **There is no README today** — T47 writes the first one.
-> Epics: `Docs`, `UX`. Order: **rotate the SQL password -> BUG-19** -> 47+38 -> 48 -> 52 -> 43 ->
-> BUG-10 -> BUG-14 -> 33 -> BUG-3. Only the first is order-critical; the rest flex with the day's energy.
+> survive that. **There was no README** — T47 wrote the first one.
+> Epics: `Docs`, `UX`. Order: **rotate the SQL password -> BUG-19** -> 47 -> 48 -> 52 -> 43 ->
+> BUG-10 -> BUG-14 -> 33 -> BUG-3 -> 38. Only the first is order-critical; the rest flex with the day's energy.
 > The start-here table in `progress.md` is the same order — keep them in step.
 
 | # | Task | E | Est | Dep | Notes |
 |---|------|---|-----|-----|-------|
-| 47 | README **create**: overview, stack, C4 diagram, screenshots/GIFs, "how to run", Azure link | M | **2d** | -- | **DAYS 1–2. Highest ROI of anything left.** No file exists — this writes the first one |
-| 38 | README UX screenshots + GIFs | S | *in 47* | 47 | Folded into T47, not a separate PR |
+| 47 | README **create**: pitch, stack, architecture, "how to run", Azure link | S | **✅ Aug 21** *(0.5d vs 2d est)* | -- | Highest ROI of anything left — no file existed. Writing rather than building, and `docs/` already held the content. Screenshots/GIFs are T38; the C4 diagram is T48. `feat(task-47)` |
 | 48 | C4 diagram (Context+Container) in Mermaid -> `docs/architecture.md` | M | **1d** | -- | Cheaper than it looks: `docs/backend/architecture.md` + `docs/frontend/architecture.md` already hold the prose (100 lines, 0 diagrams) — this is drawing what's already written |
 | 52 | Open redirect: validate `returnUrl` starts with `/` | S | **0.5d** | -- | Security fix — cheap. Set in `auth.guard.ts:19` + `error.interceptor.ts:32`, consumed in `login.component.ts:26` |
 | BUG-19 | Coupon validated once, then trusted forever — by the order, the charge, and time | S | **✅ Aug 20** *(1.5d vs 0.5d est)* | -- | Found Aug 13 during BUG-18; **scope grew Aug 20** when all three cases were reproduced live (`docs/smoke-tests/sprint-c/bug-19-coupon-trust.md`). **(A)** `CalculateDiscount` read `AmountOff`/`PercentOff` off `cart.Coupon` → forged $999 discount on the order. **(B)** `ApplyDiscountAsync` re-read Stripe by `cart.Coupon.Id` — **also client-supplied** → $100 charged on a $185 order. **(C)** a coupon applied before its campaign was retired still paid out, and the order total matched the charge so nothing flagged. Fix (spike 1a/2d/3b/4b): both paths re-derive from `cart.Coupon.PromotionCode`; a failed lookup drops the coupon, nulls the intent and 409s. Two defects the fix would otherwise have introduced were caught first — `AmountOff / 100` truncated the cents, and a blank code dropped Stripe's `Code` filter. `fix(bug-19)` (#75) |
 | BUG-20 | **Every coupon rejected — `GET /api/coupons/{code}` always 400** | S | **✅ Aug 20** | -- | `promotion.coupon` is expandable: unexpanded it arrives as a bare id, so Stripe.net leaves the `Coupon` object null and `CouponService.cs:22`'s guard never passes. Broke at `fix(deps)` #50 — **an SDK version pins the API version, so a dependency refresh was an API migration.** No test can reach it (no DI seam, `[ExcludeFromCodeCoverage]`). Fix: `Expand` + `Active = true`. `fix(bug-20)` |
+| — | .NET dependency refresh to latest GA *(#74)* | S | **✅ Aug 20** *(0.5d, unplanned)* | -- | **Unplanned**, and the reason Aug 19–20 went sideways. Triggered by BUG-20, which proved a blanket "latest GA" bump can be an **API migration** the test suite cannot see. `Stripe.net` is now flagged never-blanket-upgradable and `xunit.v3` is **held at 3.2.2** — 4.0.0 makes Microsoft Testing Platform the default while .NET 10's `dotnet test` still routes via VSTest, so they disagree and the build errors. Policy written up in `docs/build-deployment.md` |
 | 43 | DB indexes: BuyerEmail, composite (Brand,Type), Price | S | **0.5d** | -- | One migration. Unique `PaymentIntentId` already exists (`OrderConfiguration.cs:22`) |
 | BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 | S | **1d timebox** | -- | ⬅ pull-in **rank 1**. ⚠️ Root cause not yet identified — `loading.interceptor.ts` already decrements in `finalize`, which fires on error *and* unsubscribe. Reproduce first, then fix. `fix(bug-10)` |
 | BUG-14 | Product page: "Add to cart" disables on click — reads as broken though the cart did update | S | **0.5d** | -- | ⬅ pull-in **rank 2**. Confirmed: `product-details.component.html:22` `[disabled]="quantity() === quantityInCart()"`. `fix(bug-14)` |
 | 33 | Wire `<mat-error>` validation on the checkout forms | S | **0.5d** | -- | ⬅ pull-in **rank 3**. Register already covered — it uses `<app-text-input>`, which renders `mat-error`. Verify that before starting |
 | BUG-3 | Checkout: hint on an empty required address field | S | **0.5d** | -- | ⬅ pull-in **rank 4**. Money-path UX, cheap. `fix(bug-3)` |
+| 38 | README UX screenshots + GIFs | S | **0.5d** | 47 | **Last task of the sprint** — un-folded from T47 on Aug 21 and moved here, so the images are captured once the products and the site's idea are settled. The README already carries HTML-comment placeholders |
 | 12 | ~~Cart ownership: userId in Redis~~ | — | **0** | -- | ✅ **CLOSED by BUG-18** — same work, already shipped and proven |
-| — | Rotate the Azure SQL password + audit the server firewall | S | **~10min** | -- | **FIRST — right after the Sprint B Azure smoke.** `skinet-2025-test-server` runs a weak password on a publicly resolvable host, so the server firewall is the only other control. New password → update the App Service `SqlServerAzureConnection` → restart → re-smoke. Never mid-deploy: rotating a live connection string is how a green sprint becomes a 500 |
+| — | Rotate the Azure SQL password + audit the server firewall | S | **✅ Aug 18** | -- | **Done first, as planned.** Password was `Pa$$w0rd` **and in git history**, so it stayed valid for four months after T3 "removed" it; three stale client-IP firewall rules also went. `skinet-2025-test-server` runs a weak password on a publicly resolvable host, so the server firewall is the only other control. New password → update the App Service `SqlServerAzureConnection` → restart → re-smoke. Never mid-deploy: rotating a live connection string is how a green sprint becomes a 500 |
 | — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.5d** | -- | The gate grows a manual entry per sprint and nothing ever removes one — by Sprint E it is a 30-min ritual nobody runs honestly. Sprint 2 price change / Sprint 3 payment sync / BUG-11 belong in **T20b**'s harness (Sprint E); BUG-12 belongs in Playwright. This row moves them and deletes the blockquotes |
 | — | Sprint B Anki deck | — | **1d** | -- | 1 day per sprint |
 
-**Points: 7 · Est 8.5d of 10 — 1.5d slack.** *(Rows sum to 8.5d; the old "7.5d / 2.5d" counted the Anki
-day as both work and slack.)*
+**Points: 7 · Est 8.5d of 10 — 1.5d slack.** *(Committed at sprint start. Frozen — never re-summed as work completes or scope moves; the rows carry what actually happened.)*
 
-⚠️ **Burn-down 2026-08-20 — badly over-committed.** **4 working days left (Aug 20, 21, 24, 25) vs ~7.5d of
-unstarted work — ~3.5d over.** Aug 19–20 went to BUG-20 and the dependency refresh, both unplanned.
-**T47 alone is 2d of the 4.**
-**Decision (the user): cut nothing, re-assess at sprint end.** With no cut the overflow lands on whatever
-runs last, so **T47 must not be last** — start it by Aug 20; let BUG-3/T33 slip if something must.
-
-Sprint end: README live with screenshots, C4 diagram
-published, open redirect closed, indexes shipped, and the four defects a live demo actually shows.
+**Sprint end:** README live with screenshots, C4 diagram published, open redirect closed, indexes
+shipped, and the four defects a live demo actually shows.
 
 ---
 
