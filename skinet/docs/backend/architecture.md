@@ -3,6 +3,12 @@
 Clean architecture: 4 layers. References point one way only — Core is the innermost and depends on
 nothing; API is the outermost and depends on all.
 
+## Containers
+
+What has to be running — the SPA, the API, Redis and Azure SQL — and how it all talks to Stripe, is
+drawn in the [README](../../../README.md#architecture). The four layers below all live inside the **API** box: they are
+projects, not containers.
+
 ## Layers
 
 Arrows are project references. Each layer sees only the ones above it.
