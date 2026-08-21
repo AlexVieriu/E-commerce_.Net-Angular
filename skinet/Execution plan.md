@@ -138,7 +138,7 @@ users — proven at the API and in the browser.
 ## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25 · 10 working days)* · ⏳ CURRENT
 
 > A recruiter spends 30 seconds on the repo and 2 minutes on the live demo. This sprint makes both
-> survive that. **There is no README today** — T47 writes the first one.
+> survive that. **There was no README** — T47 wrote the first one.
 > Epics: `Docs`, `UX`. Order: **rotate the SQL password -> BUG-19** -> 47 -> 48 -> 52 -> 43 ->
 > BUG-10 -> BUG-14 -> 33 -> BUG-3 -> 38. Only the first is order-critical; the rest flex with the day's energy.
 > The start-here table in `progress.md` is the same order — keep them in step.
@@ -161,16 +161,10 @@ users — proven at the API and in the browser.
 | — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.5d** | -- | The gate grows a manual entry per sprint and nothing ever removes one — by Sprint E it is a 30-min ritual nobody runs honestly. Sprint 2 price change / Sprint 3 payment sync / BUG-11 belong in **T20b**'s harness (Sprint E); BUG-12 belongs in Playwright. This row moves them and deletes the blockquotes |
 | — | Sprint B Anki deck | — | **1d** | -- | 1 day per sprint |
 
-**Points: 7 · Est 7.5d of 10 — 2.5d slack.** *(Re-summed Aug 21: T47 dropped 2d → 0.5d, T38 came out of T47 at 0.5d of its own. The Anki day is slack, not work.)*
+**Points: 7 · Est 8.5d of 10 — 1.5d slack.** *(Committed at sprint start. Frozen — never re-summed as work completes or scope moves; the rows carry what actually happened.)*
 
-⚠️ **Burn-down 2026-08-20 — badly over-committed.** **4 working days left (Aug 20, 21, 24, 25) vs ~7.5d of
-unstarted work — ~3.5d over.** Aug 19–20 went to BUG-20 and the dependency refresh, both unplanned.
-**T47 alone is 2d of the 4.**
-**Decision (the user): cut nothing, re-assess at sprint end.** With no cut the overflow lands on whatever
-runs last, so **T47 must not be last** — start it by Aug 20; let BUG-3/T33 slip if something must.
-
-Sprint end: README live with screenshots, C4 diagram
-published, open redirect closed, indexes shipped, and the four defects a live demo actually shows.
+**Sprint end:** README live with screenshots, C4 diagram published, open redirect closed, indexes
+shipped, and the four defects a live demo actually shows.
 
 ---
 

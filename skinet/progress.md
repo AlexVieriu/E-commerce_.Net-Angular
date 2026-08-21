@@ -124,8 +124,8 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 |---|---|---|---|
 | ~~1~~ | ~~Rotate the Azure SQL password + audit the firewall~~ | ✅ done Aug 18 | Password was `Pa$$w0rd` **and in git history**; three stale client-IP firewall rules also removed |
 | ~~2~~ | ~~BUG-19 — read the coupon discount from Stripe~~ | ✅ done Aug 20 | Same lesson as BUG-18, one field over — the pairing is the interview story |
-| 3 | T47 — the README | 0.5d, energy 3–4 | The actual sprint. Highest ROI left in the plan. T38 (images) now closes the sprint |
-| 4 | T48 → T52 → T43 → BUG-10 → BUG-14 → T33 → BUG-3 | — | Plan order, unchanged |
+| ~~3~~ | ~~T47 — the README~~ | ✅ done Aug 21 | 0.5d against a 2d estimate; T38 (images) now closes the sprint |
+| 4 | T48 → T52 → T43 → BUG-10 → BUG-14 → T33 → BUG-3 → T38 | — | Plan order; T38 last, once the site's idea settles |
 | — | Deploy-gate cleanup | mechanical | Slot into any low-energy gap |
 
 - [x] T47 — README **create** *(#76 — 0.5d against a 2d estimate; no README existed before this)*
