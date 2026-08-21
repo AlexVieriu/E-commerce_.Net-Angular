@@ -16,13 +16,13 @@ Starts:
 
 ```bash
 # Backend
-dotnet run --project src/API
+dotnet run --project src/API --urls https://localhost:7096
 
 # Frontend (separate terminal)
 cd client && ng serve
 ```
 
-Backend on `https://localhost:7096`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL from `environment.development.ts` — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
+Backend on `https://localhost:7096`. ⚠️ **Nothing in the repo pins that port** — `launchSettings.json` sets no `applicationUrl`, so a fresh clone gets Kestrel's defaults and the client cannot reach the API. Pass `--urls` as above, or add an `applicationUrl` to `launchSettings.json`. The port is not free to change: `environment.development.ts` hardcodes `https://localhost:7096` for both `apiUrl` and `hubUrl`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
 
 ## Manual API testing (Scalar)
 
