@@ -98,7 +98,7 @@ dotnet user-secrets set "StripeSettings:WhSecret"  "whsec_..."        --project 
 dotnet user-secrets set "AdminSettings:Password"   "<admin password>" --project src/API
 
 # 3. API — migrations and seeding run at startup (--seed adds a bulk Bogus dataset)
-dotnet run --project src/API/API.csproj --urls https://localhost:7096
+dotnet run --project src/API/API.csproj                  # https://localhost:7096
 
 # 4. Client (separate terminal)
 cd client && npm ci && npx ng serve                     # https://localhost:4200
@@ -107,8 +107,8 @@ cd client && npm ci && npx ng serve                     # https://localhost:4200
 stripe listen --forward-to https://localhost:7096/api/payments/webhook
 ```
 
-The port is not optional: the client hardcodes `https://localhost:7096` for both the API and the SignalR
-hub (`client/src/environments/environment.development.ts`), and `launchSettings.json` doesn't pin it.
+The port isn't free to change — the client hardcodes `https://localhost:7096` for both the API and the
+SignalR hub (`client/src/environments/environment.development.ts`), so `launchSettings.json` pins it.
 `WhSecret` must match what `stripe listen` prints, or every webhook fails its signature check and orders
 sit at `Pending`.
 
