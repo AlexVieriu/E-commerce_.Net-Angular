@@ -123,12 +123,12 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 |---|---|---|---|
 | ~~1~~ | ~~Rotate the Azure SQL password + audit the firewall~~ | ✅ done Aug 18 | Password was `Pa$$w0rd` **and in git history**; three stale client-IP firewall rules also removed |
 | ~~2~~ | ~~BUG-19 — read the coupon discount from Stripe~~ | ✅ done Aug 20 | Same lesson as BUG-18, one field over — the pairing is the interview story |
-| 3 | T47 + T38 — the README | 2d, energy 3–4 | The actual sprint. Highest ROI left in the plan |
+| 3 | T47 — the README | 0.5d, energy 3–4 | The actual sprint. Highest ROI left in the plan. T38 (images) now closes the sprint |
 | 4 | T48 → T52 → T43 → BUG-10 → BUG-14 → T33 → BUG-3 | — | Plan order, unchanged |
 | — | Deploy-gate cleanup | mechanical | Slot into any low-energy gap |
 
 - [ ] T47 — README **create** *(days 1–2, highest ROI — no README exists today)*
-- [ ] T38 — README screenshots + GIFs *(folded into T47)*
+- [ ] T38 — README screenshots + GIFs *(last task of the sprint; placeholders already in the README)*
 - [ ] T48 — C4 diagram (Context+Container) in Mermaid → `docs/architecture.md`
 - [ ] T52 — Open redirect: validate `returnUrl` starts with `/`
 - [x] BUG-20 — Every coupon rejected; `promotion.coupon` needs `Expand`. Broke at the Jun 26 Stripe.net
