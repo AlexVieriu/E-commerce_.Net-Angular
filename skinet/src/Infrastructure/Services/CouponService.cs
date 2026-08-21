@@ -7,7 +7,7 @@ public class CouponService : ICouponService
 {
     public async Task<AppCoupon?> GetCouponFromPromoCode(string code)
     {
-        // Unset `Code` drops the filter, so Stripe would return every live code. (BUG-19)
+        // A missing `code` filter matches everything, not nothing — Stripe would return every live code. (BUG-19)
         if (string.IsNullOrWhiteSpace(code)) return null;
 
         // From here - Stripe code
