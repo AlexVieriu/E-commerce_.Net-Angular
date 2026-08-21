@@ -131,7 +131,8 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 
 - [x] T47 — README **create** *(#76 — 0.5d against a 2d estimate; no README existed before this)*
 - [ ] T38 — README screenshots + GIFs *(last task of the sprint; placeholders already in the README)*
-- [ ] T48 — C4 diagram (Context+Container) in Mermaid → `docs/architecture.md`
+- [ ] T48 — C4 **Container** diagram in Mermaid → `README.md` *(Context level cut Aug 21 — drawn, then
+      dropped as redundant)*
 - [ ] T52 — Open redirect: validate `returnUrl` starts with `/`
 - [x] BUG-20 — Every coupon rejected; `promotion.coupon` needs `Expand`. Broke at the Jun 26 Stripe.net
       51→52 bump *(an SDK version pins the API version — a dependency refresh was an API migration)*

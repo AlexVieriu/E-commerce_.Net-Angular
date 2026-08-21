@@ -34,9 +34,46 @@ cookie Identity with Admin/Customer roles and route guards on both sides.
 
 ## Architecture
 
+Everything that has to be running. Card details go straight from the browser to Stripe — the API only
+creates the intent and reconciles the result, so card data never touches it:
+
+```mermaid
+flowchart TB
+    customer["Customer<br/><i>[Person]</i>"]
+    admin["Admin<br/><i>[Person]</i>"]
+
+    subgraph skinet["Skinet"]
+        spa["Angular SPA<br/><i>[Angular 22, zoneless]</i><br/>Catalogue, cart, checkout,<br/>admin panel. Runs in the browser"]
+        api["API<br/><i>[ASP.NET Core, .NET 10]</i><br/>REST endpoints, SignalR hub,<br/>Stripe webhook"]
+        redis[("Redis<br/><i>[Redis]</i><br/>Cart per signed-in user,<br/>cached responses")]
+        db[("Azure SQL<br/><i>[Azure SQL, SQLite in dev]</i><br/>Catalogue, orders, identity")]
+    end
+
+    stripe["Stripe<br/><i>[External System]</i>"]
+
+    customer -->|HTTPS| spa
+    admin -->|HTTPS| spa
+    spa -->|"JSON over HTTPS,<br/>cookie auth"| api
+    spa -->|"Confirms the payment<br/>(Stripe.js)"| stripe
+    api -.->|"Serves the built app (wwwroot)<br/>Pushes order status (SignalR)"| spa
+    api -->|"Cart, cached responses"| redis
+    api -->|"EF Core"| db
+    api -->|"Creates payment intents,<br/>refunds"| stripe
+    stripe -.->|"POST /api/payments/webhook"| api
+
+    classDef person fill:#08427b,stroke:#052e56,color:#ffffff
+    classDef container fill:#438dd5,stroke:#2e6295,color:#ffffff
+    classDef store fill:#438dd5,stroke:#2e6295,color:#ffffff
+    classDef external fill:#999999,stroke:#6b6b6b,color:#ffffff
+    style skinet fill:none,stroke:#888888,stroke-dasharray:6 4
+    class customer,admin person
+    class spa,api container
+    class redis,db store
+    class stripe external
 ```
-Core  ←  Application  ←  Infrastructure  ←  API
-```
+
+Inside the API, the .NET side is four projects referenced one way only —
+`Core ← Application ← Infrastructure ← API`:
 
 - **Core** — entities, domain exceptions, repository interfaces. No project references at all.
 - **Application** — DTOs, validators, specifications, and the interfaces Infrastructure implements.
