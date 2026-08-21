@@ -2,6 +2,9 @@
 
 Standalone, zoneless, lazy-loaded Angular app.
 
+The SPA is one of four containers. How it sits against the API, Redis, Azure SQL and Stripe is drawn in
+the [README](../../../README.md#architecture).
+
 ## Folder Structure
 
 ```

@@ -3,6 +3,11 @@
 Map of `skinet/docs/`. Read the doc matching your task **before** starting it.
 Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list.
 
+## Diagrams
+
+**Containers** — what has to be running (SPA, API, Redis, Azure SQL) and how it all talks to Stripe:
+[README](../../README.md#architecture).
+
 ## Cross-cutting (`docs/`)
 
 - **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, CSP/CORS, **lint + analyzers** (ESLint/Prettier/Roslyn, and every suppression + why)
