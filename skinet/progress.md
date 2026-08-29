@@ -134,7 +134,8 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [ ] T38 — README screenshots + GIFs *(last task of the sprint; placeholders already in the README)*
 - [x] T48 — C4 **Container** diagram in Mermaid → `README.md` *(#77 — Context level cut Aug 21: drawn,
       then dropped as redundant)*
-- [ ] T52 — Open redirect: validate `returnUrl` starts with `/`
+- [ ] T52 — Open redirect: reject a non-local `returnUrl` *(no defect — the router already blocks it;
+      kept as defence in depth. Adds the first Angular unit test + a `npm test` CI step)*
 - [x] BUG-20 — Every coupon rejected; `promotion.coupon` needs `Expand`. Broke at the Jun 26 Stripe.net
       51→52 bump *(an SDK version pins the API version — a dependency refresh was an API migration)*
 - [x] BUG-19 — Coupon validated once, then trusted forever: by the order, the charge **and time**. Both
