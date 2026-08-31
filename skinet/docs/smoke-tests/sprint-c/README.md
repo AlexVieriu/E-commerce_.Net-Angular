@@ -6,6 +6,7 @@ deploy gate. Automated coverage and the gate checklist live in [`../../testing.m
 | File | Covers |
 |---|---|
 | [`bug-19-coupon-trust.md`](bug-19-coupon-trust.md) | Coupon validated once, trusted forever — 4 tests |
+| [`task-52-open-redirect.md`](task-52-open-redirect.md) | `?returnUrl=` cannot leave the origin — 9 URL runs + 2 logins |
 
 ## Read first
 
