@@ -21,10 +21,10 @@ public class ProductSpecification : BaseSpecification<Product>
         switch (specParams.Sort)
         {
             case "priceAsc":
-                AddOrderByAsc(p => (object)p.Price);
+                AddOrderByAsc(p => p.Price);
                 break;
             case "priceDesc":
-                AddOrderByDescending(p => (object)p.Price);
+                AddOrderByDescending(p => p.Price);
                 break;
             default:
                 AddOrderByAsc(p => p.Name);

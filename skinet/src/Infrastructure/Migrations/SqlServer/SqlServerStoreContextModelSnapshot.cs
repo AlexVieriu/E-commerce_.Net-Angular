@@ -17,7 +17,7 @@ namespace Infrastructure.Migrations.SqlServer
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -195,7 +195,8 @@ namespace Infrastructure.Migrations.SqlServer
 
                     b.Property<string>("BuyerEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("DeliveryMethodId")
                         .HasColumnType("int");
@@ -223,6 +224,9 @@ namespace Infrastructure.Migrations.SqlServer
 
                     b.HasIndex("PaymentIntentId")
                         .IsUnique();
+
+                    b.HasIndex("BuyerEmail", "OrderDate")
+                        .IsDescending(false, true);
 
                     b.ToTable("Orders");
                 });
@@ -261,7 +265,8 @@ namespace Infrastructure.Migrations.SqlServer
 
                     b.Property<string>("Brand")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -269,7 +274,8 @@ namespace Infrastructure.Migrations.SqlServer
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PictureUrl")
                         .IsRequired()
@@ -284,9 +290,16 @@ namespace Infrastructure.Migrations.SqlServer
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("Price");
+
+                    b.HasIndex("Brand", "Type");
 
                     b.ToTable("Products");
                 });
