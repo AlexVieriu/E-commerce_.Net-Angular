@@ -100,7 +100,10 @@ jobs:
         working-directory: ./skinet/client
         run: npm run format:check
 
-      # Angular unit tests are out of scope — UI flows are covered by Playwright (T37).
+      - name: Test
+        working-directory: ./skinet/client
+        run: npm test -- --watch=false
+
       - name: Build
         working-directory: ./skinet/client
         run: npm run build
