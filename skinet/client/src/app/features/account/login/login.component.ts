@@ -49,9 +49,9 @@ export class LoginComponent {
 function hasControlCharacter(value: string): boolean {
   for (const character of value) {
     const code = character.charCodeAt(0);
+    // Examples: tab 0x09, newline 0x0a, carriage return 0x0d, DEL 0x7f.
     if (code <= 0x1f || (code >= 0x7f && code <= 0x9f)) return true;
   }
-
   return false;
 }
 

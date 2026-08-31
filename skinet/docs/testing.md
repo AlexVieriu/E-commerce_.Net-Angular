@@ -11,6 +11,7 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
       against the real thing, so without it those tests fail on a connection error, not an assertion
 - [ ] `dotnet build -c Release` clean — **Release is where analyzer warnings become errors** (T54)
 - [ ] `npm run lint` + `npm run format` clean (frontend)
+- [ ] `npm test -- --watch=false` green (frontend) — the bare `--` ends npm's own arguments
 - [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches.
       Write the steps down in `smoke-tests/sprint-<n>.md` as you go: a check you can't hand to
       someone else is a check you'll re-derive from scratch at the deploy gate
@@ -78,7 +79,26 @@ Both local and Azure green → sprint is closed. See `git-workflow.md` for the m
 
 # Reference — writing tests
 
-xUnit (.NET), v3 + FluentAssertions + Moq. No Angular unit tests — UI flows covered by Playwright E2E (`skinet/e2e/`, Task 37).
+xUnit (.NET), v3 + FluentAssertions + Moq. Angular unit tests run on **Vitest** (T52) — see below.
+UI *flows* are covered by Playwright E2E (`skinet/e2e/`, Task 37), which is local-only.
+
+## Angular unit tests (`client/src/**/*.spec.ts`)
+
+```bash
+cd skinet/client
+npm test                      # watch mode in a terminal
+npm test -- --watch=false     # one run — what CI does
+```
+
+- **Runner: Vitest**, set in `angular.json`'s `test` target (`builder: @angular/build:unit-test`,
+  `runner: vitest`). Karma cannot run here — root `overrides` force `glob 10` / `rimraf 5` on the whole
+  tree and `karma@6.4.4` needs 7 / 3.
+- **Environment: jsdom, no browser.** `browsers` is deliberately absent; per the builder schema, *"When
+  not specified, tests are run in a Node.js environment using jsdom."* So there is no address bar, no
+  navigation and nothing rendered — anything needing those belongs in Playwright.
+- **What they're for:** pure logic reachable from a component's public surface. `isLocalUrl`'s decision
+  is the first example (`login/login.component.spec.ts`, 14 cases).
+- Each case builds its own `TestBed`, because the value under test is read in the constructor.
 
 ## Playwright E2E (`skinet/e2e/`)
 
@@ -190,7 +210,8 @@ tests/
 └── API.Tests/            # Endpoint contracts end-to-end (real host, real Redis)
 ```
 
-Shared helpers in `tests/Tests.Shared/`.
+Shared helpers in `tests/Tests.Shared/`. Frontend tests live beside their component as
+`*.spec.ts` under `client/src/`, not in a separate project.
 
 ## Coverage
 
@@ -216,6 +237,9 @@ dotnet test tests/API.Tests
 # With coverage (requires dotnet-coverage tool)
 dotnet-coverage collect "dotnet test" --output coverage.xml --output-format cobertura
 reportgenerator -reports:coverage.xml -targetdir:coverage-report -reporttypes:TextSummary "-assemblyfilters:+Core;+Application;+Infrastructure"
+
+# Frontend (from skinet/client)
+npm test -- --watch=false
 ```
 
 ## Naming
