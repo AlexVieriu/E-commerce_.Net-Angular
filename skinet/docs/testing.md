@@ -13,8 +13,7 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 - [ ] `npm run lint` + `npm run format` clean (frontend)
 - [ ] `npm test -- --watch=false` green (frontend) — the bare `--` ends npm's own arguments
 - [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches.
-      Write the steps down in `smoke-tests/sprint-<n>.md` as you go: a check you can't hand to
-      someone else is a check you'll re-derive from scratch at the deploy gate
+      **Write it down only if it earns a file** (see below); most tasks don't
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
 CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
@@ -35,9 +34,16 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
       is still rejected. No test can reach `CouponService` (no DI seam, `[ExcludeFromCodeCoverage]`), which
       is why BUG-20 hid for two months
 
-**This sprint's behaviors** — the full per-task steps live in `smoke-tests/sprint-<n>.md`, one file per
-sprint. Run the current sprint's file here. Past sprints are locked by the test suite; the entries below
-predate the folder and stay until their sprint file exists.
+**This sprint's behaviors** — `smoke-tests/sprint-<n>/`. Run the current sprint's files here. Past sprints
+are locked by the test suite; the entries below predate the folder and stay until their sprint file exists.
+
+**A task earns a file only when both hold:** no automated test can reach the check, *and* you'd re-derive
+the steps at the gate. Expect ~1 per sprint. Anything the Core smoke above already walks through — the page
+loads, the filter filters, the sort sorts — does not earn one. A folder of files nobody runs is worse than
+no folder.
+> _Sprint D:_ see [`smoke-tests/sprint-d/`](smoke-tests/sprint-d/) — T43 index measurement + the one new
+> check (an over-long product name must be a 400).
+>
 > _Sprint C:_ see [`smoke-tests/sprint-c/`](smoke-tests/sprint-c/README.md) — one file per task or bug.
 > BUG-19 coupon trust is 4 tests; needs `stripe listen` and a throwaway Stripe campaign. Test D needs a
 > coupon with **cents** — `gimme5` and `gimme10` are whole amounts and cannot catch a truncated conversion.

@@ -1,12 +1,11 @@
 # Task 43 — DB indexes: the measurement
 
-`Products` had **zero** indexes; `Orders` had nothing on `BuyerEmail`. This file is the evidence that the
-four new indexes changed the plans, not just the schema.
+Mostly a **measurement record**, not a checklist — the evidence that the four indexes changed the plans, not
+just the schema. One new manual check at the bottom.
 
-Dev runs on SQLite and everything else on SQL Server, so `dotnet run` never applies a SqlServer migration —
-it would debut on Azure. Everything below ran against the **compose `sqlserver` container**
-([`../../build-deployment.md`](../../build-deployment.md)), which is also where the `AlterColumn` was proved
-before Azure ever saw it.
+`Products` had **zero** indexes; `Orders` had nothing on `BuyerEmail`. Everything below ran against the
+compose `sqlserver` container ([`../../build-deployment.md`](../../build-deployment.md)) — dev is SQLite, so
+`dotnet run` never applies a SqlServer migration and it would otherwise debut on Azure.
 
 ## Method
 
@@ -83,22 +82,18 @@ will still fail if production holds duplicate `PaymentIntentId` values. **Check 
 SELECT PaymentIntentId, COUNT(*) FROM Orders GROUP BY PaymentIntentId HAVING COUNT(*) > 1;
 ```
 
-## The browser runs
+## The one manual check
 
-Baseline data only (52 products, 25 orders) — at that size every plan is a scan regardless, so these prove
-**nothing broke**, not that anything got faster. That is what the section above is for.
+| Do | Expect |
+|---|---|
+| Admin → create a product with a 200-char name | **400** with a validation message — not a 500 |
 
-| # | Do | Expect |
-|---|---|---|
-| 1 | `/shop` with no filters | grid loads, sorted A→Z by name |
-| 2 | `/shop`, filter Brand = Angular + Type = Boards | only matching products; the result count is right |
-| 3 | same, sort by Price low→high, then high→low | order flips; first and last swap |
-| 4 | sign in, `/orders` | the buyer's orders, newest first |
-| 5 | admin, create a product with a 200-char name | **400** with a validation message — not a 500 |
+`HasMaxLength(100)` without the matching `MaximumLength(100)` in `CreateProductDtoValidator.cs` lets the
+value reach SQL Server and come back as `String or binary data would be truncated`.
 
-Run 5 is the one this task added. `HasMaxLength(100)` without the matching `MaximumLength(100)` in
-`CreateProductDtoValidator.cs` would let the value reach SQL Server and come back as
-`String or binary data would be truncated`.
+Shop grid, filters, sorts and the order list are the **Core smoke** in
+[`../../testing.md`](../../testing.md) — no separate steps here. On baseline data (52 products) every plan
+is a scan anyway, so a browser run proves nothing broke, never that anything got faster.
 
 ## Resetting the container
 
