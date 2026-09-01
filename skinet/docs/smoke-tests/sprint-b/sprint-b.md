@@ -4,7 +4,7 @@ Manual checks for Sprint B, one section per task or bug that changed something y
 browser. Run a section when you finish that task; run the whole file before the sprint's deploy gate.
 
 These are the checks no automated test makes: real Stripe, real cookies, real browser state across
-two people. Automated coverage and the deploy-gate checklist live in [`../testing.md`](../testing.md).
+two people. Automated coverage and the deploy-gate checklist live in [`../../testing.md`](../../testing.md).
 
 ## Before any section
 

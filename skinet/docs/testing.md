@@ -43,7 +43,7 @@ the steps at the gate. Expect ~1 per sprint. One line per sprint here — the st
 |---|---|---|
 | D | [`sprint-d/`](smoke-tests/sprint-d/) | nothing extra |
 | C | [`sprint-c/`](smoke-tests/sprint-c/README.md) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
-| B | [`sprint-b.md`](smoke-tests/sprint-b.md) | `stripe listen` + two accounts; the 12 steps run in order |
+| B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |
 
 **Legacy checks with no file yet** — these move into T20b's harness / Playwright at the Sprint D
 deploy-gate cleanup, then get deleted from here.
