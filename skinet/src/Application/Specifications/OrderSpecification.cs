@@ -20,9 +20,9 @@ public class OrderSpecification : BaseSpecification<Order>
     public static OrderSpecification ById(int id)
         => new OrderSpecification(o => o.Id == id);
 
-    // Instead of immediately executing orders.Where(o => o.BuyerEmail == "john@example.com"), 
-    // you're storing the instructions for that filter so Entity Framework can translate 
-    // it to SQL later:  SELECT * FROM Orders WHERE BuyerEmail = 'john@example.com' ORDER BY OrderDate DESC
+    // Nothing runs here: the lambda is an expression tree, stored as data.
+    // SpecificationEvaluator hands it to EF, which translates it to
+    // WHERE BuyerEmail = @email ORDER BY OrderDate DESC.
     public static OrderSpecification ByEmail(string email)
     {
         var spec = new OrderSpecification(o => o.BuyerEmail == email);

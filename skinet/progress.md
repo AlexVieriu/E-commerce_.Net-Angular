@@ -44,6 +44,7 @@ than repeating it.
 | Aug 21 | T47 *(PR #76)* | The repo's first README, cut 207 → 134 lines against two real big-tech examples. Verifying it caught three defects. |
 | Aug 21 | T48 *(PR #77)* | C4 **container** diagram in Mermaid. The spike described the four .NET layers as containers — wrong, and caught only after deciding. |
 | Aug 30 | T52 *(PR #78)* | **No defect** — a `UrlTree` has no host field, so the router already sent a hostile `returnUrl` to `/not-found`. Guarded at the read site anyway; adds the client's first 14 unit tests. |
+| Sep 1 | T43, T49 *(PR #80)* | Four indexes shaped to the real queries, measured on 200k rows — landing page 15,062 → 46 logical reads, order list 7,722 → 320. Uncovered that T18's unique index had never run on SQL Server: no `.Designer.cs`, so EF never discovered it. SQL Server added to compose. Numbers: `docs/smoke-tests/sprint-d/task-43-db-indexes.md` |
 
 ---
 
@@ -332,20 +333,19 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
       an order from** another user's cart — money path. Order history is **not** affected. Found Aug 5
       smoke-testing BUG-17. Also delivers T20's `WebApplicationFactory` harness and **closes T12**.
 
-## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25)*
+## Sprint C — README + Demo Fixes *(Aug 12 – Aug 25 · closed Aug 31 — **+6d**, 9 shipped · 7 carried)*
 
-**Start here.** Only #1 is order-critical; the rest can flex with the day's energy.
+**Goal met on the docs half** — README, C4 diagram and the coupon money path all shipped. The seven UX/index
+rows never started and **carry to Sprint D**. T52 alone ran **2.5d against a 0.5d estimate**, all of it gate.
 
 | # | Item | Needs | Why here |
 |---|---|---|---|
 | ~~1~~ | ~~Rotate the Azure SQL password + audit the firewall~~ | ✅ done Aug 18 | Password was `Pa$$w0rd` **and in git history**; three stale client-IP firewall rules also removed |
 | ~~2~~ | ~~BUG-19 — read the coupon discount from Stripe~~ | ✅ done Aug 20 | Same lesson as BUG-18, one field over — the pairing is the interview story |
-| ~~3~~ | ~~T47 — the README~~ | ✅ done Aug 21 | 0.5d against a 2d estimate; T38 (images) now closes the sprint |
-| 4 | T48 → T52 → T43 → BUG-10 → BUG-14 → T33 → BUG-3 → T38 | — | Plan order; T38 last, once the site's idea settles |
-| — | Deploy-gate cleanup | mechanical | Slot into any low-energy gap |
+| ~~3~~ | ~~T47 — the README~~ | ✅ done Aug 21 | 0.5d against a 2d estimate; T38 (images) split out to Sprint D |
+| ~~4~~ | ~~T48 → T52~~ | ✅ done Aug 21 / Aug 31 | T52 was the 2.5d row — no defect found, but its gate is what ate the sprint |
 
 - [x] T47 — README **create** *(#76 — 0.5d against a 2d estimate; no README existed before this)*
-- [ ] T38 — README screenshots + GIFs *(last task of the sprint; placeholders already in the README)*
 - [x] T48 — C4 **Container** diagram in Mermaid → `README.md` *(#77 — Context level cut Aug 21: drawn,
       then dropped as redundant)*
 - [x] T52 — Open redirect: reject a non-local `returnUrl` *(#78 — no defect; kept as defence in
@@ -354,30 +354,67 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
       51→52 bump *(an SDK version pins the API version — a dependency refresh was an API migration)*
 - [x] BUG-19 — Coupon validated once, then trusted forever: by the order, the charge **and time**. Both
       paths now re-derive from the promotion code *(#75)*
-- [ ] T43 — DB indexes: BuyerEmail, composite (Brand,Type), Price *(unique PaymentIntentId already exists)*
-- [ ] BUG-10 — Top loading bar spins forever *(1d timebox — root cause unproven)*
-- [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`)
-- [ ] T33 — `<mat-error>` on the checkout forms *(register already has it via `app-text-input`)*
-- [ ] BUG-3 — Checkout: hint on an empty required address field
 - [x] Rotate the Azure SQL password + audit the server firewall *(done Aug 18 — 28-char password; three
       stale client-IP rules removed)*
-- [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(they move into T20b's
-      integration harness and Playwright; the gate currently grows every sprint and shrinks never)*
 - [x] Sprint B Anki deck — 29 cards *(`questions/sprint-B/sprint-B-interview/`, local-only)*
 - [x] T12 — Cart ownership — **closed by BUG-18**, same work
 
-## Sprint D — Order Domain *(Aug 26 – Sep 8)*
+## Re-baseline — 2026-08-31
+
+Second slip in a row. The interview moved with the deadline this time, and the **estimates were rebuilt from
+measured actuals** rather than the plan's original "without Claude Code" numbers (`Execution plan.md:6`).
+
+- **Dates:** interview Sep 30 → **Oct 14** · v1.0 Sep 22 → **Oct 6**. Both moved exactly 2 weeks, both keep
+  their weekday, and the 6-day prep window survives intact. **27 working days** to v1.0.
+- **Letters:** Sprint C's remainder became **Sprint D — Demo Polish**; old D → **E**, old E → **F**. Nothing
+  historical was renamed — no `sprint-d` artifacts existed in `spikes/`, `questions/` or `smoke-tests/`.
+- **The ledger that drove the re-estimate:**
+
+  | Task | Est | Actual | Gate? |
+  |---|---|---|---|
+  | T47 README | 2d | **0.5d** | no |
+  | T48 C4 diagram | 1d | ~1d | no |
+  | BUG-19 + BUG-20 + deps | — | **3 items in one day** (Aug 20) | no |
+  | T52 open redirect | 0.5d | **2.5d** | 🔴 yes |
+
+- **The rule it produced:** mechanical rows are over-estimated ~2× — Claude Code writes them and you review.
+  **LEARN rows are left alone**: the gate is their real cost and Claude Code does not make you learn faster.
+  So T40, T22 and T42 keep their numbers; everything else was halved.
+- **Result:** ~18.25d of work against 27 working days — **~9d slack (32%)**. Nothing was cut. The slack is not
+  padding: Sprint C planned 1.5d of slack and overran by 10 days, and three LEARN gates are still ahead.
+- **AZ-900** moved to ~Oct 14 with the interview; AZ-204 to ~late Nov.
+- 🔴 **The date lever is spent.** Oct 14 is fixed — the next slip is paid for in scope, not days.
+  Cut order: T50 > T21 > T35/T10/T49 > T41 > T40.
+
+## Sprint D — Demo Polish *(Aug 31 – Sep 8 · 7 working days)* — **CURRENT**
+
+Sprint C's remainder in its own timebox: everything a visitor clicks in the first two minutes, plus the index
+task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → deploy-gate → T38.
+
+- [x] T43 — DB indexes: BuyerEmail, composite (Brand,Type), Price *(0.5d — one migration per provider;
+      `HasMaxLength` before `HasIndex`; the grid's default sort is `Name`)*
+- [x] T49 — `docker-compose.yml`: add SQL Server beside Redis + document it *(0.25d — **pulled forward from
+      Sprint F**; T43 measures against this container, so the two ship together)*
+- [ ] BUG-10 — Top loading bar spins forever *(1d timebox — root cause unproven, reproduce on live first)*
+- [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`) *(0.25d)*
+- [ ] T33 — `<mat-error>` on the checkout forms *(0.25d — register already has it via `app-text-input`)*
+- [ ] BUG-3 — Checkout: hint on an empty required address field *(0.25d — **do it with T33**, same forms)*
+- [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(0.5d, docs only)*
+- [ ] T38 — README screenshots + GIFs *(0.5d — **last**, once the UI stops moving)*
+- [ ] Sprint C Anki deck
+
+## Sprint E — Order Domain *(Sep 9 – Sep 22)*
 
 - [ ] T40 — OrderStatus + append-only OrderStatusHistory *(3d — spike first: one enum or two?)*
-- [ ] T41 — Order cancellation: POST cancel + Stripe refund *(refund plumbing already exists)*
+- [ ] T41 — Order cancellation: POST cancel + Stripe refund *(0.75d — refund plumbing already exists)*
 - [ ] BUG-2 — Checkout: declined card can't retry in-session *(money path)*
 - [ ] BUG-17 — Logout → `/checkout` doesn't redirect to login *(`auth.guard.ts` navigates instead of
       returning a `UrlTree`, and loses the race with `emptycart.guard.ts`). Found by T37, currently red.*
-- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries *(re-sized M — 27 endpoints, 0 attributes)*
-- [ ] T21 — Coverage gate: coverlet, fail PR < 60%
-- [ ] Sprint C Anki deck
+- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries *(0.5d — 27 endpoints, 0 attributes)*
+- [ ] T21 — Coverage gate: coverlet, fail PR < 60% *(0.25d)*
+- [ ] Sprint D Anki deck
 
-## Sprint E — Production Hardening *(Sep 9 – Sep 22)* — **v1.0 ships**
+## Sprint F — Production Hardening *(Sep 23 – Oct 6)* — **v1.0 ships Oct 6**
 
 - [ ] T22 — Serilog structured logging *(App Service, no Seq)*
 - [ ] T23 — Correlation IDs — one id per request, on every log line
@@ -385,15 +422,15 @@ Original plan slipped ~2 weeks; not recoverable by re-sequencing. Re-planned aga
 - [ ] T20b — Extend the API integration harness: auth, orders, payments happy paths
 - [ ] T10 — Health-check endpoints
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
-- [ ] T49 — `docker-compose.yml`: Redis + SQL Server *(one-command local startup)*
 - [ ] T35 — `NgOptimizedImage` on catalog images
 - [ ] fix/BUG-16 — move the checkout cart-reload out of `errorInterceptor`
 - [ ] fix/401-ctx — `HttpContextToken` instead of the 401 URL sniff
+- [ ] Sprint E Anki deck
 
-## Interview Prep *(Sep 23 – Sep 30)* — DO NOT FILL
+## Interview Prep *(Oct 7 – Oct 14)* — DO NOT FILL
 
 - [ ] T53 — Final Azure smoke test *(non-negotiable, always last)*
-- [ ] Sprint D + E Anki · full interview deck · re-read every gate doc · slack
+- [ ] Full interview deck · re-read every gate doc · slack
 
 > Descoped for v1.0 (~22 pts): see `Execution plan.md`.
 

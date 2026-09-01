@@ -31,7 +31,7 @@ public class ProductSpecification : BaseSpecification<Product>
         (p.Brands.Count == 0 || p.Brands.Contains(x.Brand)))
     {
         ApplyPaging(p.PageSize * (p.PageIndex - 1), p.PageSize);
-        AddOrderByAsc(x => (object)x.Price);
+        AddOrderByAsc(x => x.Price);
     }
 }
 
@@ -60,10 +60,11 @@ The spec's properties are read in exactly **one** place — `SpecificationEvalua
 
 - Namespace must be `Application.Specifications` — not nested under the class name.
 - Never put query logic in controllers or services.
-- Cast `decimal` to `(object)` for ordering — never `(double)` (precision loss).
+- No cast on a `decimal` sort. The parameter is `Expression<Func<T, object>>`, so C# adds the boxing
+  conversion itself. Never `(double)` — it loses precision.
 
 ## Common Mistakes
 
-- `(double)` cast on decimal ordering — use `(object)`.
+- Any cast on decimal ordering — `(object)` is redundant, `(double)` is wrong.
 - Spec namespace matching the class name (e.g., `Application.Specifications.ProductSpecification`).
 - Passing `skip < 0` or `take <= 0` to `ApplyPaging` — throws `ArgumentOutOfRangeException`.

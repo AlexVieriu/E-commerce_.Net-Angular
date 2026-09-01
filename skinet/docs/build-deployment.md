@@ -4,13 +4,39 @@ Docker Compose for dev dependencies. Angular `ng build` output served by .NET.
 
 ## Docker Compose (dev)
 
+**Start dependencies before `dotnet run` or `dotnet test`** — on a clean machine the tests fail with no hint
+why if Redis is not up.
+
 ```bash
+cp .env.example .env      # then set MSSQL_SA_PASSWORD
 docker compose up -d
 ```
 
 Starts:
 - `redis` (port `6379`) — cart + response cache
-- `sqlite3` — data persisted to `./data`
+- `sqlite` — data persisted to `./data` (the container is named `sqlite3`)
+- `sqlserver` (port `1433`) — SQL Server 2025, **Developer** edition
+
+`MSSQL_SA_PASSWORD` has no default: compose fails loudly if `.env` is missing, rather than booting on a
+weak password. `.env` is git-ignored; `.env.example` is the committed template.
+
+### Why a SQL Server container when dev runs on SQLite
+
+Dev uses SQLite and everything else uses SQL Server (`ApplicationServicesExtensions.cs:34`), so **`dotnet
+run` never exercises the SqlServer migrations** — they would first execute against Azure on deploy. The
+container is where you apply and verify them, and where query plans can be read on the same engine family
+production uses. LocalDB also works but is Express edition (smaller buffer pool, fewer cores).
+
+Point EF at it without touching code — `SqlServerContextFactory` already reads environment variables:
+
+```bash
+export ConnectionStrings__SqlServerAzureConnection="Server=localhost,1433;Database=skinet;User Id=sa;Password=<from .env>;TrustServerCertificate=True"
+dotnet ef database update --context SqlServerStoreContext
+```
+
+The image is ~1.5 GB and there is no smaller option: every tag on `mcr.microsoft.com/mssql/server` is
+Ubuntu-based (SQL Server is closed source, built against glibc), and Azure SQL Edge — the small variant —
+was retired 2025-09-30.
 
 ## Development
 

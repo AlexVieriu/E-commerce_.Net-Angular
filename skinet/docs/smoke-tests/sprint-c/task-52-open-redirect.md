@@ -5,8 +5,8 @@
 This file proves that in a **real browser**, where Chrome parses the URL — the unit tests hand the
 value to a fake `ActivatedRoute` instead, so they never exercise the browser's own parsing.
 
-Stripe and Redis are not involved. You need the API and the client from
-[`README.md`](README.md) — nothing else.
+Stripe and Redis are not involved — the API (`dotnet run --project src/API/API.csproj`) and the client
+(`npx ng serve` from `skinet/client/`), nothing else.
 
 ⚠️ Without the API the app does not boot at all. `initializeApp` (`app.config.ts:18`) rejects,
 `main.ts:5` logs an `HttpErrorResponse`, and no component is ever constructed. A blank page with
