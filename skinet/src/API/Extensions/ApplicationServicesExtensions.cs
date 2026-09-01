@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.OpenApi;
 using Application.Common.Validators;
 
 namespace API.Extensions;
@@ -21,7 +22,24 @@ public static class ApplicationServicesExtensions
         // scoped IValidator<T>. Scoped is the safe default.
         services.AddValidatorsFromAssemblyContaining<CreateProductDtoValidator>();
 
-        services.AddOpenApi();
+        // Declare Bearer in the OpenAPI document so Scalar shows an auth box.
+        // Without a scheme Scalar sends no Authorization header and every secured call is a 401.
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, context, ct) =>
+            {
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    In = ParameterLocation.Header,
+                    Description = "Paste the accessToken from POST /api/login"
+                };
+                return Task.CompletedTask;
+            });
+        });
 
         services.AddSingleton<IConnectionMultiplexer>(_ =>
         {
