@@ -44,6 +44,7 @@ than repeating it.
 | Aug 21 | T47 *(PR #76)* | The repo's first README, cut 207 → 134 lines against two real big-tech examples. Verifying it caught three defects. |
 | Aug 21 | T48 *(PR #77)* | C4 **container** diagram in Mermaid. The spike described the four .NET layers as containers — wrong, and caught only after deciding. |
 | Aug 30 | T52 *(PR #78)* | **No defect** — a `UrlTree` has no host field, so the router already sent a hostile `returnUrl` to `/not-found`. Guarded at the read site anyway; adds the client's first 14 unit tests. |
+| Sep 1 | T43, T49 *(PR #80)* | Four indexes shaped to the real queries, measured on 200k rows — landing page 15,062 → 46 logical reads, order list 7,722 → 320. Uncovered that T18's unique index had never run on SQL Server: no `.Designer.cs`, so EF never discovered it. SQL Server added to compose. Numbers: `docs/smoke-tests/sprint-d/task-43-db-indexes.md` |
 
 ---
 
@@ -390,9 +391,9 @@ measured actuals** rather than the plan's original "without Claude Code" numbers
 Sprint C's remainder in its own timebox: everything a visitor clicks in the first two minutes, plus the index
 task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → deploy-gate → T38.
 
-- [ ] T43 — DB indexes: BuyerEmail, composite (Brand,Type), Price *(0.5d — one migration per provider;
+- [x] T43 — DB indexes: BuyerEmail, composite (Brand,Type), Price *(0.5d — one migration per provider;
       `HasMaxLength` before `HasIndex`; the grid's default sort is `Name`)*
-- [ ] T49 — `docker-compose.yml`: add SQL Server beside Redis + document it *(0.25d — **pulled forward from
+- [x] T49 — `docker-compose.yml`: add SQL Server beside Redis + document it *(0.25d — **pulled forward from
       Sprint F**; T43 measures against this container, so the two ship together)*
 - [ ] BUG-10 — Top loading bar spins forever *(1d timebox — root cause unproven, reproduce on live first)*
 - [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`) *(0.25d)*

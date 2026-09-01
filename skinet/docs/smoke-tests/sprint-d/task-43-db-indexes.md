@@ -84,12 +84,15 @@ SELECT PaymentIntentId, COUNT(*) FROM Orders GROUP BY PaymentIntentId HAVING COU
 
 ## The one manual check
 
-| Do | Expect |
-|---|---|
-| Admin → create a product with a 200-char name | **400** with a validation message — not a 500 |
+| Do | Expect | Result |
+|---|---|---|
+| Admin → create a product with a 200-char name | **400** with a validation message — not a 500 | ✅ Sep 1 — `400`, `"The length of 'Name' must be 100 characters or fewer. You entered 200 characters."` |
 
 `HasMaxLength(100)` without the matching `MaximumLength(100)` in `CreateProductDtoValidator.cs` lets the
 value reach SQL Server and come back as `String or binary data would be truncated`.
+
+Auth for this call: `POST /api/login` returns an `accessToken` — send it as `Authorization: Bearer …`.
+Scalar does not keep the cookie that `?useCookies=true` sets, so cookie login gives a 401 on the next call.
 
 Shop grid, filters, sorts and the order list are the **Core smoke** in
 [`../../testing.md`](../../testing.md) — no separate steps here. On baseline data (52 products) every plan
