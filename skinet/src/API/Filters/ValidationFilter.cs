@@ -2,10 +2,8 @@ using FluentValidation;
 
 namespace API.Filters;
 
-// [ApiController] runs DataAnnotations, but NOT FluentValidation — this filter is the missing trigger.
-// For each action argument it resolves IValidator<T> from DI and runs it.
-// On failure it short-circuits with a 400 ValidationProblemDetails (same shape as DataAnnotations).
-// Arguments with no registered validator pass through.
+// [ApiController] runs DataAnnotations, not FluentValidation — this filter is the missing trigger.
+// Resolves IValidator<T> per action argument; on failure short-circuits with a 400.
 public class ValidationFilter : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)

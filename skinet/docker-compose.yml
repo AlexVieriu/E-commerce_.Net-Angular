@@ -4,7 +4,7 @@ services:
     container_name: sqlite3
     command: tail -f /dev/null # Keeps the container running
     volumes:
-      - ./data:/data # Persists SQLite data in the local `data` folder
+      - ./data:/data
     working_dir: /data
   redis:
     image: redis:8-alpine
@@ -12,30 +12,27 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis-data:/data # Persists Redis data in the local `data` folder
+      - redis-data:/data
   sqlserver:
-    # Developer edition (the image default) — feature-equivalent to Enterprise, unlike LocalDB's Express.
-    # This is what dev measures against so the plans resemble Azure SQL's.
-    # No alpine/slim variant exists: all 274 MCR tags are Ubuntu-based, because SQL Server is closed
-    # source and built against glibc. ~1.5 GB is the floor.
+    # Developer edition: Enterprise features, free for dev — so local plans resemble Azure SQL's. ~1.5 GB, no slim tag exists.
     image: mcr.microsoft.com/mssql/server:2025-latest
     container_name: sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      # No default on purpose: a weak password in this file is how the Aug 18 rotation started.
+      # No default on purpose — a weak password committed here is what the Aug 18 rotation was about.
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD in skinet/.env — see .env.example}
       MSSQL_PID: Developer
     ports:
       - "1433:1433"
     volumes:
-      - sqlserver-data:/var/opt/mssql # Survives `docker compose down`; use `-v` to wipe it
+      - sqlserver-data:/var/opt/mssql # Survives `down`; `down -v` wipes it
     healthcheck:
-      # -C trusts the container's self-signed certificate; without it sqlcmd 18 refuses to connect.
+      # -C trusts the self-signed cert; sqlcmd 18 refuses to connect without it.
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s # First boot builds the system databases, which is slow
+      start_period: 30s # First boot builds the system databases
 
 volumes:
   redis-data:
