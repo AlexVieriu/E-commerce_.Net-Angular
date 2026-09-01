@@ -42,7 +42,7 @@ the steps at the gate. Expect ~1 per sprint. One line per sprint here — the st
 | Sprint | Where | Needs |
 |---|---|---|
 | D | [`sprint-d/`](smoke-tests/sprint-d/) | nothing extra |
-| C | [`sprint-c/`](smoke-tests/sprint-c/README.md) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
+| C | [`sprint-c/`](smoke-tests/sprint-c/) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
 | B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |
 
 **Legacy checks with no file yet** — these move into T20b's harness / Playwright at the Sprint D

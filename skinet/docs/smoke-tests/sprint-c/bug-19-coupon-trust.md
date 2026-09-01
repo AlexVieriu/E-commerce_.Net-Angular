@@ -1,8 +1,16 @@
 # BUG-19 — coupon validated once, trusted forever
 
-Setup and the Scalar tamper steps: [`README.md`](README.md).
 What fires when, and who writes the cart: [`payment.md`](../../backend/payment.md) — **read it first if a
-reading surprises you.** Where each test hooks into that timeline:
+reading surprises you.** Three things explain nearly every confusing reading:
+
+- The payment intent is created on **`/checkout` page load**, not at the Payment step. That first one has
+  `deliveryMethodId` still null, so it carries **$0 shipping**.
+- `POST /api/cart` always sends Angular's **in-memory** cart, and four actions trigger it — a cart you
+  changed server-side can be silently overwritten.
+- A rejected coupon leaves the cart **visually unchanged** (`applyCouponCode` has no error handler), so a
+  code that 400'd looks like it applied.
+
+Where each test hooks into that timeline:
 
 | Test | Hooks in at |
 |---|---|
@@ -33,6 +41,48 @@ A and B ride `POST /api/cart`, which writes the request body to Redis verbatim. 
 | `gimme10` | `8uwMfxnw` | 10% off |
 | `BLACKFRIDAY50` | created in test B | 50% off, code **deactivated** mid-test |
 
+## Setup
+
+| Service | Start it | Verify |
+|---|---|---|
+| Redis | `docker compose up -d redis` (from `skinet/`) | `docker exec redis redis-cli PING` → `PONG` |
+| API | `dotnet run --project src/API/API.csproj` | `https://localhost:7096/api/products` → 200 |
+| Client | `npx ng serve` (from `skinet/client/`) | `https://localhost:4200` → 200 |
+| Stripe | `stripe listen --forward-to https://localhost:7096/api/payments/webhook` | prints a `whsec_…` |
+
+⚠️ The `whsec_…` must match `StripeSettings:WhSecret` (`dotnet user-secrets list --project src/API`).
+Otherwise every webhook fails its signature check and orders stay **Pending** — which looks exactly like
+a broken payment flow.
+
+⚠️ `stripe listen` prints event *types* only, never amounts. To read a charge:
+`stripe payment_intents list --limit 1` (or add `--print-json` to `listen`).
+
+⚠️ Every command is on **one line** on purpose. PowerShell has no backslash continuation — a bash-style
+multi-line paste runs the first line, then reports `The term '-d' is not recognized`. Replace
+`<coupon-id>` / `<promo-id>` with real ids; the CLI does not expand placeholders.
+
+## The tamper move
+
+The Angular page is not the client — HTTP is. Any logged-in user can send `POST /api/cart` themselves with
+their **own** cookie, no stolen credentials involved. Scalar is just the handiest tool on a dev box; in
+production it's curl or Postman and nothing changes.
+
+1. New browser tab → [Scalar](https://localhost:7096/scalar/v1#tag/api). The auth cookie is set for host
+   `localhost` and cookies ignore the port, so you're already logged in. (401? run `POST /login` with
+   `useCookies` = `true` first.)
+2. `GET /api/cart` → **Send** → copy the whole response JSON.
+3. `POST /api/cart` → paste it as the body → change one field → **Send**.
+4. Expect **200** with your changed value echoed back.
+
+⚠️ **Leave `/checkout` before you tamper.** While that page is open, Angular holds its own copy of the cart
+and writes it back on several actions — moving between steps, or leaving the Stripe payment element and
+coming back. That copy predates your forge, so it silently restores the old value or nulls
+`deliveryMethodId` / `paymentIntentId`, and your next reading looks like the fix failed. Navigate to `/cart`
+first, tamper in Scalar, and confirm the `POST` response echoes every field you care about.
+
+⚠️ Always send the **whole** cart body — `items`, `deliveryMethodId`, `paymentIntentId`, `clientSecret`,
+`coupon`. `SetCartAsync` overwrites the Redis key, so anything you drop is gone and the order won't create.
+
 ---
 
 ## Test A — forged `amountOff`: the order record lies
@@ -60,7 +110,7 @@ actually take.
 **4. Move to Confirmation** — the last step of the stepper. **Do not submit yet.** This step only creates the Stripe
 card token; it never touches the payment intent, which is why it's the safe moment to tamper.
 
-**5. Tamper** ([the steps](README.md#the-tamper-move)) — `GET /api/cart` returns:
+**5. Tamper** ([the steps](#the-tamper-move)) — `GET /api/cart` returns:
 
 ```json
 {
@@ -235,8 +285,8 @@ with a 90%-off coupon charged **$28.00** against an order recorded at **$185.00*
 **PaymentMismatch** (order #38).
 
 ⚠️ This test took four attempts before the reading was trustworthy — every failure was the checkout
-page overwriting the forged cart, not the fix. See **Leave `/checkout` before you tamper** in
-[`README.md`](README.md).
+page overwriting the forged cart, not the fix. See **Leave `/checkout` before you tamper** under
+[The tamper move](#the-tamper-move).
 
 ---
 
