@@ -13,7 +13,7 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 - [ ] `npm run lint` + `npm run format` clean (frontend)
 - [ ] `npm test -- --watch=false` green (frontend) — the bare `--` ends npm's own arguments
 - [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches.
-      **Write it down only if it earns a file** (see below); most tasks don't
+      **Write it down only if it earns a file** (see below)
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
 CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
