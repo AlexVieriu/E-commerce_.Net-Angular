@@ -13,6 +13,10 @@ Local SQL Server, seeded to volume, same query before and after. Azure was **not
 the free offer, and repeatedly scanning a 200k-row table is exactly the workload that burns the monthly
 allowance and auto-pauses the demo.
 
+**Query Store on Azure: waived.** Reading it means running these queries against the free tier — the cost
+this method exists to avoid — and Azure holds ~52 products, where every plan is a scan regardless. The
+indexes are proved at 200k rows below.
+
 | | |
 |---|---|
 | Volume | 200,000 products · 200,000 orders · 2,000 distinct buyer emails (~100 orders each) |
