@@ -4,26 +4,32 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 {
     public void Configure(EntityTypeBuilder<Order> builder)
     {
-        // OwnsOne: own entity types
-        // WithOwner: establishes the relationship back to the owner
-        builder.OwnsOne(o => o.ShippingAddress, a => a.WithOwner());
-        builder.OwnsOne(o => o.PaymentSummary, a => a.WithOwner());
+        // To constrain an address column, switch to the lambda form:
+        // OwnsOne(o => o.ShippingAddress, a => a.Property(x => x.City).HasMaxLength(100));
+        builder.OwnsOne(o => o.ShippingAddress);
+        builder.OwnsOne(o => o.PaymentSummary);
 
-        // for Enum conversation
-        builder.Property(o => o.Status).HasConversion(
-            a => a.ToString(),
-            a => Enum.Parse<OrderStatus>(a)
-        );
+        builder.Property(o => o.Status)
+               .HasConversion(a => a.ToString(),                // C# → DB  (writing)
+                              a => Enum.Parse<OrderStatus>(a)); // DB → C#  (reading)
 
-        // builder.Property(x => x.Subtotal).HasColumnType("decimal(18,2)");
+        builder.Property(o => o.BuyerEmail)
+               .HasMaxLength(256);
 
-        builder.HasMany(x => x.OrderItems).WithOne().OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(x => x.OrderItems)        // an Order has many OrderItems
+               .WithOne()                         // each OrderItem belongs to exactly one Order
+               .OnDelete(DeleteBehavior.Cascade); // delete the Order -> delete its items
 
-        builder.HasIndex(o => o.PaymentIntentId).IsUnique();
+        builder.HasIndex(o => o.PaymentIntentId)
+               .IsUnique();
 
-        builder.Property(x => x.OrderDate).HasConversion(
-            d => d.ToUniversalTime(),
-            d => DateTime.SpecifyKind(d, DateTimeKind.Utc)
-        );
+        // Order list: WHERE BuyerEmail, ORDER BY OrderDate DESC — the DESC must match.
+        // Leftmost prefix covers BuyerEmail alone, so it needs no index of its own.
+        builder.HasIndex(o => new { o.BuyerEmail, o.OrderDate })
+               .IsDescending(false, true);
+
+        builder.Property(x => x.OrderDate)
+               .HasConversion(d => d.ToUniversalTime(), // C# → DB   (writing)
+                              d => DateTime.SpecifyKind(d, DateTimeKind.Utc)); // DB → C#  (reading)
     }
 }

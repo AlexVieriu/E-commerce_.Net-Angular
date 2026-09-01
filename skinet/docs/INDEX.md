@@ -12,8 +12,9 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 
 - **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, CSP/CORS, **lint + analyzers** (ESLint/Prettier/Roslyn, and every suppression + why)
 - **testing.md** — all verification: per-task / pre-deploy / post-deploy **checklists** (top) + how to write tests — xUnit, **Angular unit tests on Vitest**, and the **Playwright E2E layout** (reference, bottom)
-- **smoke-tests/** — manual browser checks, one file per sprint (`sprint-b.md`, …), one section per task
-  or bug. The checks no automated test makes: real Stripe, real cookies, two people in one browser
+- **smoke-tests/** — the manual checks worth writing down: real Stripe, real cookies, two people in one
+  browser. **Not one per task** — write a file only when no automated test can reach it *and* you'd
+  re-derive the steps at the gate. Everything else is covered by Core smoke in `testing.md`
 - **git-workflow.md** — branch / PR / merge flow (pairs with the deploy gate in `testing.md`)
 - **documentation.md** — how to write docs here *(DO NOT EDIT)*
 

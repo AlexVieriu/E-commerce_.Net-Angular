@@ -15,7 +15,7 @@ namespace Infrastructure.Migrations.SQLite
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
             modelBuilder.Entity("Core.Entities.Address", b =>
                 {
@@ -183,6 +183,7 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.Property<string>("BuyerEmail")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("DeliveryMethodId")
@@ -211,6 +212,9 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.HasIndex("PaymentIntentId")
                         .IsUnique();
+
+                    b.HasIndex("BuyerEmail", "OrderDate")
+                        .IsDescending(false, true);
 
                     b.ToTable("Orders");
                 });
@@ -245,6 +249,7 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.Property<string>("Brand")
                         .IsRequired()
+                        .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -253,6 +258,7 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PictureUrl")
@@ -268,9 +274,16 @@ namespace Infrastructure.Migrations.SQLite
 
                     b.Property<string>("Type")
                         .IsRequired()
+                        .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("Price");
+
+                    b.HasIndex("Brand", "Type");
 
                     b.ToTable("Products");
                 });

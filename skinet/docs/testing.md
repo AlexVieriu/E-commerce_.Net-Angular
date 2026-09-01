@@ -13,8 +13,7 @@ after deploy). **Bottom = reference** for writing tests. Automated *and* manual 
 - [ ] `npm run lint` + `npm run format` clean (frontend)
 - [ ] `npm test -- --watch=false` green (frontend) — the bare `--` ends npm's own arguments
 - [ ] Smoke the one behavior the task changed — happy path **and** the failure path it touches.
-      Write the steps down in `smoke-tests/sprint-<n>.md` as you go: a check you can't hand to
-      someone else is a check you'll re-derive from scratch at the deploy gate
+      **Write it down only if it earns a file** (see below)
 - [ ] Pass the gate (EXPLAIN / REBUILD / BREAK) → tick `progress.md`
 
 CI re-runs all of the above on the task PR — the backstop, not the first check. Setup: `build-deployment.md`.
@@ -35,33 +34,28 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
       is still rejected. No test can reach `CouponService` (no DI seam, `[ExcludeFromCodeCoverage]`), which
       is why BUG-20 hid for two months
 
-**This sprint's behaviors** — the full per-task steps live in `smoke-tests/sprint-<n>.md`, one file per
-sprint. Run the current sprint's file here. Past sprints are locked by the test suite; the entries below
-predate the folder and stay until their sprint file exists.
-> _Sprint C:_ see [`smoke-tests/sprint-c/`](smoke-tests/sprint-c/README.md) — one file per task or bug.
-> BUG-19 coupon trust is 4 tests; needs `stripe listen` and a throwaway Stripe campaign. Test D needs a
-> coupon with **cents** — `gimme5` and `gimme10` are whole amounts and cannot catch a truncated conversion.
->
-> _Sprint B:_ see [`smoke-tests/sprint-b.md`](smoke-tests/sprint-b.md) — BUG-18 cart ownership (12 steps,
-> in order; needs `stripe listen` and two accounts).
->
-> _Sprint 2:_ Price change T17 — reach the **Payment** step, then edit that product's `Price` in
-> `data/store.db` → expect **409 + redirect to cart, no charge**. Idempotency (T16/T18) + concurrency
-> (T13/T14) have no clean manual check → just confirm `dotnet test` is green.
->
-> _Sprint 3:_ Payment sync T26 — skip `stripe listen` for one checkout (webhook never fires) → order
-> stuck **Pending** → admin orders table → "sync" icon → expect **PaymentReceived** + SignalR
-> notification (if that session is still connected). Then run one checkout **with** `stripe listen`
-> running to confirm the webhook path still works unchanged.
->
-> _BUG-11 (stateless-country checkout):_ check out with a **Romanian** address (Stripe's Address Element
-> shows no state field) → order must be **created**, and render without a dangling comma. Then a **US**
-> address **with** a state → must still succeed. State is required only for US/CA/AU; a regression here
-> is a 400 on the money path, so it belongs in the deploy gate, not just the unit tests.
->
-> _BUG-12 (admin paging):_ `/admin/orders` → click page 2 → the rows must **change**. The wire param is
-> `pageIndex`, not `pageNumber` — model binding drops an unknown name silently, so this fails with no
-> error anywhere.
+**This sprint's behaviors** — run the current sprint's files. Past sprints are locked by the test suite.
+
+**A task earns a file only when both hold:** no automated test can reach the check, *and* you'd re-derive
+the steps at the gate. Expect ~1 per sprint. One line per sprint here — the steps go in the file.
+
+| Sprint | Where | Needs |
+|---|---|---|
+| D | [`sprint-d/`](smoke-tests/sprint-d/) | nothing extra |
+| C | [`sprint-c/`](smoke-tests/sprint-c/) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
+| B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |
+
+**Legacy checks with no file yet** — these move into T20b's harness / Playwright at the Sprint D
+deploy-gate cleanup, then get deleted from here.
+
+| Check | Do → expect |
+|---|---|
+| T17 price change | at **Payment**, edit that product's `Price` in `data/store.db` → **409**, back to cart, no charge |
+| T26 payment sync | checkout with `stripe listen` **off** → order stuck **Pending** → admin "sync" icon → **PaymentReceived** + SignalR. Then one checkout with it **on** |
+| BUG-11 stateless country | Romanian address (no state field) → order created, no dangling comma. Then US **with** state → still works |
+| BUG-12 admin paging | `/admin/orders` → page 2 → rows **change**. Wire param is `pageIndex`; an unknown name binds to nothing, silently |
+
+T16/T18 idempotency and T13/T14 concurrency have no clean manual check — `dotnet test` green is the check.
 
 **Infra** — confirm against Azure *before* the push (app boots without them but fails on first cart/cache use or payment):
 - [ ] App Service **Redis** connection string set (not `localhost`)
@@ -80,7 +74,7 @@ Both local and Azure green → sprint is closed. See `git-workflow.md` for the m
 # Reference — writing tests
 
 xUnit (.NET), v3 + FluentAssertions + Moq. Angular unit tests run on **Vitest** (T52) — see below.
-UI *flows* are covered by Playwright E2E (`skinet/e2e/`, Task 37), which is local-only.
+UI *flows* are covered by Playwright E2E (`skinet/e2e/`, T37), which is local-only.
 
 ## Angular unit tests (`client/src/**/*.spec.ts`)
 
@@ -102,12 +96,12 @@ npm test -- --watch=false     # one run — what CI does
 
 ## Playwright E2E (`skinet/e2e/`)
 
-Local-only (never CI — see `mindset/spikes.md` T37 Decision 1). Needs Docker's `redis` container
+Local-only (never CI — see `mindset/spikes/sprint-b.md` T37 Decision 1). Needs Docker's `redis` container
 running first (`docker compose up -d redis`); `global-setup.ts` starts it automatically if not.
 
 ```bash
 cd skinet/e2e
-npx playwright test              # all 3 tests: checkout, auth+orders, admin pagination
+npx playwright test              # all 4 specs: checkout, auth+orders, admin paging, cart ownership
 npx playwright test --ui         # interactive UI mode
 npx playwright show-report       # last run's HTML report
 ```
@@ -150,6 +144,9 @@ npx playwright test
                          +-----------------------------> customer-orders
 
         setup-admin ---------------------------------> admin
+
+        cart-ownership                 no deps: it does its own logins,
+                                       because the logout is what's tested (BUG-18)
 ```
 
 - `tests/setup/customer.setup.ts` logs in once and writes `playwright/.auth/customer.json`.
@@ -217,7 +214,7 @@ Shared helpers in `tests/Tests.Shared/`. Frontend tests live beside their compon
 
 Target ~80% backend. What's intentionally **not** covered:
 
-- API controllers → `API.Tests` (endpoint contracts) + Playwright E2E (Task 37)
+- API controllers → `API.Tests` (endpoint contracts) + Playwright E2E (T37)
 - `PaymentService` / `CouponService` → `[ExcludeFromCodeCoverage]`: they call Stripe SDK classes directly with no DI seam. Architectural fix: inject an `IStripeClient` abstraction (deferred).
 
 Snapshot percentages live in `progress.md` (Task 19 log), not here — they go stale.
