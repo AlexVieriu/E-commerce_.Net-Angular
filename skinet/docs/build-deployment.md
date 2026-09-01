@@ -14,7 +14,7 @@ docker compose up -d
 
 Starts:
 - `redis` (port `6379`) — cart + response cache
-- `sqlite3` — data persisted to `./data`
+- `sqlite` — data persisted to `./data` (the container is named `sqlite3`)
 - `sqlserver` (port `1433`) — SQL Server 2025, **Developer** edition
 
 `MSSQL_SA_PASSWORD` has no default: compose fails loudly if `.env` is missing, rather than booting on a
