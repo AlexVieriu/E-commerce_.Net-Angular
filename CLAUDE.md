@@ -30,7 +30,7 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-On the weekly gate day — the full flow is in `mindset/the-gate.md` (**one file**). A merge that fails the
+On a gate day — the full flow is in `mindset/the-gate.md` (**one file**). A merge that fails the
 2-sentence test queues its concept there; mechanical work skips it (build, verify, tick).
 `## Read First` + `## Change Map` + `## Hints` are scaffolded first (study material — give nothing away);
 **you** write `## 🔁 REBUILD / 🧠 EXPLAIN / 💥 BREAK` inline; Claude fills the rest from the gaps you hit.
@@ -143,7 +143,7 @@ section is the map; the step-by-step trigger lives in the section named in the l
 | `energy-protocol.md` | energy level → task type | START OF DAY | Claude routes |
 | `sprint-map.md` | the sprint drawn (routes + wireframes) | sprint start & end (MINDSET) | Claude draws |
 | `spikes/` | decide the approach before coding | before a task (AFTER EACH TASK #5) | you: Decision+Why · Claude scaffolds |
-| `the-gate.md` | prove you learned it | weekly gate day (AFTER EACH TASK #0 queues into it) | you attempt · Claude fills |
+| `the-gate.md` | prove you learned it | gate day — day 5 + sprint end (AFTER EACH TASK #0 queues into it) | you attempt · Claude fills |
 | `daily-log.md` | manager-facing day record | AFTER EACH TASK #2 · END OF DAY | Claude logs |
 | `question-tally.md` | junior/mid interview calibration | AFTER EACH TASK #4 | Claude appends |
 

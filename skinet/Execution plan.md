@@ -13,6 +13,7 @@
 - **Scope ladder per sprint: Must / Should / Could.** Only **Must** is committed. Should and Could are
   real work, not filler — they just do not get to move the date.
 - **Mid-sprint checkpoint (day 5):** Must under 50% → drop Could, then Should, that day. Not at sprint end.
+  Same day as the first gate — read the **concept queue depth** with it (`mindset/the-gate.md`).
 - **The date is fixed; the ladder is the lever.**
 
 ---
@@ -206,9 +207,9 @@ remaining six rows carried to Sprint E.
 | — | Interceptor cleanup: cart-reload out of `errorInterceptor` + `HttpContextToken` for the 401 | S | **0.5d** | BUG-16 | **One PR, not two** — both live in `error.interceptor.ts` lines 26–43; splitting them just rebases one onto the other. Kills two URL-string signals that break silently on a route rename |
 | 50 | API docs: `[ProducesResponseType]` + XML summaries | M | **1d** | -- | 27 endpoints across 7 controllers, none annotated. **Watch the analyzer gate:** turning on `GenerateDocumentationFile` raises CS1591 on every undocumented public member, and this repo runs at zero warnings — budget for that, not just the attributes |
 | — | Prune unused client deps: `@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer` | S | **0.25d** | -- | A **React** plugin in an Angular `package.json` is the one a reviewer notices; the other three are transitives declared as direct deps, two of them under `dependencies` rather than `devDependencies`. **Leave alone:** `jsdom` / `vitest` / `istanbul-lib-instrument` (peers the `@angular/build:unit-test` builder resolves with no import), `@angular/animations` (lazy-loaded by `provideAnimationsAsync()`), `postcss` (peer of `@tailwindcss/postcss`). Zone.js is already gone — `polyfills: []`. Verify with `ng build` + `ng test` + `ng lint`. `fix/prune-unused-deps` |
-| — | **Weekly gate × 2** (+ that week's Anki cards) | — | **2d** | -- | One fixed day a week — `mindset/the-gate.md`. BUG-10's zoneless doc is week 1's |
+| — | **Gate × 2** — day 5 + sprint end (Anki at sprint end) | — | **1.5d** | -- | `mindset/the-gate.md`. BUG-10's zoneless doc already counts as the first, run early on Sep 13 |
 
-**Points: 4 Must (+6 Should/Could) · Est 6.15d of 10 — 3.85d slack.** *(Must 1.4d · Should 1.5d · Could 1.25d · gate 2d.)*
+**Points: 4 Must (+6 Should/Could) · Est 5.65d of 10 — 4.35d slack.** *(Must 1.4d · Should 1.5d · Could 1.25d · gate 1.5d.)*
 
 **Sprint end:** nothing a recruiter clicks in the first two minutes looks broken, a declined card can be
 retried, the API documents itself, and the two interceptor compromises are gone.
@@ -228,9 +229,9 @@ retried, the API documents itself, and the two interceptor compromises are gone.
 | 40 | OrderStatus: add Processing/Shipped/Delivered/Cancelled + append-only OrderStatusHistory | M | **6d** | -- | LEARN: state machine + audit trail. **Spike first: one enum or two?** The current enum is payment-shaped (`Pending, PaymentReceived, PaymentFailed, PaymentMismatch, Refunded`) and is read across 8 files — `AdminController`, `PaymentService`, `DashboardService`, `OrderSpecification`, the EF config and the seeder — so fulfillment states would mix two concerns in one field. The history entity also means **one migration per provider**, the cost T43 measured. T26 parks admin fulfillment control here |
 | 41 | Order cancellation: POST cancel, only Pending/PaymentReceived, Stripe refund if paid | M | **0.9d** | 40 | Refund plumbing already exists (`AdminController`, `PaymentService`, `IPaymentService`) — this reuses it. Log the email, don't build the email service (T39 descoped) |
 | 21 | Coverage gate: coverlet, fail PR < 60% | S | **0.5d** | 19,1 | **Coverlet is *not* installed** — no reference in any test `.csproj` or in `tests/Directory.Build.props`, contrary to the old note. So this row is the package, the collector switches, a threshold and a CI step |
-| — | **Weekly gate × 2** (+ that week's Anki cards) | — | **2d** | -- | T40 is a big LEARN row — expect it to take a whole gate day by itself |
+| — | **Gate × 2** — day 5 + sprint end (Anki at sprint end) | — | **1.5d** | -- | T40 is a big LEARN row — it gates alone, with no light concepts beside it |
 
-**Points: 1 Must (+2 Should/Could) · Est 9.4d of 10 — 0.6d slack.** *(T40 6d · T41 0.9d · T21 0.5d · gate 2d.)*
+**Points: 1 Must (+2 Should/Could) · Est 8.9d of 10 — 1.1d slack.** *(T40 6d · T41 0.9d · T21 0.5d · gate 1.5d.)*
 
 **Sprint end:** order status + history working with an audit trail, cancellation refunds through Stripe,
 and — if Could survives — coverage gated in CI.
@@ -252,11 +253,11 @@ and — if Could survives — coverage gated in CI.
 | 23 | Correlation IDs — one id per request, on every log line | S | **0.3d** | 22 | Was blocked on T22; T22 now ships here. Answers "how do you trace one request across logs?" for half a day |
 | 20b | Extend the API integration harness: auth, orders, payments happy paths | S | **1.2d** | -- | `CustomWebApplicationFactory` exists with two suites on it (`CartOwnershipTests`, `CouponTrustTests`), and `StubCouponService` shows the stubbing pattern. Auth and orders are cheap; **payments needs a Stripe stub that does not exist yet**. TestContainers stays cut |
 | — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.6d** | 20b | **Depends on 20b** — T17 price change, T26 payment sync and BUG-11 move *into* that harness, BUG-12 into Playwright. Only then delete the table at `docs/testing.md:50` |
-| — | **Weekly gate × 2** (+ that week's Anki cards) | — | **2d** | -- | T22 and T42 are both LEARN rows — one gate day each |
+| — | **Gate × 2** — day 5 + sprint end (Anki at sprint end) | — | **1.5d** | -- | T22 and T42 are both LEARN rows — one full concept each, one per gate day |
 | 49 | → **moved to Sprint D**, closed alongside T43 | S | **—** | -- | T43 needs a local SQL Server to measure against; that container **is** T49's deliverable. Real overlap, so it ships once |
 
 
-**Points: 2 Must (+3 Should/Could) · Must 6.3d · +Should 10.3d · +Could 12.1d, against 10.**
+**Points: 2 Must (+3 Should/Could) · Must 5.8d · +Should 9.8d · +Could 11.6d, against 10.**
 **Sprint end — the last *build* sprint:** structured logs with correlation ids and, if the ladder holds,
 soft delete behind a global filter. The release itself is Sprint H. Health probes, dependency advisories,
 one-command local startup and the two interceptor compromises moved to Sprint E.
@@ -275,7 +276,7 @@ one-command local startup and the two interceptor compromises moved to Sprint E.
 | 38 | README UX screenshots + GIFs | S | **0.5d** | 47 | Three placeholders wait at `README.md:12,116,117`. Last on purpose — capture once the UI has stopped moving, which is what the Oct 28 freeze guarantees |
 | — | Demo rehearsal × 2 — the 5-minute walkthrough, out loud, on live | — | **1d** | -- | The first run always finds something. Run it twice, on different days, and fix what it surfaces |
 | — | v1.0 release: `development` -> `main`, one squashed commit, verify on Azure | — | **0.5d** | -- | Pushing `main` deploys. Full deploy gate in `docs/testing.md` first |
-| — | **Weekly gate × 1** (+ Anki) | — | **1d** | -- | The last one. Concept queue should be nearly empty by here |
+| — | **Gate × 2** — day 4 + sprint end (Anki at sprint end) | — | **1d** | -- | Short sprint, and the queue should be nearly empty by here — so 1d, not 1.5d |
 
 **Points: — · Est 6d of 7 — 1d slack on top of the 3d reserve.**
 

@@ -456,7 +456,7 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 - [ ] Interceptor cleanup — cart reload out of `errorInterceptor` + `HttpContextToken` for the 401
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
 - [ ] Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
-- [ ] Weekly gate × 2 (+ that week's Anki cards)
+- [ ] Gate × 2 — day 5 + sprint end (+ Anki at sprint end)
 
 ## Sprint F — Order Domain *(Sep 28 – Oct 9 · 10 working days)*
 
@@ -465,7 +465,7 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 - [ ] T40 — OrderStatus + append-only OrderStatusHistory *(spike first: one enum or two?)*
 - [ ] T41 — Order cancellation: POST cancel, Stripe refund if paid
 - [ ] T21 — Coverage gate: coverlet, fail PR < 60%
-- [ ] Weekly gate × 2 (+ that week's Anki cards)
+- [ ] Gate × 2 — day 5 + sprint end (+ Anki at sprint end)
 
 ## Sprint G — Production Hardening *(Oct 12 – Oct 23 · 10 working days)*
 
@@ -474,7 +474,7 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 - [ ] T23 — Correlation IDs — one id per request, on every log line
 - [ ] T20b — Extend the API integration harness: auth, orders, payments happy paths
 - [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(needs T20b)*
-- [ ] Weekly gate × 2 (+ that week's Anki cards)
+- [ ] Gate × 2 — day 5 + sprint end (+ Anki at sprint end)
 
 ## Sprint H — Freeze + Release *(Oct 26 – Nov 3 · 7 working days)* — 🔴 **v1.0 ships Nov 3**
 
@@ -484,7 +484,7 @@ Deliberately half empty — the absorber for whatever the day-5 checkpoints drop
 - [ ] T38 — README UX screenshots + GIFs *(last — once the UI stops moving)*
 - [ ] Demo rehearsal × 2 — the 5-minute walkthrough, out loud, on live
 - [ ] v1.0 release: `development` → `main`, one squashed commit, verify on Azure
-- [ ] Weekly gate × 1 (+ Anki)
+- [ ] Gate × 2 — day 4 + sprint end (+ Anki at sprint end)
 
 ## Interview Prep *(Nov 4 – Nov 11 · 6 working days)* — 🔴 DO NOT FILL
 
