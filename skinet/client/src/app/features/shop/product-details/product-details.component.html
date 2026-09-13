@@ -9,38 +9,37 @@
         <div>
           <h1 class="text-2xl font-semibold text-gray-900">{{ product.value()!.name }}</h1>
 
-          <p>You have {{ quantityInCart() }} of this item in your cart</p>
-
           <div class="mt-4 items-center gap-4 flex">
             <p class="text-3xl font-extrabold text-gray-900">
               {{ product.value()!.price | currency }}
             </p>
           </div>
 
-          <div class="flex gap-4 mt-6">
-            <button
-              [disabled]="quantity() === quantityInCart()"
-              (click)="updateCart()"
-              mat-flat-button
-              class="match-input-height"
-            >
+          <div class="flex gap-6 mt-6 items-center">
+            <button (click)="addOne()" mat-flat-button>
               <mat-icon>shopping_cart</mat-icon>
-              {{ getButtonText() }}
+              Add to cart
             </button>
 
-            <mat-form-field appearance="outline" class="flex">
-              <mat-label>Quantity</mat-label>
-              <input
-                matInput
-                min="0"
-                [ngModel]="quantity()"
-                (ngModelChange)="quantity.set($event)"
-                type="number"
-              />
-            </mat-form-field>
+            <!-- The stepper edits the cart line, so it has nothing to show until there is one. -->
+            @if (quantityInCart() > 0) {
+              <div class="flex items-center gap-2">
+                <span class="text-gray-500">In cart:</span>
+
+                <button mat-icon-button (click)="removeOne()" aria-label="Remove one from cart">
+                  <mat-icon class="text-red-500">remove</mat-icon>
+                </button>
+
+                <span class="font-semibold text-xl">{{ quantityInCart() }}</span>
+
+                <button mat-icon-button (click)="addOne()" aria-label="Add one to cart">
+                  <mat-icon class="text-green-600">add</mat-icon>
+                </button>
+              </div>
+            }
           </div>
 
-          <mat-divider></mat-divider>
+          <mat-divider class="mt-6"></mat-divider>
 
           <p class="mt-6 text-gray-500">
             {{ product.value()!.description }}
