@@ -34,7 +34,7 @@
   </div>
 </header>
 
-@if (busyService.loading) {
+@if (busyService.loading()) {
   <mat-progress-bar mode="indeterminate" class="fixed top-20 z-50"></mat-progress-bar>
 }
 

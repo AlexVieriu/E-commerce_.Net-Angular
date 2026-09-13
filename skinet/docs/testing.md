@@ -41,6 +41,7 @@ the steps at the gate. Expect ~1 per sprint. One line per sprint here — the st
 
 | Sprint | Where | Needs |
 |---|---|---|
+| E | [`sprint-e/`](smoke-tests/sprint-e/) | Redis + API + `ng serve`; DevTools network throttling |
 | D | [`sprint-d/`](smoke-tests/sprint-d/) | nothing extra |
 | C | [`sprint-c/`](smoke-tests/sprint-c/) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
 | B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |
@@ -93,6 +94,12 @@ npm test -- --watch=false     # one run — what CI does
 - **What they're for:** pure logic reachable from a component's public surface. `isLocalUrl`'s decision
   is the first example (`login/login.component.spec.ts`, 14 cases).
 - Each case builds its own `TestBed`, because the value under test is read in the constructor.
+- **Zoneless in tests too.** Put `provideZonelessChangeDetection()` in the `TestBed` providers so the spec
+  schedules renders the way production does.
+- **Await `fixture.whenStable()`; never call `fixture.detectChanges()`** in a spec that asserts on rendered
+  output. `detectChanges()` forces a render Angular never scheduled, so the spec passes even when nothing
+  notified Angular — the exact class of bug BUG-10 was. `whenStable()` only waits, so a missing notification
+  shows up as a failure (`layout/header/header.component.spec.ts`, 5 cases).
 
 ## Playwright E2E (`skinet/e2e/`)
 

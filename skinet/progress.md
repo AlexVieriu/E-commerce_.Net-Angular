@@ -1,4 +1,4 @@
-# Progress Log
+﻿# Progress Log
 
 ## Daily Log
 
@@ -44,7 +44,9 @@ than repeating it.
 | Aug 21 | T47 *(PR #76)* | The repo's first README, cut 207 → 134 lines against two real big-tech examples. Verifying it caught three defects. |
 | Aug 21 | T48 *(PR #77)* | C4 **container** diagram in Mermaid. The spike described the four .NET layers as containers — wrong, and caught only after deciding. |
 | Aug 30 | T52 *(PR #78)* | **No defect** — a `UrlTree` has no host field, so the router already sent a hostile `returnUrl` to `/not-found`. Guarded at the read site anyway; adds the client's first 14 unit tests. |
-| Sep 1 | T43, T49 *(PR #80)* | Four indexes shaped to the real queries, measured on 200k rows — landing page 15,062 → 46 logical reads, order list 7,722 → 320. Uncovered that T18's unique index had never run on SQL Server: no `.Designer.cs`, so EF never discovered it. SQL Server added to compose. Numbers: `docs/smoke-tests/sprint-d/task-43-db-indexes.md` |
+| Sep 12 | Re-baseline + BUG-10 | v1.0 fixed at **Nov 3**, scope kept whole: Must/Should/Could per sprint, a day-5 cut checkpoint, a weekly gate slot, and reserved capacity in Sprint H. BUG-10 built, not merged. |
+| Sep 1 | T43, T49 *(PR #80)* | Four indexes shaped to the real queries, measured on 200k rows — landing page 15,062 → 46 logical reads, order list 7,722 → 320. Uncovered that T18's unique index had never run on SQL Server: no `.Designer.cs`, so EF never discovered it. SQL Server added to compose. Numbers: `docs/smoke-tests/sprint-d/task-43-db-indexes.md`. Two follow-ups merged the same night: `ProductSpecification` builds its criteria conditionally (#81), and OpenAPI now declares a Bearer scheme so Scalar can authenticate (#82). |
+| Sep 13 | BUG-10 gate + verify | Gate day: doc finished (20 gaps, 12 OWN, 10 cards). 23 client tests green, lint clean, Release build 0 warnings. Live smoke 3/4 — the bar clears with no interaction and `empty-state` renders only once the count reaches 0; the 401 row is left for the deploy gate. Three docs were **wrong**, not stale: `architecture.md` and `create-component.md` called a missing `OnPush` a performance bug (it is the v22 default) and `interceptors.md` put `finalize` inside the `defer`. Sprint E drawn in `sprint-map.md`; this file's forward sprints were still the pre-re-baseline plan and are now rebuilt from `Execution plan.md`. |
 
 ---
 
@@ -290,7 +292,7 @@ than repeating it.
 - → T28 / T29 / T30 **spilled to Sprint A**
 
 > **Why it missed:** over-ran 12 days. Backend flew (T27 in a day); the Angular half (T25) + a mid-sprint
-> rescope (T26) + an 11-day energy stop ate the slack. Three real bugs surfaced late and none were planned
+> rescope (T26) + an 11-day stop ate the slack. Three real bugs surfaced late and none were planned
 > for. **Lesson: the plan had no room for bugs, and bug-time is not optional.**
 
 ## Re-baseline — 2026-07-13
@@ -386,7 +388,40 @@ measured actuals** rather than the plan's original "without Claude Code" numbers
 - 🔴 **The date lever is spent.** Oct 14 is fixed — the next slip is paid for in scope, not days.
   Cut order: T50 > T21 > T35/T10/T49 > T41 > T40.
 
-## Sprint D — Demo Polish *(Aug 31 – Sep 8 · 7 working days)* — **CURRENT**
+## Re-baseline — 2026-09-12
+
+Sprint D delivered T43 + T49 and stopped with six rows open. The sprint carried 2.5d of slack and no
+absorber, so a two-week interruption landed 1:1 on the date. This re-baseline replaces optimism with
+structure: scope is now tiered, and the plan reserves capacity for the interruptions that have hit every
+sprint so far.
+
+- **Dates:** v1.0 Oct 6 → **Nov 3** · interview Oct 14 → **Nov 11** · **freeze Oct 28**. ~37 working days.
+- **Scope:** nothing cut — the demo has to be competitive.
+- **The four mechanisms:**
+  1. **Scope ladder per sprint** (Must / Should / Could) — only Must is committed, so a slip has something
+     to eat that is not the date.
+  2. **Day-5 checkpoint** — Must under 50% drops Could then Should *that day*, not at sprint end.
+  3. **Sprint H is deliberately half empty** — 3d reserved for overflow. The first plan in this repo with a
+     real absorber.
+  4. **Gate → one fixed day a week**, concept-queue driven, capped (`mindset/the-gate.md`). Per-task gating
+     had reached 1 day per item regardless of size — 4 ritual days inside a 7-day sprint.
+- **Estimates rebuilt on the measured ledger** — mechanical ×1.2 (they land), concept ×2 (measured 3–5× raw,
+  with the gate now budgeted separately). Anki folded into the gate day, saving 3 planned days.
+
+  | Task | Est | Actual | Kind |
+  |---|---|---|---|
+  | T47 README | 2d | **0.5d** | mechanical |
+  | T48 C4 diagram | 1d | ~1d | mechanical |
+  | BUG-19 coupon trust | 0.5d | **1.5d** | concept |
+  | T52 open redirect | 0.5d | **2.5d** | concept |
+  | T43 DB indexes | 0.5d | **2d** | concept |
+
+- **Sequencing rule:** concept work is scheduled into the first hours of a day, mechanical rows into the
+  tail. Planning detail lives outside the repo.
+- **Committed vs available:** ~29.9d of work + a 3d reserve against 37 working days — **~11% slack on top of the reserve**. Sprint G is deliberately committed above capacity; its Should row is expected to land in H.
+- 🔴 **This date does not move** — the ladder and the day-5 checkpoint give a slip somewhere else to go.
+
+## Sprint D — Demo Polish *(Aug 31 – Sep 8 · 7 working days)* — ✅ **CLOSED Sep 12**
 
 Sprint C's remainder in its own timebox: everything a visitor clicks in the first two minutes, plus the index
 task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → deploy-gate → T38.
@@ -395,7 +430,8 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
       `HasMaxLength` before `HasIndex`; the grid's default sort is `Name`)*
 - [x] T49 — `docker-compose.yml`: add SQL Server beside Redis + document it *(0.25d — **pulled forward from
       Sprint F**; T43 measures against this container, so the two ship together)*
-- [ ] BUG-10 — Top loading bar spins forever *(1d timebox — root cause unproven, reproduce on live first)*
+- [ ] BUG-10 — Top loading bar spins forever → **carried to Sprint E**, built not merged. Root cause was the
+      zoneless render path, not SignalR or a counter leak *(`fix/bug-10-loading-bar`)*
 - [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`) *(0.25d)*
 - [ ] T33 — `<mat-error>` on the checkout forms *(0.25d — register already has it via `app-text-input`)*
 - [ ] BUG-3 — Checkout: hint on an empty required address field *(0.25d — **do it with T33**, same forms)*
@@ -403,33 +439,56 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
 - [ ] T38 — README screenshots + GIFs *(0.5d — **last**, once the UI stops moving)*
 - [ ] Sprint C Anki deck
 
-## Sprint E — Order Domain *(Sep 9 – Sep 22)*
+## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 25 · 10 working days)*
 
-- [ ] T40 — OrderStatus + append-only OrderStatusHistory *(3d — spike first: one enum or two?)*
-- [ ] T41 — Order cancellation: POST cancel + Stripe refund *(0.75d — refund plumbing already exists)*
+Estimates and tiers live in `Execution plan.md` — this is the tick list only.
+**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup ·
+**Could:** T50, dep prune. **Day-5 checkpoint Sep 18.**
+
+- [x] BUG-10 — Top loading bar spins forever *(zoneless render path; signal + `defer`, 9 specs, gate done —
+      `fix/bug-10-loading-bar`)*
+- [ ] BUG-14 — "Add to cart" disables on click
 - [ ] BUG-2 — Checkout: declined card can't retry in-session *(money path)*
-- [ ] BUG-17 — Logout → `/checkout` doesn't redirect to login *(`auth.guard.ts` navigates instead of
-      returning a `UrlTree`, and loses the race with `emptycart.guard.ts`). Found by T37, currently red.*
-- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries *(0.5d — 27 endpoints, 0 attributes)*
-- [ ] T21 — Coverage gate: coverlet, fail PR < 60% *(0.25d)*
-- [ ] Sprint D Anki deck
-
-## Sprint F — Production Hardening *(Sep 23 – Oct 6)* — **v1.0 ships Oct 6**
-
-- [ ] T22 — Serilog structured logging *(App Service, no Seq)*
-- [ ] T23 — Correlation IDs — one id per request, on every log line
-- [ ] T42 — Soft delete + EF global query filter *(`ProductsController.cs:76` hard-deletes today)*
-- [ ] T20b — Extend the API integration harness: auth, orders, payments happy paths
+- [ ] BUG-17 — Logout → `/checkout` lands on `/cart`, not the login page *(Playwright spec red on purpose)*
 - [ ] T10 — Health-check endpoints
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
 - [ ] T35 — `NgOptimizedImage` on catalog images
-- [ ] fix/BUG-16 — move the checkout cart-reload out of `errorInterceptor`
-- [ ] fix/401-ctx — `HttpContextToken` instead of the 401 URL sniff
-- [ ] Sprint E Anki deck
+- [ ] Interceptor cleanup — cart reload out of `errorInterceptor` + `HttpContextToken` for the 401
+- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
+- [ ] Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
+- [ ] Gate × 2 — day 5 + sprint end (+ Anki at sprint end)
 
-## Interview Prep *(Oct 7 – Oct 14)* — DO NOT FILL
+## Sprint F — Order Domain *(Sep 28 – Oct 9 · 10 working days)*
 
-- [ ] T53 — Final Azure smoke test *(non-negotiable, always last)*
+**Must:** T40 · **Should:** T41 · **Could:** T21. **Day-5 checkpoint Oct 2** — T40 is the sprint.
+
+- [ ] T40 — OrderStatus + append-only OrderStatusHistory *(spike first: one enum or two?)*
+- [ ] T41 — Order cancellation: POST cancel, Stripe refund if paid
+- [ ] T21 — Coverage gate: coverlet, fail PR < 60%
+- [ ] Gate × 2 — day 5 + sprint end (+ Anki at sprint end)
+
+## Sprint G — Production Hardening *(Oct 12 – Oct 23 · 10 working days)*
+
+- [ ] T22 — Serilog structured logging *(App Service logs, no Seq)*
+- [ ] T42 — Soft delete + EF global query filter
+- [ ] T23 — Correlation IDs — one id per request, on every log line
+- [ ] T20b — Extend the API integration harness: auth, orders, payments happy paths
+- [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(needs T20b)*
+- [ ] Gate × 2 — day 5 + sprint end (+ Anki at sprint end)
+
+## Sprint H — Freeze + Release *(Oct 26 – Nov 3 · 7 working days)* — 🔴 **v1.0 ships Nov 3**
+
+Deliberately half empty — the absorber for whatever the day-5 checkpoints dropped. **Freeze Oct 28.**
+
+- [ ] Overflow from Sprints E–G *(3d reserved)*
+- [ ] T38 — README UX screenshots + GIFs *(last — once the UI stops moving)*
+- [ ] Demo rehearsal × 2 — the 5-minute walkthrough, out loud, on live
+- [ ] v1.0 release: `development` → `main`, one squashed commit, verify on Azure
+- [ ] Gate × 2 — day 4 + sprint end (+ Anki at sprint end)
+
+## Interview Prep *(Nov 4 – Nov 11 · 6 working days)* — 🔴 DO NOT FILL
+
+- [ ] T53 — Final Azure smoke test: full user + admin journey *(non-negotiable, always last)*
 - [ ] Full interview deck · re-read every gate doc · slack
 
 > Descoped for v1.0 (~22 pts): see `Execution plan.md`.
