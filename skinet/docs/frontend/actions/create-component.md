@@ -28,5 +28,5 @@ export class ProductItemComponent {
 
 ## Pitfalls
 
-- Omitting `ChangeDetectionStrategy.OnPush` — silent performance regression in zoneless mode.
+- Showing state a template reads from a plain field instead of a signal — nothing notifies Angular and the view never updates (BUG-10). Omitting `ChangeDetectionStrategy.OnPush` is *not* a bug: it is the v22 default, and the line is kept for intent.
 - Importing a module (e.g., `CommonModule`) instead of the specific directive/pipe needed.

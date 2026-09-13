@@ -30,12 +30,12 @@ Before starting any task, list:
 - Knowledge gaps to address first
 
 # QUESTIONS & EXERCISES
-After each completed task — the full flow is in `mindset/the-gate.md` (**one file**). Run the gate only for a
-**new concept you'd have to explain in an interview**; mechanical tasks skip it (build, verify, tick).
+On the weekly gate day — the full flow is in `mindset/the-gate.md` (**one file**). A merge that fails the
+2-sentence test queues its concept there; mechanical work skips it (build, verify, tick).
 `## Read First` + `## Change Map` + `## Hints` are scaffolded first (study material — give nothing away);
 **you** write `## 🔁 REBUILD / 🧠 EXPLAIN / 💥 BREAK` inline; Claude fills the rest from the gaps you hit.
 Verify every technical claim against official docs *before* writing — cite in `## Sources`; don't trust recall.
-1. Create `skinet/questions/sprint-N/task-N-concept-name.md` — one file, top to bottom, in this order:
+1. Create `skinet/questions/sprint-N/<concept-name>.md` — one file per gate day, top to bottom, in this order:
    Default every section to bullet points over prose — bold-label bullets (e.g. **Concrete trace:** /
    **The rule:** / **Why it matters:**). Exception: `What confused me` stays a table.
    - `# Task N — Concept Name`
@@ -66,8 +66,8 @@ When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution
   the same work.
 - Task done → open PR to `development` as a **draft**; squash-merge (one commit per task) only after
   the gate + doc review, so review tweaks fold in.
-- **🔴 NEVER merge a task/bug PR until the user confirms the cold test + gate are done, or waives it.
-  That call is the user's, never Claude's.**
+- **🔴 NEVER merge a task/bug PR until the user confirms the 2-sentence test at merge — it passes, or the
+  concept joins the gate queue. The queue blocks the sprint, not the PR. That call is the user's, never Claude's.**
 - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
   (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
 - Release to `main` at sprint end only — **no PR** (`main` is an orphan branch): `read-tree` from
@@ -89,7 +89,7 @@ the gate and the doc review are both read against its diff. Run in order:
    Run the gate for a new interview-explainable concept only (mechanical tasks skip it); all in **one file**, the
    questions doc (`skinet/questions/sprint-N/task-N-*.md`; sections in QUESTIONS & EXERCISES). The loop:
    solve → learn → gap → log → merge. Attempt → stuck → Claude answers **now** → move on. No ping-pong.
-   **Nothing below happens until the gate has run — you don't tick what you can't explain.**
+   **A sprint never closes with a non-empty concept queue — you don't ship what you can't explain.**
 1. Tick the task checkbox + add a Daily Log row in `skinet/progress.md`.
 2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
 3. Update any affected docs in `skinet/docs/` (keep them short).
@@ -143,7 +143,7 @@ section is the map; the step-by-step trigger lives in the section named in the l
 | `energy-protocol.md` | energy level → task type | START OF DAY | Claude routes |
 | `sprint-map.md` | the sprint drawn (routes + wireframes) | sprint start & end (MINDSET) | Claude draws |
 | `spikes/` | decide the approach before coding | before a task (AFTER EACH TASK #5) | you: Decision+Why · Claude scaffolds |
-| `the-gate.md` | prove you learned it | AFTER EACH TASK #0 | you attempt · Claude fills |
+| `the-gate.md` | prove you learned it | weekly gate day (AFTER EACH TASK #0 queues into it) | you attempt · Claude fills |
 | `daily-log.md` | manager-facing day record | AFTER EACH TASK #2 · END OF DAY | Claude logs |
 | `question-tally.md` | junior/mid interview calibration | AFTER EACH TASK #4 | Claude appends |
 
