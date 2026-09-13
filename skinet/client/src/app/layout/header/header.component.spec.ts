@@ -7,7 +7,7 @@ import { provideRouter } from '@angular/router';
 import { HeaderComponent } from './header.component';
 import { BusyService } from '../../core/services/busy.service';
 
-// BUG-10 was the view never hearing that the request finished, so every case waits 
+// BUG-10 was the view never hearing that the request finished, so every case waits
 // on Angular's own scheduler (whenStable) instead of forcing a refresh — detectChanges() would pass on the broken code too.
 describe('HeaderComponent loading bar', () => {
   let fixture: ComponentFixture<HeaderComponent>;

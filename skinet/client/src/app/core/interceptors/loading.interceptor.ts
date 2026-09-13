@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const busyService = inject(BusyService);
 
-  // Counted inside defer, so a synchronous throw downstream becomes an error 
+  // Counted inside defer, so a synchronous throw downstream becomes an error
   // notification and finalize still runs.
   return defer(() => {
     busyService.busy();

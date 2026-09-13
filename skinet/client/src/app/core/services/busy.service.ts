@@ -4,7 +4,7 @@ import { computed, Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class BusyService {
-  // A signal, not a plain field: the app is zoneless, so a template read is what tells 
+  // A signal, not a plain field: the app is zoneless, so a template read is what tells
   // the bar to re-render.
   private _busyRequestCount = signal(0);
   readonly busyRequestCount = this._busyRequestCount.asReadonly();
