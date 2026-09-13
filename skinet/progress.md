@@ -48,6 +48,7 @@ than repeating it.
 | Sep 1 | T43, T49 *(PR #80)* | Four indexes shaped to the real queries, measured on 200k rows — landing page 15,062 → 46 logical reads, order list 7,722 → 320. Uncovered that T18's unique index had never run on SQL Server: no `.Designer.cs`, so EF never discovered it. SQL Server added to compose. Numbers: `docs/smoke-tests/sprint-d/task-43-db-indexes.md`. Two follow-ups merged the same night: `ProductSpecification` builds its criteria conditionally (#81), and OpenAPI now declares a Bearer scheme so Scalar can authenticate (#82). |
 | Sep 13 | Sprint C + D Anki | Backfilled the two missing decks — 20 cards for C (T52 open redirect) and 21 for D (T43 indexes), both consolidated from their single gate doc rather than written fresh. Every `BREAK` and `OWN` gap carried. The reserved out-of-scope third was dropped on purpose: on a one-doc backfill it fills a sprint deck with cards that are not about that sprint — recorded in each deck header. Converter verified 20→20 and 21→21. |
 | Sep 13 | BUG-10 gate + verify | Gate day: doc finished (20 gaps, 12 OWN, 10 cards). 23 client tests green, lint clean, Release build 0 warnings. Live smoke 3/4 — the bar clears with no interaction and `empty-state` renders only once the count reaches 0; the 401 row is left for the deploy gate. Three docs were **wrong**, not stale: `architecture.md` and `create-component.md` called a missing `OnPush` a performance bug (it is the v22 default) and `interceptors.md` put `finalize` inside the `defer`. Sprint E drawn in `sprint-map.md`; this file's forward sprints were still the pre-re-baseline plan and are now rebuilt from `Execution plan.md`. |
+| Sep 13 | BUG-14 *(PR #85)* | The button meant *“make the cart match the number in the box”*, so the click satisfied the very `[disabled]` rule it had just changed — the cart updated, only the button looked broken. Split into an always-enabled “Add to cart” that adds one, plus a stepper bound to the cart line and rendered only while the item is in it; the quantity box, `linkedSignal`, `getButtonText()` and `updateCart()` are all gone, so no disabled state is left to get wrong. 5 specs — the first in this repo over `httpResource`, where `whenStable()` waits on the resource’s own request until `TestBed.tick()` releases it. 28 client tests green. |
 
 ---
 
@@ -450,7 +451,8 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 
 - [x] BUG-10 — Top loading bar spins forever *(zoneless render path; signal + `defer`, 9 specs, gate done —
       `fix/bug-10-loading-bar`)*
-- [ ] BUG-14 — "Add to cart" disables on click
+- [x] BUG-14 — "Add to cart" disables on click *(split into an always-enabled add + a cart-line
+      stepper; `linkedSignal` and the quantity box deleted, 5 specs — `fix/bug-14-add-to-cart`)*
 - [ ] BUG-2 — Checkout: declined card can't retry in-session *(money path)*
 - [ ] BUG-17 — Logout → `/checkout` lands on `/cart`, not the login page *(Playwright spec red on purpose)*
 - [ ] T10 — Health-check endpoints
