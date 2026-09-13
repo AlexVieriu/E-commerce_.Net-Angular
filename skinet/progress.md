@@ -46,6 +46,7 @@ than repeating it.
 | Aug 30 | T52 *(PR #78)* | **No defect** — a `UrlTree` has no host field, so the router already sent a hostile `returnUrl` to `/not-found`. Guarded at the read site anyway; adds the client's first 14 unit tests. |
 | Sep 12 | Re-baseline + BUG-10 | v1.0 fixed at **Nov 3**, scope kept whole: Must/Should/Could per sprint, a day-5 cut checkpoint, a weekly gate slot, and reserved capacity in Sprint H. BUG-10 built, not merged. |
 | Sep 1 | T43, T49 *(PR #80)* | Four indexes shaped to the real queries, measured on 200k rows — landing page 15,062 → 46 logical reads, order list 7,722 → 320. Uncovered that T18's unique index had never run on SQL Server: no `.Designer.cs`, so EF never discovered it. SQL Server added to compose. Numbers: `docs/smoke-tests/sprint-d/task-43-db-indexes.md`. Two follow-ups merged the same night: `ProductSpecification` builds its criteria conditionally (#81), and OpenAPI now declares a Bearer scheme so Scalar can authenticate (#82). |
+| Sep 13 | Sprint C + D Anki | Backfilled the two missing decks — 20 cards for C (T52 open redirect) and 21 for D (T43 indexes), both consolidated from their single gate doc rather than written fresh. Every `BREAK` and `OWN` gap carried. The reserved out-of-scope third was dropped on purpose: on a one-doc backfill it fills a sprint deck with cards that are not about that sprint — recorded in each deck header. Converter verified 20→20 and 21→21. |
 | Sep 13 | BUG-10 gate + verify | Gate day: doc finished (20 gaps, 12 OWN, 10 cards). 23 client tests green, lint clean, Release build 0 warnings. Live smoke 3/4 — the bar clears with no interaction and `empty-state` renders only once the count reaches 0; the 401 row is left for the deploy gate. Three docs were **wrong**, not stale: `architecture.md` and `create-component.md` called a missing `OnPush` a performance bug (it is the v22 default) and `interceptors.md` put `finalize` inside the `defer`. Sprint E drawn in `sprint-map.md`; this file's forward sprints were still the pre-re-baseline plan and are now rebuilt from `Execution plan.md`. |
 
 ---
@@ -405,6 +406,7 @@ sprint so far.
      real absorber.
   4. **Gate → one fixed day a week**, concept-queue driven, capped (`mindset/the-gate.md`). Per-task gating
      had reached 1 day per item regardless of size — 4 ritual days inside a 7-day sprint.
+     *(Superseded Sep 13: two gate days per sprint — day 5 and sprint end — 1.5d total, Anki at sprint end.)*
 - **Estimates rebuilt on the measured ledger** — mechanical ×1.2 (they land), concept ×2 (measured 3–5× raw,
   with the gate now budgeted separately). Anki folded into the gate day, saving 3 planned days.
 
@@ -437,7 +439,8 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
 - [ ] BUG-3 — Checkout: hint on an empty required address field *(0.25d — **do it with T33**, same forms)*
 - [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(0.5d, docs only)*
 - [ ] T38 — README screenshots + GIFs *(0.5d — **last**, once the UI stops moving)*
-- [ ] Sprint C Anki deck
+- [x] Sprint C Anki deck — 20 cards *(`questions/sprint-C/sprint-C-interview/`, local-only — built Sep 13)*
+- [x] Sprint D Anki deck — 21 cards *(`questions/sprint-D/sprint-D-interview/`, local-only — built Sep 13)*
 
 ## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 25 · 10 working days)*
 
