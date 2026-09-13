@@ -517,4 +517,5 @@ skinet/questions/
 # Gate REBUILD scratch files — in-place recall practice, git-excluded, deleted after the sit (mindset/the-gate.md)
 *-2.component.ts
 *-2.component.html
+*-2.service.ts
 *2.cs

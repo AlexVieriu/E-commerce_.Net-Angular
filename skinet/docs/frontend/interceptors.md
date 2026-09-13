@@ -2,14 +2,39 @@
 
 Functional interceptors in `app.config.ts`. Order: error → loading → auth (request); reversed on response.
 
+## What an interceptor is
+
+- A function run **for every `HttpClient` request**, sitting between the calling code and the network.
+- `req` is the **outgoing** request — the one heading to the backend. It is immutable: change it by
+  `req.clone({ ... })`.
+- `next(req)` hands the request to the next interceptor, or to the backend if none are left, and returns
+  an Observable of the **response** event stream.
+- So an interceptor works in two directions: it can modify the request on the way down, and pipe operators
+  onto the response stream on the way back up.
+- Interceptors are chained in the order they are listed in the providers.
+- Rarely, one may skip `next()` and answer the request itself — every interceptor after it is then skipped.
+
+Sources: [HTTP interceptors](https://angular.dev/guide/http/interceptors) ·
+`@angular/common` `HttpInterceptorFn` / `HttpHandlerFn` TSDoc.
+
 ## authInterceptor
 
 Clones every request with `withCredentials: true`. Sends the Identity cookie automatically.
 
 ## loadingInterceptor
 
-`busyService.busy()` before request, `busyService.idle()` after (`finalize`).
-500ms artificial delay in development only.
+`busyService.busy()` and `next(req)` run **inside a `defer` factory**; `busyService.idle()` is piped on
+**after** it, in `finalize`. That order is the point: a synchronous throw from a later interceptor arrives
+as an error notification on a stream that already carries `finalize`, so the counter returns to 0 instead
+of stranding at 1 for the session. With `busy()` on a bare line, `.pipe(...)` was never reached.
+
+`finalize` also fires on **unsubscribe** — a route change mid-request clears the bar with no response and
+no error. 500ms artificial delay in development only; `delay` does not delay errors, so a failed request
+is not slowed.
+
+The counter is a signal (`BusyService`) because the app is zoneless — a plain field would never re-render
+the bar. It is a **count, not a boolean**: with requests overlapping, the bar clears when the last one
+ends, not the first.
 
 ## errorInterceptor
 
