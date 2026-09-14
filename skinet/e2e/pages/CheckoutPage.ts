@@ -65,8 +65,30 @@ export class CheckoutPage {
   }
 
   async pay() {
+    await this.clickPay();
+    await this.page.waitForURL('**/checkout/success');
+  }
+
+  // Pays with a card Stripe declines. Returns the message the app showed.
+  async payExpectingDecline(): Promise<string> {
+    await this.clickPay();
+
+    // .snack-error is the panelClass SnackbarService puts on the error snackbar.
+    // Material nests two elements with the label class, so take the outer one.
+    const snackbar = this.page.locator('.snack-error');
+    const message = snackbar.locator('.mat-mdc-snack-bar-label').first();
+    await message.waitFor({ timeout: 30_000 });
+    const text = (await message.textContent())?.trim() ?? '';
+
+    // Close it, so it can't sit over the Pay button on the retry.
+    await snackbar.getByRole('button', { name: 'Close' }).click();
+    await snackbar.waitFor({ state: 'detached' });
+
+    return text;
+  }
+
+  private async clickPay() {
     await this.page.getByText('Billing and delivery information').waitFor();
     await this.page.getByRole('button', { name: /^Pay/ }).click();
-    await this.page.waitForURL('**/checkout/success');
   }
 }

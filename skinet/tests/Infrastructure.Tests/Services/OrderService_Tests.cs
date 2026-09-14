@@ -81,7 +81,6 @@ public class OrderService_HappyPathTests
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
 
@@ -93,6 +92,41 @@ public class OrderService_HappyPathTests
         order.BuyerEmail.Should().Be("buyer@test.com");
         order.OrderItems.Should().HaveCount(1);
         order.DeliveryMethod.Price.Should().Be(5m);
+    }
+
+    // The order is created before the card is charged, so a decline has to be able to walk back
+    // through the cart. Deleting it here ended the checkout one step before the money moved. (BUG-2)
+    [Fact]
+    public async Task CreateOrderAsync_ShouldKeepTheCart_SoADeclinedCardCanBeRetried()
+    {
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 100m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 10
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        using var ctx = new StoreContext(options);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
+
+        var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        order.Should().NotBeNull();
+        cartMock.Verify(x => x.DeleteCartAsync(), Times.Never);
     }
 
     [Fact]
@@ -176,7 +210,6 @@ public class OrderService_HappyPathTests
 
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: forged));
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, CouponsReturning(live));
 
@@ -207,7 +240,6 @@ public class OrderService_HappyPathTests
 
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: forged));
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, CouponsReturning(live));
 
@@ -233,7 +265,6 @@ public class OrderService_HappyPathTests
 
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: coupon));
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var couponMock = new Mock<ICouponService>();
         couponMock.Setup(x => x.GetCouponFromPromoCode(It.IsAny<string>())).ReturnsAsync(coupon);
@@ -303,7 +334,6 @@ public class OrderService_HappyPathTests
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
         var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
 
