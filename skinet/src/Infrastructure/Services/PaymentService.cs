@@ -127,6 +127,9 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
     {
         var serviceIntent = new PaymentIntentService();
 
+        if (!string.IsNullOrEmpty(cart.PaymentIntentId))
+            await DropIntentIfSpentAsync(serviceIntent, cart);
+
         if (string.IsNullOrEmpty(cart.PaymentIntentId))
         {
             var options = new PaymentIntentCreateOptions
@@ -151,5 +154,18 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
 
             await serviceIntent.UpdateAsync(cart.PaymentIntentId, options);
         }
+    }
+
+    // Stripe is finished with an intent once it is succeeded or canceled — updating either throws.
+    // Clearing the id here makes the caller create a fresh one.
+    // Deny-list, not allow-list: a processing intent may be mid-3DS, and a second one is a second charge. (BUG-2)
+    private static async Task DropIntentIfSpentAsync(PaymentIntentService serviceIntent, ShoppingCart cart)
+    {
+        var intent = await serviceIntent.GetAsync(cart.PaymentIntentId);
+
+        if (intent.Status is not ("succeeded" or "canceled")) return;
+
+        cart.PaymentIntentId = null;
+        cart.ClientSecret = null;
     }
 }

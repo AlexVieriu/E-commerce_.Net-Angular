@@ -114,6 +114,11 @@ export class CartService {
     this._selectedDelivery.set(method);
   }
 
+  // Stores a cart the server already saved, without POSTing it back (BUG-2).
+  setLocalCart(cart: Cart) {
+    this._cart.set(cart);
+  }
+
   // Drops the cart from memory only — the server keeps it for the user's next login (BUG-18).
   clearLocalCart() {
     this._cart.set(null);

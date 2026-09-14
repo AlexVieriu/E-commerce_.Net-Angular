@@ -99,10 +99,8 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService,
                 "Stock changed during checkout due to a concurrent order. Please try again.");
         }
 
-        // Cart is no longer needed — delete it from Redis.
-        // Fire-and-forget: cart deletion failure doesn't invalidate an already-saved order.
-        await cartService.DeleteCartAsync();
-
+        // The cart stays: a declined card leaves the intent payable, and the retry needs the cart.
+        // The client deletes it once the payment succeeds. (BUG-2)
         return order;
     }
 
