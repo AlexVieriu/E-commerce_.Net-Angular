@@ -53,6 +53,10 @@ the browser owned the cart             the user owns the cart
 
 Coupon state lives on `cart().coupon` — not a separate signal. Use `applyDiscount(code)` / `removeCoupon()` on the service.
 
+`setLocalCart(cart)` stores a cart the server already saved **without** POSTing it back — `POST /api/payments`
+returns one, and its `clientSecret` is the only copy the client has (BUG-2). `setCart` would overwrite the
+server's copy with the in-memory one.
+
 ## AccountService Signals
 
 `_currentUser: User | null` → `isAdmin = computed(() => currentUser()?.roles.includes('Admin') ?? false)`.

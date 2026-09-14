@@ -41,7 +41,7 @@ the steps at the gate. Expect ~1 per sprint. One line per sprint here — the st
 
 | Sprint | Where | Needs |
 |---|---|---|
-| E | [`sprint-e/`](smoke-tests/sprint-e/) | Redis + API + `ng serve`; DevTools network throttling |
+| E | [`sprint-e/`](smoke-tests/sprint-e/) | Redis + API + `ng serve`; DevTools network throttling (BUG-10); `stripe listen` + `redis-cli` (BUG-2) |
 | D | [`sprint-d/`](smoke-tests/sprint-d/) | nothing extra |
 | C | [`sprint-c/`](smoke-tests/sprint-c/) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
 | B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |

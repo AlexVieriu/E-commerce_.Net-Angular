@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  effect,
   inject,
   signal
 } from '@angular/core';
@@ -16,6 +17,7 @@ import {
   ConfirmationToken,
   StripeAddressElement,
   StripeAddressElementChangeEvent,
+  StripeAddressElementOptions,
   StripePaymentElement,
   StripePaymentElementChangeEvent
 } from '@stripe/stripe-js';
@@ -74,26 +76,54 @@ export class CheckoutComponent {
     delivery: false
   });
 
-  constructor() {
-    afterNextRender(async () => {
-      try {
-        this.addressElement = await this.stripeService.createAddressElement();
-        this.addressElement.mount('#address-element');
-        this.addressElement.on('change', this.handleAddressChange);
+  // The clientSecret the mounted Elements instance was built from.
+  private mountedClientSecret?: string;
 
-        this.paymentElement = await this.stripeService.createPaymentElement();
-        this.paymentElement?.mount('#payment-element');
-        this.paymentElement.on('change', this.handlePaymentChange);
-      } catch (error: unknown) {
-        // A dead coupon 409s here; the interceptor already messaged and left for the cart.
-        if (error instanceof HttpErrorResponse && error.status === 409) return;
-        this.snackBar.error(
-          error instanceof Error ? error.message : 'Failed to load payment elements'
-        );
-      }
+  constructor() {
+    afterNextRender(() => void this.mountStripeElements());
+
+    // Elements is built from one clientSecret, and the server returns a new one when it replaced a
+    // spent intent. Rebuild, or the mounted elements stay tied to a dead intent.
+    // Claiming the secret first stops the rebuild's own POST /payments from re-firing this. (BUG-2)
+    effect(() => {
+      const clientSecret = this.cartService.cart()?.clientSecret;
+      if (!clientSecret || !this.mountedClientSecret) return;
+      if (clientSecret === this.mountedClientSecret) return;
+
+      this.mountedClientSecret = clientSecret;
+      void this.rebuildStripeElements();
     });
 
     inject(DestroyRef).onDestroy(() => this.stripeService.disposeElements());
+  }
+
+  // The typed address carries over; the card and the token belong to the old intent, so they don't.
+  private async rebuildStripeElements() {
+    const address = (await this.addressElement?.getValue())?.value;
+    this.stripeService.disposeElements();
+    this.confirmationToken.set(undefined);
+    this.completionStatus.update((state) => ({ ...state, card: false }));
+    await this.mountStripeElements(address);
+  }
+
+  private async mountStripeElements(address?: StripeAddressElementOptions['defaultValues']) {
+    try {
+      this.addressElement = await this.stripeService.createAddressElement(address);
+      this.addressElement.mount('#address-element');
+      this.addressElement.on('change', this.handleAddressChange);
+
+      this.paymentElement = await this.stripeService.createPaymentElement();
+      this.paymentElement.mount('#payment-element');
+      this.paymentElement.on('change', this.handlePaymentChange);
+
+      this.mountedClientSecret = this.cartService.cart()?.clientSecret;
+    } catch (error: unknown) {
+      // A dead coupon 409s here; the interceptor already messaged and left for the cart.
+      if (error instanceof HttpErrorResponse && error.status === 409) return;
+      this.snackBar.error(
+        error instanceof Error ? error.message : 'Failed to load payment elements'
+      );
+    }
   }
 
   handleAddressChange = (event: StripeAddressElementChangeEvent) => {
