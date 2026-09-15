@@ -6,9 +6,5 @@ export const orderCompleteGuard: CanActivateFn = () => {
   const orderService = inject(OrderService);
   const router = inject(Router);
 
-  if (orderService.orderComplete) return true;
-  else {
-    router.navigateByUrl('/shop');
-    return false;
-  }
+  return orderService.orderComplete ? true : router.createUrlTree(['/shop']);
 };

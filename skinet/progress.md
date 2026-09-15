@@ -9,6 +9,8 @@ than repeating it.
 
 | Date | Task | What happened |
 |--------|------|---------------|
+| Sep 15 | BUG-17 *(PR #87)* | **A guard that navigates cannot lose.** The router subscribes every guard at once and only then picks by array order, so `emptycartGuard`'s `navigateByUrl` beat `authGuard` every time — the side effect, not the round trip. All four guards now return a `UrlTree`. |
+| Sep 15 | Plan re-sliced | Weekly sprints, 7 days × 10h. **Ship pulled IN to Oct 8** — almost none of it from the extra hours: T40/T22/T42 were never measured against the code and came in at ~half. |
 | Sep 14 | BUG-2 *(PR #86)* | **The cart was deleted one step before the charge**, so a decline had nothing to retry with and a 400 buried Stripe's message. The cart now outlives order creation, and a spent intent is replaced instead of updated. |
 | Sep 13 | Sprint C + D Anki | Backfilled the two missing decks — 20 cards for C, 21 for D — consolidated from each sprint's single gate doc rather than written fresh. |
 | Sep 13 | BUG-10 gate + verify | Gate day: 20 gaps, 12 OWN, 10 cards. **Three docs were wrong, not stale** — two called a missing `OnPush` a performance bug, when it is the v22 default. |
@@ -252,11 +254,11 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
 - [x] Sprint C Anki deck — 20 cards *(`questions/sprint-C/sprint-C-interview/`, local-only — built Sep 13)*
 - [x] Sprint D Anki deck — 21 cards *(`questions/sprint-D/sprint-D-interview/`, local-only — built Sep 13)*
 
-## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 25 · 10 working days)*
+## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 21 · weekly cadence from Sep 15)*
 
 Estimates and tiers live in `Execution plan.md` — this is the tick list only.
-**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup ·
-**Could:** T50, dep prune. **Day-5 checkpoint Sep 18.**
+**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup, T21 ·
+**Could:** T50, dep prune. **Day-4 checkpoint Sep 18.**
 
 - [x] BUG-10 — Top loading bar spins forever *(zoneless render path; signal + `defer`, 9 specs, gate done —
       `fix/bug-10-loading-bar`)*
@@ -264,7 +266,9 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
       stepper; `linkedSignal` and the quantity box deleted, 5 specs — `fix/bug-14-add-to-cart`)*
 - [x] BUG-2 — Checkout: declined card can't retry in-session *(money path — the cart now outlives order
       creation, and a spent intent is replaced instead of updated; `fix/bug-2-declined-card-retry`)*
-- [ ] BUG-17 — Logout → `/checkout` lands on `/cart`, not the login page *(Playwright spec red on purpose)*
+- [x] BUG-17 — Logout → `/checkout` lands on `/cart`, not the login page *(all four guards return a
+      `UrlTree`; `emptycartGuard` and `adminGuard` stand down for anonymous visitors. The Playwright spec
+      that was red on purpose is green, unedited. 12 guard specs — the repo's first. `fix/bug-17-guard-redirect`)*
 - [ ] T10 — Health-check endpoints
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
 - [ ] T35 — `NgOptimizedImage` on catalog images
