@@ -10,9 +10,8 @@ export const emptycartGuard: CanActivateFn = () => {
   const snackbar = inject(SnackbarService);
   const accountService = inject(AccountService);
 
-  // Logging out nulls the user and the cart in one step, so an anonymous visitor always looks
-  // cart-less. authGuard owns that case — stand down rather than answer with the wrong reason.
-  // This also keeps the outcome correct if the canActivate array is ever reordered.
+  // Logout nulls the user and the cart together, so a logged-out visitor always looks cart-less.
+  // authGuard owns that case; answering here would give the wrong reason.
   if (!accountService.currentUser()) return true;
 
   if (!cartService.cart() || cartService.itemCount() === 0) {

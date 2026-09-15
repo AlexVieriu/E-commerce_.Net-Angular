@@ -20,9 +20,9 @@ import { SnackbarService } from '../services/snackbar.service';
 import { User } from '../../shared/models/user';
 import { Cart } from '../../shared/models/cart';
 
-// BUG-17: the router subscribes every guard at once and only then picks an answer by array order,
-// so a guard that calls navigate() moves the page before the router has decided — it cannot lose.
-// The contract these specs pin is therefore two-sided: return a destination, and never navigate.
+// BUG-17: the router runs every guard at once, then picks by array order.
+// A guard that navigates itself moves the page first, so it cannot lose.
+// These specs pin both halves: return a destination, never navigate.
 
 const currentUser = signal<User | null>(null);
 const isAdmin = signal(false);
@@ -43,7 +43,7 @@ const cartServiceStub = { cart, itemCount };
 
 const loggedIn = { email: 'a@b.com', firstName: 'A', lastName: 'B', roles: [] } as unknown as User;
 
-/** Guards return `boolean | UrlTree`, sometimes wrapped in an Observable. Flatten both shapes. */
+/** Guards return `boolean | UrlTree`, sometimes in an Observable. Flatten both. */
 const resolve = async (result: unknown) =>
   isObservable(result) ? await firstValueFrom(result as Observable<boolean | UrlTree>) : result;
 
@@ -112,8 +112,7 @@ describe('route guards return a destination instead of navigating (BUG-17)', () 
   describe('emptycartGuard', () => {
     const run = () => TestBed.runInInjectionContext(() => emptycartGuard(route, state));
 
-    // The case BUG-17 is: logout nulls the user and the cart together, so the cart check would
-    // otherwise answer for a visitor who was never asked about a cart.
+    // Logout nulls the user and the cart together, so this guard must not answer.
     it('stands down for an anonymous visitor and says nothing', async () => {
       expect(await resolve(run())).toBe(true);
       expect(snackbar.error).not.toHaveBeenCalled();
@@ -166,7 +165,7 @@ describe('route guards return a destination instead of navigating (BUG-17)', () 
       expectNoImperativeNavigation();
     });
 
-    // authGuard is already explaining this one, with a returnUrl attached.
+    // authGuard already explains this one, with a returnUrl attached.
     it('stays quiet for an anonymous visitor', async () => {
       expect(await resolve(run())).toBeInstanceOf(UrlTree);
       expect(snackbar.error).not.toHaveBeenCalled();

@@ -10,8 +10,8 @@ export const adminGuard: CanActivateFn = () => {
 
   if (accountService.isAdmin()) return true;
 
-  // An anonymous visitor is not short of a role, they are short of a session — and authGuard is
-  // already sending them to login with a returnUrl. Staying quiet keeps the two messages apart.
+  // An anonymous visitor is short of a session, not a role.
+  // authGuard is already sending them to login with a returnUrl.
   if (accountService.currentUser()) {
     snackBar.error("You don't have permission to access this page");
   }
