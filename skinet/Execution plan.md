@@ -220,7 +220,7 @@ BUG-3 -> pull-in rank 5 · T38 -> Sprint H · deploy-gate cleanup -> Sprint H.
 | BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 | S | **✅ Sep 13** *(1d vs 0.25d est — gate included)* | -- | Shipped #83 -> `61c900e`. `BusyService` is signal-based, the interceptor counts inside `defer`, 9 specs green; the live smoke is recorded in `docs/smoke-tests/sprint-e/bug-10-loading-bar.md`. The cause was the zoneless render path — a plain field notifies nothing, so the bar only cleared on the next click |
 | BUG-14 | Product page: "Add to cart" disables on click — reads as broken though the cart did update | S | **✅ Sep 13** *(0.25d, as est)* | -- | `product-details.component.html:22` — `[disabled]="quantity() === quantityInCart()"`. `getButtonText()` already exists for the label, so this is one template decision. `fix(bug-14)` |
 | BUG-2 | Checkout: a declined card can't be retried in-session | S | **✅ Sep 14** *(0.5d, as est)* | -- | **Money path. Shipped #86 → `1aa8136`.** `CreateOrderAsync` deleted the Redis cart when the order committed — one step before the charge — so the retry hit `POST /payments` with no cart and got a 400 *"Cart unavailable"* that buries Stripe's decline. Fixed by deleting the cart on payment success and replacing the PaymentIntent once Stripe has finished with the old one; `elements.submit()` turned out **not** to be single-use, disproved by the new Playwright retry spec. The `Pending` order and its stock defer to T40/T41, as does the order orphaned when an intent is replaced. Spike: `mindset/spikes/sprint-e/bug-2-declined-card-retry.md` |
-| BUG-17 | Logout then hit `/checkout` (empty cart) → lands on `/cart`, not the login page | S | ✅ **0.4d** *(held — built Sep 15)* | 37 | Four guards return a `UrlTree` instead of `navigate()` + `false`. The router subscribes every guard with `combineLatest` and picks the answer by array order, so a guard that navigates itself cannot lose — the defect is the side effect, not the round trip. `emptycartGuard` and `adminGuard` also stand down for anonymous visitors, so the wrong reason never reaches the login page. Rider: 401 joins the 409 skip at `checkout.component.ts:120`. First guard specs in the repo (`guards.spec.ts`). Spike: `mindset/spikes/sprint-e/bug-17-logout-checkout-guard-race.md`. `fix(bug-17)` |
+| BUG-17 | Logout then hit `/checkout` (empty cart) → lands on `/cart`, not the login page | S | **✅ Sep 15** *(0.7d vs 0.4d est)* | 37 | Four guards return a `UrlTree` instead of `navigate()` + `false`. The router subscribes every guard with `combineLatest` and picks the answer by array order, so a guard that navigates itself cannot lose — the defect is the side effect, not the round trip. `emptycartGuard` and `adminGuard` also stand down for anonymous visitors, so the wrong reason never reaches the login page. Rider: 401 joins the 409 skip at `checkout.component.ts:120`. First guard specs in the repo (`guards.spec.ts`). Spike: `mindset/spikes/sprint-e/bug-17-logout-checkout-guard-race.md`. `fix(bug-17)` |
 | — | Interceptor cleanup: cart-reload out of `errorInterceptor` + `HttpContextToken` for the 401 | S | ⚠️ **1.0d** | BUG-16 | **Re-costed: `HttpContextToken` is new to this repo** — that is the novelty marker that has cost 3–5× before. **One PR, not two** — both live in `error.interceptor.ts` lines 26–50 (401 at 26–33, 409 at 37–50); splitting them just rebases one onto the other. Kills two URL-string signals that break silently on a route rename. Absorbs pull-in rank 3 (`err.error?.…` derefs) — same file, near-free |
 | 10 | Health-check endpoints | S | ⚠️ **0.5d** | -- | **Re-costed: a new package and a new endpoint**, plus the Azure probe config to point at it. Confirmed absent — no `AddHealthChecks` anywhere. The serverless-SQL idle-pause history (BUG-8) makes a probe worth having |
 | — | Scheduled weekly CI advisory run (`on: schedule`) | S | ⚠️ **0.25d** | -- | **Held** — more of what already exists in `ci-cd.yml`, which runs only on `push` / `pull_request`. ~15 lines. NU1903 was caught while deploying, not by CI. `chore/scheduled-dependency-audit` |
@@ -230,8 +230,8 @@ BUG-3 -> pull-in rank 5 · T38 -> Sprint H · deploy-gate cleanup -> Sprint H.
 | — | Prune unused client deps: `@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer` | S | ⚠️ **0.25d** | -- | **Held** — removal plus a verify run, all of it familiar ground. A **React** plugin in an Angular `package.json` is the one a reviewer notices; the other three are transitives declared as direct deps. **Leave alone:** `jsdom` / `vitest` / `istanbul-lib-instrument`, `@angular/animations`, `postcss`. Verify with `ng build` + `ng test` + `ng lint`. `fix/prune-unused-deps` |
 | — | **Gate — sprint end** (Anki consolidation straight after) | — | *sized on the day* | -- | 🔴 **Never estimated in advance.** Nothing is queued: on the gate morning the list is derived from the sprint's diff and your own transcript turns, and only then does it split into full and light concepts (`mindset/the-gate.md`). It draws on whatever headroom the sprint has left |
 
-**Task work 6.9d of 7 — 0.1d headroom, and the gate comes out of that too.** *(BUG-10/14/2 already spent, not re-counted.)*
-⚠️ **Tightest week in the plan.** Drop T50 at the day-4 checkpoint → 4.9d of work, 2.1d for the gate.
+**Task work 7.2d of 7 — already 0.2d over, and the gate comes out of that too.** *(BUG-10/14/2 already spent, not re-counted. BUG-17 landed at **0.7d against a 0.4d estimate** — the first row costed under the new rules and still under by 75%.)*
+⚠️ **Tightest week in the plan.** Drop T50 at the day-4 checkpoint → 5.2d of work, 1.8d for the gate.
 
 **Sprint end:** nothing a recruiter clicks looks broken · a declined card retries · guards redirect the
 way Angular says to · coverage gated in CI.
@@ -413,19 +413,19 @@ its gate day draws on, sized on the gate morning from the diff and the transcrip
 
 | Window | Days | Task work | Headroom *(gate + unplanned)* |
 |---|---|---|---|
-| Sprint E · Sep 15–21 | 7 | 6.9d | **0.1d ⚠️ — T50 is the drop, and it buys back 2d** |
+| Sprint E · Sep 15–21 | 7 | 7.2d | **−0.2d ⚠️ — T50 is the drop, and it buys back 2d** |
 | Sprint F · Sep 22–28 | 7 | 4.4d | 2.6d |
 | Sprint G · Sep 29 – Oct 5 | 7 | 4.5d | 2.5d — *two LEARN rows; likeliest full gate day* |
 | Sprint H · Oct 6–12 *(ship Oct 8)* | 7 | 2.6d | **4.4d reserved** |
-| **Build total** | **28** | **18.4d** | **9.6d (34%)** |
+| **Build total** | **28** | **18.7d** | **9.3d (33%)** |
 | Buffer + Interview Prep · Oct 13 – Nov 11 | 30 | T53 + deck | — |
 
 Every sprint since A has produced unplanned bugs; this budget assumes that happens again. **Slack is
 protection, not capacity** — the sprint that spends it is the one that puts T40 or the release at risk.
 
-⚠️ **Sprint E has 0.1d of headroom and still owes a gate day — it is tagged rather than fixed.** Its slack
+⚠️ **Sprint E is 0.2d over and still owes a gate day — it is tagged rather than fixed.** Its slack
 lives in the **ladder**, not in a reserve: T50 is 2d and Could-tier, so the day-4 checkpoint drops it and
-leaves 2.1d for the gate. Holding 2d idle from Monday to insure against the same risk costs more than
+leaves 1.8d for the gate. Holding 2d idle from Monday to insure against the same risk costs more than
 dropping one row on Thursday.
 
 **Why Sprint E was re-costed rather than re-filled:** it looked like it had 2.35d of slack. It did not —
