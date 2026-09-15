@@ -118,8 +118,11 @@ export class CheckoutComponent {
 
       this.mountedClientSecret = this.cartService.cart()?.clientSecret;
     } catch (error: unknown) {
-      // A dead coupon 409s here; the interceptor already messaged and left for the cart.
-      if (error instanceof HttpErrorResponse && error.status === 409) return;
+      // The interceptor has already messaged and navigated for both of these: a dead coupon 409s
+      // and leaves for the cart, an expired cookie 401s and leaves for login. Adding a second
+      // message here would explain a redirect that is already explained.
+      if (error instanceof HttpErrorResponse && (error.status === 409 || error.status === 401))
+        return;
       this.snackBar.error(
         error instanceof Error ? error.message : 'Failed to load payment elements'
       );

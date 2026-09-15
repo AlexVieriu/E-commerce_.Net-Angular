@@ -8,11 +8,13 @@ export const adminGuard: CanActivateFn = () => {
   const router = inject(Router);
   const snackBar = inject(SnackbarService);
 
-  if (accountService.isAdmin()) {
-    return true;
-  } else {
+  if (accountService.isAdmin()) return true;
+
+  // An anonymous visitor is not short of a role, they are short of a session — and authGuard is
+  // already sending them to login with a returnUrl. Staying quiet keeps the two messages apart.
+  if (accountService.currentUser()) {
     snackBar.error("You don't have permission to access this page");
-    router.navigateByUrl('/account/login');
-    return false;
   }
+
+  return router.createUrlTree(['/account/login']);
 };
