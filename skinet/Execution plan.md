@@ -1,27 +1,42 @@
 ﻿# Execution Plan
 
 > .NET 10 + Angular 22 | Azure-only | Solo dev | B2C physical goods
-> **Milestone: `v1.0 — Interview Ready` · Nov 3, 2026 — 🔴 FIXED, NEVER MOVES** · interview Nov 11, 2026
-> **Freeze Oct 28:** no new work after that date — rehearsal, fixes and the release only.
+> **Milestone: `v1.0 — Interview Ready` · Oct 8, 2026 — 🔴 FIXED, NEVER MOVES** · interview Nov 11, 2026
+> **Freeze Oct 6:** no new work after that date — rehearsal, fixes and the release only.
 > Mid .NET / junior Angular | CV project | Claude Code for speed, saved time for learning
 
-**Estimates:** every row is in days, sized from measured actuals on this repo.
-- **Mechanical ×1.2** — wiring, templates, config, docs.
-- **Concept ×2** — work introducing something new. The gate is budgeted per sprint, not inside the row.
-- **Gate: one day per sprint, at sprint end** — never per task. Caps 2 full + 2 light concepts. Anki cards
-  are cut from that day's doc, so there is no separate deck row any more.
-- **Scope ladder per sprint: Must / Should / Could.** Only **Must** is committed. Should and Could are
-  real work, not filler — they just do not get to move the date.
-- **Mid-sprint checkpoint (day 5):** Must under 50% → drop Could, then Should, that day. Not at sprint end.
-  No longer a gate day — count the **concepts in play** here instead: more than two full ones and the
-  sprint-end gate cannot clear them, so something goes light or goes away (`mindset/the-gate.md`).
-- **The date is fixed; the ladder is the lever.**
+**Schedule (re-sliced 2026-09-15):** 7 days a week, 10 working hours a day (12h − 2h break).
+**1 plan-day = 1 calendar day. A sprint is one week: 7d capacity, 6d committed, 1d slack.**
+The date moved **in**, from Nov 3 to **Oct 8** — never out. Nov 3 is the outer bound, not the target.
+
+**Estimates:** every row is in days.
+- ✅ **measured** — re-sized against the code. ⚠️ **unmeasured** — a T-shirt guess × a multiplier, never
+  checked. 🔴 — unmeasured *and* big enough to blow a week.
+- **The blow-out rule, from this repo's own actuals:** a row that touches **something the repo has never
+  done before** runs **3–5× its estimate** — T52 0.5d→2.5d (first Angular spec + a CI step) · T43
+  0.5d→2d (`HasMaxLength` + per-provider migrations) · BUG-10 0.25d→1d (zoneless render path) · BUG-19
+  0.5d→1.5d. A row doing **more of what already exists** lands on estimate — T48, BUG-14, BUG-2 all did.
+- **Big T-shirt rows fail the other way.** The three largest were checked against the code on 2026-09-15
+  and all came in at ~half: T40 6d→3.5d (and split) · T22 4d→1.5d · T42 4d→1.5d. **14d → 6.5d.**
+- **So: cost novelty up, cost bulk down, and measure before committing a week to either.**
+- **Mechanical ×1.2** — wiring, templates, config, docs. **Concept ×2** — work introducing something new.
+- **Gate: one day per sprint, at sprint end** (`mindset/the-gate.md`), Anki consolidation straight after.
+  🔴 **Never estimated in advance, and never queued.** The list is built on the gate morning from the
+  sprint's diff and your own transcript turns; only then does it split into full and light concepts,
+  capped at 2 full + 2 light. So the rows below cost out **task work only** — each sprint's remaining
+  headroom is what the gate draws on, and a purely mechanical sprint skips it for the deck pass alone.
+- **Scope ladder per sprint: Must / Should / Could.** Only **Must** is committed.
+- **Mid-sprint checkpoint is day 4** (was day 5 on the 10-day sprints): Must under 50% → drop Could, then
+  Should, that day. Day 5 of 7 is 71% through — too late to cut.
+- **The date is fixed; the ladder is the lever.** On a 7-day week the ladder is the *only* brake left —
+  there is no weekend to absorb a bad run, so a sprint that eats its slack drops a tier rather than
+  borrowing from next week (`mindset/energy-protocol.md`).
 
 ---
 
 ## What Already Exists
 
-Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Customer) | Stripe (PaymentIntent+webhook+refund+coupons) | SignalR notifications | Redis cart+cache, **keyed by the caller** (`ICurrentUser`) | Angular 22 zoneless+signals+Tailwind+Material | 4-step checkout | Admin orders+refund | Guards (auth/admin/emptycart/orderComplete) | Rate limiting | ExceptionMiddleware+errorInterceptor | GitHub Actions CI/CD to Azure | 25 docs | 23 unit/integration test files + 4 Playwright specs | API integration harness (`WebApplicationFactory`) | Security audit done (stock race condition fixed in T13, cart IDOR in BUG-18)
+Full CRUD products/orders/cart/payments/coupons | Cookie Identity (Admin+Customer) | Stripe (PaymentIntent+webhook+refund+coupons) | SignalR notifications | Redis cart+cache, **keyed by the caller** (`ICurrentUser`) | Angular 22 zoneless+signals+Tailwind+Material | 4-step checkout | Admin orders+refund | Guards (auth/admin/emptycart/orderComplete) | Rate limiting | ExceptionMiddleware+errorInterceptor | GitHub Actions CI/CD to Azure | 30 docs | 25 unit/integration test files + 4 Angular specs + 4 Playwright specs | API integration harness (`WebApplicationFactory`) | Security audit done (stock race condition fixed in T13, cart IDOR in BUG-18)
 
 **No README** — T47 creates it in Sprint C.
 
@@ -169,7 +184,7 @@ it gate.
 
 ---
 
-## Sprint D — Demo Polish *(Aug 31 – Sep 8 · 7 working days)* · ✅ CLOSED Sep 12 *(T43 + T49 shipped; six rows carried to Sprint E)*
+## Sprint D — Demo Polish *(Aug 31 – Sep 8 · 7 working days)* · ✅ CLOSED Sep 12 *(T43 + T49 shipped; six rows re-homed across E, G and H)*
 
 > Sprint C's remainder, given its own timebox. Everything a visitor clicks in the first two minutes,
 > plus the index task already in flight. **The same theme as C on purpose** — C's timebox ended, its
@@ -182,113 +197,119 @@ it gate.
 | 49 | `docker-compose.yml`: add **SQL Server** beside Redis + document it as the way to start both | S | **✅ Sep 1** *(shipped with T43)* | 47 | ⬅ **pulled forward from Sprint F** — T43's measurement needs a local SQL Server, and that container is this task. Compose already has `redis` + `sqlite`; what's missing is SQL Server and any mention in the docs, so `dotnet test` fails on a clean machine with no hint why. Developer edition, not Express — closer to Azure SQL than LocalDB |
 | — | Sprint C Anki deck | — | **1d** | -- | 1 day per sprint |
 
-**Delivered: T43 + T49.** Six rows carried to Sprint E.
+**Delivered: T43 + T49.** Six rows re-homed across E, G and H.
 
 **As closed Sep 12:** T43 and T49 shipped (PR #80 + two follow-ups). BUG-10 built, not merged. The
-remaining six rows carried to Sprint E.
+remaining six rows were re-homed, not carried as a block: BUG-10 + BUG-14 -> Sprint E · T33 cut Sep 12 ·
+BUG-3 -> pull-in rank 5 · T38 -> Sprint H · deploy-gate cleanup -> Sprint H.
 
 ---
 
-## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 25 · 10 working days)* · ⏳ CURRENT
+## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 21)* · ⏳ CURRENT
 
 > Everything a visitor touches in the first two minutes, and the two places their card can fail.
-> Epics: `UX`, `Money`. Order: BUG-10 -> BUG-14 -> BUG-2 -> BUG-17 -> Should rows -> T50.
-> **Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup · **Could:** T50, dep prune
-> **Day-5 checkpoint (Sep 18):** Must under 50% → Could goes, then Should.
+> Epics: `UX`, `Money`. **First sprint on the weekly cadence** — it absorbs Sep 12–14, already spent.
+> **Re-costed 2026-09-15:** same eight rows, honest estimates. The week did not grow; the estimates
+> stopped under-selling it (3.65d → 6.9d). Nothing was pulled in from another sprint.
+> **Must:** BUG-10 ✅, BUG-14 ✅, BUG-2 ✅, BUG-17 · **Should:** interceptor cleanup, T10, CI schedule, T35, T21 · **Could:** T50, dep prune
+> **Gate day at sprint end** — sized then, from the diff and the transcripts, not now.
+> **Day-4 checkpoint (Sep 18):** Must under 50% → **T50 goes first**, and the week gets 2d back.
 
 | # | Task | E | Est | Dep | Notes |
 |---|------|---|-----|-----|-------|
-| BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 | S | **✅ Sep 13** *(1d vs 0.25d est — gate included)* | -- | Built on `fix/bug-10-loading-bar`: `BusyService` is signal-based, the interceptor counts inside `defer`, 9 specs green. Left: live smoke + PR. The cause was the zoneless render path — a plain field notifies nothing, so the bar only cleared on the next click |
+| BUG-10 | Top loading bar spins forever on live — the busy counter never returns to 0 | S | **✅ Sep 13** *(1d vs 0.25d est — gate included)* | -- | Shipped #83 -> `61c900e`. `BusyService` is signal-based, the interceptor counts inside `defer`, 9 specs green; the live smoke is recorded in `docs/smoke-tests/sprint-e/bug-10-loading-bar.md`. The cause was the zoneless render path — a plain field notifies nothing, so the bar only cleared on the next click |
 | BUG-14 | Product page: "Add to cart" disables on click — reads as broken though the cart did update | S | **✅ Sep 13** *(0.25d, as est)* | -- | `product-details.component.html:22` — `[disabled]="quantity() === quantityInCart()"`. `getButtonText()` already exists for the label, so this is one template decision. `fix(bug-14)` |
-| BUG-2 | Checkout: a declined card can't be retried in-session | S | **0.5d** | -- | **Money path.** `CreateOrderAsync` deletes the Redis cart when the order commits — one step before the charge — so the retry hits `POST /payments` with no cart and gets a 400 *"Cart unavailable"* that buries Stripe's decline. Fix: delete the cart on payment success, and re-create the PaymentIntent once Stripe has finished with the old one. The `Pending` order and its stock defer to T40/T41. ⚠️ Scoped as a client fix; it is server-side. Spike: `mindset/spikes/sprint-e/bug-2-declined-card-retry.md` |
-| BUG-17 | Logout then hit `/checkout` (empty cart) → lands on `/cart`, not the login page | S | **0.4d** | 37 | `auth.guard.ts` navigates imperatively and returns false, so it races `emptycart.guard.ts` and loses — the fix is returning a `UrlTree`. Rider: `checkout.component.ts` prints the raw `HttpErrorResponse` on a 401. A Playwright spec is already red on purpose. `fix(bug-17)` |
-| 10 | Health-check endpoints | S | **0.25d** | -- | Confirmed absent — no `AddHealthChecks` anywhere. The serverless-SQL idle-pause history (BUG-8) makes a probe worth having |
-| — | Scheduled weekly CI advisory run (`on: schedule`) | S | **0.25d** | -- | `ci-cd.yml` runs only on `push` / `pull_request`. ~15 lines. NU1903 was caught while deploying, not by CI. `chore/scheduled-dependency-audit` |
-| 35 | `NgOptimizedImage` on catalog images | S | **0.5d** | -- | Six catalog `<img>` sites, all Tailwind-sized (`h-20 w-20`, `w-full`). The directive needs explicit width/height or `fill`, so each one needs re-checking visually — not the 0.25d the row used to claim |
-| — | Interceptor cleanup: cart-reload out of `errorInterceptor` + `HttpContextToken` for the 401 | S | **0.5d** | BUG-16 | **One PR, not two** — both live in `error.interceptor.ts` lines 26–43; splitting them just rebases one onto the other. Kills two URL-string signals that break silently on a route rename |
-| 50 | API docs: `[ProducesResponseType]` + XML summaries | M | **1d** | -- | 27 endpoints across 7 controllers, none annotated. **Watch the analyzer gate:** turning on `GenerateDocumentationFile` raises CS1591 on every undocumented public member, and this repo runs at zero warnings — budget for that, not just the attributes |
-| — | Prune unused client deps: `@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer` | S | **0.25d** | -- | A **React** plugin in an Angular `package.json` is the one a reviewer notices; the other three are transitives declared as direct deps, two of them under `dependencies` rather than `devDependencies`. **Leave alone:** `jsdom` / `vitest` / `istanbul-lib-instrument` (peers the `@angular/build:unit-test` builder resolves with no import), `@angular/animations` (lazy-loaded by `provideAnimationsAsync()`), `postcss` (peer of `@tailwindcss/postcss`). Zone.js is already gone — `polyfills: []`. Verify with `ng build` + `ng test` + `ng lint`. `fix/prune-unused-deps` |
-| — | **Gate** — sprint end (Anki straight after) | — | **1.5d** | -- | `mindset/the-gate.md`. BUG-10's zoneless doc was gated early, on Sep 13, so it is already cleared |
+| BUG-2 | Checkout: a declined card can't be retried in-session | S | **✅ Sep 14** *(0.5d, as est)* | -- | **Money path. Shipped #86 → `1aa8136`.** `CreateOrderAsync` deleted the Redis cart when the order committed — one step before the charge — so the retry hit `POST /payments` with no cart and got a 400 *"Cart unavailable"* that buries Stripe's decline. Fixed by deleting the cart on payment success and replacing the PaymentIntent once Stripe has finished with the old one; `elements.submit()` turned out **not** to be single-use, disproved by the new Playwright retry spec. The `Pending` order and its stock defer to T40/T41, as does the order orphaned when an intent is replaced. Spike: `mindset/spikes/sprint-e/bug-2-declined-card-retry.md` |
+| BUG-17 | Logout then hit `/checkout` (empty cart) → lands on `/cart`, not the login page | S | **✅ Sep 15** *(0.7d vs 0.4d est)* | 37 | Four guards return a `UrlTree` instead of `navigate()` + `false`. The router subscribes every guard with `combineLatest` and picks the answer by array order, so a guard that navigates itself cannot lose — the defect is the side effect, not the round trip. `emptycartGuard` and `adminGuard` also stand down for anonymous visitors, so the wrong reason never reaches the login page. Rider: 401 joins the 409 skip at `checkout.component.ts:120`. First guard specs in the repo (`guards.spec.ts`). Spike: `mindset/spikes/sprint-e/bug-17-logout-checkout-guard-race.md`. `fix(bug-17)` |
+| — | Interceptor cleanup: cart-reload out of `errorInterceptor` + `HttpContextToken` for the 401 | S | ⚠️ **1.0d** | BUG-16 | **Re-costed: `HttpContextToken` is new to this repo** — that is the novelty marker that has cost 3–5× before. **One PR, not two** — both live in `error.interceptor.ts` lines 26–50 (401 at 26–33, 409 at 37–50); splitting them just rebases one onto the other. Kills two URL-string signals that break silently on a route rename. Absorbs pull-in rank 3 (`err.error?.…` derefs) — same file, near-free |
+| 10 | Health-check endpoints | S | ⚠️ **0.5d** | -- | **Re-costed: a new package and a new endpoint**, plus the Azure probe config to point at it. Confirmed absent — no `AddHealthChecks` anywhere. The serverless-SQL idle-pause history (BUG-8) makes a probe worth having |
+| — | Scheduled weekly CI advisory run (`on: schedule`) | S | ⚠️ **0.25d** | -- | **Held** — more of what already exists in `ci-cd.yml`, which runs only on `push` / `pull_request`. ~15 lines. NU1903 was caught while deploying, not by CI. `chore/scheduled-dependency-audit` |
+| 35 | `NgOptimizedImage` on catalog images | S | ⚠️ **1.0d** | -- | **Re-costed: a directive the repo has never used, across 7 sites, each needing a visual check.** Seven product `<img>` sites (nine in all — the header logo and the home hero are not catalog). Most are Tailwind-sized (`h-20 w-20`, `w-full`), but `product-item.component.html` uses `mat-card-image` with no size classes at all, and the directive needs explicit width/height or `fill` |
+| 21 | Coverage gate: coverlet, fail PR < 60% | S | ⚠️ **1.5d** | 19,1 | **Re-costed: this is T52's exact shape — a tool the repo does not have, plus a CI step. T52 ran 0.5d → 2.5d.** **Coverlet is *not* installed** — no reference in any test `.csproj` or in `tests/Directory.Build.props`. So this row is the package, the collector switches, a threshold and a CI step |
+| 50 | API docs: `[ProducesResponseType]` + XML summaries | M | 🔴 **2.0d** | -- | **Re-costed, and the first row the checkpoint drops.** 27 endpoints across 7 controllers, none annotated. **The analyzer gate is the real cost:** turning on `GenerateDocumentationFile` raises CS1591 on every undocumented public member, and this repo runs at zero warnings. ⚠️ **Cut candidate, not just a drop candidate** — no recruiter clicks it and no interviewer asks about it |
+| — | Prune unused client deps: `@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer` | S | ⚠️ **0.25d** | -- | **Held** — removal plus a verify run, all of it familiar ground. A **React** plugin in an Angular `package.json` is the one a reviewer notices; the other three are transitives declared as direct deps. **Leave alone:** `jsdom` / `vitest` / `istanbul-lib-instrument`, `@angular/animations`, `postcss`. Verify with `ng build` + `ng test` + `ng lint`. `fix/prune-unused-deps` |
+| — | **Gate — sprint end** (Anki consolidation straight after) | — | *sized on the day* | -- | 🔴 **Never estimated in advance.** Nothing is queued: on the gate morning the list is derived from the sprint's diff and your own transcript turns, and only then does it split into full and light concepts (`mindset/the-gate.md`). It draws on whatever headroom the sprint has left |
 
-**Points: 4 Must (+6 Should/Could) · Est 5.65d of 10 — 4.35d slack.** *(Must 1.4d · Should 1.5d · Could 1.25d · gate 1.5d.)*
+**Task work 7.2d of 7 — already 0.2d over, and the gate comes out of that too.** *(BUG-10/14/2 already spent, not re-counted. BUG-17 landed at **0.7d against a 0.4d estimate** — the first row costed under the new rules and still under by 75%.)*
+⚠️ **Tightest week in the plan.** Drop T50 at the day-4 checkpoint → 5.2d of work, 1.8d for the gate.
 
-**Sprint end:** nothing a recruiter clicks in the first two minutes looks broken, a declined card can be
-retried, the API documents itself, and the two interceptor compromises are gone.
+**Sprint end:** nothing a recruiter clicks looks broken · a declined card retries · guards redirect the
+way Angular says to · coverage gated in CI.
 
 ---
 
-## Sprint F — Order Domain *(Sep 28 – Oct 9 · 10 working days)*
+## Sprint F — Order Domain *(Sep 22 – Sep 28)*
 
-> The strongest domain story in the plan. The money-path bugs moved to Sprint E — they are what a
-> visitor hits, and they are not domain work.
-> Epic: `Domain`. Order: 40 -> 41 -> 21.
-> **Must:** T40 · **Should:** T41 · **Could:** T21
-> **Day-5 checkpoint (Oct 2):** T40 under 50% → Could and Should go, that day. T40 is the sprint.
+> The strongest domain story in the plan. **T40 was 6d on a T-shirt guess; measured against the code it
+> is 3.5d and splits cleanly** — a column change, then a new table.
+> Epic: `Domain`. Order: 40a -> 40b -> 41.
+> **Must:** T40a, T40b · **Should:** T41 · **Could:** —
+> **Day-4 checkpoint (Sep 25):** T40a+T40b under 50% → T41 goes to Sprint G, that day.
 
 | # | Task | E | Est | Dep | Notes |
 |---|------|---|-----|-----|-------|
-| 40 | OrderStatus: add Processing/Shipped/Delivered/Cancelled + append-only OrderStatusHistory | M | **6d** | -- | LEARN: state machine + audit trail. **Spike first: one enum or two?** The current enum is payment-shaped (`Pending, PaymentReceived, PaymentFailed, PaymentMismatch, Refunded`) and is read across 8 files — `AdminController`, `PaymentService`, `DashboardService`, `OrderSpecification`, the EF config and the seeder — so fulfillment states would mix two concerns in one field. The history entity also means **one migration per provider**, the cost T43 measured. T26 parks admin fulfillment control here; **BUG-2 parks the declined-order leak here** — a `Pending` order holds stock and there is no `Cancelled` to set |
-| 41 | Order cancellation: POST cancel, only Pending/PaymentReceived, Stripe refund if paid | M | **0.9d** | 40 | Refund plumbing already exists (`AdminController`, `PaymentService`, `IPaymentService`) — this reuses it. Log the email, don't build the email service (T39 descoped). **Cancelling an unpaid `Pending` order is where the stock goes back** — BUG-2's deferred half, including the order orphaned when BUG-2's spent-intent check swaps a customer's intent mid-checkout |
-| 21 | Coverage gate: coverlet, fail PR < 60% | S | **0.5d** | 19,1 | **Coverlet is *not* installed** — no reference in any test `.csproj` or in `tests/Directory.Build.props`, contrary to the old note. So this row is the package, the collector switches, a threshold and a CI step |
-| — | **Gate** — sprint end (Anki straight after) | — | **1.5d** | -- | T40 is a big LEARN row — it gates alone, with no second full concept and no light ones beside it |
+| 40a | **Split the enum:** payment status stays, `FulfillmentStatus` (Processing/Shipped/Delivered/Cancelled) is new | M | ✅ **1.5d** | -- | **Spike first: one enum or two?** The current enum is payment-shaped (`Pending, PaymentReceived, PaymentFailed, PaymentMismatch, Refunded`), so fulfillment states would mix two concerns in one field. Measured: **15 lines** of reads across 8 backend files — `AdminController:44,51,66` · `OrderSpecification:47,71,93` · `DashboardService:25,28` · `PaymentService:52` · `OrderConfiguration:14` · `BogusSeeder:27-32` — plus one client union (`order.ts:7`) and one filter array (`admin-orders.component.ts:43-46`). One migration per provider. Ships working Shipped/Delivered/Cancelled on its own |
+| 40b | **Append-only `OrderStatusHistory`** + transition guard + admin status endpoint | M | ✅ **2d** | 40a | LEARN: state machine + audit trail — **this is the gate concept**, 40a is the wiring under it. New entity + EF config + one migration per provider; history written at the 5 existing status-write sites; `POST /orders/{id}/status` reuses `AdminController`'s existing shape. **T26 parks admin fulfillment control here.** Splits from 40a at a real seam: 40a is a column, 40b is a table |
+| 41 | Order cancellation: POST cancel, only Pending/PaymentReceived, Stripe refund if paid | M | ⚠️ **0.9d** | 40b | Refund plumbing already exists (`AdminController`, `PaymentService`, `IPaymentService`) — this reuses it. Log the email, don't build the email service (T39 descoped). **Cancelling an unpaid `Pending` order is where the stock goes back** — BUG-2's deferred half, including the order orphaned when BUG-2's spent-intent check swaps a customer's intent mid-checkout |
+| — | **Gate — sprint end** (Anki consolidation straight after) | — | *sized on the day* | -- | 🔴 **Never estimated in advance.** Nothing is queued: on the gate morning the list is derived from the sprint's diff and your own transcript turns, and only then does it split into full and light concepts (`mindset/the-gate.md`). It draws on whatever headroom the sprint has left |
 
-**Points: 1 Must (+2 Should/Could) · Est 8.9d of 10 — 1.1d slack.** *(T40 6d · T41 0.9d · T21 0.5d · gate 1.5d.)*
+**Task work 4.4d of 7 — 2.6d headroom for the gate and the unplanned.**
 
-**Sprint end:** order status + history working with an audit trail, cancellation refunds through Stripe,
-and — if Could survives — coverage gated in CI.
+**Sprint end:** order status split into two concerns · an append-only audit trail behind it · if Should
+holds, cancellation refunds through Stripe.
 
 ---
 
-## Sprint G — Production Hardening *(Oct 12 – Oct 23 · 10 working days)*
+## Sprint G — Production Hardening *(Sep 29 – Oct 5)*
 
 > The last build sprint. Everything here is what separates "it runs on my machine" from "I can operate it".
-> The five cheap rows moved to Sprint E, where there was room for them.
-> Epics: `Observability`, `Data`. Order: 22 -> 23 -> 42 -> 20b -> deploy-gate cleanup.
-> **Must:** T22, T23 · **Should:** T42 · **Could:** T20b + the deploy-gate cleanup
-> **Day-5 checkpoint (Oct 16):** T22 under 50% → T42 drops to Sprint H that day.
+> **Both big rows re-measured down:** T22 4d→1.5d, T42 4d→1.5d.
+> Epics: `Observability`, `Data`. Order: 22 -> 23 -> 42 -> 20b.
+> **Must:** T22, T23, T42 · **Should:** T20b · **Could:** —
+> **Day-4 checkpoint (Oct 2):** Must under 50% → T20b goes to Sprint H, that day.
 
 | # | Task | E | Est | Dep | Notes |
 |---|------|---|-----|-----|-------|
-| 22 | Serilog structured logging *(App Service logs, no Seq)* | M | **4d** | -- | LEARN: "why not string interpolation?". Confirmed absent — zero Serilog references. If the live demo breaks there is nothing to diagnose with |
-| 42 | Soft delete + EF global query filter | M | **4d** | -- | LEARN: "soft delete in EF Core?". Confirmed gap — no `IsDeleted` or `HasQueryFilter` anywhere, and `ProductsController.DeleteProduct` hard-deletes through the repository. Orders snapshot the product, so no FK risk. One migration per provider |
-| 23 | Correlation IDs — one id per request, on every log line | S | **0.3d** | 22 | Was blocked on T22; T22 now ships here. Answers "how do you trace one request across logs?" for half a day |
-| 20b | Extend the API integration harness: auth, orders, payments happy paths | S | **1.2d** | -- | `CustomWebApplicationFactory` exists with two suites on it (`CartOwnershipTests`, `CouponTrustTests`), and `StubCouponService` shows the stubbing pattern. Auth and orders are cheap; **payments needs a Stripe stub that does not exist yet**. TestContainers stays cut |
-| — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | **0.6d** | 20b | **Depends on 20b** — T17 price change, T26 payment sync and BUG-11 move *into* that harness, BUG-12 into Playwright. Only then delete the table at `docs/testing.md:50` |
-| — | **Gate** — sprint end (Anki straight after) | — | **1.5d** | -- | T22 and T42 are both LEARN rows — two full concepts, which is exactly the day's cap |
-| 49 | → **moved to Sprint D**, closed alongside T43 | S | **—** | -- | T43 needs a local SQL Server to measure against; that container **is** T49's deliverable. Real overlap, so it ships once |
+| 22 | Serilog structured logging *(App Service logs, no Seq)* | M | ✅ **1.5d** | -- | LEARN: "why not string interpolation?". Confirmed absent — zero Serilog references. Measured: only **8** `ILogger` call sites, in **2** files (`PaymentsController`, `ExceptionMiddleware`), so the row is package refs + a sink config + 8 message templates + the concept. Not 4d. If the live demo breaks there is nothing to diagnose with today |
+| 23 | Correlation IDs — one id per request, on every log line | S | ⚠️ **0.3d** | 22 | Answers "how do you trace one request across logs?" for a third of a day. **Absorbs pull-in rank 2** — `ApiErrorResponse` has no id field and `TraceIdentifier` appears nowhere in `src/`; the response half is the same feature, and doing it later means touching `ExceptionMiddleware` twice |
+| 42 | Soft delete + EF global query filter | M | ✅ **1.5d** | -- | LEARN: "soft delete in EF Core?". Confirmed gap — no `IsDeleted` or `HasQueryFilter` anywhere. Measured: **one** hard-delete site (`ProductsController.cs:76`), and `ProductItemOrdered.cs:5` snapshots a bare `ProductId` with **no navigation to `Product`** — so the required-navigation cascade that makes query filters expensive does not exist here. One migration per provider |
+| 20b | Extend the API integration harness: auth, orders, payments happy paths | S | ⚠️ **1.2d** | -- | `CustomWebApplicationFactory` exists with two suites on it (`CartOwnershipTests`, `CouponTrustTests`), and `StubCouponService` shows the stubbing pattern. Auth and orders are cheap; **payments needs a Stripe stub that does not exist yet** — that unmeasured half is why this is the Should that drops. ⚠️ These suites need Redis running (docker-compose); without it they fail on `RedisConnectionException`, not on your code. TestContainers stays cut |
+| — | **Gate — sprint end** (Anki consolidation straight after) | — | *sized on the day* | -- | 🔴 **Never estimated in advance.** Nothing is queued: on the gate morning the list is derived from the sprint's diff and your own transcript turns, and only then does it split into full and light concepts (`mindset/the-gate.md`). It draws on whatever headroom the sprint has left |
 
+**Task work 4.5d of 7 — 2.5d headroom for the gate and the unplanned.**
+⚠️ Two LEARN rows land here (T22, T42) — likeliest week to need a full gate day.
 
-**Points: 2 Must (+3 Should/Could) · Must 5.8d · +Should 9.8d · +Could 11.6d, against 10.**
-**Sprint end — the last *build* sprint:** structured logs with correlation ids and, if the ladder holds,
-soft delete behind a global filter. The release itself is Sprint H. Health probes, dependency advisories,
-one-command local startup and the two interceptor compromises moved to Sprint E.
+**Sprint end — the last *build* sprint:** structured logs with correlation ids · soft delete behind a
+global filter · everything after this is release work.
 
 ---
 
-## Sprint H — Freeze + Release *(Oct 26 – Nov 3 · 7 working days)*
+## Sprint H — Freeze + Release *(Oct 6 – Oct 12 · ship target Oct 8)*
 
-> **Deliberately half empty — reserved capacity, not spare scope.** Whatever moved down the ladder in
-> E, F or G lands here; if nothing moved, v1.0 ships early.
-> Epic: `Release`. **Freeze Oct 28** — after that date nothing new starts; rehearsal, fixes and the release only.
+> **Deliberately near-empty — reserved capacity, not spare scope.** Whatever moved down the ladder in
+> Sprints E–G lands here; if nothing moved, v1.0 ships **Oct 8** and the rest of the week is buffer.
+> Epic: `Release`. 🔴 **Freeze Oct 6** — nothing new starts; rehearsal, fixes and the release only.
 
 | # | Task | E | Est | Dep | Notes |
 |---|------|---|-----|-----|-------|
-| — | Overflow from Sprints E–G | — | **3d reserved** | -- | Whatever the day-5 checkpoints dropped. If E–G landed clean, this becomes slack, not new scope |
-| 38 | README UX screenshots + GIFs | S | **0.5d** | 47 | Three placeholders wait at `README.md:12,116,117`. Last on purpose — capture once the UI has stopped moving, which is what the Oct 28 freeze guarantees |
+| — | Overflow from Sprints E–G | — | **4.4d reserved** | -- | Whatever the day-4 checkpoints dropped — T50 and T20b are the likeliest. If E–G landed clean, this is buffer, not new scope |
+| — | Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` | S | ⚠️ **0.6d** | 20b | **Depends on 20b** — T17 price change, T26 payment sync and BUG-11 move *into* that harness, BUG-12 into Playwright. Only then delete the table at `docs/testing.md:50` |
+| 38 | README UX screenshots + GIFs | S | ⚠️ **0.5d** | 47 | Three placeholders wait at `README.md:12,116,117`. First thing after the freeze, on purpose — the UI has stopped moving, which is what the freeze guarantees |
 | — | Demo rehearsal × 2 — the 5-minute walkthrough, out loud, on live | — | **1d** | -- | The first run always finds something. Run it twice, on different days, and fix what it surfaces |
 | — | v1.0 release: `development` -> `main`, one squashed commit, verify on Azure | — | **0.5d** | -- | Pushing `main` deploys. Full deploy gate in `docs/testing.md` first |
-| — | **Gate** — sprint end (Anki straight after) | — | **1d** | -- | Short sprint, and little should be left to gate by here — so 1d, not 1.5d |
+| — | **Final deck consolidation** | — | *sized on the day* | -- | If the gate morning finds no concept in the sprint's diff or transcripts, **Sprint H skips the gate entirely** (`the-gate.md`) and only the deck pass runs: merge the sprint decks, dedupe across them, order by difficulty. Consolidation, not generation — `skinet/questions/interview-gen-prompt.md` |
 
-**Points: — · Est 6d of 7 — 1d slack on top of the 3d reserve.**
+**Task work 2.6d of 7 — 4.4d reserve.** 🔴 **Last buffer in the plan. Reserved capacity, not spare scope.**
 
-**Sprint end: v1.0 ships Nov 3.** Interview Nov 11 — eight days to rehearse against a frozen app, not to
-build against a moving one.
+**Sprint end: v1.0 ships Oct 8**, Oct 9–12 is float. Then 30 days to rehearse against a frozen app
+instead of building against a moving one — which is the whole point of pulling the date in.
 
 ---
 
-## Interview Prep *(Nov 4 – Nov 11 · 6 working days)* — 🔴 **DO NOT FILL**
+## Buffer + Interview Prep *(Oct 13 – Nov 11 · 30 days)* — 🔴 **DO NOT FILL**
 
-> The run-up to **Nov 11**, against an app frozen since Oct 28.
+> The run-up to **Nov 11**, against an app frozen since Oct 6. Pulling the ship date in turned a 6-day
+> window into a **30-day** one — that runway is the point, and it is not scope to fill.
 
 | # | Task | E | Dep | Notes |
 |---|------|---|-----|-------|
@@ -296,7 +317,7 @@ build against a moving one.
 
 Everything else in this window: **full interview deck consolidation · re-read every
 gate doc · mock questions · slack for slippage.**
-**Sprint H's 3d reserve absorbs slippage now, not this window** — that is the whole point of
+**Sprint H's 4.4d reserve absorbs slippage now, not this window** — that is the whole point of
 leaving H half empty. **No feature work lands here.**
 
 ---
@@ -309,26 +330,26 @@ leaving H half empty. **No feature work lands here.**
 > visitor see it, or is it only tidy? Ranks 1–3 are not really pull-ins — they ride inside a committed PR
 > that is already in the same files, so they cost a fraction of what they cost alone.
 > **One item, then re-assess.** Never "I have 3 days, take four."
-> 🔴 **Interview Prep (Nov 4–11) is never the window**, and neither is Sprint H's 3d reserve.
+> 🔴 **Buffer + Interview Prep (Oct 13 – Nov 11) is never the window**, and neither is Sprint H's 4.4d reserve.
 > **Everything here is a known defect or cleanup — never a new feature.** That line is the whole rule.
 
 | Rank | # | Task | Est | Pull into | Notes |
 |---|---|------|-----|-----------|-------|
-| **1** | 57 | Dev database = SQL Server: retire SQLite, one provider and one migration set | **2.5d** | **Sprint E, if Must is clear by day 5 — else F** | **The only candidate that pays for itself.** There are **13 SQLite migrations against 11 SqlServer** ones, and every schema row still ahead pays twice: T40's history entity and T42's soft-delete column each need a migration per provider. Done before T40, it deletes that tax from both. Also closes the dev/prod gap that hid T18's missing index for four months. **Risk:** `CustomWebApplicationFactory` is SQLite-backed, so CI needs a SQL Server service container — and T20b later builds on that harness. Deletes `SqliteStoreContext`, `SqliteContextFactory`, `Migrations/SQLite/` |
+| **1** | 57 | Dev database = SQL Server: retire SQLite, one provider and one migration set | **2.5d** | 🔴 **Downgraded 2026-09-15 — don't** | ⚠️ **It no longer pays for itself.** The case was the migration tax on T40 and T42; re-measuring both put the whole remaining tax at **three duplicated migrations**, well under an hour. 2.5d to save that is a bad trade, and it is 2.5d against a Sprint E that is already 0.4d over — there is no longer a week with room for it. Revisit after v1.0. *Original case:* There are **6 SQLite migrations against 5 SqlServer** ones (13 and 11 *files* — each migration is a `.cs` + a `.Designer.cs`, plus one `ModelSnapshot.cs`), and every schema row still ahead pays twice: T40's history entity and T42's soft-delete column each need a migration per provider. Done before T40, it deletes that tax from both. Also closes the dev/prod gap that hid T18's missing index for four months. **Risk:** `CustomWebApplicationFactory` is SQLite-backed, so CI needs a SQL Server service container — and T20b later builds on that harness. Deletes `SqliteStoreContext`, `SqliteContextFactory`, `Migrations/SQLite/` |
 | **2** | fix/error-correlation-id | 500 responses carry no correlation id | **0.1d inside T23** | **Sprint G — same PR as T23** | Not a separate task. `ApiErrorResponse(int statusCode, string message, string? details)` has no id field and `TraceIdentifier` appears nowhere in `src/`. T23 already wires one id per request through the logs; this is the response half of that same feature. Doing it alone later means touching `ExceptionMiddleware` twice |
-| **3** | fix/interceptor-hardening | `errorInterceptor` cleanups — guard `err.error?.…` derefs; flag mixed `throw` vs `return throwError` | **0.2d inside the E row** | **Sprint E — same PR as the interceptor cleanup** | Its own note already said "only worth doing if already in the file". Sprint E's committed interceptor row puts you in that file for BUG-16 and the 401 token, so this is near-free there and a whole PR anywhere else |
-| **4** | fix/cart-delivery-fee | Cart shows a delivery fee carried over from an **abandoned** checkout | **0.3d** | **Sprint E** | `cart.service.ts` prices `shipping` off the in-memory `_selectedDelivery`, cleared only on a completed order — so pick a delivery method, abandon checkout, go back to the cart, and the fee is still there. **Display only** (the server prices from `cart.DeliveryMethodId`), but it is on the path a recruiter clicks, which is exactly Sprint E's theme |
-| **5** | BUG-3 | Checkout: explain why **Next** is disabled on the Address step | **0.25d** | **Sprint E — confirm on live first** | Re-specced Sep 12: the step is Stripe's Address Element, which renders its own field errors, and `[disabled]="!completionStatus().address"` follows that element's `change` event. It may not be a defect at all — five minutes on live decides whether this is a row or a deletion |
+| **3** | fix/interceptor-hardening | `errorInterceptor` cleanups — guard `err.error?.…` derefs; flag mixed `throw` vs `return throwError` | **0.2d, inside Sprint E** | **✅ absorbed into Sprint E's interceptor row** | Its own note already said "only worth doing if already in the file". Sprint E's committed interceptor row puts you in that file for BUG-16 and the 401 token, so this is near-free there and a whole PR anywhere else |
+| **4** | fix/cart-delivery-fee | Cart shows a delivery fee carried over from an **abandoned** checkout | **0.3d** | **Sprint E, if T50 drops** | `cart.service.ts` prices `shipping` off the in-memory `_selectedDelivery`, cleared only on a completed order — so pick a delivery method, abandon checkout, go back to the cart, and the fee is still there. **Display only** (the server prices from `cart.DeliveryMethodId`), but it is on the path a recruiter clicks, which is exactly Sprint E's theme |
+| **5** | BUG-3 | Checkout: explain why **Next** is disabled on the Address step | **0.25d** | **Sprint E, if T50 drops — confirm on live first** | Re-specced Sep 12: the step is Stripe's Address Element, which renders its own field errors, and `[disabled]="!completionStatus().address"` follows that element's `change` event. It may not be a defect at all — five minutes on live decides whether this is a row or a deletion |
 | **6** | fix/T27 | Dashboard preview sizes: recent orders 5→15, low-stock 10→15 | **0.25d** | **Sprint H, pre-freeze** | `DashboardService` holds `RecentOrdersSize = 5` and `LowStockListSize = 10`; the admin dashboard looks half-empty on a seeded database. Two constants + two test asserts. Demo-facing, so it belongs with the screenshots, not before them |
-| **7** | 2 | Multi-stage Dockerfile | **2d + a gate day** | **Sprint H, only if the 3d reserve is untouched** | Confirmed greenfield — there is **no Dockerfile** in the repo, only `docker-compose.yml`. The last remaining LEARN row, so it carries real interview signal ("how do you cut image size?"), but Azure deploys without it: pure signal, zero demo value, and it costs a gate day on top of the build |
+| **7** | 2 | Multi-stage Dockerfile | **2d, plus whatever its gate costs** | **Sprint H, only if the reserve is untouched** | Confirmed greenfield — there is **no Dockerfile** in the repo, only `docker-compose.yml`. The last remaining LEARN row, so it carries real interview signal ("how do you cut image size?"), but Azure deploys without it: pure signal, zero demo value, and it costs a gate day on top of the build |
 | **8** | fix/T29 | Unify the paging param name (`pageIndex` vs `pageNumber`) | **0.3d** | **Doesn't matter** | Live in three files and already *documented* by comments in both admin components (`shop.service.ts` maps `pageNumber` → `pageIndex`). BUG-12 fixed the real break; what is left is naming. No visitor sees it, no interviewer asks about it |
 | **9** | fix/T30 | `register`/`login` template-only members → `protected` | **0.2d** | **Doesn't matter** | Cosmetic, zero runtime effect. Leaves `product-form` the last file off the Angular style guide |
-| **10** | fix/angular-animations-deprecation | `provideAnimationsAsync()` is deprecated, removal intended in v23 | **0.5d** | **🔴 Don't** | `app.config.ts:29`. Deprecated in 20.2, but **v22 works and no Angular major lands before Nov 11**. Replacing a working provider now is risk with no payoff — this is a v23-upgrade task, not a v1.0 task |
+| **10** | fix/angular-animations-deprecation | `provideAnimationsAsync()` is deprecated, removal intended in v23 | **0.5d** | **🔴 Don't** | `app.config.ts:34`. Deprecated in 20.2, but **v22 works and no Angular major lands before Nov 11**. Replacing a working provider now is risk with no payoff — this is a v23-upgrade task, not a v1.0 task |
 | **11** | docs | Spike retrofit — `Why (best answer)` on ~11 decision blocks; fill 4 `<your call>` Decisions | **1d+** | **Gate day, never a sprint** | Blocked until the user writes `Why (by me)` first — Claude writing it spends the attempt, which is the whole point of the exercise |
 
 ---
 
-## Descoped for v1.0 — *not shipping by Nov 3*
+## Descoped for v1.0 — *not shipping by Oct 8*
 
 > Cut consciously on the 2026-07-13 re-baseline. **Not forgotten** — revisit after v1.0 ships.
 >
@@ -348,7 +369,6 @@ leaving H half empty. **No feature work lands here.**
 | 20 | TestContainers | The `WebApplicationFactory` half ships (BUG-18 + T20b, Sprint G). Containers add setup cost, not interview signal |
 | 49 | docker-compose **with Seq** | Redis + SQL shipped in Sprint D with T43; Seq stays cut — App Service logs are enough |
 | 51 | RequireConfirmedEmail | Blocked on 39 |
-
 | 11 | Pagination: TotalPages/HasNext/HasPrev | Cosmetic |
 | 36 | Accessibility: axe pass | Real value, no interview signal for these roles |
 
@@ -363,42 +383,60 @@ leaving H half empty. **No feature work lands here.**
 
 ## Certifications *(never steals build days or run days)*
 
-Capacity: 2 days off per week — the only study slots outside project days, and not reliably usable.
+Capacity: **none until Oct 8.** The 2 days off a week are gone — every day is a project day now, so the
+first real study window is the Oct 13 – Nov 11 buffer, alongside interview prep.
 
-- [ ] **AZ-900** — **exam target ~Nov 11** *(moves with the interview; Sep 12 re-baseline)*. Study on days off only.
-  Mostly review (Azure deploy + Key Vault already done).
+- [ ] **AZ-900** — **exam target ~Nov 11** *(moves with the interview; Sep 12 re-baseline)*. Study in the
+  Oct 13 – Nov 11 buffer, never in a build week. Mostly review (Azure deploy + Key Vault already done).
   ⚠️ That still lands the same week as the interview — if the week gets tight, the exam moves, not the interview.
 - [ ] **AZ-204** — **exam target ~early Jan 2027** (~1.5 months after AZ-900). Study starts once v1.0 ships
-  (Nov 3). The project IS the lab — Key Vault, App Service, Managed Identity, App Insights.
+  (Oct 8). The project IS the lab — Key Vault, App Service, Managed Identity, App Insights.
   The portfolio gets interviews; the cert supports it. Not the other way round.
 
 ## When behind (life buffer)
 
-**Nov 3 is the date and it does not move.** The hard commitment is: ship with a working Azure deploy + a
+**Oct 8 is the date and it does not move.** The hard commitment is: ship with a working Azure deploy + a
 great README. When something eats time, **drop a tier** — never extend hours.
 
 Escalation, in order:
 
-1. **Drop Could, then Should** in the running sprint — at the day-5 checkpoint, or the day the week goes bad.
-2. **Push to Sprint H's 3d reserve.**
+1. **Drop Could, then Should** in the running sprint — at the day-4 checkpoint, or the day the week goes bad.
+2. **Push to Sprint H's 4.4d reserve.**
 3. Only if both are gone: the scope conversation, in writing, in `progress.md`.
 
-**Never cut:** T47 README (shipped), T40, BUG-2, T53. **Never raid:** Interview Prep (Nov 4–11), sleep, runs.
+**Never cut:** T47 README (shipped), T40a, BUG-2 (shipped), T53. **Never raid:** the Oct 13 – Nov 11 buffer, sleep, runs.
 
-**Committed vs capacity (2026-09-12):**
+**Committed vs capacity (re-sliced 2026-09-15):**
 
-| Window | Days | Work | Slack |
+**Task work only — the gate is never pre-costed** (`mindset/the-gate.md`). Each sprint's headroom is what
+its gate day draws on, sized on the gate morning from the diff and the transcripts.
+
+| Window | Days | Task work | Headroom *(gate + unplanned)* |
 |---|---|---|---|
-| Sprint E · Sep 12–25 | 10 | 5.9d | 4.1d |
-| Sprint F · Sep 28 – Oct 9 | 10 | 9.4d | 0.6d |
-| Sprint G · Oct 12–23 | 10 | 10.3d *(Must 6.3d)* | −0.3d — ladder absorbs |
-| Sprint H · Oct 26 – Nov 3 | 7 | 3d + **3d reserved** | 1d |
-| **Build total** | **37** | **~28.6d of work + 3d reserve** | **~5.4d (15%)** |
-| Interview Prep · Nov 4–11 | 6 | T53 + deck | — |
+| Sprint E · Sep 15–21 | 7 | 7.2d | **−0.2d ⚠️ — T50 is the drop, and it buys back 2d** |
+| Sprint F · Sep 22–28 | 7 | 4.4d | 2.6d |
+| Sprint G · Sep 29 – Oct 5 | 7 | 4.5d | 2.5d — *two LEARN rows; likeliest full gate day* |
+| Sprint H · Oct 6–12 *(ship Oct 8)* | 7 | 2.6d | **4.4d reserved** |
+| **Build total** | **28** | **18.7d** | **9.3d (33%)** |
+| Buffer + Interview Prep · Oct 13 – Nov 11 | 30 | T53 + deck | — |
 
 Every sprint since A has produced unplanned bugs; this budget assumes that happens again. **Slack is
 protection, not capacity** — the sprint that spends it is the one that puts T40 or the release at risk.
-Sprint G is committed at 103% on purpose: its Should row (T42) is expected to land in H.
+
+⚠️ **Sprint E is 0.2d over and still owes a gate day — it is tagged rather than fixed.** Its slack
+lives in the **ladder**, not in a reserve: T50 is 2d and Could-tier, so the day-4 checkpoint drops it and
+leaves 1.8d for the gate. Holding 2d idle from Monday to insure against the same risk costs more than
+dropping one row on Thursday.
+
+**Why Sprint E was re-costed rather than re-filled:** it looked like it had 2.35d of slack. It did not —
+the eight rows were priced at 3.65d when the blow-out rule puts them at 6.9d. Pulling extra rows in on
+top of an unpriced bill is how a comfortable week becomes a lost one. Same eight rows, honest numbers.
+
+**What the re-slice bought, and from where:** the ship date moved **26 days**, and **almost none of it
+came from working more hours.** ~7.5d from re-measuring the three biggest rows against the code
+(T40/T22/T42), and the rest from 7 calendar days a week instead of 5 — partly given back by re-costing
+Sprint E up by 3.25d, which is a number the old plan was hiding rather than a new cost. Clock hours were
+never the constraint — `mindset/energy-protocol.md` says so and it was right.
 
 Every sprint end: E2E run, Azure verify, README update.
 
@@ -407,13 +445,13 @@ Every sprint end: E2E run, Azure verify, README update.
 | Sprint | Added |
 |--------|-------|
 | 1 | Azure Key Vault |
-| 2 | NWebsec, Coverlet *(installed but never wired into CI — that's T21, Sprint F)* |
+| 2 | NWebsec |
 | 3 | FluentValidation, Bogus |
 | A | ESLint (`angular-eslint`) + Prettier, Roslyn analyzers (`AnalysisMode=Recommended`). Angular -> 22.0.6 stable |
 | B | Playwright, `WebApplicationFactory` |
 | C | Mermaid |
 | D | docker-compose (Redis + SQL Server) |
-| E | ASP.NET health checks, `NgOptimizedImage` |
+| E | ASP.NET health checks, `NgOptimizedImage`, Coverlet *(T21 installs it — not present today)* |
 | F | — |
 | G | Serilog (App Service logs, no Seq), EF global query filters |
 | H | — |
@@ -435,7 +473,8 @@ Every sprint end: E2E run, Azure verify, README update.
 | 37 | E2E testing | "Strategy? Page Object Model?" |
 | 54 | Static analysis (ESLint / Roslyn) | "Linter vs formatter? When is the linter *wrong*?" |
 | ~~39~~ | ~~Channel\<T\> + BackgroundService~~ | ~~"Background jobs without Hangfire?"~~ **descoped** |
-| 40 | State machine + audit | "Model order status changes?" |
+| 40b | State machine + audit | "Model order status changes?" — **Sprint F** |
+| BUG-17 | Guards return a destination | "Why not `navigate()` + `false` in a guard?" — **Sprint E** |
 | 42 | Global query filters | "Soft delete in EF Core?" — **Sprint G** |
 
 ## Risks

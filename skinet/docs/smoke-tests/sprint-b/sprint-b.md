@@ -85,8 +85,9 @@ It is one continuous story. Steps 2–8 depend on A's cart being left alone, so 
 ### Known noise, not a failure
 
 Going to `/checkout` with the cookie deleted redirects to login **and** shows a red snackbar. The
-redirect is the interceptor doing its job; the snackbar is `checkout.component.ts`'s catch printing the
-raw `HttpErrorResponse` text (`… 401 Unauthorized`), which reads like a login error but isn't one.
+redirect is the interceptor doing its job; the snackbar is `checkout.component.ts`'s catch on the failed
+Stripe element mount, showing its generic *"Failed to load payment elements"* — an `HttpErrorResponse` is
+not an `Error`, so the raw status text never reaches it.
 Pre-existing, unrelated to BUG-18.
 
 ### What no manual check covers
