@@ -9,6 +9,7 @@ than repeating it.
 
 | Date | Task | What happened |
 |--------|------|---------------|
+| Sep 16 | Interceptor cleanup *(PR #88)* | **The 401 skip guarded a status its endpoint never returns.** `user-info` answers 204 to an anonymous *and* a dead-cookie caller, so the branch and `InitService`'s matching catch were dead code — deleted, not replaced with the planned `HttpContextToken`. The 409 cart reload moved to the two services that own the endpoints, which also covers the coupon box that never had a catch. |
 | Sep 15 | BUG-17 *(PR #87)* | **A guard that navigates cannot lose.** The router subscribes every guard at once and only then picks by array order, so `emptycartGuard`'s `navigateByUrl` beat `authGuard` every time — the side effect, not the round trip. All four guards now return a `UrlTree`. |
 | Sep 15 | Plan re-sliced | Weekly sprints, 7 days × 10h. **Ship pulled IN to Oct 8** — almost none of it from the extra hours: T40/T22/T42 were never measured against the code and came in at ~half. |
 | Sep 14 | BUG-2 *(PR #86)* | **The cart was deleted one step before the charge**, so a decline had nothing to retry with and a 400 buried Stripe's message. The cart now outlives order creation, and a spent intent is replaced instead of updated. |
@@ -272,7 +273,7 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 - [ ] T10 — Health-check endpoints
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
 - [ ] T35 — `NgOptimizedImage` on catalog images
-- [ ] Interceptor cleanup — cart reload out of `errorInterceptor` + `HttpContextToken` for the 401
+- [x] Interceptor cleanup — cart reload out of `errorInterceptor`, delete the dead 401 skip *(the skip was dead code: `user-info` answers 204, never 401 — probed live. 13 specs, the interceptor's first; `fix/interceptor-cleanup`, PR #88)*
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
 - [ ] Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
 - [ ] Gate — sprint end (+ Anki straight after)

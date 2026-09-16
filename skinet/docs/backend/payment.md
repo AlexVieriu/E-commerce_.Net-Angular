@@ -128,8 +128,9 @@ PaymentService.ApplyDiscountAsync   ─┴─→ ICouponService.GetCouponFromPro
   cents truncate). `OrderService` works in dollars; `PaymentService` multiplies back to cents.
 
 **When the lookup resolves to nothing** — both paths do the same thing: drop the coupon, null the
-intent, and throw `PriceChangedException` → **409**. `error.interceptor` handles that status for
-`POST /orders` and `POST /payments` by refreshing the cart and returning the customer to it, re-priced.
+intent, and throw `PriceChangedException` → **409**. On the client, `error.interceptor` shows the message
+and `CheckoutConflictService` — called by the services owning `POST /orders` and `POST /payments` —
+refreshes the cart and returns the customer to it, re-priced.
 Dropping the coupon matters: left on the cart, the retry would hit the same 409 forever.
 
 `AppCoupon.Id` is still returned to the client and stored on the cart, but **no server path reads it

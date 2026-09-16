@@ -9,11 +9,12 @@ import {
   StripePaymentElement
 } from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { CartService } from './cart.service';
 import { Cart } from '../../shared/models/cart';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
 import { AccountService } from './account.service';
+import { CheckoutConflictService } from './checkout-conflict.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +24,7 @@ export class StripeService {
 
   private cartService = inject(CartService);
   private accountService = inject(AccountService);
+  private checkoutConflict = inject(CheckoutConflictService);
   private http = inject(HttpClient);
 
   private stripePromise: Promise<Stripe | null>;
@@ -142,9 +144,15 @@ export class StripeService {
     // Always store the response: the clientSecret changes when the server replaced a spent intent,
     // and confirmPayment() reads it off this signal.
     // Stored locally, not POSTed back -- the server already saved this cart. (BUG-2)
-    return this.http
-      .post<Cart>(this.baseUrl + 'payments', {})
-      .pipe(tap((cart) => this.cartService.setLocalCart(cart)));
+    return this.http.post<Cart>(this.baseUrl + 'payments', {}).pipe(
+      tap((cart) => this.cartService.setLocalCart(cart)),
+      // 409 = a price change or a retired coupon (BUG-19).
+      // Recovered here because every caller funnels through this method.
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 409) this.checkoutConflict.recoverStaleCart();
+        return throwError(() => err);
+      })
+    );
   }
 
   // Destroys the mounted elements too, so a rebuild can mount fresh ones into the same containers.
