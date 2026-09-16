@@ -33,9 +33,15 @@ Used by `ExceptionMiddleware`. Also used directly in controllers via `BadRequest
 | `InvalidOperationException` | 400 Bad Request |
 | Everything else | 500 Internal Server Error |
 
-`PriceChangedException` lives in `Core/Exceptions/` — thrown by `OrderService` when cart prices differ from DB prices at order creation time.
+`PriceChangedException` lives in `Core/Exceptions/` — thrown by `OrderService` when cart prices differ from DB prices at order creation, and by both services when a coupon has been retired (`OrderService` at order creation, `PaymentService` at intent creation). Every throw site saves the re-priced cart first.
 
-`DbUpdateConcurrencyException` is EF's — raised when a token-guarded `UPDATE` affects 0 rows (`QuantityInStock` is `[ConcurrencyCheck]`). Reaches the middleware only from the **product edit** path; `OrderService` catches its own and converts to `InvalidOperationException` → 400, so checkout tells the buyer "try again" instead of "someone else edited this". Both 409s land on the same client handler — see `frontend/interceptors.md`.
+`DbUpdateConcurrencyException` is EF's — raised when a token-guarded `UPDATE` affects 0 rows (`QuantityInStock` is `[ConcurrencyCheck]`). Reaches the middleware only from the **product edit** path; `OrderService` catches its own and converts to `InvalidOperationException` → 400, so checkout tells the buyer "try again" instead of "someone else edited this". Both 409s get the same client message; only the checkout path also reloads the cart, because that recovery
+lives in the services that own `POST /orders` and `POST /payments` — see `frontend/interceptors.md`.
+
+⚠️ **Known gap:** the 409 body has no machine-readable type, so the client separates the two conflicts by
+*which service made the call*. `PriceChangedException` also saves the re-priced cart before throwing, then
+doesn't return it — the client fetches it again. Both tracked in *Pull-in candidates* (`Execution plan.md`),
+to ride with the next change in this middleware.
 
 ## Error Flow
 

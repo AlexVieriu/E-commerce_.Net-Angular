@@ -45,8 +45,9 @@ export class AccountService {
     return this.http.post(this.baseUrl + 'account/register', values);
   }
 
+  // Nullable: the endpoint answers an unauthenticated caller with 204, and an empty body is null.
   getUserInfo() {
-    return this.http.get<User>(this.baseUrl + 'account/user-info').pipe(
+    return this.http.get<User | null>(this.baseUrl + 'account/user-info').pipe(
       map((user) => {
         this._currentUser.set(user);
         return user;
