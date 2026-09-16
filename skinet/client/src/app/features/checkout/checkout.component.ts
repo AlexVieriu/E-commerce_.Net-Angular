@@ -118,8 +118,7 @@ export class CheckoutComponent {
 
       this.mountedClientSecret = this.cartService.cart()?.clientSecret;
     } catch (error: unknown) {
-      // The interceptor already messaged and navigated: 409 to the cart, 401 to login.
-      // A second message would explain a redirect that is already explained.
+      // Already messaged and navigated: a 409 by CheckoutConflictService, a 401 by the interceptor.
       if (error instanceof HttpErrorResponse && (error.status === 409 || error.status === 401))
         return;
       this.snackBar.error(

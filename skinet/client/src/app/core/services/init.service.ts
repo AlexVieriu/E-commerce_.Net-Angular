@@ -3,7 +3,6 @@ import { CartService } from './cart.service';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { AccountService } from './account.service';
 import { SignalrService } from './signalr.service';
-import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +13,9 @@ export class InitService {
   private signalrService = inject(SignalrService);
 
   init() {
-    // Step 1: check auth first — cart requires authentication
+    // Step 1: check auth first — cart requires authentication.
+    // No 401 to catch: user-info answers an anonymous caller with 204, which arrives as null.
     return this.accountService.getUserInfo().pipe(
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) return of(null);
-        throw err;
-      }),
       tap((user) => {
         if (user) this.signalrService.createHubConnection();
       }),

@@ -272,7 +272,7 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 - [ ] T10 — Health-check endpoints
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
 - [ ] T35 — `NgOptimizedImage` on catalog images
-- [ ] Interceptor cleanup — cart reload out of `errorInterceptor` + `HttpContextToken` for the 401
+- [ ] Interceptor cleanup — cart reload out of `errorInterceptor`, delete the dead 401 skip
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
 - [ ] Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
 - [ ] Gate — sprint end (+ Anki straight after)
