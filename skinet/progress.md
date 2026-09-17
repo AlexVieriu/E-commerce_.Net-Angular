@@ -9,6 +9,7 @@ than repeating it.
 
 | Date | Task | What happened |
 |--------|------|---------------|
+| Sep 17 | T10 *(PR #89)* | **The probe that would have killed the demo was the one that checked the database.** One connection resumes serverless Azure SQL for a full hour — ~1,800 of 100,000 free vCore-seconds — so `/health` runs no checks at all and `/health/ready` is on demand, behind a config key checked in front of the endpoint so a scanner cannot spend a wake either. Azure's own setting waits for the sprint release. |
 | Sep 16 | Interceptor cleanup *(PR #88)* | **The 401 skip guarded a status its endpoint never returns.** `user-info` answers 204 to an anonymous *and* a dead-cookie caller, so the branch and `InitService`'s matching catch were dead code — deleted, not replaced with the planned `HttpContextToken`. The 409 cart reload moved to the two services that own the endpoints, which also covers the coupon box that never had a catch. |
 | Sep 15 | BUG-17 *(PR #87)* | **A guard that navigates cannot lose.** The router subscribes every guard at once and only then picks by array order, so `emptycartGuard`'s `navigateByUrl` beat `authGuard` every time — the side effect, not the round trip. All four guards now return a `UrlTree`. |
 | Sep 15 | Plan re-sliced | Weekly sprints, 7 days × 10h. **Ship pulled IN to Oct 8** — almost none of it from the extra hours: T40/T22/T42 were never measured against the code and came in at ~half. |
@@ -258,7 +259,7 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
 ## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 21 · weekly cadence from Sep 15)*
 
 Estimates and tiers live in `Execution plan.md` — this is the tick list only.
-**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup, T21 ·
+**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup ·
 **Could:** T50, dep prune. **Day-4 checkpoint Sep 18.**
 
 - [x] BUG-10 — Top loading bar spins forever *(zoneless render path; signal + `defer`, 9 specs, gate done —
@@ -270,7 +271,10 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 - [x] BUG-17 — Logout → `/checkout` lands on `/cart`, not the login page *(all four guards return a
       `UrlTree`; `emptycartGuard` and `adminGuard` stand down for anonymous visitors. The Playwright spec
       that was red on purpose is green, unedited. 12 guard specs — the repo's first. `fix/bug-17-guard-redirect`)*
-- [ ] T10 — Health-check endpoints
+- [x] T10 — Health-check endpoints *(`/health` liveness runs no checks — 0 database wakes; `/health/ready`
+      checks SQL + Redis on demand behind `HealthSettings:ReadyKey`, guarded before the endpoint. 5 integration
+      tests pin the body and content type, because the SPA catch-all makes a 200 meaningless.
+      `feature/10-health-check-endpoints`, PR #89. Azure `healthCheckPath` + alert owed at the release)*
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
 - [ ] T35 — `NgOptimizedImage` on catalog images
 - [x] Interceptor cleanup — cart reload out of `errorInterceptor`, delete the dead 401 skip *(the skip was dead code: `user-info` answers 204, never 401 — probed live. 13 specs, the interceptor's first; `fix/interceptor-cleanup`, PR #88)*
