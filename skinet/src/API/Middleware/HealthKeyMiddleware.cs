@@ -9,10 +9,10 @@ public class HealthKeyMiddleware(RequestDelegate next, IConfiguration config)
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var expected = config["HealthSettings:ReadyKey"];
+        var configuredKey = config["HealthSettings:ReadyKey"];
 
         // No key configured means locked, not open.
-        if (string.IsNullOrEmpty(expected) || !Matches(context.Request, expected))
+        if (string.IsNullOrEmpty(configuredKey) || !Matches(context.Request, configuredKey))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
@@ -21,16 +21,16 @@ public class HealthKeyMiddleware(RequestDelegate next, IConfiguration config)
         await next(context);
     }
 
-    private static bool Matches(HttpRequest request, string expected)
+    private static bool Matches(HttpRequest request, string configuredKey)
     {
         // Header for CI, query string for a phone. The query form lands in logs, so rotate the key.
-        var supplied = request.Headers[HeaderName].ToString();
+        var suppliedKey = request.Headers[HeaderName].ToString();
 
-        if (string.IsNullOrEmpty(supplied))
-            supplied = request.Query[QueryName].ToString();
+        if (string.IsNullOrEmpty(suppliedKey))
+            suppliedKey = request.Query[QueryName].ToString();
 
         // Fixed-time so timing can't leak the key one character at a time.
         return CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(supplied), Encoding.UTF8.GetBytes(expected));
+            Encoding.UTF8.GetBytes(suppliedKey), Encoding.UTF8.GetBytes(configuredKey));
     }
 }
