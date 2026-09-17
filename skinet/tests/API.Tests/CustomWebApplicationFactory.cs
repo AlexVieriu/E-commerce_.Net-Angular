@@ -8,6 +8,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     // Meets the app's own password policy: 12+ chars, upper, digit, non-alphanumeric.
     private const string TestPassword = "Pa$$w0rd12!@";
 
+    // Unlocks the per-check detail on /health/ready.
+    public const string HealthKey = "health-key-for-tests";
+
     // Shared with the host — tests drive the coupon lookup through this.
     public StubCouponService Coupons { get; } = new();
 
@@ -36,7 +39,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 ["ConnectionStrings:DefaultConnection"] = $"Data Source={_dbFile}",
                 ["ConnectionStrings:Redis"] = "localhost",
-                ["AdminSettings:Password"] = TestPassword
+                ["AdminSettings:Password"] = TestPassword,
+                ["HealthSettings:ReadyKey"] = HealthKey
             });
         });
 

@@ -96,7 +96,10 @@ Failing loudly beats silently reading `cart:`.
 
 - Cookie-only auth — never add JWT config.
 - Always use `ClaimsPrincipalExtensions` to load users.
-- `user-info` returns 204 (not 401) when unauthenticated — frontend polls this on startup.
+- `user-info` returns 204 (not 401) when unauthenticated — frontend polls this on startup. **The client
+  depends on it:** an empty body arrives as `null`, which is what clears the session at startup, and it is
+  why `errorInterceptor` needs no exemption for the startup probe. Add `[Authorize]` here and an anonymous
+  visitor gets bounced to the login page on load.
 - `SlidingExpiration = false` — 24h absolute, forces re-login daily.
 - Never accept a key for user-owned data from the client. Derive it from `ICurrentUser`.
 

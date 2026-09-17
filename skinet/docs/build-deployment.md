@@ -22,7 +22,7 @@ weak password. `.env` is git-ignored; `.env.example` is the committed template.
 
 ### Why a SQL Server container when dev runs on SQLite
 
-Dev uses SQLite and everything else uses SQL Server (`ApplicationServicesExtensions.cs:34`), so **`dotnet
+Dev uses SQLite and everything else uses SQL Server (`AddApplicationServices`), so **`dotnet
 run` never exercises the SqlServer migrations** — they would first execute against Azure on deploy. The
 container is where you apply and verify them, and where query plans can be read on the same engine family
 production uses. LocalDB also works but is Express edition (smaller buffer pool, fewer cores).
@@ -111,6 +111,54 @@ Deployed to App Service **`skinet-2025-test`** (RG `skinet-2025-rg-test`, Poland
 | **Security headers** | CSP allows `js.stripe.com` (script/frame), `hooks.stripe.com` (frame), `api.stripe.com` (connect); COEP overridden to `unsafe-none` so Stripe Elements load (BUG-7). Fonts are self-hosted, not the Google CDN (BUG-6). |
 | **Stripe webhook** | Stripe Dashboard endpoint → `…azurewebsites.net/api/payments/webhook`; signing secret = Key Vault `StripeSettings:WhSecret`. |
 
+### Free-tier budget for testing on live
+
+The database is billed in vCore-seconds, and the unit that matters is a **wake**:
+
+- 100,000 vCore-seconds free per month.
+- While awake it bills 0.5 vCore, even idle, and it sleeps only after **60 idle minutes**.
+- So one wake costs ~1,800 vCore-seconds — **~55 wakes a month, ~1.8 a day** — whether the visit lasted
+  two minutes or forty-five.
+- Run out and the database is parked **until the 1st of next month**; the live site fails until then.
+
+**The 60-minute delay cannot be lowered.** `az sql db update ... --auto-pause-delay 15` is refused:
+
+```
+(ProvisioningDisabled) Only default value for auto pause delay is allowed
+for Free Limit database with auto pause exhaustion behavior
+```
+
+Not in the docs — only the API says it (checked 2026-09-17). Unlocking it means switching to *"Continue
+using database for additional charges"*, which cannot be reverted and removes the spending cap.
+
+**So check the live site in one sitting.** Three ad-hoc visits cost three wakes; one 45-minute session
+costs one. Exploratory work goes on local SQLite. Anything on a timer that opens a connection — a health
+probe, a scheduled job — burns the month in ~2.3 days.
+
+Watch the *Free amount remaining* metric on the database; alert below 10,000.
+
+### Health endpoints
+
+Azure's probe cannot be slowed below 60 seconds, so the path it pings must check nothing.
+
+| Path | Checks | Called by | Answer |
+|---|---|---|---|
+| `/health` | nothing | Azure, every 60s | 200 + `Healthy` (`text/plain`) |
+| `/health/ready` | SQL `CanConnectAsync` (10s cap) + Redis `PING` (5s cap) | you, CI, the deploy gate | 200/503 + per-check JSON |
+
+- Liveness opens no connection: **0 wakes**. Nothing pings `/health/ready` — each call is one wake, so
+  batch them into one sitting.
+- The detail needs `HealthSettings:ReadyKey`, as header `X-Health-Key` or `?key=`. Without it: 401, empty
+  body, and the checks never run, so a scanner cannot spend a wake either.
+- The query form lands in logs — rotate the key, don't reuse a password.
+- Not Identity on that path: it reads `AspNetUsers`, which is gone when SQL is what died. Configuration is
+  already in memory.
+- F1 only records the metric — no instance is removed or replaced, so the alert on it is the point.
+- Changing `healthCheckPath` restarts the app. Settle the path first.
+- The pings keep the app loaded, so it stops unloading after 20 idle minutes — and every cold start
+  re-runs `SeedDatabaseAsync`, which wakes the database.
+- Measured with Redis stopped: `/health` stayed `Healthy`; `/health/ready` gave 503 in 5.4s.
+
 ## SQLite → SqlServer Switch
 
 Set `ASPNETCORE_ENVIRONMENT=Production`. Ensure `ConnectionStrings:DefaultConnection` points to SqlServer.
@@ -130,6 +178,7 @@ dotnet ef database update --context SqlServerStoreContext
 | `ConnectionStrings:SqlServerAzureConnection` | not used in dev | App Service → Connection strings (SQLServer) |
 | `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
 | `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
+| `HealthSettings:ReadyKey` | User Secrets | Azure Key Vault (`HealthSettings--ReadyKey`) |
 
 Key Vault URL stored in `appsettings.json` as `KeyVaultUrl` (not a credential).
 App Service reads Key Vault via System Managed Identity — no credentials stored anywhere.
@@ -138,9 +187,10 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 
 | Where | What lives there |
 |---|---|
-| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey`, `AdminSettings--Password` |
+| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey`, `AdminSettings--Password`, `HealthSettings--ReadyKey` |
 | **App Service → Connection Strings** | `Redis` (Custom), `SqlServerAzureConnection` (SQLServer) |
 | **App Service → App Settings** | `KeyVaultUrl`, AppInsights vars (Azure-managed) |
+| **App Service → Health check** | Path `/health`, plus an alert rule on the *Health check status* metric |
 | **`appsettings.json`** | `KeyVaultUrl`, Logging config only — nothing sensitive |
 
 ### Azure roles
@@ -159,6 +209,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 cd src/API
 dotnet user-secrets set "StripeSettings:SecretKey" "<sk_test_...>"
 dotnet user-secrets set "StripeSettings:WhSecret" "<whsec_...>"
+dotnet user-secrets set "HealthSettings:ReadyKey" "<any-string>"
 ```
 
 ### Update WhSecret each Stripe CLI session
