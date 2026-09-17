@@ -72,6 +72,13 @@ public static class ApplicationServicesExtensions
                 provider.GetRequiredService<SqlServerStoreContext>());
         }
 
+        // Tagged "ready" so only /health/ready runs them — /health maps no checks at all.
+        services.AddHealthChecks()
+            .AddCheck<SqlHealthCheck>("sql", failureStatus: HealthStatus.Unhealthy,
+                tags: ["ready"], timeout: TimeSpan.FromSeconds(10))
+            .AddCheck<RedisHealthCheck>("redis", failureStatus: HealthStatus.Unhealthy,
+                tags: ["ready"], timeout: TimeSpan.FromSeconds(5));
+
         // CartService keys Redis by the caller, so Infrastructure needs the current user.
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();

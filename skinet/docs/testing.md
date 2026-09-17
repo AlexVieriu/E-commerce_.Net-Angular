@@ -30,6 +30,8 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 - [ ] App loads, no console errors, seed data shows
 - [ ] register → login → cart → checkout (Stripe `4242 4242 4242 4242`) → admin → refund → logout
 - [ ] Logout → cookie cleared (DevTools → Application → Cookies)
+- [ ] `/health` returns `Healthy` as **text**, not the Angular page; `/health/ready?key=…` (the key is a
+      user secret, `HealthSettings:ReadyKey`) returns JSON naming `sql` and `redis`
 - [ ] **Apply a coupon** — `gimme10` (percent-off) and `gimme5` (amount-off) both resolve; a nonsense code
       is still rejected. No test can reach `CouponService` (no DI seam, `[ExcludeFromCodeCoverage]`), which
       is why BUG-20 hid for two months
@@ -67,6 +69,10 @@ T16/T18 idempotency and T13/T14 concurrency have no clean manual check — `dotn
 - [ ] GitHub Actions all checks green
 - [ ] Live URL loads, no 500
 - [ ] Smoke: register → login → cart → Stripe payment → admin order visible
+- [ ] Live `/health` → `Healthy` with `Content-Type: text/plain`. **HTML means the signal is dead** — the
+      route was renamed, or the Azure path is mistyped, and the SPA catch-all is answering instead
+- [ ] App Service → Health check: path is `/health`, alert rule enabled (setting it restarts the app)
+- [ ] One `/health/ready?key=…` call, in the same sitting as the smoke — it costs a database wake
 
 Both local and Azure green → sprint is closed. See `git-workflow.md` for the merge step.
 
@@ -100,6 +106,15 @@ npm test -- --watch=false     # one run — what CI does
   output. `detectChanges()` forces a render Angular never scheduled, so the spec passes even when nothing
   notified Angular — the exact class of bug BUG-10 was. `whenStable()` only waits, so a missing notification
   shows up as a failure (`layout/header/header.component.spec.ts`, 5 cases).
+- **Pin what the code must *not* do, not only what it must.** `vi.spyOn(router, 'navigate')` +
+  `expect(...).not.toHaveBeenCalled()` is what stops a redirect creeping back in — the guards assert no
+  guard navigates (`core/guards/guards.spec.ts`), the interceptor asserts it never navigates on a 409
+  (`core/interceptors/error.interceptor.spec.ts`). jsdom has no real navigation, so the spy is the only
+  way to see it.
+- **HTTP in a spec: `provideHttpClient()` + `provideHttpClientTesting()`**, then drive it through
+  `HttpTestingController` — `expectOne(url).flush(body)` for a response, or
+  `.flush(body, { status: 409, statusText: 'Conflict' })` for a failure. That is how a service's error
+  branch gets tested without a server (`core/services/checkout-conflict.service.spec.ts`).
 
 ## Playwright E2E (`skinet/e2e/`)
 
