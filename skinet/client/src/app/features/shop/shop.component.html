@@ -50,7 +50,7 @@
 
     <div class="grid grid-cols-5 gap-4">
       @for (product of products.value()!.data; track product.id) {
-        <app-product-item [product]="product"></app-product-item>
+        <app-product-item [product]="product" [priority]="$index === 0"></app-product-item>
       }
     </div>
   </div>

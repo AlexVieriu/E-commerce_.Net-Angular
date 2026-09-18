@@ -3,7 +3,14 @@
     <div class="max-w-screen-2xl px-4 mx-auto">
       <div class="grid grid-cols-2 gap-8">
         <div class="max-w-xl mx-auto">
-          <img class="w-full" src="{{ product.value()!.pictureUrl }}" alt="product image" />
+          <img
+            class="w-full"
+            [ngSrc]="product.value()!.pictureUrl"
+            width="800"
+            height="800"
+            priority
+            [alt]="product.value()!.name"
+          />
         </div>
 
         <div>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDivider } from '@angular/material/divider';
@@ -10,7 +10,7 @@ import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-product-details',
-  imports: [CurrencyPipe, MatButton, MatIconButton, MatIcon, MatDivider],
+  imports: [CurrencyPipe, MatButton, MatIconButton, MatIcon, MatDivider, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.scss'

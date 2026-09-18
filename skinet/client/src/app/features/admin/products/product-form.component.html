@@ -87,8 +87,10 @@
       }
     </mat-form-field>
 
-    @if (picturePreview()) {
-      <img [src]="picturePreview()" alt="Preview" class="w-32 h-32 object-cover rounded mb-4" />
+    @if (picturePreview(); as preview) {
+      <div class="relative w-32 h-32 mb-4">
+        <img [ngSrc]="preview" fill alt="Preview" class="object-cover rounded" />
+      </div>
     }
 
     @if (validationErrors()) {

@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CartService } from '../../../core/services/cart.service';
 import { ConfirmationToken } from '@stripe/stripe-js/dist/api/confirmation-tokens';
@@ -7,7 +7,7 @@ import { CardPipe } from '../../../shared/pipes/card.pipe';
 
 @Component({
   selector: 'app-checkout-review',
-  imports: [CurrencyPipe, AddressPipe, CardPipe],
+  imports: [CurrencyPipe, AddressPipe, CardPipe, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './checkout-review.component.html',
   styleUrl: './checkout-review.component.scss'

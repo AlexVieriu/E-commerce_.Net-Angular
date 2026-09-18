@@ -38,4 +38,5 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 - **interceptors.md** — auth / loading / error interceptors, incl. the full status-code → action table
 - **guards.md** — auth / admin / emptycart / orderComplete route guards
 - **error-handling.md** — `ValidationError`, `server-error` component, `ApiErrorResponse` typing (downstream of the interceptor — status-code table lives in interceptors.md)
+- **images.md** — `NgOptimizedImage`: when to use it and the one image that does not, which sizing mode, who gets `priority`, and how the product files are re-encoded
 - **actions/** — step-by-step how-tos: `create-component`, `create-service`, `create-route`, `create-model`
