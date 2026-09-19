@@ -496,9 +496,9 @@ skinet/client/ssl/*.key
 # Angular build cache
 skinet/client/.angular/
 
-# Angular build output in API wwwroot (CI rebuilds on every deploy); committed images kept
+# Angular build output in API wwwroot. CI runs npm run build before publish, so images
+# are regenerated from client/public/images on every deploy and are not committed here.
 skinet/src/API/wwwroot/*
-!skinet/src/API/wwwroot/images/
 
 # Claude Code local settings
 .claude/settings.local.json
@@ -518,4 +518,7 @@ skinet/questions/
 *-2.component.ts
 *-2.component.html
 *-2.service.ts
+*-2.interceptor.ts
+*-2.guard.ts
+*2.cs
 *2.cs
