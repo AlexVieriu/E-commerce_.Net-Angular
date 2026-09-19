@@ -10,7 +10,7 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 
 ## Cross-cutting (`docs/`)
 
-- **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, **health endpoints**, CSP/CORS, **lint + analyzers** (ESLint/Prettier/Roslyn, and every suppression + why)
+- **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, **health endpoints**, **free-tier budgets** (database wakes + bandwidth), CSP/CORS, **lint + analyzers** (ESLint/Prettier/Roslyn, and every suppression + why)
 - **testing.md** — all verification: per-task / pre-deploy / post-deploy **checklists** (top) + how to write tests — xUnit, **Angular unit tests on Vitest**, and the **Playwright E2E layout** (reference, bottom)
 - **smoke-tests/** — the manual checks worth writing down: real Stripe, real cookies, two people in one
   browser. **Not one per task** — write a file only when no automated test can reach it *and* you'd
@@ -38,4 +38,5 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 - **interceptors.md** — auth / loading / error interceptors, incl. the full status-code → action table
 - **guards.md** — auth / admin / emptycart / orderComplete route guards
 - **error-handling.md** — `ValidationError`, `server-error` component, `ApiErrorResponse` typing (downstream of the interceptor — status-code table lives in interceptors.md)
+- **images.md** — `NgOptimizedImage`: when to use it and the one image that does not, which sizing mode, who gets `priority`, and how the product files are re-encoded
 - **actions/** — step-by-step how-tos: `create-component`, `create-service`, `create-route`, `create-model`

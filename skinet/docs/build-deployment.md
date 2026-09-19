@@ -137,6 +137,38 @@ probe, a scheduled job — burns the month in ~2.3 days.
 
 Watch the *Free amount remaining* metric on the database; alert below 10,000.
 
+### Free-tier bandwidth budget
+
+F1 App Service allows **165 MB of outbound traffic a day**, reset at midnight UTC. Past it the app is
+**stopped** — every request returns 403 (Forbidden) until the reset, so the live site is down, not slow.
+
+Images are copied into the deployment artifact once, then re-sent on every visit:
+
+```
+BUILD TIME — once per deploy, costs no bandwidth
+  client/public/images/*  ──ng build──→  src/API/wwwroot/images/*  ──deploy──→  App Service disk
+
+RUN TIME — every visitor, every page load
+  browser  ──GET /images/products/boot-ang1.png──→  App Service
+           ←─────────── 324 KB ──────────────────
+  ↑ this is what spends the 165 MB/day
+```
+
+The copy is free and happens once. The **serving** is the cost — the same bytes go out again for every
+visitor, because the browser, not the build, is what pulls them.
+
+| Draw on the quota | Cost |
+|---|---|
+| One catalogue page view (`pageSize = 10`, 1024×1024 files) | **2646 KB** |
+| `/health` at Azure's 60s probe | ~1.4 MB/day (1440 responses, almost all headers) |
+
+So roughly **60 catalogue page views exhaust the day**, and a full day of health probes costs less than
+one of them — page weight is the lever, the probe is not.
+
+Static files also carry no `Cache-Control`: `Program.cs` calls `app.UseStaticFiles()` with no options, so
+images ship `ETag`/`Last-Modified` and no `max-age`, and a repeat visitor revalidates instead of reading
+its own cache.
+
 ### Health endpoints
 
 Azure's probe cannot be slowed below 60 seconds, so the path it pings must check nothing.

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,7 +34,8 @@ import { SnackbarService } from '../../../core/services/snackbar.service';
     MatProgressSpinner,
     MatSelectModule,
     MatTableModule,
-    MatTooltipModule
+    MatTooltipModule,
+    NgOptimizedImage
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-products.component.html'

@@ -277,6 +277,11 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
       `feature/10-health-check-endpoints`, PR #89. Azure `healthCheckPath` + alert owed at the release)*
 - [ ] Scheduled weekly CI advisory run (`on: schedule`)
 - [ ] T35 — `NgOptimizedImage` on catalog images
+- [ ] Static-file `Cache-Control` *(`app.UseStaticFiles()` takes no options, so every repeat visit
+      re-downloads. Lighthouse prices it at 3392 KB on `/shop`, 886 KB on `/`. Own `fix/` branch, and it
+      merges **after** T35 — `/images/**` is not content-hashed, so a long `max-age` shipped first would
+      pin the 1024px files in browsers that already hold them. Same `StaticFileOptions` also sets
+      `Content-Type: image/webp` under `/images/products/` — the files are WebP behind a `.png` name)*
 - [x] Interceptor cleanup — cart reload out of `errorInterceptor`, delete the dead 401 skip *(the skip was dead code: `user-info` answers 204, never 401 — probed live. 13 specs, the interceptor's first; `fix/interceptor-cleanup`, PR #88)*
 - [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
 - [ ] Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*

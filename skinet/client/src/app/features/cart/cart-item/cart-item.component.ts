@@ -3,12 +3,12 @@ import { CartItem } from '../../../shared/models/cartItem';
 import { RouterLink } from '@angular/router';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-cart-item',
-  imports: [RouterLink, MatButton, MatIcon, CurrencyPipe],
+  imports: [RouterLink, MatButton, MatIcon, CurrencyPipe, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cart-item.component.html',
   styleUrl: './cart-item.component.scss'

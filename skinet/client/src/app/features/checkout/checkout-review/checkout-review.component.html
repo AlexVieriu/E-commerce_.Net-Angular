@@ -19,7 +19,13 @@
           <tr>
             <td class="py-4">
               <div class="flex items-center gap-4">
-                <img src="{{ item.pictureUrl }}" alt="product image" class="w-10 h-10" />
+                <img
+                  [ngSrc]="item.pictureUrl"
+                  width="40"
+                  height="40"
+                  [alt]="item.productName"
+                  class="w-10 h-10"
+                />
                 <span>{{ item.productName }}</span>
               </div>
             </td>
