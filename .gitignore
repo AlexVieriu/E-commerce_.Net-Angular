@@ -518,4 +518,7 @@ skinet/questions/
 *-2.component.ts
 *-2.component.html
 *-2.service.ts
+*-2.interceptor.ts
+*-2.guard.ts
+*2.cs
 *2.cs
