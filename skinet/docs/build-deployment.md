@@ -150,7 +150,7 @@ BUILD TIME — once per deploy, costs no bandwidth
 
 RUN TIME — every visitor, every page load
   browser  ──GET /images/products/boot-ang1.png──→  App Service
-           ←─────────── 324 KB ──────────────────
+           ←──────────── 83 KB ───────────────────
   ↑ this is what spends the 165 MB/day
 ```
 
@@ -159,15 +159,17 @@ visitor, because the browser, not the build, is what pulls them.
 
 | Draw on the quota | Cost |
 |---|---|
-| One catalogue page view (`pageSize = 10`, 1024×1024 files) | **2646 KB** |
+| One `/shop` page view, cold cache (`pageSize = 10`, 800px WebP) | **1759 KB** — Lighthouse, median of 3, after T35 |
 | `/health` at Azure's 60s probe | ~1.4 MB/day (1440 responses, almost all headers) |
 
-So roughly **60 catalogue page views exhaust the day**, and a full day of health probes costs less than
+So roughly **96 catalogue page views exhaust the day**, and a full day of health probes costs less than
 one of them — page weight is the lever, the probe is not.
 
 Static files also carry no `Cache-Control`: `Program.cs` calls `app.UseStaticFiles()` with no options, so
-images ship `ETag`/`Last-Modified` and no `max-age`, and a repeat visitor revalidates instead of reading
-its own cache.
+everything ships `ETag`/`Last-Modified` and no `max-age`. That does not mean every repeat visit
+revalidates — with a `Last-Modified` and no explicit expiry a browser applies **heuristic freshness**
+(RFC 9111 §4.2.2, commonly 10% of the age since that date), so freshness is the browser's guess and a
+deploy has no way to invalidate it.
 
 ### Health endpoints
 
