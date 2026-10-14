@@ -5,8 +5,8 @@ public class DashboardService(IUnitOfWork unitOfWork) : IDashboardService
     // Products at or below this quantity show up as "low stock".
     private const int LowStockThreshold = 5;
     // Widget caps — the counts above stay exact, these lists are previews.
-    private const int LowStockListSize = 10;
-    private const int RecentOrdersSize = 5;
+    private const int LowStockListSize = 15;
+    private const int RecentOrdersSize = 15;
 
     public async Task<DashboardDto> GetDashboardAsync(CancellationToken cancellationToken = default)
     {

@@ -5,6 +5,7 @@
 - Comments: one sentence per line, simple and to the point — skip the obvious.
 - LEARN tasks: verify against official docs before presenting — cite the source, don't trust recall alone.
 - English: user is a non-native speaker improving it — one-line correction on mistakes, then answer normally. Don't nag.
+  Format: quote the original sentence, fix inline as **wrong (right)** — e.g. "It stayed **becayse (because)**…".
 
 # EXPLAINING
 - **Ask before you answer.** 1–4 short questions first, so I can follow. Scale them: design/architecture
