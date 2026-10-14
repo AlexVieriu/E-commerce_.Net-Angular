@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>net11.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<!-- $(NoWarn); appends — a bare assignment would wipe out Directory.Build.props' suppressions. -->
@@ -8,22 +8,22 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Bogus" Version="35.6.5" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11">
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-rc.2.26504.105">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.11" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.11" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.11" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
-		<PackageReference Include="StackExchange.Redis" Version="3.1.13" />
-		<PackageReference Include="Stripe.net" Version="52.3.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-rc.2.26504.105" />
+		<PackageReference Include="StackExchange.Redis" Version="4.0.127-alpha" />
+		<PackageReference Include="Stripe.net" Version="53.0.0" />
 		<!-- Direct ref overrides vulnerable transitive 9.0.0 (NU1903, high) pulled via Microsoft.Data.SqlClient.
-		     10.0.6 is the patched .NET 10 release (10.0.0-10.0.5 affected by EncryptedXml DoS). -->
-		<PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.11" />
+		     Kept on the same 11.0.0-rc.2 build as the other Microsoft packages. -->
+		<PackageReference Include="System.Security.Cryptography.Xml" Version="11.0.0-rc.2.26504.105" />
 		<!-- Direct ref overrides vulnerable transitive 2.1.11 (NU1903, GHSA-2m69-gcr7-jv3q) pulled via
 		     EF Core Sqlite. SQLite is dev/test-only (prod runs SqlServer), so exposure is hygiene, not risk. -->
 		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
