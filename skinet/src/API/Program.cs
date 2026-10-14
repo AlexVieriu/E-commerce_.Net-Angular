@@ -79,7 +79,14 @@ app.UseSecurityHeaders(policies => policies
 
 // Static files served before rate limiter so Angular chunks are never throttled
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    // index.html names this build's hashed chunks, so a cached copy outlives a deploy and 404s them.
+    OnPrepareResponse = context =>
+    {
+        if (context.File.Name == "index.html") context.Context.Response.SetNoCache();
+    }
+});
 
 app.UseRateLimiter();
 
