@@ -4,7 +4,7 @@
       (selectionChange)="onStepChange($event)"
       [linear]="true"
       #stepper
-      class="bg-white border border-gray-200 shadow-sm"
+      class="bg-surface border border-line shadow-sm"
     >
       <mat-step label="Address" [completed]="completionStatus().address">
         <div id="address-element"></div>
@@ -26,7 +26,7 @@
           </button>
         </div>
         <!-- Stripe flags a field only after it is left, so an untouched empty field gives no reason for the disabled Next (BUG-3). -->
-        <p class="mt-2 min-h-5 text-right text-sm text-gray-500" aria-live="polite">
+        <p class="mt-2 min-h-5 text-right text-sm text-frost" aria-live="polite">
           @if (!completionStatus().address) {
             Fill in all required address fields to continue.
           }

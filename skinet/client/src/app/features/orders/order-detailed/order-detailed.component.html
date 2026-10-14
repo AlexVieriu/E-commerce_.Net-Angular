@@ -1,12 +1,12 @@
 @if (order.value()) {
   @let o = order.value()!;
-  <mat-card class="bg-white py-8 shadow-md max-w-screen-lg mx-auto">
+  <mat-card class="bg-surface py-8 shadow-md max-w-screen-lg mx-auto">
     <div class="px-4 w-full">
       <div class="flex justify-between items-center align-middle">
         <h2 class="text-2xl text-center font-semibold">Order summary for order #{{ o.id }}</h2>
         <button (click)="onReturnClick()" mat-stroked-button>{{ buttonText() }}</button>
       </div>
-      <div class="mt-8 px-12 py-4 border-t border-gray-200 flex gap-16">
+      <div class="mt-8 px-12 py-4 border-t border-line flex gap-16">
         <div class="space-y-2">
           <h4 class="text-lg font-semibold">Billing and delivery information</h4>
           <dl>
@@ -36,9 +36,9 @@
       </div>
 
       <div class="px-12">
-        <div class="border-y border-gray-200">
+        <div class="border-y border-line">
           <table class="w-full text-center">
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="divide-y divide-line">
               @for (item of o.orderItems; track item.productId) {
                 <tr>
                   <td class="py-4">
@@ -62,31 +62,31 @@
         </div>
       </div>
 
-      <div class="space-y-4 rounded-lg border-y border-gray-200 p-4 bg-white">
+      <div class="space-y-4 rounded-lg border-y border-line p-4 bg-surface">
         <p class="text-xl font-semibold">Order summary</p>
         <div class="space-y-4">
           <div class="space-y-2">
             <dl class="flex items-center justify-between gap-4">
-              <dt class="font-medium text-gray-500">Subtotal</dt>
-              <dd class="font-medium text-gray-900">
+              <dt class="font-medium text-frost">Subtotal</dt>
+              <dd class="font-medium text-snow">
                 {{ o.subtotal | currency }}
               </dd>
             </dl>
             <dl class="flex items-center justify-between gap-4">
-              <dt class="font-medium text-gray-500">Discount</dt>
-              <dd class="font-medium text-green-500">-{{ o.discount | currency }}</dd>
+              <dt class="font-medium text-frost">Discount</dt>
+              <dd class="font-medium text-emerald-400">-{{ o.discount | currency }}</dd>
             </dl>
             <dl class="flex items-center justify-between gap-4">
-              <dt class="font-medium text-gray-500">Delivery fee</dt>
-              <dd class="font-medium text-gray-900">
+              <dt class="font-medium text-frost">Delivery fee</dt>
+              <dd class="font-medium text-snow">
                 {{ o.shippingPrice | currency }}
               </dd>
             </dl>
           </div>
 
-          <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
-            <dt class="font-medium text-gray-500">Total</dt>
-            <dd class="font-medium text-gray-900">
+          <dl class="flex items-center justify-between gap-4 border-t border-line pt-2">
+            <dt class="font-medium text-frost">Total</dt>
+            <dd class="font-medium text-snow">
               {{ o.total | currency }}
             </dd>
           </dl>

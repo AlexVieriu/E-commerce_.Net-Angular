@@ -1,12 +1,23 @@
 @import 'tailwindcss' important;
 
-/* Rest of your styles... */
+/* Dark snow theme — "night on the mountain". One palette; templates use these names, never raw grays. */
+@theme static {
+  --color-night: #0b1220; /* page background */
+  --color-surface: #111a2e; /* cards, panels, header */
+  --color-surface-2: #172340; /* hover, raised rows, inputs */
+  --color-line: #22314f; /* borders, dividers */
+  --color-snow: #e8eef7; /* main text */
+  --color-frost: #94a3b8; /* secondary text */
+  --color-glacier: #38bdf8; /* accent: links, active nav, prices */
+  --color-ice: #7dd3fc; /* accent hover */
+}
+
 .container {
   @apply mx-auto max-w-screen-2xl;
 }
 
 .text-primary {
-  @apply text-blue-700;
+  @apply text-glacier;
 }
 
 @layer base {
