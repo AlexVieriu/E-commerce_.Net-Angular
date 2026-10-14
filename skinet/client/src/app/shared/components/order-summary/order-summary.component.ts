@@ -41,7 +41,10 @@ export class OrderSummaryComponent {
         this.couponCode.set('');
         if (this.location.path() === '/checkout')
           await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
-      }
+      },
+      // errorInterceptor already showed the reason ("Invalid voucher code").
+      // Handling it here only stops the rethrown error landing in the console as "Uncaught".
+      error: () => undefined
     });
   }
 
