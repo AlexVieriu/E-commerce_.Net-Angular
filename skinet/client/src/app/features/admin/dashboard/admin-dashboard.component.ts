@@ -34,7 +34,7 @@ export class AdminDashboardComponent {
   // One call fills the whole page — 5 scalars + 2 preview lists (T27).
   dashboard = httpResource<Dashboard>(() => environment.apiUrl + 'admin/dashboard');
 
-  // How many rows the Low-stock table actually shows (max 10).
-  // If lowStockCount is bigger, the header says "showing 10 of 30" so the 10 rows aren't read as all of them.
+  // How many rows the Low-stock table actually shows (max 15).
+  // If lowStockCount is bigger, the header says "showing 15 of 30" so the 15 rows aren't read as all of them.
   lowStockShown = computed(() => this.dashboard.value()?.lowStockProducts.length ?? 0);
 }
