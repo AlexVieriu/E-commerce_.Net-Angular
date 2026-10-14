@@ -1,4 +1,4 @@
-<mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
+<mat-card class="max-w-lg mx-auto mt-32 p-8 bg-surface">
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
     <div class="text-center mb-6">
       <h1 class="text-3xl font-semibold text-primary">Register</h1>
@@ -10,7 +10,7 @@
     <app-text-input label="Password" formControlName="password" type="password" />
 
     @if (validationErrors()) {
-      <div class="mb-3 p-4 bg-red-100 text-red-600">
+      <div class="mb-3 p-4 bg-red-500/15 text-red-400">
         <ul class="list-disc px-3">
           @for (error of validationErrors()!; track $index) {
             <li>{{ error }}</li>
