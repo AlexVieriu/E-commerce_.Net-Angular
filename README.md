@@ -9,16 +9,18 @@ what breaks when money is involved.
 > Serverless Azure SQL auto-pauses when idle — the first request takes 20–30s to wake it, everything
 > after that is fast.
 
-<!-- SCREENSHOT: catalogue page -->
+![Skinet catalogue — dark snow theme](skinet/docs/images/catalogue.jpg)
 
 ---
 
 ## What it does
 
-Catalogue with search, brand/type filters, sorting and paging · Redis cart keyed to the signed-in user ·
-four-step Stripe checkout (address → shipping → payment → confirmation) · orders reconciled from the
-Stripe webhook with a live SignalR push to the buyer · admin dashboard, refunds and payment-status sync ·
-cookie Identity with Admin/Customer roles and route guards on both sides.
+- **Catalogue** — search, brand/type filters, sorting and paging
+- **Cart** — stored in Redis, keyed to the signed-in user
+- **Checkout** — four Stripe steps: address → shipping → payment → confirmation
+- **Orders** — confirmed by the Stripe webhook, with a live SignalR push to the buyer
+- **Admin** — dashboard, refunds and payment-status sync
+- **Auth** — cookie Identity with Admin/Customer roles and route guards on both sides
 
 ## Built with
 
@@ -29,7 +31,7 @@ cookie Identity with Admin/Customer roles and route guards on both sides.
 | **Data** | SQLite locally · Azure SQL in production · Redis for cart + response cache |
 | **Payments** | Stripe — PaymentIntents, webhooks, refunds, promotion codes |
 | **Realtime** | SignalR |
-| **Tests** | 159 unit + integration (xUnit v3, Moq, FluentAssertions) · 4 Playwright E2E specs |
+| **Tests** | 169 unit + integration (xUnit v3, Moq, FluentAssertions) · 4 Playwright E2E specs |
 | **CI/CD** | GitHub Actions → Azure App Service |
 
 ## Architecture
