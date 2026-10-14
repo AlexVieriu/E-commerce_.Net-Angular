@@ -9,8 +9,10 @@ than repeating it.
 
 | Date | Task | What happened |
 |--------|------|---------------|
+| Oct 7 | v1.0 closed | **v1.0 = Sprints A–E.** F–H deferred to v2 with no dates; T59/T60/T61 and the Sprint E gate carry over. Next: release to `main`, then the job search. |
+| Sep 19 | T35 *(PR #90)* | **The directive is not free, and measurement is what said so.** `NgOptimizedImage` withholds `src` until `ngOnInit`, and with no SSR and no CDN loader there is nothing to repay that delay — so on the home hero, already eager and already stable, every variant cost 217 ms of LCP. It stays a plain `<img>`; the other eight sites take the directive, and `/shop` falls 3440 → 1759 KB with layout shift to zero. |
 | Sep 17 | T10 *(PR #89)* | **The probe that would have killed the demo was the one that checked the database.** One connection resumes serverless Azure SQL for a full hour — ~1,800 of 100,000 free vCore-seconds — so `/health` runs no checks at all and `/health/ready` is on demand, behind a config key checked in front of the endpoint so a scanner cannot spend a wake either. Azure's own setting waits for the sprint release. |
-| Sep 16 | Interceptor cleanup *(PR #88)* | **The 401 skip guarded a status its endpoint never returns.** `user-info` answers 204 to an anonymous *and* a dead-cookie caller, so the branch and `InitService`'s matching catch were dead code — deleted, not replaced with the planned `HttpContextToken`. The 409 cart reload moved to the two services that own the endpoints, which also covers the coupon box that never had a catch. |
+| Sep 16 | T58 *(PR #88)* | **The 401 skip guarded a status its endpoint never returns.** `user-info` answers 204 to an anonymous *and* a dead-cookie caller, so the branch and `InitService`'s matching catch were dead code — deleted, not replaced with the planned `HttpContextToken`. The 409 cart reload moved to the two services that own the endpoints, which also covers the coupon box that never had a catch. |
 | Sep 15 | BUG-17 *(PR #87)* | **A guard that navigates cannot lose.** The router subscribes every guard at once and only then picks by array order, so `emptycartGuard`'s `navigateByUrl` beat `authGuard` every time — the side effect, not the round trip. All four guards now return a `UrlTree`. |
 | Sep 15 | Plan re-sliced | Weekly sprints, 7 days × 10h. **Ship pulled IN to Oct 8** — almost none of it from the extra hours: T40/T22/T42 were never measured against the code and came in at ~half. |
 | Sep 14 | BUG-2 *(PR #86)* | **The cart was deleted one step before the charge**, so a decline had nothing to retry with and a 400 buried Stripe's message. The cart now outlives order creation, and a spent intent is replaced instead of updated. |
@@ -259,8 +261,8 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
 ## Sprint E — Demo Polish + Money Paths *(Sep 12 – Sep 21 · weekly cadence from Sep 15)*
 
 Estimates and tiers live in `Execution plan.md` — this is the tick list only.
-**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T10, CI schedule, T35, interceptor cleanup ·
-**Could:** T50, dep prune. **Day-4 checkpoint Sep 18.**
+**Must:** BUG-10, BUG-14, BUG-2, BUG-17 · **Should:** T58, T10, T35, T59, T60 ·
+**Could:** T61. **Day-4 checkpoint Sep 18.**
 
 - [x] BUG-10 — Top loading bar spins forever *(zoneless render path; signal + `defer`, 9 specs, gate done —
       `fix/bug-10-loading-bar`)*
@@ -275,41 +277,47 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
       checks SQL + Redis on demand behind `HealthSettings:ReadyKey`, guarded before the endpoint. 5 integration
       tests pin the body and content type, because the SPA catch-all makes a 200 meaningless.
       `feature/10-health-check-endpoints`, PR #89. Azure `healthCheckPath` + alert owed at the release)*
-- [ ] Scheduled weekly CI advisory run (`on: schedule`)
-- [ ] T35 — `NgOptimizedImage` on catalog images
-- [ ] Static-file `Cache-Control` *(`app.UseStaticFiles()` takes no options, so every repeat visit
-      re-downloads. Lighthouse prices it at 3392 KB on `/shop`, 886 KB on `/`. Own `fix/` branch, and it
-      merges **after** T35 — `/images/**` is not content-hashed, so a long `max-age` shipped first would
-      pin the 1024px files in browsers that already hold them. Same `StaticFileOptions` also sets
-      `Content-Type: image/webp` under `/images/products/` — the files are WebP behind a `.png` name)*
-- [x] Interceptor cleanup — cart reload out of `errorInterceptor`, delete the dead 401 skip *(the skip was dead code: `user-info` answers 204, never 401 — probed live. 13 specs, the interceptor's first; `fix/interceptor-cleanup`, PR #88)*
-- [ ] T50 — API docs: `[ProducesResponseType]` + XML summaries
-- [ ] Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
+- [x] T35 — `NgOptimizedImage` on catalog images *(18 product files re-encoded 1024 → 800px WebP, 8 of 9
+      `<img>` sites on the directive, `priority` on the LCP element only. The home hero stays a plain
+      `<img>` — every directive mode cost it 217 ms, measured. `/shop` 3440 → 1759 KB, CLS 0.092 → 0.
+      `feature/35-ngoptimized-images`, PR #90. Layout-shift half of the 2-sentence test owed at the gate)*
+- [ ] T60 — Scheduled weekly CI advisory run (`on: schedule`)
+- [ ] T59 — Static-file `Cache-Control` *(`app.UseStaticFiles()` takes no options, so nothing carries a
+      `max-age` and freshness is each browser's guess. Three buckets: content-hashed `*-HASH.js/css` +
+      `/media/**` → `immutable`; `index.html` → `no-cache`, in `FallbackController` too, since every
+      SPA deep link serves it through `PhysicalFile`; `/images/**` → its own answer, because `PictureUrl`
+      rows pin the filenames. Same `StaticFileOptions` sets `Content-Type: image/webp` under
+      `/images/products/` — the files are WebP behind a `.png` name. Own `fix/` branch, merges **after**
+      T35. The value needs re-measuring against `d01f3da`: the 3392 KB figure was read before the
+      re-encode)*
+- [x] T58 — Interceptor cleanup: cart reload out of `errorInterceptor`, delete the dead 401 skip *(the skip was dead code: `user-info` answers 204, never 401 — probed live. 13 specs, the interceptor's first; `fix/interceptor-cleanup`, PR #88)*
+- [ ] T61 — Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
 - [ ] Gate — sprint end (+ Anki straight after)
 
-## Sprint F — Order Domain *(Sep 28 – Oct 9 · 10 working days)*
+## Sprint F — Order Domain *(Sep 22 – Sep 28 · 7 working days)*
 
-**Must:** T40 · **Should:** T41 · **Could:** T21. **Day-5 checkpoint Oct 2** — T40 is the sprint.
+**Must:** T40a, T40b · **Should:** T21, T41 · **Could:** —. **Day-4 checkpoint Sep 25** — T40 is the sprint.
 
-- [ ] T40 — OrderStatus + append-only OrderStatusHistory *(spike first: one enum or two?)*
-- [ ] T41 — Order cancellation: POST cancel, Stripe refund if paid
+- [ ] T40a — Split the enum: payment status stays, `FulfillmentStatus` is new *(spike first: one enum or two?)*
+- [ ] T40b — Append-only OrderStatusHistory + transition guard + admin status endpoint
 - [ ] T21 — Coverage gate: coverlet, fail PR < 60%
+- [ ] T41 — Order cancellation: POST cancel, Stripe refund if paid
 - [ ] Gate — sprint end (+ Anki straight after)
 
-## Sprint G — Production Hardening *(Oct 12 – Oct 23 · 10 working days)*
+## Sprint G — Production Hardening *(Sep 29 – Oct 5 · 7 working days)*
 
 - [ ] T22 — Serilog structured logging *(App Service logs, no Seq)*
 - [ ] T42 — Soft delete + EF global query filter
 - [ ] T23 — Correlation IDs — one id per request, on every log line
 - [ ] T20b — Extend the API integration harness: auth, orders, payments happy paths
-- [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(needs T20b)*
+- [ ] T62 — Deploy-gate cleanup: retire the four legacy manual checks in `testing.md` *(needs T20b)*
 - [ ] Gate — sprint end (+ Anki straight after)
 
-## Sprint H — Freeze + Release *(Oct 26 – Nov 3 · 7 working days)* — 🔴 **v1.0 ships Nov 3**
+## Sprint H — Freeze + Release *(Oct 6 – Oct 12 · 7 working days)* — 🔴 **v1.0 ships Oct 8**
 
-Deliberately half empty — the absorber for whatever the day-5 checkpoints dropped. **Freeze Oct 28.**
+Deliberately half empty — the absorber for whatever the day-4 checkpoints dropped. **Freeze Oct 6.**
 
-- [ ] Overflow from Sprints E–G *(3d reserved)*
+- [ ] Overflow from Sprints E–G *(4.4d reserved)*
 - [ ] T38 — README UX screenshots + GIFs *(last — once the UI stops moving)*
 - [ ] Demo rehearsal × 2 — the 5-minute walkthrough, out loud, on live
 - [ ] v1.0 release: `development` → `main`, one squashed commit, verify on Azure
