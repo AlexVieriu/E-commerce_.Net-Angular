@@ -89,12 +89,12 @@ public class DashboardService_Tests
         var options = InMemoryOptions();
         using (var seed = new StoreContext(options))
         {
-            // 12 products all at/under the threshold -> all low.
-            for (var i = 1; i <= 12; i++)
+            // 18 products all at/under the threshold -> all low.
+            for (var i = 1; i <= 18; i++)
                 seed.Products.Add(MakeProduct(i, $"Low {i}", i % 6)); // qty 0..5
 
             var dm = MakeDelivery();
-            for (var i = 1; i <= 7; i++)
+            for (var i = 1; i <= 18; i++)
                 seed.Orders.Add(MakeOrder(i, OrderStatus.PaymentReceived, 100m, 0m, dm, daysAgo: i));
             await seed.SaveChangesAsync();
         }
@@ -104,9 +104,9 @@ public class DashboardService_Tests
 
         var result = await service.GetDashboardAsync();
 
-        result.LowStockCount.Should().Be(12);            // true count
-        result.LowStockProducts.Should().HaveCount(10);  // preview capped
-        result.TotalOrders.Should().Be(7);               // true count
-        result.RecentOrders.Should().HaveCount(5);       // preview capped
+        result.LowStockCount.Should().Be(18);            // true count
+        result.LowStockProducts.Should().HaveCount(15);  // preview capped
+        result.TotalOrders.Should().Be(18);              // true count
+        result.RecentOrders.Should().HaveCount(15);      // preview capped
     }
 }
