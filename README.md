@@ -15,10 +15,12 @@ what breaks when money is involved.
 
 ## What it does
 
-Catalogue with search, brand/type filters, sorting and paging · Redis cart keyed to the signed-in user ·
-four-step Stripe checkout (address → shipping → payment → confirmation) · orders reconciled from the
-Stripe webhook with a live SignalR push to the buyer · admin dashboard, refunds and payment-status sync ·
-cookie Identity with Admin/Customer roles and route guards on both sides.
+- **Catalogue** — search, brand/type filters, sorting and paging
+- **Cart** — stored in Redis, keyed to the signed-in user
+- **Checkout** — four Stripe steps: address → shipping → payment → confirmation
+- **Orders** — confirmed by the Stripe webhook, with a live SignalR push to the buyer
+- **Admin** — dashboard, refunds and payment-status sync
+- **Auth** — cookie Identity with Admin/Customer roles and route guards on both sides
 
 ## Built with
 
