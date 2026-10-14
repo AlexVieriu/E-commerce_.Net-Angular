@@ -40,9 +40,12 @@ export class CheckoutDeliveryComponent {
     this.cartService.setSelectedDelivery(method);
     const cart = this.cartService.cart();
     if (cart) {
-      cart.deliveryMethodId = method.id;
-      await firstValueFrom(this.cartService.setCart(cart));
-      this.deliveryComplete.emit(true); // affect parent property from child component
+      try {
+        await firstValueFrom(this.cartService.setCart({ ...cart, deliveryMethodId: method.id }));
+        this.deliveryComplete.emit(true); // affect parent property from child component
+      } catch {
+        // errorInterceptor already reacted; the step stays incomplete.
+      }
     }
   }
 }
