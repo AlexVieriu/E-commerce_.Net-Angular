@@ -1,10 +1,11 @@
 namespace API.Controllers;
 
-public class FallbackController : Controller
+public class FallbackController(IWebHostEnvironment env) : Controller
 {
+    // Every SPA deep link lands here, and PhysicalFile never sees StaticFileOptions — so the header is set here too.
     public IActionResult Index()
     {
-        return PhysicalFile(Path.Combine(
-            Directory.GetCurrentDirectory(), "wwwroot", "index.html"), "text/HTML");
+        Response.SetNoCache();
+        return PhysicalFile(Path.Combine(env.WebRootPath, "index.html"), "text/HTML");
     }
 }
