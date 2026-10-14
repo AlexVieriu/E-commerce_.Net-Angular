@@ -4,7 +4,7 @@
       <div class="grid grid-cols-2 gap-8">
         <div class="max-w-xl mx-auto">
           <img
-            class="w-full"
+            class="w-full rounded-xl bg-white p-4 ring-1 ring-line"
             [ngSrc]="product.value()!.pictureUrl"
             width="800"
             height="800"
@@ -14,10 +14,10 @@
         </div>
 
         <div>
-          <h1 class="text-2xl font-semibold text-gray-900">{{ product.value()!.name }}</h1>
+          <h1 class="text-2xl font-semibold text-snow">{{ product.value()!.name }}</h1>
 
           <div class="mt-4 items-center gap-4 flex">
-            <p class="text-3xl font-extrabold text-gray-900">
+            <p class="text-3xl font-extrabold text-snow">
               {{ product.value()!.price | currency }}
             </p>
           </div>
@@ -31,16 +31,16 @@
             <!-- The stepper edits the cart line, so it has nothing to show until there is one. -->
             @if (quantityInCart() > 0) {
               <div class="flex items-center gap-2">
-                <span class="text-gray-500">In cart:</span>
+                <span class="text-frost">In cart:</span>
 
                 <button mat-icon-button (click)="removeOne()" aria-label="Remove one from cart">
-                  <mat-icon class="text-red-500">remove</mat-icon>
+                  <mat-icon class="text-red-400">remove</mat-icon>
                 </button>
 
                 <span class="font-semibold text-xl">{{ quantityInCart() }}</span>
 
                 <button mat-icon-button (click)="addOne()" aria-label="Add one to cart">
-                  <mat-icon class="text-green-600">add</mat-icon>
+                  <mat-icon class="text-emerald-400">add</mat-icon>
                 </button>
               </div>
             }
@@ -48,7 +48,7 @@
 
           <mat-divider class="mt-6"></mat-divider>
 
-          <p class="mt-6 text-gray-500">
+          <p class="mt-6 text-frost">
             {{ product.value()!.description }}
           </p>
         </div>

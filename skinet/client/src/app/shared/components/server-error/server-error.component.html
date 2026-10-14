@@ -1,7 +1,7 @@
-<div class="container mt-5 p-4 bg-gray-100 rounded shadow-lg">
+<div class="container mt-5 p-4 bg-surface-2 rounded shadow-lg">
   <h1 class="text-2xl font-semibold mb-4">Internal server error</h1>
   @if (error) {
-    <h5 class="text-red-600">Error: {{ error.message }}</h5>
+    <h5 class="text-red-400">Error: {{ error.message }}</h5>
     <p class="font-bold mb-2">This error comes from the server, not Angular</p>
     <p class="mb-2">What to do next?</p>
     <ol class="list-decimal ml-5 mb-4">
@@ -11,7 +11,7 @@
       </li>
     </ol>
     <h5 class="text-lg font-semibold mb-2">Stack trace</h5>
-    <mat-card class="p-4 bg-white">
+    <mat-card class="p-4 bg-surface">
       <code class="block whitespace-pre-wrap">{{ error.details }}</code>
     </mat-card>
   }

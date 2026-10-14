@@ -71,6 +71,8 @@ When merging a `fix/task-N-*` branch: append `## Fix — <date>` to the Solution
   the gate + doc review, so review tweaks fold in.
 - **🔴 NEVER merge a task/bug PR until the user confirms the 2-sentence test at merge — it passes, or the
   concept is owed at the next gate day. It blocks the sprint, not the PR. That call is the user's, never Claude's.**
+  Every time Claude asks for it, give a fill-in-the-blanks frame — sentence 1 = the cause, sentence 2 = why
+  the fix is correct — e.g. *"It broke because ___. The fix works because ___."* Never just "your 2 sentences?".
 - No standalone or per-tweak docs PRs — docs/process changes ride in the related task or `fix` PR
   (interviewers care about task & bug-fix PRs, not docs noise). One PR open at a time; close it once.
 - Release to `main` at sprint end only — **no PR** (`main` is an orphan branch): `read-tree` from
