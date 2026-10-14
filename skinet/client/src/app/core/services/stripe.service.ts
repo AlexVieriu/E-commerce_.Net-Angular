@@ -47,7 +47,18 @@ export class StripeService {
         const cart = await firstValueFrom(this.createOrUpdatePaymentIntent());
         this.elements = stripe.elements({
           clientSecret: cart.clientSecret,
-          appearance: { labels: 'floating' }
+          // Elements render in Stripe's iframes, so our CSS never reaches them: match the snow theme here.
+          appearance: {
+            theme: 'night',
+            labels: 'floating',
+            variables: {
+              colorPrimary: '#38bdf8',
+              colorBackground: '#172340',
+              colorText: '#e8eef7',
+              colorTextSecondary: '#94a3b8',
+              borderRadius: '6px'
+            }
+          }
         });
       } else {
         throw new Error('Stripe has not been loaded');

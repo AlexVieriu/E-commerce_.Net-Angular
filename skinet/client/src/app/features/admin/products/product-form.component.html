@@ -1,4 +1,4 @@
-<mat-card class="max-w-2xl mx-auto mt-8 p-8 bg-white">
+<mat-card class="max-w-2xl mx-auto mt-8 p-8 bg-surface">
   <div class="text-center mb-6">
     <h1 class="text-3xl font-semibold text-primary">
       {{ isEdit ? 'Edit product' : 'New product' }}
@@ -94,7 +94,7 @@
     }
 
     @if (validationErrors()) {
-      <div class="mb-3 p-4 bg-red-100 text-red-600">
+      <div class="mb-3 p-4 bg-red-500/15 text-red-400">
         <ul class="list-disc px-3">
           @for (error of validationErrors()!; track $index) {
             <li>{{ error }}</li>
