@@ -9,7 +9,7 @@ what breaks when money is involved.
 > Serverless Azure SQL auto-pauses when idle — the first request takes 20–30s to wake it, everything
 > after that is fast.
 
-<!-- SCREENSHOT: catalogue page -->
+![Skinet catalogue — dark snow theme](skinet/docs/images/catalogue.jpg)
 
 ---
 
