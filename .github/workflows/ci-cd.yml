@@ -41,7 +41,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.x' # Stable .NET 10 (LTS)
+          global-json-file: skinet/global.json # .NET 11 RC2 SDK, pinned in one place
 
       - name: Restore
         working-directory: ./skinet
@@ -137,19 +137,23 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.x' # Aligned with CI for production stability
+          global-json-file: skinet/global.json # Same SDK as the build job
 
       # Publish only the API project (not the solution).
       # Angular build output is copied into wwwroot by the .csproj before publish.
+      # Self-contained: App Service has no .NET 11 RC runtime, so the app ships its own.
+      # win-x86 matches the F1 plan's 32-bit worker process.
       - name: Publish API
         working-directory: ./skinet/src/API
-        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
+        run: dotnet publish -c Release -r win-x86 --self-contained -o "${{ env.DOTNET_ROOT }}/myapp"
 
+      # Debug copy only (deploy reads the folder above); 1 day keeps Actions storage near zero.
       - name: Upload artifact
         uses: actions/upload-artifact@v7 # v7 supports unzipped artifacts (Feb 2026)
         with:
           name: .net-app
           path: ${{ env.DOTNET_ROOT }}/myapp
+          retention-days: 1
 
       - name: Login to Azure
         uses: azure/login@v3

@@ -4,7 +4,7 @@ A production-shaped e-commerce store — catalogue, cart, Stripe checkout, admin
 what breaks when money is involved.
 
 **▶ [Live demo](https://skinet-2025-test-hra4dvcpa3hvfyeq.polandcentral-01.azurewebsites.net)** ·
-.NET 10 · Angular 22 · Stripe · Azure
+.NET 11 (RC2) · Angular 22 · Stripe · Azure
 
 > Serverless Azure SQL auto-pauses when idle — the first request takes 20–30s to wake it, everything
 > after that is fast.
@@ -26,7 +26,7 @@ what breaks when money is involved.
 
 | | |
 |---|---|
-| **Backend** | .NET 10 · ASP.NET Core · EF Core · clean architecture, 4 layers |
+| **Backend** | .NET 11 (RC2) · ASP.NET Core · EF Core · clean architecture, 4 layers |
 | **Frontend** | Angular 22 (zoneless, signals) · Tailwind 4 · Angular Material |
 | **Data** | SQLite locally · Azure SQL in production · Redis for cart + response cache |
 | **Payments** | Stripe — PaymentIntents, webhooks, refunds, promotion codes |
@@ -46,7 +46,7 @@ flowchart TB
 
     subgraph skinet["Skinet"]
         spa["Angular SPA<br/><i>[Angular 22, zoneless]</i><br/>Catalogue, cart, checkout,<br/>admin panel. Runs in the browser"]
-        api["API<br/><i>[ASP.NET Core, .NET 10]</i><br/>REST endpoints, SignalR hub,<br/>Stripe webhook"]
+        api["API<br/><i>[ASP.NET Core, .NET 11]</i><br/>REST endpoints, SignalR hub,<br/>Stripe webhook"]
         redis[("Redis<br/><i>[Redis]</i><br/>Cart per signed-in user,<br/>cached responses")]
         db[("Azure SQL<br/><i>[Azure SQL, SQLite in dev]</i><br/>Catalogue, orders, identity")]
     end
@@ -121,7 +121,7 @@ webhook pushes, an admin action pulls when a webhook never arrived.
 <details>
 <summary><b>Run it locally</b></summary>
 
-**Prerequisites** — .NET 10 SDK · Node 24+ · Docker · a Stripe test account · the
+**Prerequisites** — .NET 11 RC2 SDK (pinned in `skinet/global.json`) · Node 24+ · Docker · a Stripe test account · the
 [Stripe CLI](https://docs.stripe.com/cli)
 
 ```bash

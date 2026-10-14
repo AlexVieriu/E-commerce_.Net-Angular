@@ -271,13 +271,21 @@ Stripe's policy: *"Each SDK version uses the API version that is current at the 
 **the test suite cannot see these breaks**. BUG-20 is the worked example — `fix(deps)` #50 bumped 51→52 and
 silently killed every coupon for two months.
 
-**`xunit.v3` — held at 3.2.2** *(4.0.0 attempted 2026-08-20; both are xunit **v3**, only the package
-version differs). 4.0.0 makes Microsoft Testing Platform the default and flags the project as an MTP app
-([release notes](https://xunit.net/releases/v3/4.0.0)), but .NET 10's `dotnet test` still routes via
-VSTest — so they disagree and the build errors.
-`global.json` with `{"test":{"runner":"Microsoft.Testing.Platform"}}` clears that, but then `dotnet test`
-finds **zero tests** while the test `.exe` runs all of them. Dropping the VSTest packages didn't help.
-Unresolved discovery issue, zero production benefit — retry post-v1.0.
+**`xunit.v3` 4.x + MTP mode** *(2026-10-14, .NET 11 RC2)*. xunit.v3 4.x runs on Microsoft Testing
+Platform (MTP), so `dotnet test` must run in MTP mode
+([Microsoft Learn — migrate to MTP mode](https://learn.microsoft.com/dotnet/core/testing/unit-testing-with-dotnet-test#migrate-to-mtp-mode-of-dotnet-test)):
+- `skinet/global.json` has `"test": { "runner": "Microsoft.Testing.Platform" }` and pins the SDK; CI's
+  `setup-dotnet` reads the same file (`global-json-file`).
+- `TestingPlatformDotnetTestSupport` is removed from the test projects (MTP mode doesn't use it).
+- The 2026-08-20 "zero tests found" problem on the .NET 10 SDK is gone: all 169 run on the .NET 11 SDK.
+
+**.NET 11 notes** *(2026-10-14)*:
+- Don't feed `decimal` test parameters from `[InlineData(99.99)]`: that's a `double`, and .NET 11 converts
+  it to `decimal` exactly (`99.98999…`) — use `TheoryData` with `m` literals
+  ([breaking change](https://learn.microsoft.com/dotnet/core/compatibility/core-libraries/11/decimal-biginteger-floating-point-conversions)).
+- EF Core 11 defaults SQL Server to compatibility level 160; Azure SQL must be at ≥ 160 or set
+  `UseCompatibilityLevel(150)` ([breaking change](https://learn.microsoft.com/ef/core/what-is-new/ef-core-11.0/breaking-changes)).
+- `StackExchange.Redis` runs **4.0.127-alpha** by choice (no stable 4.x yet) — move to 4.0 stable when it ships.
 
 ## Security Headers (NetEscapades.AspNetCore.SecurityHeaders)
 

@@ -17,7 +17,7 @@ file static class Validator
         return results;
     }
 
-    public static bool IsValid(object model) => !Validate(model).Any();
+    public static bool IsValid(object model) => Validate(model).Count == 0;
 }
 
 // DataAnnotations validation (RegisterDTO still uses [Required], [EmailAddress], etc.).

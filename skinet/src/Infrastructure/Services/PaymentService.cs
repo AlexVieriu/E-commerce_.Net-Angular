@@ -136,7 +136,8 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
             {
                 Amount = amount,
                 Currency = "usd",
-                PaymentMethodTypes = ["card"]
+                // API 2026-09-30.endive removed PaymentMethodTypes; this is its card-only replacement.
+                AllowedPaymentMethodTypes = ["card"]
             };
 
             // Was prefixed with the cart id, which no longer exists. The GUID was already what made
