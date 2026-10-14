@@ -31,7 +31,7 @@ what breaks when money is involved.
 | **Data** | SQLite locally · Azure SQL in production · Redis for cart + response cache |
 | **Payments** | Stripe — PaymentIntents, webhooks, refunds, promotion codes |
 | **Realtime** | SignalR |
-| **Tests** | 159 unit + integration (xUnit v3, Moq, FluentAssertions) · 4 Playwright E2E specs |
+| **Tests** | 169 unit + integration (xUnit v3, Moq, FluentAssertions) · 4 Playwright E2E specs |
 | **CI/CD** | GitHub Actions → Azure App Service |
 
 ## Architecture
