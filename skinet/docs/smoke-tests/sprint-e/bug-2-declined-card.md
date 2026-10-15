@@ -137,3 +137,17 @@ see the old city, and the carry-over would look like a pass when it was not.
 ⚠️ **Reading a failure:** a second order at **B6**, or stock moving twice, means the retry created its own
 intent instead of reusing the cart's. An error or a `/server-error` redirect at **C8** means the app is
 still trying to update a dead intent — the spent-intent check did not fire.
+
+## Results — 2026-10-15 (.NET 11 RC2 + Angular 22.2, `https://localhost:7096`)
+
+| Step | Result | Observed |
+|---|---|---|
+| B0–B4 | ✅ pass | decline kept the cart and its `pi_…`; snackbar *"Your card has been declined."*; order 68 `Pending` |
+| B5–B6 | ✅ pass | 4242 with no reload → success; still 68 orders, stock unchanged — order 68 reused |
+| B7–B8 | ✅ pass | order 68 `PaymentReceived` (one `payment_intent.succeeded`); cart key gone (`EXISTS` = 0) |
+| C7–C10 | ✅ pass | cancelled intent replaced on Back → Next, no error; card field empty |
+| C11 | ✅ pass | the typed city (`Botosani`) survived the rebuild, not the account's |
+| C12–C14 | ✅ pass | success; 68 → 69 orders, stock 16 → 15; order 69 on the **new** intent, `PaymentReceived`, city `Botosani` |
+
+**Note:** a restart between runs wipes C4's city (it lives only in the Address Element), so C7–C11 were
+redone on the next intent — the swap was proven twice (pi_A → pi_B, pi_B → pi_C).

@@ -49,7 +49,7 @@ Base: `https://localhost:4200`. **Overlapping requests are not here** — `heade
 | # | Result | Count observed | Notes |
 |---|---|---|---|
 | 1 | ✅ pass | `0 → 1 → 0` | bar cleared on its own, nothing touched |
-| 2 | ⏳ not run | — | needs a deleted auth cookie; run at the deploy gate |
+| 2 | ✅ pass | `0 → 0` | 2026-10-14: cookie deleted, then Add to cart → 401 → login page, bar cleared. Surfaced an `Uncaught (in promise)` from `CartService.addItemToCart` — fixed in `fix/cart-uncaught-401` |
 | 3 | ✅ pass | `0 → 1 → 0` | paged the grid, routed to `/` 60 ms later; count back to 0 and the bar gone. **Note:** the route change is itself a click, so this proves `finalize` on unsubscribe, not the render path — row 1 and row 4 prove that |
 | 4 | ✅ pass | `0 → 1 → 0` | searched `zzzznomatch`. While loading: 0 cards, `app-empty-state` present but **rendering nothing**. Count hit 0 and *"No products match this filter"* appeared **with no further interaction** — the strongest evidence in the file |
 

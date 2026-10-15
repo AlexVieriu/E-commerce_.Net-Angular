@@ -90,7 +90,7 @@ export class CartService {
     if (updatedItems.length === 0) {
       this.deleteCart();
     } else {
-      await firstValueFrom(this.setCart({ ...cart, items: updatedItems }));
+      await this.saveCart({ ...cart, items: updatedItems });
     }
   }
 
@@ -106,8 +106,8 @@ export class CartService {
 
     if (this.isProduct(item)) item = this.mapProductToCartItem(item);
 
-    cart.items = this.addOrUpdateItem(cart.items, item, quantity);
-    await firstValueFrom(this.setCart(cart));
+    // A new cart object: the signal keeps the saved cart until the server accepts this one.
+    await this.saveCart({ ...cart, items: this.addOrUpdateItem(cart.items, item, quantity) });
   }
 
   setSelectedDelivery(method: DeliveryMethod | null) {
@@ -144,16 +144,25 @@ export class CartService {
   }
 
   // private methods
-  private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {
-    const idex = items.findIndex((i) => i.productId === item.productId);
-    if (idex === -1) {
-      // not found
-      item.quantity = quantity;
-      items.push(item);
-    } else {
-      items[idex].quantity += quantity;
+
+  // errorInterceptor already reacted (snackbar or login redirect) and rethrew the error.
+  // Swallowed here because (click) handlers ignore the promise, so a rejection would be uncaught.
+  private async saveCart(cart: Cart) {
+    try {
+      await firstValueFrom(this.setCart(cart));
+    } catch {
+      // Handled by errorInterceptor; the cart signal still holds the last saved cart.
     }
-    return items;
+  }
+
+  // Returns new arrays and items, so a failed save never changes the cart in the signal.
+  private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {
+    const index = items.findIndex((i) => i.productId === item.productId);
+    if (index === -1) return [...items, { ...item, quantity }];
+
+    return items.map((existing, i) =>
+      i === index ? { ...existing, quantity: existing.quantity + quantity } : existing
+    );
   }
 
   private createCart(): Cart {

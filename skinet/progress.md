@@ -9,6 +9,10 @@ than repeating it.
 
 | Date | Task | What happened |
 |--------|------|---------------|
+| Oct 15 | Release smoke + cart 401 fix | **Every money path re-proven on .NET 11 + Angular 22.2:** BUG-2 B + C, T26 sync with the webhook off, BUG-11 stateless address, BUG-12 paging, register / `gimme5` / logout. The BUG-10 re-run surfaced an `Uncaught (in promise)` from a 401 on Add to cart — fixed in `fix/cart-uncaught-401`. |
+| Oct 14 | .NET 11 RC2 *(PR #101)* | net10 → net11 in 9 projects, Stripe.net 53, Redis client 4.0 alpha, xunit.v3 4 on MTP. **Azure has no .NET 11 runtime**, so the publish is self-contained (`win-x86`). .NET 11's exact double → decimal broke one `[InlineData]` theory. |
+| Oct 14 | Angular 22.2 *(PR #100)* | Angular 22.2.2 + client packages to latest compatible — majors stripe-js 10, vite 8, vitest 5. TypeScript held at 6.0.3, the ceiling Angular accepts. Node 24 LTS. |
+| Oct 14 | Demo polish *(PRs #92–#99)* | Delivery fee cleared on leaving checkout · dashboard previews 15 rows · BUG-3 address hint · T61 four deps pruned · T59 `index.html` no-cache (partial) · rejected voucher handled · dark snow theme · T38 README screenshot. |
 | Oct 7 | v1.0 closed | **v1.0 = Sprints A–E.** F–H deferred to v2 with no dates; T59/T60/T61 and the Sprint E gate carry over. Next: release to `main`, then the job search. |
 | Sep 19 | T35 *(PR #90)* | **The directive is not free, and measurement is what said so.** `NgOptimizedImage` withholds `src` until `ngOnInit`, and with no SSR and no CDN loader there is nothing to repay that delay — so on the home hero, already eager and already stable, every variant cost 217 ms of LCP. It stays a plain `<img>`; the other eight sites take the directive, and `/shop` falls 3440 → 1759 KB with layout shift to zero. |
 | Sep 17 | T10 *(PR #89)* | **The probe that would have killed the demo was the one that checked the database.** One connection resumes serverless Azure SQL for a full hour — ~1,800 of 100,000 free vCore-seconds — so `/health` runs no checks at all and `/health/ready` is on demand, behind a config key checked in front of the endpoint so a scanner cannot spend a wake either. Azure's own setting waits for the sprint release. |
@@ -252,9 +256,9 @@ task already in flight. Order: T43 → BUG-10 → BUG-14 → T33 → BUG-3 → d
       zoneless render path, not SignalR or a counter leak *(`fix/bug-10-loading-bar`)*
 - [ ] BUG-14 — "Add to cart" disables on click (`product-details.component.html:22`) *(0.25d)*
 - [ ] T33 — `<mat-error>` on the checkout forms *(0.25d — register already has it via `app-text-input`)*
-- [ ] BUG-3 — Checkout: hint on an empty required address field *(0.25d — **do it with T33**, same forms)*
+- [x] BUG-3 — Checkout: hint on an empty required address field *(done Oct 14, PR #94)*
 - [ ] Deploy-gate cleanup — retire the four legacy manual checks in `testing.md` *(0.5d, docs only)*
-- [ ] T38 — README screenshots + GIFs *(0.5d — **last**, once the UI stops moving)*
+- [x] T38 — README screenshots + GIFs *(done Oct 14, PR #99 — one catalogue screenshot, GIFs dropped)*
 - [x] Sprint C Anki deck — 20 cards *(`questions/sprint-C/sprint-C-interview/`, local-only — built Sep 13)*
 - [x] Sprint D Anki deck — 21 cards *(`questions/sprint-D/sprint-D-interview/`, local-only — built Sep 13)*
 
@@ -282,7 +286,8 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
       `<img>` — every directive mode cost it 217 ms, measured. `/shop` 3440 → 1759 KB, CLS 0.092 → 0.
       `feature/35-ngoptimized-images`, PR #90. Layout-shift half of the 2-sentence test owed at the gate)*
 - [ ] T60 — Scheduled weekly CI advisory run (`on: schedule`)
-- [ ] T59 — Static-file `Cache-Control` *(`app.UseStaticFiles()` takes no options, so nothing carries a
+- [x] T59 — Static-file `Cache-Control` *(**partial**, Oct 14, PR #96: `index.html` → `no-cache` only;
+      the hashed-asset and `/images/**` buckets moved to v2. Original scope: `app.UseStaticFiles()` takes no options, so nothing carries a
       `max-age` and freshness is each browser's guess. Three buckets: content-hashed `*-HASH.js/css` +
       `/media/**` → `immutable`; `index.html` → `no-cache`, in `FallbackController` too, since every
       SPA deep link serves it through `PhysicalFile`; `/images/**` → its own answer, because `PictureUrl`
@@ -291,7 +296,8 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
       T35. The value needs re-measuring against `d01f3da`: the 3392 KB figure was read before the
       re-encode)*
 - [x] T58 — Interceptor cleanup: cart reload out of `errorInterceptor`, delete the dead 401 skip *(the skip was dead code: `user-info` answers 204, never 401 — probed live. 13 specs, the interceptor's first; `fix/interceptor-cleanup`, PR #88)*
-- [ ] T61 — Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer`)*
+- [x] T61 — Prune unused client deps *(`@vitejs/plugin-react`, `esbuild`, `@babel/runtime`, `autoprefixer` —
+      done Oct 14, PR #95)*
 - [ ] Gate — sprint end (+ Anki straight after)
 
 ## Sprint F — Order Domain *(Sep 22 – Sep 28 · 7 working days)*
@@ -318,7 +324,7 @@ Estimates and tiers live in `Execution plan.md` — this is the tick list only.
 Deliberately half empty — the absorber for whatever the day-4 checkpoints dropped. **Freeze Oct 6.**
 
 - [ ] Overflow from Sprints E–G *(4.4d reserved)*
-- [ ] T38 — README UX screenshots + GIFs *(last — once the UI stops moving)*
+- [x] T38 — README UX screenshots + GIFs *(done Oct 14, PR #99)*
 - [ ] Demo rehearsal × 2 — the 5-minute walkthrough, out loud, on live
 - [ ] v1.0 release: `development` → `main`, one squashed commit, verify on Azure
 - [ ] Gate — sprint end (+ Anki straight after)
