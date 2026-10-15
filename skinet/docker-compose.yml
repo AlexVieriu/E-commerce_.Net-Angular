@@ -1,13 +1,13 @@
 services:
   sqlite:
-    image: keinos/sqlite3:latest
+    image: keinos/sqlite3:3.53.4
     container_name: sqlite3
     command: tail -f /dev/null # Keeps the container running
     volumes:
       - ./data:/data
     working_dir: /data
   redis:
-    image: redis:8-alpine
+    image: redis:8.10.2-alpine
     container_name: redis
     ports:
       - "6379:6379"
@@ -15,7 +15,7 @@ services:
       - redis-data:/data
   sqlserver:
     # Developer edition: Enterprise features, free for dev — so local plans resemble Azure SQL's. ~1.5 GB, no slim tag exists.
-    image: mcr.microsoft.com/mssql/server:2025-latest
+    image: mcr.microsoft.com/mssql/server:2025-CU9-GDR1-ubuntu-24.04
     container_name: sqlserver
     environment:
       ACCEPT_EULA: "Y"
