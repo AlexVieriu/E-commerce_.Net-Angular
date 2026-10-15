@@ -9,7 +9,7 @@ than repeating it.
 
 | Date | Task | What happened |
 |--------|------|---------------|
-| Oct 15 | Release smoke + cart 401 fix | **Every money path re-proven on .NET 11 + Angular 22.2:** BUG-2 B + C, T26 sync with the webhook off, BUG-11 stateless address, BUG-12 paging, register / `gimme5` / logout. The BUG-10 re-run surfaced an `Uncaught (in promise)` from a 401 on Add to cart — fixed in `fix/cart-uncaught-401`. |
+| Oct 15 | Release smoke + cart 401 fix | **Every money path re-proven on .NET 11 + Angular 22.2:** BUG-2 B + C, T26 sync with the webhook off, BUG-11 stateless address, BUG-12 paging, register / `gimme5` / logout. The BUG-10 re-run surfaced an `Uncaught (in promise)` from a 401 on Add to cart — fixed in PR #102. Docker images pinned to exact versions (Redis 8.0 → 8.10.2) in PR #103. |
 | Oct 14 | .NET 11 RC2 *(PR #101)* | net10 → net11 in 9 projects, Stripe.net 53, Redis client 4.0 alpha, xunit.v3 4 on MTP. **Azure has no .NET 11 runtime**, so the publish is self-contained (`win-x86`). .NET 11's exact double → decimal broke one `[InlineData]` theory. |
 | Oct 14 | Angular 22.2 *(PR #100)* | Angular 22.2.2 + client packages to latest compatible — majors stripe-js 10, vite 8, vitest 5. TypeScript held at 6.0.3, the ceiling Angular accepts. Node 24 LTS. |
 | Oct 14 | Demo polish *(PRs #92–#99)* | Delivery fee cleared on leaving checkout · dashboard previews 15 rows · BUG-3 address hint · T61 four deps pruned · T59 `index.html` no-cache (partial) · rejected voucher handled · dark snow theme · T38 README screenshot. |
