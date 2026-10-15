@@ -1,7 +1,48 @@
 // get access to the Angular Material
 @use '@angular/material' as mat;
 
-// Customize the entire app. Change :root to your selector if you want to scope the styles.
+// Dark snow theme: Material's dark scheme on a cyan palette, then its surfaces pinned to the
+// Tailwind palette in tailwind.css, so Material and Tailwind parts read as one design.
+html {
+  color-scheme: dark;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$blue-palette,
+        theme-type: dark
+      ),
+      typography: Roboto,
+      density: 0
+    )
+  );
+
+  --mat-sys-surface: var(--color-surface);
+  --mat-sys-surface-container: var(--color-surface);
+  --mat-sys-surface-container-low: var(--color-surface);
+  --mat-sys-surface-container-high: var(--color-surface-2);
+  --mat-sys-surface-container-highest: var(--color-surface-2);
+  --mat-sys-on-surface: var(--color-snow);
+  --mat-sys-on-surface-variant: var(--color-frost);
+  --mat-sys-outline: var(--color-line);
+  --mat-sys-outline-variant: var(--color-line);
+}
+
+// A faint snowfall over the night sky: two offset dot layers, no image to download.
+body {
+  background-color: var(--color-night);
+  background-image:
+    radial-gradient(rgb(232 238 247 / 0.07) 1px, transparent 1.5px),
+    radial-gradient(rgb(232 238 247 / 0.04) 1px, transparent 1.5px);
+  background-size:
+    90px 90px,
+    140px 140px;
+  background-position:
+    0 0,
+    45px 70px;
+  color: var(--color-snow);
+}
+
 :root {
   @include mat.button-overrides(
     (
@@ -11,7 +52,8 @@
   );
   @include mat.badge-overrides(
     (
-      background-color: lightblue
+      background-color: var(--color-glacier),
+      text-color: var(--color-night)
     )
   );
 }

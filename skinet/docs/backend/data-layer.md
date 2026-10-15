@@ -32,6 +32,29 @@ unitOfWork.Repository<Product>().Add(product);
 await unitOfWork.Complete(); // SaveChangesAsync — returns true if rows affected
 ```
 
+## Indexes
+
+Configured in `Config/`, never by data annotation. One `OnModelCreating` serves both providers, so the two
+migration sets differ only in provider syntax.
+
+| Index | Table | Serves |
+|---|---|---|
+| `(Brand, Type)` | Products | shop grid filter + the paging `COUNT(*)` |
+| `Name` | Products | the landing page — no filter at all, just `ORDER BY Name` |
+| `Price` | Products | the same page with the sort flipped |
+| `(BuyerEmail, OrderDate DESC)` | Orders | buyer's order list — filters on one, sorts on the other |
+| `PaymentIntentId` unique | Orders | idempotency (T18) |
+
+🔴 **`HasMaxLength` comes before `HasIndex`.** SQL Server can't key an index on `nvarchar(max)`. Leave the
+length off and EF picks `nvarchar(450)` for you — and the SqlServer migration carries an `AlterColumn` that
+first runs on deploy. Widths: `Brand` 30, `Type` 30, `Name` 100, `BuyerEmail` 256.
+
+- **Sort direction is part of the key.** `(BuyerEmail, OrderDate)` on its own still sorts;
+  `.IsDescending(false, true)` matches the `ORDER BY` and removes the Sort operator.
+- **Mirror every `HasMaxLength` in the FluentValidation validator** — otherwise an over-long value is a 500
+  (`String or binary data would be truncated`), not a 400.
+- Measured before/after: [`../smoke-tests/sprint-d/task-43-db-indexes.md`](../smoke-tests/sprint-d/task-43-db-indexes.md).
+
 ## Migrations
 
 ```bash
@@ -39,7 +62,15 @@ dotnet ef migrations add <Name> --context SqliteStoreContext -o Migrations/SQLit
 dotnet ef migrations add <Name> --context SqlServerStoreContext -o Migrations/SqlServer
 ```
 
-Applied automatically on startup via `context.Database.MigrateAsync()`.
+Applied automatically on startup via `context.Database.MigrateAsync()` — but **gated by environment**
+(`WebApplicationExtensions.cs:13`): Development applies the SQLite set, everything else the SqlServer set.
+
+⚠️ **So `dotnet run` locally never applies a SqlServer migration.** Apply it against the compose container
+before it ever reaches Azure (see `build-deployment.md` for the connection string):
+
+```bash
+dotnet ef database update --context SqlServerStoreContext
+```
 
 ## Seeding
 
@@ -87,3 +118,8 @@ dotnet run --project src/API                              # baseline (admin + pr
 - Forgetting migration for one provider after a schema change.
 - Not checking `Complete()` return value — `false` means nothing was saved.
 - Adding a unique index on `nvarchar(max)` on SqlServer — EF narrows it to `nvarchar(450)` automatically, but the migration must include the `AlterColumn` step.
+- 🔴 **A migration without its `.Designer.cs` does not exist.** That file carries the `[Migration]`
+  attribute EF scans for; the `.cs` alone is dead code. `20260407100224_AddUniqueIndexOnPaymentIntentId`
+  lost its Designer and silently never ran on SqlServer — the unique index was missing from Azure for
+  four months. Nothing warns you: `has-pending-model-changes` reads the snapshot, not the migration list.
+  **Check `__EFMigrationsHistory` against the folder** after any deploy that adds a migration.

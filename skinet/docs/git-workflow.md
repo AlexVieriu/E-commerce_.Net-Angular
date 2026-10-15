@@ -31,8 +31,8 @@ git switch -c fix/bug-<n>-<slug>              # or feature/<n>-<slug>
 git push -u origin fix/bug-<n>-<slug>
 gh pr create --base development --draft --title "fix(bug-<n>): <desc>" --body-file <file>
 
-# 4. The gate -> mindset/the-gate.md, read against that diff.
-#    Expect more commits here; the gate finds things.
+# 4. The 2-sentence test at merge -> pass, or the concept joins the queue in mindset/the-gate.md.
+#    The queue blocks the sprint, not this PR; the weekly gate day clears it.
 
 # 5. Gate cleared -> edit the PR body against the final diff, then the bookkeeping:
 #    progress.md · mindset/daily-log.md · docs/ · mindset/question-tally.md

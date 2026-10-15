@@ -9,11 +9,12 @@ import {
   StripePaymentElement
 } from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { CartService } from './cart.service';
 import { Cart } from '../../shared/models/cart';
-import { firstValueFrom, of, switchMap } from 'rxjs';
+import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
 import { AccountService } from './account.service';
+import { CheckoutConflictService } from './checkout-conflict.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +24,7 @@ export class StripeService {
 
   private cartService = inject(CartService);
   private accountService = inject(AccountService);
+  private checkoutConflict = inject(CheckoutConflictService);
   private http = inject(HttpClient);
 
   private stripePromise: Promise<Stripe | null>;
@@ -45,7 +47,18 @@ export class StripeService {
         const cart = await firstValueFrom(this.createOrUpdatePaymentIntent());
         this.elements = stripe.elements({
           clientSecret: cart.clientSecret,
-          appearance: { labels: 'floating' }
+          // Elements render in Stripe's iframes, so our CSS never reaches them: match the snow theme here.
+          appearance: {
+            theme: 'night',
+            labels: 'floating',
+            variables: {
+              colorPrimary: '#38bdf8',
+              colorBackground: '#172340',
+              colorText: '#e8eef7',
+              colorTextSecondary: '#94a3b8',
+              borderRadius: '6px'
+            }
+          }
         });
       } else {
         throw new Error('Stripe has not been loaded');
@@ -67,34 +80,14 @@ export class StripeService {
     return this.paymentElement;
   }
 
-  async createAddressElement() {
+  // `keep` is the address of an element being rebuilt (BUG-2); otherwise the account's is the default.
+  async createAddressElement(keep?: StripeAddressElementOptions['defaultValues']) {
     if (!this.addressElement) {
       const elements = await this.initializeElements();
       if (elements) {
-        const user = this.accountService.currentUser();
-        const defaultValues: StripeAddressElementOptions['defaultValues'] = {};
-
-        // Never concatenate directly — a user with no first/last name would yield the
-        // literal string "null null", which then gets saved onto the order (BUG-13).
-        const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
-        if (fullName) {
-          defaultValues.name = fullName;
-        }
-
-        if (user?.address) {
-          defaultValues.address = {
-            line1: user.address.line1,
-            line2: user.address.line2,
-            city: user.address.city,
-            state: user.address.state,
-            country: user.address.country,
-            postal_code: user.address.postalCode
-          };
-        }
-
         const options: StripeAddressElementOptions = {
           mode: 'shipping',
-          defaultValues
+          defaultValues: keep ?? this.addressDefaultsFromAccount()
         };
         this.addressElement = elements.create('address', options);
       } else {
@@ -102,6 +95,31 @@ export class StripeService {
       }
     }
     return this.addressElement;
+  }
+
+  private addressDefaultsFromAccount(): StripeAddressElementOptions['defaultValues'] {
+    const user = this.accountService.currentUser();
+    const defaultValues: StripeAddressElementOptions['defaultValues'] = {};
+
+    // Never concatenate directly — a user with no first/last name would yield the
+    // literal string "null null", which then gets saved onto the order (BUG-13).
+    const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+    if (fullName) {
+      defaultValues.name = fullName;
+    }
+
+    if (user?.address) {
+      defaultValues.address = {
+        line1: user.address.line1,
+        line2: user.address.line2,
+        city: user.address.city,
+        state: user.address.state,
+        country: user.address.country,
+        postal_code: user.address.postalCode
+      };
+    }
+
+    return defaultValues;
   }
 
   async createToken() {
@@ -132,20 +150,26 @@ export class StripeService {
   }
 
   createOrUpdatePaymentIntent() {
-    const cart = this.cartService.cart();
-    const hasClientSecret = cart?.clientSecret ? true : false;
+    if (!this.cartService.cart()) throw new Error('Problem with cart');
 
-    if (!cart) throw new Error('Problem with cart');
-
+    // Always store the response: the clientSecret changes when the server replaced a spent intent,
+    // and confirmPayment() reads it off this signal.
+    // Stored locally, not POSTed back -- the server already saved this cart. (BUG-2)
     return this.http.post<Cart>(this.baseUrl + 'payments', {}).pipe(
-      switchMap((cart) => {
-        if (!hasClientSecret) return this.cartService.setCart(cart);
-        return of(cart);
+      tap((cart) => this.cartService.setLocalCart(cart)),
+      // 409 = a price change or a retired coupon (BUG-19).
+      // Recovered here because every caller funnels through this method.
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 409) this.checkoutConflict.recoverStaleCart();
+        return throwError(() => err);
       })
     );
   }
 
+  // Destroys the mounted elements too, so a rebuild can mount fresh ones into the same containers.
   disposeElements() {
+    this.addressElement?.destroy();
+    this.paymentElement?.destroy();
     this.elements = undefined;
     this.addressElement = undefined;
     this.paymentElement = undefined;

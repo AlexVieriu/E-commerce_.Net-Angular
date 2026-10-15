@@ -1,6 +1,7 @@
 namespace Infrastructure.Services;
 
-public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IOrderService
+public class OrderService(IUnitOfWork unitOfWork, ICartService cartService,
+    ICouponService couponService) : IOrderService
 {
     public async Task<Order?> CreateOrderAsync(string email, CreateOrderDto orderDto)
     {
@@ -72,7 +73,7 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
         }
 
         var subtotal = items.Sum(x => x.Price * x.Quantity);
-        var discount = CalculateDiscount(cart.Coupon, subtotal);
+        var discount = await ResolveDiscountAsync(cart, subtotal);
 
         var order = new Order
         {
@@ -98,17 +99,31 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService) : IO
                 "Stock changed during checkout due to a concurrent order. Please try again.");
         }
 
-        // Cart is no longer needed — delete it from Redis.
-        // Fire-and-forget: cart deletion failure doesn't invalidate an already-saved order.
-        await cartService.DeleteCartAsync();
-
+        // The cart stays: a declined card leaves the intent payable, and the retry needs the cart.
+        // The client deletes it once the payment succeeds. (BUG-2)
         return order;
     }
 
-    private static decimal CalculateDiscount(AppCoupon? coupon, decimal subtotal)
+    // Only the promotion code is trusted — the amounts on the cart are client-supplied. (BUG-19)
+    private async Task<decimal> ResolveDiscountAsync(ShoppingCart cart, decimal subtotal)
     {
-        if (coupon == null) return 0;
+        if (cart.Coupon == null) return 0;
 
+        var coupon = await couponService.GetCouponFromPromoCode(cart.Coupon.PromotionCode);
+        if (coupon != null) return CalculateDiscount(coupon, subtotal);
+
+        // The campaign ended while the cart sat in Redis. Re-price without it, like a price change.
+        cart.Coupon = null;
+        cart.PaymentIntentId = null;
+        cart.ClientSecret = null;
+        await cartService.SetCartAsync(cart);
+
+        throw new PriceChangedException(
+            "Your coupon is no longer valid. Your cart has been updated.");
+    }
+
+    private static decimal CalculateDiscount(AppCoupon coupon, decimal subtotal)
+    {
         if (coupon.AmountOff.HasValue)
             return coupon.AmountOff.Value;
 

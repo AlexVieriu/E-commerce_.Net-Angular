@@ -36,6 +36,8 @@ export const appConfig: ApplicationConfig = {
       withXhr(),
       withInterceptors([errorInterceptor, loadingInterceptor, authInterceptor])
     ),
+    // returns a promise, so Angular blocks bootstrap until InitService.init() resolves.
+    // By the time any route activates, the signals already reflect what the server said
     provideAppInitializer(initializeApp)
   ]
 };

@@ -3,6 +3,12 @@
 Clean architecture: 4 layers. References point one way only — Core is the innermost and depends on
 nothing; API is the outermost and depends on all.
 
+## Containers
+
+What has to be running — the SPA, the API, Redis and Azure SQL — and how it all talks to Stripe, is
+drawn in the [README](../../../README.md#architecture). The four layers below all live inside the **API** box: they are
+projects, not containers.
+
 ## Layers
 
 Arrows are project references. Each layer sees only the ones above it.
@@ -33,7 +39,7 @@ Infrastructure          -> Application
     ^
     |
 API                     -> Infrastructure
-  Controllers/ Middleware/ Filters/ Errors/ SignalR/ Extensions/ Settings/
+  Controllers/ Middleware/ Filters/ Errors/ SignalR/ Extensions/ Settings/ HealthChecks/
   Services/                     CurrentUser (see the placement rule below)
 ```
 
@@ -54,9 +60,13 @@ usually Infrastructure, but not always.
 > Does the file name a type that exists only because a request is in flight?
 > Yes -> API. No -> Infrastructure.
 
-`CurrentUser` (`src/API/Services/`) is the only implementation outside Infrastructure: it needs
+`CurrentUser` (`src/API/Services/`) is the only service implementation outside Infrastructure: it needs
 `IHttpContextAccessor`, and Infrastructure cannot reference ASP.NET Core. Infrastructure consumes
 `ICurrentUser`, Application declares it, API implements it.
+
+`SqlHealthCheck` and `RedisHealthCheck` (`src/API/HealthChecks/`) sit in API for the same reason: they
+exist only to answer an HTTP probe, and hosting them in Infrastructure would mean a health-check package
+reference there.
 
 ## DB Registration (Program.cs)
 

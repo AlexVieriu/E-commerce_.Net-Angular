@@ -79,7 +79,14 @@ app.UseSecurityHeaders(policies => policies
 
 // Static files served before rate limiter so Angular chunks are never throttled
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    // index.html names this build's hashed chunks, so a cached copy outlives a deploy and 404s them.
+    OnPrepareResponse = context =>
+    {
+        if (context.File.Name == "index.html") context.Context.Response.SetNoCache();
+    }
+});
 
 app.UseRateLimiter();
 
@@ -87,11 +94,30 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// The key is checked in front of the endpoint, so an unauthorised caller spends no database wake.
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/health/ready"),
+    branch => branch.UseMiddleware<HealthKeyMiddleware>());
+
+// Liveness — Azure pings this every 60 seconds. No checks run, so it opens no connection.
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false })
+    .DisableRateLimiting();
+
+// Readiness — on demand only: the deploy gate, CI, or you when the site looks broken.
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = HealthResponseWriter.WriteJsonAsync
+}).DisableRateLimiting();
+
 app.MapFallbackToController("Index", "Fallback");
+
 app.MapControllers();
+
 var identityGroup = app.MapGroup("api").MapIdentityApi<AppUser>();
 if (!app.Environment.IsDevelopment())
     identityGroup.RequireRateLimiting("strict");
+
 app.MapHub<NotificationHub>("/hub/notifications");
 
 // `dotnet run -- --seed` is a one-shot: seed (incl. the Bogus demo dataset) then exit, don't serve.

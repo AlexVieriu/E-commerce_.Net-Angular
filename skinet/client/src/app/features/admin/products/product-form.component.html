@@ -1,4 +1,4 @@
-<mat-card class="max-w-2xl mx-auto mt-8 p-8 bg-white">
+<mat-card class="max-w-2xl mx-auto mt-8 p-8 bg-surface">
   <div class="text-center mb-6">
     <h1 class="text-3xl font-semibold text-primary">
       {{ isEdit ? 'Edit product' : 'New product' }}
@@ -87,12 +87,14 @@
       }
     </mat-form-field>
 
-    @if (picturePreview()) {
-      <img [src]="picturePreview()" alt="Preview" class="w-32 h-32 object-cover rounded mb-4" />
+    @if (picturePreview(); as preview) {
+      <div class="relative w-32 h-32 mb-4">
+        <img [ngSrc]="preview" fill alt="Preview" class="object-cover rounded" />
+      </div>
     }
 
     @if (validationErrors()) {
-      <div class="mb-3 p-4 bg-red-100 text-red-600">
+      <div class="mb-3 p-4 bg-red-500/15 text-red-400">
         <ul class="list-disc px-3">
           @for (error of validationErrors()!; track $index) {
             <li>{{ error }}</li>

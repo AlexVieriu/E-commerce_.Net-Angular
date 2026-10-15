@@ -3,12 +3,18 @@
 Map of `skinet/docs/`. Read the doc matching your task **before** starting it.
 Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list.
 
+## Diagrams
+
+**Containers** — what has to be running (SPA, API, Redis, Azure SQL) and how it all talks to Stripe:
+[README](../../README.md#architecture).
+
 ## Cross-cutting (`docs/`)
 
-- **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, CSP/CORS, **lint + analyzers** (ESLint/Prettier/Roslyn, and every suppression + why)
-- **testing.md** — all verification: per-task / pre-deploy / post-deploy **checklists** (top) + how to write tests, incl. the **Playwright E2E layout** (reference, bottom)
-- **smoke-tests/** — manual browser checks, one file per sprint (`sprint-b.md`, …), one section per task
-  or bug. The checks no automated test makes: real Stripe, real cookies, two people in one browser
+- **build-deployment.md** — docker-compose, dev run (ports), prod build (`ng` → `src/API/wwwroot`), SQLite↔SqlServer, secrets, Azure config map, **health endpoints**, **free-tier budgets** (database wakes + bandwidth), CSP/CORS, **lint + analyzers** (ESLint/Prettier/Roslyn, and every suppression + why)
+- **testing.md** — all verification: per-task / pre-deploy / post-deploy **checklists** (top) + how to write tests — xUnit, **Angular unit tests on Vitest**, and the **Playwright E2E layout** (reference, bottom)
+- **smoke-tests/** — the manual checks worth writing down: real Stripe, real cookies, two people in one
+  browser. **Not one per task** — write a file only when no automated test can reach it *and* you'd
+  re-derive the steps at the gate. Everything else is covered by Core smoke in `testing.md`
 - **git-workflow.md** — branch / PR / merge flow (pairs with the deploy gate in `testing.md`)
 - **documentation.md** — how to write docs here *(DO NOT EDIT)*
 
@@ -32,4 +38,5 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 - **interceptors.md** — auth / loading / error interceptors, incl. the full status-code → action table
 - **guards.md** — auth / admin / emptycart / orderComplete route guards
 - **error-handling.md** — `ValidationError`, `server-error` component, `ApiErrorResponse` typing (downstream of the interceptor — status-code table lives in interceptors.md)
+- **images.md** — `NgOptimizedImage`: when to use it and the one image that does not, which sizing mode, who gets `priority`, and how the product files are re-encoded
 - **actions/** — step-by-step how-tos: `create-component`, `create-service`, `create-route`, `create-model`

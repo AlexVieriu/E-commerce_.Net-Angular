@@ -3,37 +3,40 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  effect,
   inject,
   signal
 } from '@angular/core';
-import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
-import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { Router, RouterLink } from '@angular/router';
+import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { MatButton } from '@angular/material/button';
-import { StripeService } from '../../core/services/stripe.service';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import {
   ConfirmationToken,
   StripeAddressElement,
   StripeAddressElementChangeEvent,
+  StripeAddressElementOptions,
   StripePaymentElement,
   StripePaymentElementChangeEvent
 } from '@stripe/stripe-js';
-import { SnackbarService } from '../../core/services/snackbar.service';
-import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
-import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { Address } from '../../shared/models/address';
-import { AccountService } from '../../core/services/account.service';
 import { firstValueFrom } from 'rxjs';
+
+import { AccountService } from '../../core/services/account.service';
+import { CartService } from '../../core/services/cart.service';
+import { OrderService } from '../../core/services/order.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
+import { StripeService } from '../../core/services/stripe.service';
+import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
+import { Address } from '../../shared/models/address';
+import { Order } from '../../shared/models/order/order';
+import { OrderToCreate } from '../../shared/models/order/orderToCreate';
+import { ShippingAddress } from '../../shared/models/order/shippingAddress';
 import { CheckoutDeliveryComponent } from './checkout-delivery/checkout-delivery.component';
 import { CheckoutReviewComponent } from './checkout-review/checkout-review.component';
-import { CartService } from '../../core/services/cart.service';
-import { CurrencyPipe } from '@angular/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ShippingAddress } from '../../shared/models/order/shippingAddress';
-import { OrderToCreate } from '../../shared/models/order/orderToCreate';
-import { Order } from '../../shared/models/order/order';
-import { OrderService } from '../../core/services/order.service';
 
 @Component({
   selector: 'app-checkout',
@@ -74,24 +77,60 @@ export class CheckoutComponent {
     delivery: false
   });
 
-  constructor() {
-    afterNextRender(async () => {
-      try {
-        this.addressElement = await this.stripeService.createAddressElement();
-        this.addressElement.mount('#address-element');
-        this.addressElement.on('change', this.handleAddressChange);
+  // The clientSecret the mounted Elements instance was built from.
+  private mountedClientSecret?: string;
 
-        this.paymentElement = await this.stripeService.createPaymentElement();
-        this.paymentElement?.mount('#payment-element');
-        this.paymentElement.on('change', this.handlePaymentChange);
-      } catch (error: unknown) {
-        this.snackBar.error(
-          error instanceof Error ? error.message : 'Failed to load payment elements'
-        );
-      }
+  constructor() {
+    afterNextRender(() => void this.mountStripeElements());
+
+    // Elements is built from one clientSecret, and the server returns a new one when it replaced a
+    // spent intent. Rebuild, or the mounted elements stay tied to a dead intent.
+    // Claiming the secret first stops the rebuild's own POST /payments from re-firing this. (BUG-2)
+    effect(() => {
+      const clientSecret = this.cartService.cart()?.clientSecret;
+      if (!clientSecret || !this.mountedClientSecret) return;
+      if (clientSecret === this.mountedClientSecret) return;
+
+      this.mountedClientSecret = clientSecret;
+      void this.rebuildStripeElements();
     });
 
-    inject(DestroyRef).onDestroy(() => this.stripeService.disposeElements());
+    // Shipping belongs to checkout: leaving it drops the fee from the Cart page's order summary.
+    // The delivery step re-selects the method from cart.deliveryMethodId on the way back in.
+    inject(DestroyRef).onDestroy(() => {
+      this.stripeService.disposeElements();
+      this.cartService.setSelectedDelivery(null);
+    });
+  }
+
+  // The typed address carries over; the card and the token belong to the old intent, so they don't.
+  private async rebuildStripeElements() {
+    const address = (await this.addressElement?.getValue())?.value;
+    this.stripeService.disposeElements();
+    this.confirmationToken.set(undefined);
+    this.completionStatus.update((state) => ({ ...state, card: false }));
+    await this.mountStripeElements(address);
+  }
+
+  private async mountStripeElements(address?: StripeAddressElementOptions['defaultValues']) {
+    try {
+      this.addressElement = await this.stripeService.createAddressElement(address);
+      this.addressElement.mount('#address-element');
+      this.addressElement.on('change', this.handleAddressChange);
+
+      this.paymentElement = await this.stripeService.createPaymentElement();
+      this.paymentElement.mount('#payment-element');
+      this.paymentElement.on('change', this.handlePaymentChange);
+
+      this.mountedClientSecret = this.cartService.cart()?.clientSecret;
+    } catch (error: unknown) {
+      // Already messaged and navigated: a 409 by CheckoutConflictService, a 401 by the interceptor.
+      if (error instanceof HttpErrorResponse && (error.status === 409 || error.status === 401))
+        return;
+      this.snackBar.error(
+        error instanceof Error ? error.message : 'Failed to load payment elements'
+      );
+    }
   }
 
   handleAddressChange = (event: StripeAddressElementChangeEvent) => {
@@ -120,8 +159,14 @@ export class CheckoutComponent {
       }
     }
 
-    if (event.selectedIndex === 2)
-      await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+    if (event.selectedIndex === 2) {
+      try {
+        await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+      } catch (error: unknown) {
+        if (error instanceof HttpErrorResponse && error.status === 409) return;
+        throw error;
+      }
+    }
 
     if (event.selectedIndex === 3) await this.getConfirmationToken();
   }

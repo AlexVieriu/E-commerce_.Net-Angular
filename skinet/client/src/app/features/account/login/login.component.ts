@@ -24,7 +24,8 @@ export class LoginComponent {
 
   constructor() {
     const url = this.activatedRoute.snapshot.queryParams['returnUrl'];
-    if (url) this.returnUrl = url;
+    if (isLocalUrl(url)) this.returnUrl = url;
+    else if (url) console.warn(`Rejected non-local returnUrl: ${url}`);
   }
 
   loginForm = this.fb.nonNullable.group({
@@ -42,4 +43,25 @@ export class LoginComponent {
         next: () => this.router.navigateByUrl(this.returnUrl)
       });
   }
+}
+
+// C0 controls, DEL and C1 — what .NET's char.IsControl covers.
+function hasControlCharacter(value: string): boolean {
+  for (const character of value) {
+    const code = character.charCodeAt(0);
+    // Examples: tab 0x09, newline 0x0a, carriage return 0x0d, DEL 0x7f.
+    if (code <= 0x1f || (code >= 0x7f && code <= 0x9f)) return true;
+  }
+  return false;
+}
+
+// True only for a path on this origin, so a returnUrl from the query string cannot point off-site.
+// Same rule as ASP.NET Core's SharedUrlHelper.IsLocalUrl: "/foo" passes, "//" and "/\" do not.
+// Control characters are rejected because browsers strip tab, CR and LF while parsing a URL.
+function isLocalUrl(url: unknown): url is string {
+  if (typeof url !== 'string' || url.length === 0) return false;
+  if (url[0] !== '/') return false;
+  if (url.length === 1) return true;
+  if (url[1] === '/' || url[1] === '\\') return false;
+  return !hasControlCharacter(url);
 }

@@ -3,7 +3,7 @@
   <div class="flex flex-col gap-3">
     <div class="flex justify-between">
       <mat-paginator
-        class="bg-white"
+        class="bg-surface"
         (page)="handlePageEvent($event)"
         [length]="products.value()!.count"
         [pageSize]="p.pageSize"
@@ -21,7 +21,7 @@
       >
         <input
           type="search"
-          class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg"
+          class="block w-full p-4 text-sm text-snow border border-line rounded-lg"
           placeholder="Search"
           name="search"
           [ngModel]="searchInput()"
@@ -50,7 +50,7 @@
 
     <div class="grid grid-cols-5 gap-4">
       @for (product of products.value()!.data; track product.id) {
-        <app-product-item [product]="product"></app-product-item>
+        <app-product-item [product]="product" [priority]="$index === 0"></app-product-item>
       }
     </div>
   </div>

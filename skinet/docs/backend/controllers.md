@@ -1,6 +1,7 @@
 # Controllers
 
-All endpoints, auth requirements, and return types.
+Endpoints, auth requirements, and return types for the four controllers with non-obvious rules.
+`Account`, `Products`, `Payments`, `Buggy` and `Fallback` are not covered here.
 
 ## AdminController
 

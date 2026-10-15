@@ -1,32 +1,32 @@
 <div class="mx-auto max-w-4xl flex-1 space-y-6 w-full">
-  <div class="space-y-4 rounded-lg border border-gray-200 bg-white shadow-sm p-5">
+  <div class="space-y-4 rounded-lg border border-line bg-surface shadow-sm p-5">
     <p class="text-xl font-semibold">Order summary</p>
     <div class="space-y-4">
       <div class="space-y-2">
         <dl class="flex items-center justify-between gap-4">
-          <dt class="font-medium text-gray-500">Subtotal</dt>
-          <dd class="font-medium text-gray-900">
+          <dt class="font-medium text-frost">Subtotal</dt>
+          <dd class="font-medium text-snow">
             {{ cartService.totals()?.subtotal | currency }}
           </dd>
         </dl>
         <dl class="flex items-center justify-between gap-4">
-          <dt class="font-medium text-gray-500">Discount</dt>
-          <dd class="font-medium text-green-500">
+          <dt class="font-medium text-frost">Discount</dt>
+          <dd class="font-medium text-emerald-400">
             {{ cartService.totals()?.discount | currency }}
           </dd>
         </dl>
         <dl class="flex items-center justify-between gap-4">
-          <dt class="font-medium text-gray-500">Shipping fee</dt>
+          <dt class="font-medium text-frost">Shipping fee</dt>
           <dt></dt>
-          <dd class="font-medium text-gray-900">
+          <dd class="font-medium text-snow">
             {{ cartService.totals()?.shipping | currency }}
           </dd>
         </dl>
       </div>
 
-      <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
-        <dt class="font-medium text-gray-500">Total</dt>
-        <dd class="font-medium text-gray-900">
+      <dl class="flex items-center justify-between gap-4 border-t border-line pt-2">
+        <dt class="font-medium text-frost">Total</dt>
+        <dd class="font-medium text-snow">
           {{ cartService.totals()?.total | currency }}
         </dd>
       </dl>
@@ -40,7 +40,7 @@
     }
   </div>
 
-  <div class="space-y-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+  <div class="space-y-4 rounded-lg border border-line bg-surface shadow-sm">
     <form #form="ngForm" (ngSubmit)="applyCouponCode()" class="space-y-2 flex flex-col p-2">
       <!-- A prompt, not a label — the input below is labelled by its own <mat-label>. -->
       <p class="mb-2 block text-sm font-medium">Do you have a voucher code?</p>
@@ -48,7 +48,7 @@
         <div class="flex justify-between items-center">
           <span class="text-sm font-semibold">{{ coupon.name }} applied</span>
           <button (click)="removeCouponCode()" mat-icon-button>
-            <mat-icon class="text-red-500">delete</mat-icon>
+            <mat-icon class="text-red-400">delete</mat-icon>
           </button>
         </div>
       }

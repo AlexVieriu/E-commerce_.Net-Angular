@@ -3,24 +3,25 @@ import { AccountService } from '../services/account.service';
 import { inject } from '@angular/core';
 import { of, map } from 'rxjs';
 
-// authGuard is activated in app.routes.ts on the CheckoutComponent route
-export const authGuard: CanActivateFn = (route, state) => {
+// Registered on /checkout, /checkout/success, /orders and /admin.
+export const authGuard: CanActivateFn = (_route, state) => {
   const accountService = inject(AccountService);
   const router = inject(Router);
 
   if (accountService.currentUser()) {
     return of(true);
-  } else {
-    // ofGuard wil automatically subscribe/unsubscribe for us
-    return accountService.getAuthState().pipe(
-      map((auth) => {
-        if (auth.isAuthenticated) {
-          return true;
-        } else router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
-        // we will use the queryParams to redirect the user back to the page they were trying to access
-
-        return false;
-      })
-    );
   }
+
+  // The router runs every guard at once, then picks an answer by array order.
+  // Navigating from in here would move the page before the router has decided.
+  // returnUrl brings the user back after login.
+  return accountService
+    .getAuthState()
+    .pipe(
+      map((auth) =>
+        auth.isAuthenticated
+          ? true
+          : router.createUrlTree(['/account/login'], { queryParams: { returnUrl: state.url } })
+      )
+    );
 };

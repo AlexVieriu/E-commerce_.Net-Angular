@@ -53,6 +53,10 @@ the browser owned the cart             the user owns the cart
 
 Coupon state lives on `cart().coupon` — not a separate signal. Use `applyDiscount(code)` / `removeCoupon()` on the service.
 
+`setLocalCart(cart)` stores a cart the server already saved **without** POSTing it back — `POST /api/payments`
+returns one, and its `clientSecret` is the only copy the client has (BUG-2). `setCart` would overwrite the
+server's copy with the in-memory one.
+
 ## AccountService Signals
 
 `_currentUser: User | null` → `isAdmin = computed(() => currentUser()?.roles.includes('Admin') ?? false)`.
@@ -74,6 +78,14 @@ dashboard = httpResource<Dashboard>(() => environment.apiUrl + 'admin/dashboard'
 Use a `core/services/` signal instead when the data is **shared** or **mutated** across the app (cart,
 current user). A dashboard nobody else reads doesn't need a service. Mutations still go through a service:
 `admin-dashboard` reads via `httpResource`, but a refund/sync would call `AdminService`, then `.reload()`.
+
+## Why signals, not plain fields (BUG-10)
+
+The app is zoneless, so a plain field mutated inside an HTTP `finalize` re-renders nothing — no event
+listener, no `markForCheck`, no signal read. `BusyService` held `loading` as a plain field, so the
+loading bar appeared on the click that started the request and only left on the next thing the user
+touched. `empty-state` read `busyRequestCount` the same plain way and had the same defect, unreported.
+State a template reads must be a signal, even a boolean nobody else shares.
 
 ## Rules / Constraints
 

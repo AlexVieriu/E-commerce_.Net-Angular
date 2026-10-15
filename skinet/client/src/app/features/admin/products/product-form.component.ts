@@ -7,6 +7,7 @@ import { MatCard } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { NgOptimizedImage } from '@angular/common';
 import { ShopService } from '../../../core/services/shop.service';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { ValidationError } from '../../../shared/models/validationError';
@@ -20,7 +21,8 @@ import { ValidationError } from '../../../shared/models/validationError';
     MatCard,
     MatFormFieldModule,
     MatInputModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    NgOptimizedImage
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-form.component.html'

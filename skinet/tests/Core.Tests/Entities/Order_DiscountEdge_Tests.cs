@@ -46,10 +46,16 @@ public class Order_DiscountEdge_Tests
         order.GetTotal().Should().Be(0m);
     }
 
+    // Decimal literals, not [InlineData] doubles: .NET 11 converts double 99.99 to decimal exactly (99.98999…).
+    public static TheoryData<decimal, decimal, decimal, decimal> TotalCases => new()
+    {
+        { 200m, 25m, 15m, 190m },   // flat $25 off + $15 shipping
+        { 200m, 50m, 15m, 165m },   // $50 off + $15 shipping
+        { 99.99m, 9.99m, 5m, 95m }, // decimal rounding
+    };
+
     [Theory]
-    [InlineData(200, 25, 15, 190)]   // 25% off $200 = $50, + $15 shipping = $165... wait no, discount is flat $
-    [InlineData(200, 50, 15, 165)]   // $50 off + $15 shipping
-    [InlineData(99.99, 9.99, 5, 95)] // decimal rounding
+    [MemberData(nameof(TotalCases))]
     public void GetTotal_Theory_ShouldCalculateCorrectly(
         decimal subtotal, decimal discount, decimal shipping, decimal expected)
     {

@@ -1,5 +1,3 @@
-using Microsoft.Data.Sqlite;
-
 namespace API.Tests;
 
 // Boots the real API in-process: real pipeline, real Redis, real cookie auth.
@@ -9,6 +7,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     // Meets the app's own password policy: 12+ chars, upper, digit, non-alphanumeric.
     private const string TestPassword = "Pa$$w0rd12!@";
+
+    // Unlocks the per-check detail on /health/ready.
+    public const string HealthKey = "health-key-for-tests";
+
+    // Shared with the host — tests drive the coupon lookup through this.
+    public StubCouponService Coupons { get; } = new();
 
     private readonly string _dbFile =
         Path.Combine(Path.GetTempPath(), $"skinet-tests-{Guid.NewGuid():N}.db");
@@ -35,8 +39,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 ["ConnectionStrings:DefaultConnection"] = $"Data Source={_dbFile}",
                 ["ConnectionStrings:Redis"] = "localhost",
-                ["AdminSettings:Password"] = TestPassword
+                ["AdminSettings:Password"] = TestPassword,
+                ["HealthSettings:ReadyKey"] = HealthKey
             });
+        });
+
+        // Runs after the app's registrations, so this wins.
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<ICouponService>();
+            services.AddSingleton<ICouponService>(Coupons);
         });
     }
 

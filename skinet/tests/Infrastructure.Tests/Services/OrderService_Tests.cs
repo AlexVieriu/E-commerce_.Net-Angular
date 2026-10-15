@@ -34,6 +34,8 @@ public class OrderService_HappyPathTests
         ]
     };
 
+    private static ICouponService NoCoupons() => Mock.Of<ICouponService>();
+
     private static CreateOrderDto MakeOrderDto(int deliveryMethodId = 1) => new()
     {
         DeliveryMethodId = deliveryMethodId,
@@ -79,9 +81,8 @@ public class OrderService_HappyPathTests
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
-        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
 
         var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
 
@@ -93,6 +94,41 @@ public class OrderService_HappyPathTests
         order.DeliveryMethod.Price.Should().Be(5m);
     }
 
+    // The order is created before the card is charged, so a decline has to be able to walk back
+    // through the cart. Deleting it here ended the checkout one step before the money moved. (BUG-2)
+    [Fact]
+    public async Task CreateOrderAsync_ShouldKeepTheCart_SoADeclinedCardCanBeRetried()
+    {
+        var options = InMemoryOptions();
+
+        using (var seed = new StoreContext(options))
+        {
+            seed.Products.Add(new Product
+            {
+                Id = 1, Name = "Test Board", Description = "desc",
+                Price = 100m, PictureUrl = "/img.png",
+                Brand = "Test", Type = "Boards", QuantityInStock = 10
+            });
+            seed.DeliveryMethods.Add(new DeliveryMethod
+            {
+                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+                Price = 5m, Description = "Standard"
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        using var ctx = new StoreContext(options);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
+
+        var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        order.Should().NotBeNull();
+        cartMock.Verify(x => x.DeleteCartAsync(), Times.Never);
+    }
+
     [Fact]
     public async Task CreateOrderAsync_WhenCartNotFound_ShouldReturnNull()
     {
@@ -102,7 +138,7 @@ public class OrderService_HappyPathTests
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync((ShoppingCart?)null);
 
-        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
 
         var result = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
 
@@ -119,44 +155,63 @@ public class OrderService_HappyPathTests
         cartMock.Setup(x => x.GetCartAsync())
             .ReturnsAsync(MakeCart(paymentIntentId: null!));
 
-        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
 
         var result = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
 
         result.Should().BeNull();
     }
 
+    // Seeds the $100 board and the $5 delivery both coupon tests below price against.
+    private static async Task SeedProductAndDeliveryAsync(DbContextOptions<StoreContext> options)
+    {
+        using var seed = new StoreContext(options);
+
+        seed.Products.Add(new Product
+        {
+            Id = 1, Name = "Test Board", Description = "desc",
+            Price = 100m, PictureUrl = "/img.png",
+            Brand = "Test", Type = "Boards", QuantityInStock = 10
+        });
+        seed.DeliveryMethods.Add(new DeliveryMethod
+        {
+            Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
+            Price = 5m, Description = "Standard"
+        });
+
+        await seed.SaveChangesAsync();
+    }
+
+    private static ICouponService CouponsReturning(AppCoupon? coupon)
+    {
+        var mock = new Mock<ICouponService>();
+        mock.Setup(x => x.GetCouponFromPromoCode(It.IsAny<string>())).ReturnsAsync(coupon);
+
+        return mock.Object;
+    }
+
     [Fact]
-    public async Task CreateOrderAsync_WithAmountOffCoupon_ShouldApplyFlatDiscount()
+    public async Task CreateOrderAsync_UsesTheLookedUpAmountOff_NotTheCartsOwn()
     {
         var options = InMemoryOptions();
-
-        using (var seed = new StoreContext(options))
-        {
-            seed.Products.Add(new Product
-            {
-                Id = 1, Name = "Test Board", Description = "desc",
-                Price = 100m, PictureUrl = "/img.png",
-                Brand = "Test", Type = "Boards", QuantityInStock = 10
-            });
-            seed.DeliveryMethods.Add(new DeliveryMethod
-            {
-                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
-                Price = 5m, Description = "Standard"
-            });
-            await seed.SaveChangesAsync();
-        }
+        await SeedProductAndDeliveryAsync(options);
 
         using var ctx = new StoreContext(options);
-        var coupon = new AppCoupon
+
+        // The cart claims $999 off; the live campaign is $20. (BUG-19)
+        var forged = new AppCoupon
+        {
+            Id = "coup1", Name = "$20 Off", PromotionCode = "SAVE20", AmountOff = 999m
+        };
+        var live = new AppCoupon
         {
             Id = "coup1", Name = "$20 Off", PromotionCode = "SAVE20", AmountOff = 20m
         };
-        var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: coupon));
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
-        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: forged));
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, CouponsReturning(live));
 
         var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
 
@@ -166,42 +221,91 @@ public class OrderService_HappyPathTests
     }
 
     [Fact]
-    public async Task CreateOrderAsync_WithPercentOffCoupon_ShouldApplyPercentageDiscount()
+    public async Task CreateOrderAsync_UsesTheLookedUpPercentOff_NotTheCartsOwn()
     {
         var options = InMemoryOptions();
-
-        using (var seed = new StoreContext(options))
-        {
-            seed.Products.Add(new Product
-            {
-                Id = 1, Name = "Test Board", Description = "desc",
-                Price = 100m, PictureUrl = "/img.png",
-                Brand = "Test", Type = "Boards", QuantityInStock = 10
-            });
-            seed.DeliveryMethods.Add(new DeliveryMethod
-            {
-                Id = 1, ShortName = "UPS1", DeliveryTime = "1-2 Days",
-                Price = 5m, Description = "Standard"
-            });
-            await seed.SaveChangesAsync();
-        }
+        await SeedProductAndDeliveryAsync(options);
 
         using var ctx = new StoreContext(options);
-        var coupon = new AppCoupon
+
+        // The cart claims 90% off; the live campaign is 10%. (BUG-19)
+        var forged = new AppCoupon
+        {
+            Id = "coup2", Name = "10% Off", PromotionCode = "SAVE10", PercentOff = 90m
+        };
+        var live = new AppCoupon
         {
             Id = "coup2", Name = "10% Off", PromotionCode = "SAVE10", PercentOff = 10m
         };
-        var cartMock = new Mock<ICartService>();
-        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: coupon));
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
-        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: forged));
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, CouponsReturning(live));
 
         var order = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
 
         order.Should().NotBeNull();
         order!.Discount.Should().Be(20m); // 10% of subtotal 200
-        order.GetTotal().Should().Be(185m); // 200 - 20 + 5 shipping
+        order.GetTotal().Should().Be(185m);
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_LooksTheCouponUpByThePromotionCode()
+    {
+        var options = InMemoryOptions();
+        await SeedProductAndDeliveryAsync(options);
+
+        using var ctx = new StoreContext(options);
+
+        var coupon = new AppCoupon
+        {
+            Id = "coup1", Name = "$20 Off", PromotionCode = "SAVE20", AmountOff = 20m
+        };
+
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(coupon: coupon));
+
+        var couponMock = new Mock<ICouponService>();
+        couponMock.Setup(x => x.GetCouponFromPromoCode(It.IsAny<string>())).ReturnsAsync(coupon);
+
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, couponMock.Object);
+
+        await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        // The typed code, never the id — that is the field test B forges.
+        couponMock.Verify(x => x.GetCouponFromPromoCode("SAVE20"), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_ThrowsAndDropsTheCoupon_WhenItNoLongerResolves()
+    {
+        var options = InMemoryOptions();
+        await SeedProductAndDeliveryAsync(options);
+
+        using var ctx = new StoreContext(options);
+
+        var coupon = new AppCoupon
+        {
+            Id = "coup1", Name = "$20 Off", PromotionCode = "SAVE20", AmountOff = 20m
+        };
+        var cart = MakeCart(coupon: coupon);
+
+        var cartMock = new Mock<ICartService>();
+        cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(cart);
+        cartMock.Setup(x => x.SetCartAsync(It.IsAny<ShoppingCart>())).ReturnsAsync(cart);
+
+        // The campaign was retired while the cart sat in Redis.
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, CouponsReturning(null));
+
+        var act = () => service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
+
+        await act.Should().ThrowAsync<PriceChangedException>();
+
+        // Re-priced and saved, so the retry does not hit the same 409.
+        cart.Coupon.Should().BeNull();
+        cart.PaymentIntentId.Should().BeNull();
+        cartMock.Verify(x => x.SetCartAsync(cart), Times.Once);
     }
 
     [Fact]
@@ -230,9 +334,8 @@ public class OrderService_HappyPathTests
         using var ctx = new StoreContext(options);
         var cartMock = new Mock<ICartService>();
         cartMock.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart());
-        cartMock.Setup(x => x.DeleteCartAsync()).ReturnsAsync(true);
 
-        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object);
+        var service = new OrderService(new UnitOfWork(ctx), cartMock.Object, NoCoupons());
 
         // First call — creates the order, decrements stock
         var first = await service.CreateOrderAsync("buyer@test.com", MakeOrderDto());
@@ -253,6 +356,8 @@ public class OrderService_HappyPathTests
 
 public class OrderService_ConcurrencyTests
 {
+    private static ICouponService NoCoupons() => Mock.Of<ICouponService>();
+
     private static DbContextOptions<StoreContext> InMemoryOptions()
         => new DbContextOptionsBuilder<StoreContext>()
             .UseInMemoryDatabase("ConcurrencyTest_" + Guid.NewGuid())
@@ -333,8 +438,8 @@ public class OrderService_ConcurrencyTests
         var cart2 = new Mock<ICartService>();
         cart2.Setup(x => x.GetCartAsync()).ReturnsAsync(MakeCart(1, 1, "pi_test_456"));
 
-        var service1 = new OrderService(new UnitOfWork(ctx1), cart1.Object);
-        var service2 = new OrderService(new UnitOfWork(ctx2), cart2.Object);
+        var service1 = new OrderService(new UnitOfWork(ctx1), cart1.Object, NoCoupons());
+        var service2 = new OrderService(new UnitOfWork(ctx2), cart2.Object, NoCoupons());
 
         // Act
         var order1 = await service1.CreateOrderAsync("user1@test.com", MakeOrderDto(1));
