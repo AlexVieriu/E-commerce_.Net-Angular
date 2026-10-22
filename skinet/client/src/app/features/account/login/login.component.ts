@@ -5,7 +5,9 @@ import { MatCard } from '@angular/material/card';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { AccountService } from '../../../core/services/account.service';
+import { SnackbarService } from '../../../core/services/snackbar.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { switchMap } from 'rxjs';
 
 @Component({
@@ -20,6 +22,7 @@ export class LoginComponent {
   private accountService = inject(AccountService);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
+  private snackbar = inject(SnackbarService);
   returnUrl = '/shop';
 
   constructor() {
@@ -39,7 +42,11 @@ export class LoginComponent {
       .login(this.loginForm.getRawValue())
       .pipe(switchMap(() => this.accountService.getUserInfo()))
       .subscribe({
-        next: () => this.router.navigateByUrl(this.returnUrl)
+        next: () => this.router.navigateByUrl(this.returnUrl),
+        // The interceptor stays silent on a 401, so the wrong password needs its own message.
+        error: (err: HttpErrorResponse) => {
+          if (err.status === 401) this.snackbar.error('Invalid email or password.');
+        }
       });
   }
 }
