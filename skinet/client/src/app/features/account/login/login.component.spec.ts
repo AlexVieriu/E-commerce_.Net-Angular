@@ -99,7 +99,7 @@ describe('LoginComponent failed login', () => {
     component.loginForm.setValue({ email: 'admin@test.com', password: 'wrong' });
     component.onSubmit();
     TestBed.inject(HttpTestingController)
-      .expectOne(req => req.url.endsWith('/login'))
+      .expectOne((req) => req.url.endsWith('/login'))
       .flush(null, { status: 401, statusText: 'Unauthorized' });
 
     expect(error).toHaveBeenCalledWith('Invalid email or password.');
