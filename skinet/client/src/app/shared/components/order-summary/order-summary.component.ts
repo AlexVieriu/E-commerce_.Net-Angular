@@ -28,7 +28,7 @@ import { MatIcon } from '@angular/material/icon';
 })
 export class OrderSummaryComponent {
   cartService = inject(CartService);
-  location = inject(Location); //  from angular/common
+  location = inject(Location);
 
   private stripeService = inject(StripeService);
   couponCode = signal('');
@@ -42,8 +42,7 @@ export class OrderSummaryComponent {
         if (this.location.path() === '/checkout')
           await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
       },
-      // errorInterceptor already showed the reason ("Invalid voucher code").
-      // Handling it here only stops the rethrown error landing in the console as "Uncaught".
+      // errorInterceptor already showed the reason; this only stops an "Uncaught" console error.
       error: () => undefined
     });
   }

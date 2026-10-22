@@ -14,7 +14,7 @@ import { InitService } from './core/services/init.service';
 import { lastValueFrom } from 'rxjs';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
-// we are going to create a HTML and display it while initialization is taking place
+// Removes the #initial-splash screen (index.html) once init settles, success or failure.
 function initializeApp() {
   const initService = inject(InitService);
   const result = lastValueFrom(initService.init()).finally(() => {
@@ -36,8 +36,7 @@ export const appConfig: ApplicationConfig = {
       withXhr(),
       withInterceptors([errorInterceptor, loadingInterceptor, authInterceptor])
     ),
-    // returns a promise, so Angular blocks bootstrap until InitService.init() resolves.
-    // By the time any route activates, the signals already reflect what the server said
+    // Bootstrap waits for this promise, so routes activate with the user and cart loaded.
     provideAppInitializer(initializeApp)
   ]
 };

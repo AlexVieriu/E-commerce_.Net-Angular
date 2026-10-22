@@ -35,7 +35,7 @@ v22 default — the line states intent, it does not change behaviour.
 
 **Functional interceptors** — order matters (error → loading → auth on request; reversed on response).
 
-**Component input binding** — `withComponentInputBinding()`. Route params bind to `@Input()` directly.
+**Component input binding** — `withComponentInputBinding()`. Route params bind to `input()` signals directly.
 
 ## Routing
 
@@ -61,5 +61,4 @@ matches every URL under it, causing an infinite redirect loop.
 
 - `component:` instead of `loadComponent:` — breaks lazy loading.
 - Showing service state a template reads from a **plain field**, or capturing a signal in a class field
-  (`isBusy = svc.loading();`) — nothing notifies Angular and the view never updates (BUG-10). Omitting the
-  `OnPush` line is *not* the mistake: it is the v22 default.
+  (`isBusy = svc.loading();`) — the view never updates (BUG-10, see `state-management.md`).

@@ -1,23 +1,23 @@
+import { CartService } from '../../../core/services/cart.service';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { MatCard, MatCardActions, MatCardContent } from '@angular/material/card';
-import { MatIcon } from '@angular/material/icon';
 import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { MatButton } from '@angular/material/button';
-import { RouterLink } from '@angular/router';
+import { MatCard, MatCardActions, MatCardContent } from '@angular/material/card';
+import { MatIcon } from '@angular/material/icon';
 import { Product } from '../../../shared/models/products';
-import { CartService } from '../../../core/services/cart.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-product-item',
   imports: [
-    MatCard,
-    MatCardContent,
-    MatCardActions,
-    MatIcon,
     CurrencyPipe,
     MatButton,
-    RouterLink,
-    NgOptimizedImage
+    MatCard,
+    MatCardActions,
+    MatCardContent,
+    MatIcon,
+    NgOptimizedImage,
+    RouterLink
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-item.component.html',

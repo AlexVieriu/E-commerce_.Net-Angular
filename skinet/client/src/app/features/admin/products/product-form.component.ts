@@ -42,7 +42,7 @@ export class ProductFormComponent {
   private brands = this.shopService.brands;
   private types = this.shopService.types;
   protected validationErrors = signal<string[] | undefined>(undefined);
-  // True while a create/update request is in flight — disables the submit button so rapid clicks can't POST twice.
+  // True while a save is in flight — disables Submit, so a double click can't save twice.
   protected isSubmitting = signal(false);
 
   // Validators mirror CreateProductDtoValidator; the server stays the source of truth.
@@ -56,7 +56,7 @@ export class ProductFormComponent {
     quantityInStock: [1, [Validators.required, Validators.min(1)]]
   });
 
-  // Signals off the form's value stream — so OnPush re-renders the preview + filtered options per keystroke.
+  // Form values as signals, so OnPush re-renders the preview and options per keystroke.
   private brandTerm = toSignal(this.productForm.controls.brand.valueChanges, { initialValue: '' });
   private typeTerm = toSignal(this.productForm.controls.type.valueChanges, { initialValue: '' });
   protected picturePreview = toSignal(this.productForm.controls.pictureUrl.valueChanges, {

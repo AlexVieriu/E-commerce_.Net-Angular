@@ -1,9 +1,6 @@
 namespace Core.Tests.Entities;
 
-// BEGINNER EXAMPLE 8: Testing Value Objects
-// Why this tests?
-// make a full object test 
-// test difference scenarios with one property
+// PaymentSummary as a value object: one full object, then one property per scenario.
 public class PaymentSummary_Tests
 {
     [Fact]

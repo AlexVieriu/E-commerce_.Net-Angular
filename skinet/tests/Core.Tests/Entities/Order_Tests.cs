@@ -4,7 +4,7 @@ namespace Core.Tests.Entities;
 
 public class Order_Tests
 {
-    // BEGINNER EXAMPLE 4: Testing Methods with Return Values
+    // Testing Methods with Return Values
     [Fact]
     public void Order_GetTotal_ShouldCalculateCorrectly()
     {
@@ -65,7 +65,7 @@ public class Order_Tests
     }
 }
 
-// BEGINNER EXAMPLE 5: Testing Enums
+// Testing Enums
 public class OrderStatus_Tests
 {
     [Fact]

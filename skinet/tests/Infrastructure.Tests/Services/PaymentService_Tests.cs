@@ -1,11 +1,10 @@
 using Order = Core.Entities.OrderAggregate.Order;
 namespace Infrastructure.Tests.Services;
 
-// INTERMEDIATE EXAMPLE 14: Testing with Multiple Mocks
+// Testing with Multiple Mocks
 public class PaymentService_Tests
 {
-    // Note: Actual test would need Stripe SDK setup 
-    // We do only the Mocking part
+    // ⚠ Arrange only — no Act, no Assert, so it always passes; the Act needs a Stripe sandbox.
     [Fact]
     public async Task CreateOrUpdatePaymentIntent_ShouldCalculateCorrectTotal()
     {
@@ -37,7 +36,6 @@ public class PaymentService_Tests
         mockCartService.Setup(x => x.GetCartAsync())
                        .ReturnsAsync(cart);
 
-        // Mock delivery method repository
         var mockDeliveryRepo = new Mock<IGenericRepository<DeliveryMethod>>();
         mockDeliveryRepo.Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(new DeliveryMethod
@@ -51,11 +49,10 @@ public class PaymentService_Tests
         mockUnitOfWork.Setup(x => x.Repository<DeliveryMethod>())
                       .Returns(mockDeliveryRepo.Object);
 
-        // ToDo: Needs Stripe SDK setup and implementation
+        // TODO: Act + Assert, once the Stripe calls can be mocked (IStripeClient).
     }
 
-    // ReconcileOrderPayment has no Stripe SDK call (unlike the rest of this class) —
-    // it only touches order.GetTotal() and IUnitOfWork, so it's testable without a Stripe sandbox.
+    // ReconcileOrderPayment makes no Stripe call — only GetTotal() and IUnitOfWork — so it is testable.
     [Fact]
     public async Task ReconcileOrderPayment_AmountMatches_SetsPaymentReceived()
     {

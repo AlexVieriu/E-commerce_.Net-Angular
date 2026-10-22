@@ -24,7 +24,10 @@ app.MapGroup("api").MapIdentityApi<AppUser>();
 | GET | `/api/account/auth-status` | No | `{ isAuthenticated: bool }` |
 | POST | `/api/account/address` | `[Authorize]` | Create or update address |
 
-## ClaimsPrincipalExtensions
+## ClaimsPrincipleExtensions
+
+`API/Extensions/ClaimsPrincipleExtensions.cs` — the class name keeps the code's spelling. The first two
+extend `UserManager<AppUser>` and take the `ClaimsPrincipal`.
 
 | Method | What it does |
 |---|---|
@@ -95,7 +98,7 @@ Failing loudly beats silently reading `cart:`.
 ## Rules / Constraints
 
 - Cookie-only auth — never add JWT config.
-- Always use `ClaimsPrincipalExtensions` to load users.
+- Always use `ClaimsPrincipleExtensions` to load users.
 - `user-info` returns 204 (not 401) when unauthenticated — frontend polls this on startup. **The client
   depends on it:** an empty body arrives as `null`, which is what clears the session at startup, and it is
   why `errorInterceptor` needs no exemption for the startup probe. Add `[Authorize]` here and an anonymous

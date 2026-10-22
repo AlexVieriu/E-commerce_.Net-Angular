@@ -1,6 +1,6 @@
 namespace Core.Tests.Entities;
 
-// BEGINNER EXAMPLE 9: Testing with Multiple Assertions
+// Testing with Multiple Assertions
 public class CartItem_Tests
 {
     [Fact]

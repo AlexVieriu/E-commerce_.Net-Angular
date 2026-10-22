@@ -61,8 +61,8 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- 56px matches the outline field box height; the shared match-input-height class relies on a
-           CSS var that isn't in scope outside a mat-form-field, so it collapses the button. -->
+      <!-- h-14 = 56px, the outline field's height; match-input-height needs a CSS var only set inside
+           a mat-form-field, so here it would collapse the button. -->
       <button mat-flat-button routerLink="/admin/products/new" class="h-14 px-6">
         <mat-icon>add</mat-icon>
         New product

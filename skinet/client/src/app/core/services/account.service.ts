@@ -22,10 +22,8 @@ export class AccountService {
   isAdmin = computed(() => this.currentUser()?.roles.includes('Admin') ?? false);
 
   login(values: LoginCredentials) {
-    // build HTTP parameters (query string parameters) for the request
+    // useCookies=true: Identity answers with an auth cookie instead of a bearer token.
     let params = new HttpParams();
-
-    // adding a parameter named 'useCookies' with the value 'true'
     params = params.append('useCookies', true);
 
     return this.http.post<User>(this.baseUrl + 'login', values, { params }).pipe(
@@ -61,9 +59,8 @@ export class AccountService {
       .pipe(tap(() => this.clearCurrentUser()));
   }
 
-  // Drop client-side auth state without an API call. Used when a request 401s
-  // (cookie expired or cleared out-of-band) so the UI reflects logged-out state.
-  // The cart goes with it — it is the previous user's, whichever path got us here.
+  // Drops client auth state without an API call — used on logout and on a 401.
+  // The cart goes too: it belongs to the previous user.
   clearCurrentUser() {
     this._currentUser.set(null);
     this.signalrService.stopHubConnection();

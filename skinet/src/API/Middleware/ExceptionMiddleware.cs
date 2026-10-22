@@ -4,7 +4,7 @@ namespace API.Middleware;
 public partial class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next,
     ILogger<ExceptionMiddleware> logger)
 {
-    // Cached: a new JsonSerializerOptions per call discards the serializer's internal metadata cache.
+    // Reused: a new JsonSerializerOptions per call rebuilds its metadata cache (CA1869).
     private static readonly JsonSerializerOptions ErrorJsonOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -12,12 +12,11 @@ public partial class ExceptionMiddleware(IHostEnvironment env, RequestDelegate n
     [LoggerMessage(Level = LogLevel.Error, Message = "Unhandled exception for {Method} {Path}")]
     private static partial void LogUnhandledException(ILogger logger, Exception ex, string method, string path);
 
-    // We need to use this spelling "InvokeAsync" to work
+    // Convention-based middleware: the method must be named Invoke or InvokeAsync.
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            // this method is in the .net documentation
             await next(context);
         }
         catch (Exception ex)
@@ -47,7 +46,7 @@ public partial class ExceptionMiddleware(IHostEnvironment env, RequestDelegate n
         else if (ex is InvalidOperationException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            // Safe to expose — we wrote this message intentionally
+            // Our services throw this with user-facing messages; a framework one would show its message too.
             response = new ApiErrorResponse(context.Response.StatusCode, ex.Message, null);
         }
         else

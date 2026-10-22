@@ -18,8 +18,7 @@ public static class ApplicationServicesExtensions
                 options.Conventions.Add(new RemoveControllerConvention(typeof(BuggyController)));
         });
 
-        // Scans the Application assembly for every AbstractValidator<T> and registers each as a
-        // scoped IValidator<T>. Scoped is the safe default.
+        // Registers every AbstractValidator<T> in the Application assembly as a scoped IValidator<T>.
         services.AddValidatorsFromAssemblyContaining<CreateProductDtoValidator>();
 
         // Declare Bearer in the OpenAPI document so Scalar shows an auth box.
@@ -61,9 +60,8 @@ public static class ApplicationServicesExtensions
             services.AddDbContext<SqlServerStoreContext>(options =>
                 options.UseSqlServer(
                     config.GetConnectionString("SqlServerAzureConnection"),
-                    // Serverless Azure SQL auto-pauses when idle; the first connection while it
-                    // resumes throws transient error 40613. Retry so startup waits it out instead
-                    // of crashing (500.30) — see BUG-8.
+                    // A paused serverless database answers 40613 while it resumes.
+                    // Retrying lets startup wait instead of crashing with 500.30 (BUG-8).
                     sql => sql.EnableRetryOnFailure(
                         maxRetryCount: 8,
                         maxRetryDelay: TimeSpan.FromSeconds(20),

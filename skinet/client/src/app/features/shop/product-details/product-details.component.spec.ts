@@ -8,8 +8,8 @@ import { Product } from '../../../shared/models/products';
 import { Cart } from '../../../shared/models/cart';
 import { environment } from '../../../../environments/environment';
 
-// BUG-14 was the button disabling itself on the click that had just worked, so every case here
-// waits on Angular's own scheduler (whenStable) rather than forcing a render with detectChanges().
+// BUG-14: the button disabled itself on the click that had just worked.
+// Every case waits on whenStable(), not detectChanges(), so the real scheduler runs.
 describe('ProductDetailsComponent add to cart', () => {
   let fixture: ComponentFixture<ProductDetailsComponent>;
   let httpTesting: HttpTestingController;
@@ -107,8 +107,7 @@ describe('ProductDetailsComponent add to cart', () => {
     expect(inCartQuantity()).toBe('2');
   });
 
-  // Removing the last unit empties the cart, which the service deletes outright — so the stepper
-  // goes with it rather than sitting at 0.
+  // Removing the last unit deletes the cart, so the stepper goes too instead of showing 0.
   it('drops the stepper when the last unit is removed', async () => {
     addButton().click();
     httpTesting.expectOne(environment.apiUrl + 'cart').flush(cartWith(1));

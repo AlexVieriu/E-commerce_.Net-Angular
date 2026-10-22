@@ -13,13 +13,13 @@ export class InitService {
   private signalrService = inject(SignalrService);
 
   init() {
-    // Step 1: check auth first — cart requires authentication.
-    // No 401 to catch: user-info answers an anonymous caller with 204, which arrives as null.
+    // Auth first: the cart needs a user.
+    // No 401 to catch: an anonymous caller gets 204, which arrives as null.
     return this.accountService.getUserInfo().pipe(
       tap((user) => {
         if (user) this.signalrService.createHubConnection();
       }),
-      // Step 2: the cart belongs to the user, so being authenticated is the whole condition
+      // No user, no cart.
       switchMap((user) => {
         if (!user) return of({ user, cart: null });
         return this.cartService.getCartAsync().pipe(

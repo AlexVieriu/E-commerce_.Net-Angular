@@ -1,9 +1,7 @@
 namespace Infrastructure.Services;
 
-// PaymentService and its private helpers call Stripe SDK classes (PaymentIntentService,
-// RefundService) directly via `new` — there is no DI seam to mock.
-// Unit testing would require a full Stripe test-mode sandbox (real HTTP calls).
-// Architectural fix: inject an IStripeClient abstraction
+// Stripe services are created with `new`, so there is nothing to mock: tests would hit a Stripe sandbox.
+// The fix: inject IStripeClient and pass it to each service.
 [ExcludeFromCodeCoverage]
 public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
     ICouponService couponService) : IPaymentService
@@ -120,7 +118,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
         else if (coupon.PercentOff.HasValue)
             amount -= (long)(amount * (coupon.PercentOff.Value / 100));
 
-        return Math.Max(amount, 0); // Ensure amount does not go negative
+        return Math.Max(amount, 0); // A coupon bigger than the subtotal stops at 0; shipping is added after
     }
 
     private static async Task CreateUpdatePaymentIntentAsync(ShoppingCart cart, long amount)
@@ -140,8 +138,7 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
                 AllowedPaymentMethodTypes = ["card"]
             };
 
-            // Was prefixed with the cart id, which no longer exists. The GUID was already what made
-            // this unique per call, so the key is unchanged in effect.
+            // A new key per call: it covers the SDK's retries of this request, not a second POST /payments.
             var intent = await serviceIntent.CreateAsync(options, new RequestOptions { IdempotencyKey = Guid.NewGuid().ToString() });
             cart.PaymentIntentId = intent.Id;
             cart.ClientSecret = intent.ClientSecret;
@@ -157,9 +154,8 @@ public class PaymentService(ICartService cartService, IUnitOfWork unitOfWork,
         }
     }
 
-    // Stripe is finished with an intent once it is succeeded or canceled — updating either throws.
-    // Clearing the id here makes the caller create a fresh one.
-    // Deny-list, not allow-list: a processing intent may be mid-3DS, and a second one is a second charge. (BUG-2)
+    // A succeeded or canceled intent can't be updated, so clear its id and the caller creates a new one.
+    // Deny-list: requires_action (3DS) and processing can still complete — replacing them risks a double charge. (BUG-2)
     private static async Task DropIntentIfSpentAsync(PaymentIntentService serviceIntent, ShoppingCart cart)
     {
         var intent = await serviceIntent.GetAsync(cart.PaymentIntentId);

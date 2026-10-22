@@ -5,7 +5,7 @@ namespace API.HealthChecks;
 public class SqlHealthCheck(StoreContext db) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-        CancellationToken cancellationToken = default)
+                                                          CancellationToken cancellationToken = default)
     {
         // Against a paused database EF retries for minutes, so the registration timeout bounds this.
         var reachable = await db.Database.CanConnectAsync(cancellationToken);

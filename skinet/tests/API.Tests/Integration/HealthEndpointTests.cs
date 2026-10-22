@@ -1,7 +1,7 @@
 namespace API.Tests.Integration;
 
-// The SPA catch-all answers any unknown path with 200 + index.html, so the status code proves
-// nothing. The body and content type are the assertion — they fail if the route is renamed or deleted.
+// The SPA catch-all answers any unknown path with 200 + index.html, so a 200 proves nothing.
+// The body and content type are what fail if the route is renamed or deleted.
 public class HealthEndpointTests(CustomWebApplicationFactory factory)
     : IClassFixture<CustomWebApplicationFactory>
 {

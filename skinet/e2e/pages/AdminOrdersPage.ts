@@ -7,12 +7,12 @@ export class AdminOrdersPage {
     await this.page.goto('/admin/orders');
   }
 
-  // These CSS classes come from Angular Material's table/paginator components.
+  // Angular Material's table and paginator classes.
   get rows() {
     return this.page.locator('tr.mat-mdc-row');
   }
 
-  // The text like "1 – 10 of 25" that Material's paginator shows.
+  // The paginator's "1 – 10 of 25" label.
   rangeLabel() {
     return this.page.locator('.mat-mdc-paginator-range-label').textContent();
   }

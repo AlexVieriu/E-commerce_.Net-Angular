@@ -4,9 +4,9 @@ namespace API.HealthChecks;
 public class RedisHealthCheck(IConnectionMultiplexer redis) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-        CancellationToken cancellationToken = default)
+                                                          CancellationToken cancellationToken = default)
     {
-        // PingAsync takes no token, so this is where the registration timeout lands.
+        // PingAsync takes no token, so the registration timeout can't stop it — Redis's own timeout does.
         cancellationToken.ThrowIfCancellationRequested();
 
         _ = await redis.GetDatabase().PingAsync();

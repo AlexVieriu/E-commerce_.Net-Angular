@@ -18,17 +18,17 @@ Top-level route (`app.routes.ts`):
 { path: 'shop', loadComponent: () => import('./features/shop/shop.component').then(c => c.ShopComponent) }
 ```
 
-Child route (`features/orders/routes.ts`):
+Child route (`features/orders/routes.ts`), each child guarded:
 ```typescript
-export const orderRoutes: Routes = [
-  { path: '', component: OrdersComponent },
-  { path: ':id', component: OrderDetailComponent },
+export const orderRoutes: Route[] = [
+  { path: '', component: OrderComponent, canActivate: [authGuard] },
+  { path: ':id', component: OrderDetailedComponent, canActivate: [authGuard] }
 ];
 ```
 
 Registered in `app.routes.ts`:
 ```typescript
-{ path: 'orders', canActivate: [authGuard], loadChildren: () => import('./features/orders/routes').then(m => m.orderRoutes) }
+{ path: 'orders', loadChildren: () => import('./features/orders/routes').then((m) => m.orderRoutes) }
 ```
 
 ## Pitfalls

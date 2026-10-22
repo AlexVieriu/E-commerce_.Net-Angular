@@ -10,9 +10,8 @@ public partial class PaymentsController(
 {
     private readonly string _whSecret = stripeOptions.Value.WhSecret;
 
-    // Source-generated logging (CA1848). The generator writes a strongly-typed Action per message, so
-    // the template is parsed once at startup instead of on every call, and value-type args aren't boxed.
-    // Static + an ILogger parameter: the generator can't reach a primary-constructor parameter.
+    // Source-generated logging (CA1848): the template is parsed once, and the args aren't boxed.
+    // Static, so the logger is passed in; since .NET 9 an instance method could use the primary-constructor logger.
     [LoggerMessage(Level = LogLevel.Error, Message = "Stripe webhook error")]
     private static partial void LogStripeWebhookError(ILogger logger, Exception ex);
 
@@ -47,7 +46,7 @@ public partial class PaymentsController(
     [HttpPost("webhook")]
     public async Task<IActionResult> StripeWebhook()
     {
-        // StreamReader to read the event
+        // Stripe signs the raw body, so it is read as-is.
         var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
         try
@@ -66,13 +65,13 @@ public partial class PaymentsController(
         }
         catch (StripeException ex)
         {
-            // This is sent back to Stripe
+            // A non-2xx answer makes Stripe retry the event.
             LogStripeWebhookError(logger, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, "Stripe webhook error");
         }
         catch (Exception ex)
         {
-            // This is sent back to Stripe
+            // A non-2xx answer makes Stripe retry the event.
             LogStripeEventHandlingFailed(logger, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, "Failed to handle stripe event");
         }
@@ -109,7 +108,7 @@ public partial class PaymentsController(
 
         await payService.ReconcileOrderPayment(order, intent.Amount);
 
-        // SignalR
+        // Push the result to the buyer's open tab, if any.
         var connectionId = NotificationHub.GetConnectionId(order.BuyerEmail);
 
         if (!string.IsNullOrEmpty(connectionId))

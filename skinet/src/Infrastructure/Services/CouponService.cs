@@ -1,7 +1,6 @@
 namespace Infrastructure.Services;
 
-// CouponService calls Stripe SDK (PromotionCodeService) directly via `new` — no DI seam.
-// See PaymentService for the full explanation.
+// Creates PromotionCodeService with `new`, so there is nothing to mock (same as PaymentService).
 [ExcludeFromCodeCoverage]
 public class CouponService : ICouponService
 {
@@ -10,23 +9,19 @@ public class CouponService : ICouponService
         // A missing `code` filter matches everything, not nothing — Stripe would return every live code. (BUG-19)
         if (string.IsNullOrWhiteSpace(code)) return null;
 
-        // From here - Stripe code
         var promotionService = new PromotionCodeService();
         var options = new PromotionCodeListOptions
         {
             Code = code,
             // Only a live code may be redeemed; two codes can share the same string.
             Active = true,
-            // `promotion.coupon` is an expandable reference — unexpanded it arrives as a bare id string,
-            // leaving the Coupon object null. List endpoints need the `data.` prefix. (BUG-20)
+            // Unexpanded, `promotion.coupon` is only an id and Coupon stays null; list calls need `data.` (BUG-20).
             Expand = ["data.promotion.coupon"]
         };
 
         var promotionCodes = await promotionService.ListAsync(options);
 
         var promotionCode = promotionCodes.FirstOrDefault();
-
-        // To here - Stripe code
 
         if (promotionCode != null && promotionCode?.Promotion.Coupon != null)
         {
