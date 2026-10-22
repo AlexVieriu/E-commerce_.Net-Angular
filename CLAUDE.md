@@ -23,7 +23,7 @@ Create the following to-do list immediately.
 - Once the user accepts, create revised todo items.
 - Start work on the task.
 - Keep the docs as short as possible.
-- After the task is done, run the AFTER EACH TASK checklist.
+- After the task is done, run the AFTER EACH TASK checklist (`task-wrapup` skill).
 
 # TASK KICKOFF
 Before starting any task, list:
@@ -58,20 +58,7 @@ When asked to open/create a PR, always output a suggested title and description 
 - Description: bullet-point summary of what changed and why.
 
 # AFTER EACH TASK
-Single checklist for post-task bookkeeping. **Push + open the draft PR before step 0** (see GIT) —
-the gate and the doc review are both read against its diff. Run in order:
-0. **THE GATE — read `mindset/the-gate.md` and follow it.**
-   Run the gate for a new interview-explainable concept only (mechanical tasks skip it); all in **one file**, the
-   questions doc (`skinet/questions/sprint-N/<top-concept>.md`; sections in QUESTIONS & EXERCISES). The loop:
-   solve → learn → gap → log → merge. Attempt → stuck → Claude answers **now** → move on. No ping-pong.
-   **A sprint never closes with a concept you can't explain.**
-1. Tick the task checkbox in `skinet/progress.md` (inside the sprint's `<details>`).
-2. Add a bullet under today's section in `mindset/daily-log.md` (see END OF DAY).
-3. Update any affected docs in `skinet/docs/` (keep them short).
-4. Append one line to `mindset/question-tally.md` — junior vs mid-level % for this session's
-   technical questions (see that file for the rubric).
-5. After the PR is merged — right before starting the next task — scaffold the NEXT task/bug spike
-   in `mindset/spikes/sprint-N/` (see MINDSET), so Decision+Why are filled while context is fresh.
+- Task/bug done, draft PR open: invoke the `task-wrapup` skill and run its checklist in order.
 
 # START OF DAY / SESSION
 - At the start of the day's first work session, ask ONE line:
