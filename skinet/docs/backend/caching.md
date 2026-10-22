@@ -37,7 +37,7 @@ Services can't be injected into attributes — resolved via `context.HttpContext
 [InvalidateCache("api/products")]  // no trailing "|" — see Rules
 ```
 
-Runs the action first, then deletes all Redis keys matching the pattern. Only invalidates on success.
+Runs the action first, then deletes all Redis keys matching the pattern. Skips only when the action throws — a 400 result still invalidates.
 
 ## IResponseCacheService
 
@@ -52,15 +52,9 @@ Runs the action first, then deletes all Redis keys matching the pattern. Only in
 - `[Cache]` only caches `OkObjectResult` — errors are never cached.
 - `[InvalidateCache]` pattern must match **every** key shape for that resource, not just the common one.
   `"api/products"` clears both the list keys and the by-id keys. A trailing `"|"` clears only the list
-  keys — by-id stays stale (BUG-15).
+  keys — by-id stays stale (BUG-15). A pattern that matches nothing no-ops silently: no error, no log.
 
 ## Common Mistakes
 
 - Adding a new mutating endpoint without `[InvalidateCache]` — invalidation is TTL-only otherwise, so
   stale cached data lingers until the cache entry expires on its own, not when the underlying data changes.
-- A typo'd or too-narrow `[InvalidateCache]` pattern — `RemoveCacheByPattern` matches nothing and silently
-  no-ops. No error, no log, just stale data that looks like a caching bug instead of a string mismatch.
-  Both BUG-15 causes were this: a trailing `"|"` that skipped the by-id keys, and a case-sensitive path
-  that let `/api/Products` and `/api/products` write two separate keys.
-- Expecting a `[Cache]`-decorated action's error responses to be cached too — only `OkObjectResult` is
-  ever stored, so a 400/404/500 always re-executes the action on the next request.

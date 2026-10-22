@@ -19,7 +19,7 @@ Configs via `ApplyConfigurationsFromAssembly`. DB-specific column types in `Appl
 | `Add / Update / Delete` | Mutate tracked state — no `SaveChanges` |
 | `Exists(id)` | `bool` — synchronous check entity exists by id |
 | `GetEntityWithSpec<TResult>(spec)` | First match projected to TResult |
-| `GetAllAsync()` | No-arg — returns all entities, no filter |
+| `GetAllAsync(token)` | No spec — returns all entities, no filter |
 
 `Update` uses `Attach` + `EntityState.Modified`.
 
@@ -99,7 +99,7 @@ dotnet run --project src/API                              # baseline (admin + pr
 
 - Never inject `StoreContext` into controllers — use `IUnitOfWork`.
 - Never call `SaveChangesAsync` directly — use `unitOfWork.Complete()`.
-- Never reference derived contexts outside `Program.cs`.
+- Never reference derived contexts outside `ApplicationServicesExtensions.cs`.
 - Always migrate both providers when changing schema.
 - Entities fetched via the repository (`GetByIdAsync`, `GetEntityWithSpec`) are already tracked by the
   request's scoped `StoreContext` — just mutate properties and call `unitOfWork.Complete()`;
@@ -115,9 +115,7 @@ dotnet run --project src/API                              # baseline (admin + pr
 
 ## Common Mistakes
 
-- Forgetting migration for one provider after a schema change.
 - Not checking `Complete()` return value — `false` means nothing was saved.
-- Adding a unique index on `nvarchar(max)` on SqlServer — EF narrows it to `nvarchar(450)` automatically, but the migration must include the `AlterColumn` step.
 - 🔴 **A migration without its `.Designer.cs` does not exist.** That file carries the `[Migration]`
   attribute EF scans for; the `.cs` alone is dead code. `20260407100224_AddUniqueIndexOnPaymentIntentId`
   lost its Designer and silently never ran on SqlServer — the unique index was missing from Azure for

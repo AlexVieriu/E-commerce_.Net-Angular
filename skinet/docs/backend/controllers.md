@@ -12,7 +12,7 @@ Endpoints, auth requirements, and return types for the four controllers with non
 | GET | `/api/admin/dashboard` | `DashboardDto` | Counts, revenue (`PaymentReceived` only), low-stock + recent-orders previews. Via `IDashboardService` (in-memory aggregation) |
 | GET | `/api/admin/orders` | `Pagination<OrderDto>` | `[FromQuery] OrderSpecParams` — filter/sort/page |
 | GET | `/api/admin/orders/{id}` | `OrderDto` | 400 if not found |
-| POST | `/api/admin/orders/refund/{id}` | `OrderDto` | 400 if Pending or refund fails |
+| POST | `/api/admin/orders/refund/{id}` | `OrderDto` | 400 if Pending or refund fails. Already Refunded → 500 (BUG-22, v2) |
 | POST | `/api/admin/orders/{id}/sync-payment-status` | `OrderDto` | Re-fetches the PaymentIntent from Stripe and reconciles — recovery path for a missed webhook. 400 if not found or already Refunded |
 
 **Dashboard payload (`DashboardDto`)** — the admin's "how's the shop doing?" screen in one call:
@@ -30,11 +30,7 @@ Endpoints, auth requirements, and return types for the four controllers with non
 - Calls `PaymentService.RefundPayment(paymentIntentId)` — must return `"succeeded"`
 - Sets `order.Status = OrderStatus.Refunded` and saves
 
-**Sync-payment-status rules:**
-- `OrderStatus.Refunded` is excluded — a stale Stripe read must never overwrite money that already moved
-- Calls `PaymentService.SyncOrderPaymentStatus(order)`, which re-fetches the `PaymentIntent` from Stripe and
-  runs it through the same `ReconcileOrderPayment` the webhook uses — one rule, two triggers (push vs pull)
-- Pushes the same `OrderCompleteNotification` SignalR event the webhook pushes, if the buyer is connected
+**Sync-payment-status:** the pull half of "one rule, two triggers" — see `payment.md`, *Reconciliation*.
 
 ## OrdersController
 
@@ -59,14 +55,7 @@ Endpoints, auth requirements, and return types for the four controllers with non
 | DELETE | `/api/cart` | `204 NoContent` | |
 
 **No endpoint takes a cart id.** `CartService` derives the Redis key from the authenticated caller, so
-there is no parameter a client could point at someone else's cart (BUG-18 — see `auth.md`).
-
-```
-client                  CartController          CartService            Redis
-  |  GET /api/cart  -->  (no parameter)  -->  cart:{userId}  -->  [ the caller's cart ]
-                                                    ^
-                                          ICurrentUser, from the auth cookie
-```
+there is no parameter a client could point at someone else's cart (BUG-18 — diagram in `auth.md`).
 
 ## CouponsController
 

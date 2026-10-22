@@ -86,7 +86,7 @@ Infrastructure never learns that HTTP exists: the signed-in user arrives through
 declared in `Application` and implemented in `API`.
 
 → [backend](skinet/docs/backend/architecture.md) · [frontend](skinet/docs/frontend/architecture.md) ·
-[all 27 docs](skinet/docs/INDEX.md) · [project history](skinet/progress.md)
+[all docs](skinet/docs/INDEX.md) · [project history](skinet/progress.md)
 
 ## The interesting bits
 
@@ -136,7 +136,7 @@ dotnet user-secrets set "StripeSettings:SecretKey" "sk_test_..."      --project 
 dotnet user-secrets set "StripeSettings:WhSecret"  "whsec_..."        --project src/API
 dotnet user-secrets set "AdminSettings:Password"   "<admin password>" --project src/API
 
-# 3. API — migrations and seeding run at startup (--seed adds a bulk Bogus dataset)
+# 3. API — migrations and seeding run at startup (`dotnet run -- --seed` adds bulk Bogus data, then exits)
 dotnet run --project src/API/API.csproj                  # https://localhost:7096
 
 # 4. Client (separate terminal)
@@ -155,7 +155,7 @@ Test card `4242 4242 4242 4242`, any future expiry, any CVC.
 
 ```bash
 dotnet test                                             # from skinet/, needs Redis
-cd e2e && npm ci && npx playwright test                 # needs API + client running
+cd e2e && npm ci && npx playwright test                 # starts Redis, the API and the client itself
 ```
 
 </details>

@@ -48,7 +48,7 @@ dotnet run --project src/API
 cd client && ng serve
 ```
 
-Backend on `https://localhost:7096`, pinned by `applicationUrl` in `launchSettings.json` (added Aug 21 — before that nothing set it, so a fresh clone got Kestrel's defaults and the client could not reach the API). **The port is not free to change:** `environment.development.ts` hardcodes `https://localhost:7096` for both `apiUrl` and `hubUrl`. Angular dev server runs on `https://localhost:4200` and calls the API by absolute URL — no proxy; the API's `CorsPolicy` allows `localhost:4200`.
+Backend on `https://localhost:7096`, pinned in `launchSettings.json` — why the port can't change is in the README's *Run it locally*. The dev server on `https://localhost:4200` calls the API by absolute URL — no proxy; `CorsPolicy` allows `localhost:4200`.
 
 ## Manual API testing (Scalar)
 
@@ -165,11 +165,9 @@ visitor, because the browser, not the build, is what pulls them.
 So roughly **96 catalogue page views exhaust the day**, and a full day of health probes costs less than
 one of them — page weight is the lever, the probe is not.
 
-Static files also carry no `Cache-Control`: `Program.cs` calls `app.UseStaticFiles()` with no options, so
-everything ships `ETag`/`Last-Modified` and no `max-age`. That does not mean every repeat visit
-revalidates — with a `Last-Modified` and no explicit expiry a browser applies **heuristic freshness**
-(RFC 9111 §4.2.2, commonly 10% of the age since that date), so freshness is the browser's guess and a
-deploy has no way to invalidate it.
+Only `index.html` carries a `Cache-Control` (`no-cache`, PR #96). Everything else ships `ETag`/`Last-Modified`
+and no `max-age`, so a browser applies **heuristic freshness** (RFC 9111 §4.2.2, commonly 10% of the age
+since that date) — freshness is the browser's guess. The hashed-asset and `/images/**` buckets are v2 (T59).
 
 ### Health endpoints
 
@@ -195,7 +193,8 @@ App Service Health check pings the one path you set in the portal, every minute 
 
 ## SQLite → SqlServer Switch
 
-Set `ASPNETCORE_ENVIRONMENT=Production`. Ensure `ConnectionStrings:DefaultConnection` points to SqlServer.
+Set `ASPNETCORE_ENVIRONMENT=Production`. SqlServer reads `ConnectionStrings:SqlServerAzureConnection`;
+`DefaultConnection` is the SQLite one.
 Run SqlServer migrations before first deploy:
 
 ```bash
@@ -210,7 +209,7 @@ dotnet ef database update --context SqlServerStoreContext
 | `StripeSettings:WhSecret` | User Secrets (update each Stripe CLI session) | Azure Key Vault |
 | `ConnectionStrings:Redis` | `appsettings.Development.json` (localhost, no password) | App Service → Connection strings (Upstash) |
 | `ConnectionStrings:SqlServerAzureConnection` | not used in dev | App Service → Connection strings (SQLServer) |
-| `StripeSettings:PublishableKey` | `appsettings.json` | `appsettings.json` |
+| Stripe publishable key | `stripePublicKey` in `client/src/environments/*.ts` — public by design; the API never reads it | same |
 | `AdminSettings:Password` | User Secrets | Azure Key Vault (`AdminSettings--Password`) |
 | `HealthSettings:ReadyKey` | User Secrets | Azure Key Vault (`HealthSettings--ReadyKey`) |
 
@@ -243,6 +242,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 cd src/API
 dotnet user-secrets set "StripeSettings:SecretKey" "<sk_test_...>"
 dotnet user-secrets set "StripeSettings:WhSecret" "<whsec_...>"
+dotnet user-secrets set "AdminSettings:Password" "<admin password>"   # startup throws without it
 dotnet user-secrets set "HealthSettings:ReadyKey" "<any-string>"
 ```
 
@@ -301,10 +301,11 @@ Content-Security-Policy is an HTTP header that tells the browser which sources i
 |---|---|---|
 | `default-src` | `'self'` | Fallback — block everything not explicitly listed |
 | `style-src` | `'self' 'unsafe-inline'` | Angular Material injects styles into the DOM at runtime |
-| `script-src` | `'self' 'unsafe-inline'` | Angular bootstrap uses inline scripts |
+| `script-src` | `'self' 'unsafe-inline' https://js.stripe.com` | Angular bootstrap uses inline scripts; Stripe.js |
 | `img-src` | `'self' data: https:` | `data:` for Material icons; `https:` for product images from external URLs |
 | `font-src` | `'self' data:` | Material embeds fonts as data URIs |
-| `connect-src` | `'self' wss: https:` | API calls (`self`), SignalR WebSocket (`wss:`), Stripe SDK (`https:`) |
+| `frame-src` | `https://js.stripe.com https://hooks.stripe.com` | Stripe Elements and 3DS frames |
+| `connect-src` | `'self' wss: https://api.stripe.com https:` | API calls (`self`), SignalR WebSocket (`wss:`), Stripe SDK |
 
 ### Permissions-Policy
 

@@ -11,8 +11,10 @@ app.UseMiddleware<ExceptionMiddleware>();
 ```
 
 Catches any unhandled exception and returns:
-- **Development:** `{ statusCode, message, stackTrace }`
-- **Production:** `{ statusCode, message, "Internal Server Error" }`
+- **Development:** `{ statusCode, message, details }` — `details` holds the stack trace
+- **Production:** `{ statusCode, message: "An unexpected error occurred", details: null }`
+
+That split applies to the 500 branch only; the mapped exceptions below always send their own message.
 
 Returns `500` by default. Maps specific exception types to other status codes (see below). Always sets `Content-Type: application/json`.
 
@@ -22,7 +24,7 @@ Returns `500` by default. Maps specific exception types to other status codes (s
 public class ApiErrorResponse(int statusCode, string message, string? details)
 ```
 
-Used by `ExceptionMiddleware`. Also used directly in controllers via `BadRequest(...)`, `NotFound(...)` etc. — ASP.NET wraps those in its own problem details format automatically via `[ApiController]`.
+Used by `ExceptionMiddleware` only. Controllers return `BadRequest("…")` / `NotFound()` instead: a string body goes out as plain text, and only a body-less result (`NotFound()`) becomes `ProblemDetails` via `[ApiController]`.
 
 ## Exception → Status Code Mapping
 
@@ -47,13 +49,14 @@ to ride with the next change in this middleware.
 
 ```
 Unhandled exception → ExceptionMiddleware → ApiErrorResponse (JSON) → client
-401/403/404/400     → [ApiController] automatic response              → client
+BadRequest("…")       → plain-text body                               → client
+401/403/404 (no body) → [ApiController] ProblemDetails               → client
 ```
 
 ## BuggyController
 
 Dev-only controller at `api/buggy/*` for testing error responses.
-Excluded from routing in non-Development via `RemoveControllerConvention` in `Program.cs`.
+Excluded from routing in non-Development via `RemoveControllerConvention`, registered in `ApplicationServicesExtensions.cs`.
 
 ## Rules / Constraints
 

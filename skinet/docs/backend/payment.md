@@ -9,7 +9,7 @@ before any of them.**
 
 ```
 /checkout renders    afterNextRender (checkout.component.ts, constructor)
-                     └─ createPaymentElement → initializeElements
+                     └─ mountStripeElements → createPaymentElement → initializeElements
                         └─ POST /api/payments      ◀ the intent is created HERE,
                                                       while deliveryMethodId is still null,
                                                       so this first one carries $0 shipping
@@ -24,7 +24,7 @@ Payment  step 3      onStepChange (checkout.component.ts)
                      └─ POST /api/payments      ◀ UPDATES the same intent, now with shipping
                      card is typed into Stripe Elements — never reaches our backend
 
-Confirm  step 4      getConfirmationToken → stripe.createToken (browser → Stripe direct)
+Confirm  step 4      getConfirmationToken → stripe.createConfirmationToken (browser → Stripe direct)
 
 Submit order         confirmPayment (checkout.component.ts)
                      1. POST /api/orders          ◀ order saved Pending, BEFORE any money moves

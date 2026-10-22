@@ -46,9 +46,9 @@ is only worth it on an LCP element.
 - `client/public/images/` is the **only** copy. `ng build` writes `src/API/wwwroot/`, which is ignored.
 - Product images are **800 × 800 WebP behind a `.png` extension**. They were always WebP; the extension
   is historical. Renaming them would break every `PictureUrl` row — in `Products`, in the
-  `ProductItemOrdered` snapshots on past orders, and in live Redis carts — so the server relabels them
-  instead. ⚠️ **Not shipped yet:** that `Content-Type: image/webp` override rides in the static-file
-  `Cache-Control` fix. Until it merges these files go out labelled `image/png`.
+  `ProductItemOrdered` snapshots on past orders, and in live Redis carts — so the server should relabel them
+  instead. ⚠️ **Not shipped:** the `Content-Type: image/webp` override moved to v2 with the rest of T59, so
+  these files go out labelled `image/png`.
 - Re-encode with a one-off `npx sharp-cli --input "*.png" --output <dir> resize 800 800`, then rename the
   `.webp` output back to `.png`. Nothing in the repo resizes images, deliberately — 18 files that never
   change do not need a pipeline.

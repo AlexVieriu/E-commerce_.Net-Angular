@@ -36,9 +36,7 @@ Guard in `createHubConnection()` prevents duplicate connections — no-op if alr
 - `[Authorize]` on the hub — unauthenticated clients are rejected.
 - `GetConnectionId` returns empty string (not null) when email not found — check before sending.
 - In-memory dictionary doesn't scale across multiple servers — use Redis backplane for scale-out.
-- `NotificationHub` lives in `API` — Infrastructure-layer services can't reference it directly (`API`
-  already references `Infrastructure`; the reverse is circular). The push always happens in the
-  controller, not the service.
+- The push always happens in the controller, never in a service — `architecture.md`, *Rules*, explains why.
 
 ## Common Mistakes
 

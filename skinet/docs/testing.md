@@ -66,8 +66,8 @@ the steps at the gate. Expect ~1 per sprint. One line per sprint here — the st
 | C | [`sprint-c/`](smoke-tests/sprint-c/) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
 | B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |
 
-**Legacy checks with no file yet** — these move into T20b's harness / Playwright at the Sprint D
-deploy-gate cleanup, then get deleted from here.
+**Legacy checks with no file yet** — these move into T20b's harness / Playwright with the
+deploy-gate cleanup (T62, v2), then get deleted from here.
 
 | Check | Do → expect |
 |---|---|
