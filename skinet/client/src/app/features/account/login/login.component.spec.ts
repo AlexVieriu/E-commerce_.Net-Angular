@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { LoginComponent } from './login.component';
+import { SnackbarService } from '../../../core/services/snackbar.service';
 
 // The component reads returnUrl in its constructor, so each case needs its own TestBed.
 function createWith(returnUrl?: unknown) {
@@ -85,5 +86,22 @@ describe('LoginComponent returnUrl', () => {
     createWith('/checkout');
 
     expect(warn).not.toHaveBeenCalled();
+  });
+});
+
+describe('LoginComponent failed login', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('shows a message when the API answers 401', () => {
+    const component = createWith();
+    const error = vi.spyOn(TestBed.inject(SnackbarService), 'error');
+
+    component.loginForm.setValue({ email: 'admin@test.com', password: 'wrong' });
+    component.onSubmit();
+    TestBed.inject(HttpTestingController)
+      .expectOne(req => req.url.endsWith('/login'))
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    expect(error).toHaveBeenCalledWith('Invalid email or password.');
   });
 });
