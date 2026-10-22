@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Why it is set up this way: mindset/spikes/sprint-b.md, T37.
+// Local-only: webServer starts the dev servers (ng serve + dotnet run) before the suite runs.
 export default defineConfig({
   testDir: './tests',
   globalSetup: require.resolve('./global-setup'),
