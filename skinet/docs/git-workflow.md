@@ -31,17 +31,17 @@ git switch -c fix/bug-<n>-<slug>              # or feature/<n>-<slug>
 git push -u origin fix/bug-<n>-<slug>
 gh pr create --base development --draft --title "fix(bug-<n>): <desc>" --body-file <file>
 
-# 4. The 2-sentence test at merge -> pass, or the concept joins the queue in mindset/the-gate.md.
+# 4. The 2-sentence test at merge -> pass, or the concept joins the gate-day queue (private notes).
 #    The queue blocks the sprint, not this PR; the gate day at sprint end clears it.
 
 # 5. Gate cleared -> edit the PR body against the final diff, then the bookkeeping
-#    (the task-wrapup skill): progress.md · mindset/daily-log.md · docs/ · mindset/question-tally.md
+#    (private checklist): progress.md · daily log · docs/ · question tally
 
 # 6. 🔴 Your sign-off — never Claude's call.
 gh pr ready <pr>
 gh pr merge <pr> --squash --delete-branch     # 1 clean commit on development; deletes local + remote
 
-# 7. Scaffold the next spike in mindset/spikes/sprint-<n>/
+# 7. Scaffold the next task's spike (private notes)
 ```
 
 The PR keeps the individual commits and the review browsable forever, so deleting the branch loses

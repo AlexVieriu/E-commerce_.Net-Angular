@@ -136,7 +136,7 @@ npm test -- --watch=false     # one run — what CI does
 
 ## Playwright E2E (`skinet/e2e/`)
 
-Local-only (never CI — see `mindset/spikes/sprint-b.md` T37 Decision 1). Needs Docker's `redis` container
+Local-only, never CI: `webServer` starts the dev servers (`ng serve` + `dotnet run`), and the Release build is proven by the deploy gate instead. Needs Docker's `redis` container
 running first (`docker compose up -d redis`); `global-setup.ts` starts it automatically if not.
 
 ```bash

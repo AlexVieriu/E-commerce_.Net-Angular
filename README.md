@@ -22,6 +22,22 @@ what breaks when money is involved.
 - **Admin** — dashboard, refunds and payment-status sync
 - **Auth** — cookie Identity with Admin/Customer roles and route guards on both sides
 
+## Where it started
+
+Skinet began on Mar 31, 2026 from the finished code of Neil Cummings'
+[`skinet-2024`](https://github.com/TryCatchLearn/skinet-2024), the reference app of his Udemy course. I picked it
+for its testable architecture, then treated it like a codebase I had inherited:
+
+| Area | The original | Now |
+|---|---|---|
+| Tests | None | 169 unit + integration tests · 4 Playwright E2E specs |
+| Cart | The client sends the cart id, so any user can read or overwrite any cart | The key comes from the signed-in user |
+| Coupon | The order takes the discount from the request | Re-derived from Stripe on every call |
+| Checkout | Charges the card, then creates the order | The order, with price and stock checks, exists before the charge |
+| Admin | Orders list + refund | + dashboard, product create/edit/delete, payment-status sync |
+| CI/CD | A deploy workflow | CI on every PR with a lint + analyzer gate · health checks · DB indexes measured on 200k rows |
+| Stack | .NET 8 + Angular 18 | .NET 11 + Angular 22 |
+
 ## Built with
 
 | | |
@@ -113,13 +129,10 @@ charge. Payment status is Stripe-sourced only, never typed in by a human: one ru
 webhook pushes, an admin action pulls when a webhook never arrived.
 → [payment.md](skinet/docs/backend/payment.md)
 
-## Demo
-
-<!-- GIF: checkout through Stripe -->
-<!-- GIF: admin refund -->
+## Run it locally
 
 <details>
-<summary><b>Run it locally</b></summary>
+<summary><b>Setup steps</b></summary>
 
 **Prerequisites** — .NET 11 RC2 SDK (pinned in `skinet/global.json`) · Node 24+ · Docker · a Stripe test account · the
 [Stripe CLI](https://docs.stripe.com/cli)
