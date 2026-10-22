@@ -522,3 +522,6 @@ skinet/questions/
 *-2.guard.ts
 *2.cs
 *2.cs
+# Personal AI-assistant config: stays local
+CLAUDE.md
+.claude/
