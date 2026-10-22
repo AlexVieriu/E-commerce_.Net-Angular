@@ -32,6 +32,24 @@ needs `stripe listen --forward-to https://localhost:7096/api/payments/webhook` r
 - [ ] Logout → cookie cleared (DevTools → Application → Cookies)
 - [ ] `/health` returns `Healthy` as **text**, not the Angular page; `/health/ready?key=…` (the key is a
       user secret, `HealthSettings:ReadyKey`) returns JSON naming `sql` and `redis`
+- [ ] Redis down (`docker stop redis`, needs Docker) → `/health` `Healthy`; `/health/ready?key=…` → **503**,
+      `redis` `Unhealthy`, after about 5 s. Only if the app already connected to Redis; a 500 means BUG-21
+- [ ] Redis back (`docker start redis`) → `/health/ready?key=…` → **200**. Still 503? Restart the API (Microsoft: rare reconnect failure)
+
+      Redis down, app already connected (the 503 path)
+      ```
+      GET /health ──────────► Program.cs:102 Predicate = _ => false ──► 200 "Healthy"   (no Redis touched)
+      GET /health/ready?key=…
+        ├─ key wrong/missing ─► HealthKeyMiddleware.cs:15–18 ──────────► 401, empty body
+        └─ key ok ─► RedisHealthCheck.cs:12 PING
+                       │ no reply within 5 s (StackExchange.Redis asyncTimeout, defaults to syncTimeout 5000 ms)
+                       ▼
+                     exception → FailureStatus Unhealthy   (ApplicationServicesExtensions.cs:77)
+                       ▼
+                     ResultStatusCodes: Unhealthy → 503    (ASP.NET default, MapHealthChecks)
+                       ▼
+                     HealthResponseWriter.cs:10 → JSON, status and timing only → "redis": "Unhealthy"
+      ```
 - [ ] **Apply a coupon** — `gimme10` (percent-off) and `gimme5` (amount-off) both resolve; a nonsense code
       is still rejected. No test can reach `CouponService` (no DI seam, `[ExcludeFromCodeCoverage]`), which
       is why BUG-20 hid for two months
@@ -48,8 +66,8 @@ the steps at the gate. Expect ~1 per sprint. One line per sprint here — the st
 | C | [`sprint-c/`](smoke-tests/sprint-c/) | `stripe listen` + a throwaway campaign priced in **cents** (`gimme5`/`gimme10` are whole amounts and miss a truncated conversion) |
 | B | [`sprint-b/`](smoke-tests/sprint-b/) | `stripe listen` + two accounts; the 12 steps run in order |
 
-**Legacy checks with no file yet** — these move into T20b's harness / Playwright at the Sprint D
-deploy-gate cleanup, then get deleted from here.
+**Legacy checks with no file yet** — these move into T20b's harness / Playwright with the
+deploy-gate cleanup (T62, v2), then get deleted from here.
 
 | Check | Do → expect |
 |---|---|
@@ -239,7 +257,7 @@ Target ~80% backend. What's intentionally **not** covered:
 - API controllers → `API.Tests` (endpoint contracts) + Playwright E2E (T37)
 - `PaymentService` / `CouponService` → `[ExcludeFromCodeCoverage]`: they call Stripe SDK classes directly with no DI seam. Architectural fix: inject an `IStripeClient` abstraction (deferred).
 
-Snapshot percentages live in `progress.md` (Task 19 log), not here — they go stale.
+Snapshot percentages live in `docs/archive/progress-history.md` (the Apr 9 T19 row), not here — they go stale.
 
 ## Running
 

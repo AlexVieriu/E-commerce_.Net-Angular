@@ -6,8 +6,8 @@ import { Subject } from 'rxjs';
 import { loadingInterceptor } from './loading.interceptor';
 import { BusyService } from '../services/busy.service';
 
-// The counter has to return to 0 on every ending, not just on a response — a stuck count is BUG-10's
-// other half: the bar spins forever with nothing left to clear it.
+// The count must return to 0 on every ending, not just a response.
+// A stuck count is BUG-10's other half: the bar spins forever.
 describe('loadingInterceptor counter', () => {
   let busyService: BusyService;
 

@@ -8,7 +8,7 @@ export class OrdersPage {
   }
 
   async expectAnyOrderVisible() {
-    // Keeps checking until the table has at least one visible row -- fails after 5s if it never does.
+    // Retries until a row is visible; fails after expect's default 5s.
     await expect(this.page.locator('tbody tr').first()).toBeVisible();
   }
 }

@@ -15,6 +15,7 @@ Replaces the old `Docs RoadMap.txt`. When you add/rename a doc, update this list
 - **smoke-tests/** — the manual checks worth writing down: real Stripe, real cookies, two people in one
   browser. **Not one per task** — write a file only when no automated test can reach it *and* you'd
   re-derive the steps at the gate. Everything else is covered by Core smoke in `testing.md`
+- **archive/** — frozen at v1.0: `progress-history.md` (daily log, per-task write-ups, re-baselines) and `execution-plan.md` (estimates, tiers, the v2 backlog)
 - **git-workflow.md** — branch / PR / merge flow (pairs with the deploy gate in `testing.md`)
 - **documentation.md** — how to write docs here *(DO NOT EDIT)*
 

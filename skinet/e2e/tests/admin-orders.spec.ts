@@ -1,10 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { AdminOrdersPage } from '../pages/AdminOrdersPage';
 
-// We don't check the exact total number of orders -- it grows a little every time this suite
-// runs (checkout.spec.ts adds one more order each time). What we do check is that paging
-// actually works: page 1 shows rows 1-10, page 2 shows rows 11-20. That's the part that
-// broke before (BUG-12) and the part worth testing.
+// No exact order total: checkout.spec.ts adds orders on every run.
+// The check is paging itself — page 1 = rows 1-10, page 2 = rows 11-20 (BUG-12).
 test('admin orders table paginates correctly (would have caught BUG-12)', async ({ page }) => {
   const adminOrders = new AdminOrdersPage(page);
   await adminOrders.goto();

@@ -2,8 +2,8 @@ namespace Application.Specifications;
 
 public class OrderSpecification : BaseSpecification<Order>
 {
-    // Constructor with criteria: When you always have a filter (ById, ForUser, etc.)
-    // Empty constructor + AddCriteria: When criteria is optional/conditional (WithFilters)
+    // Criteria constructor for a filter that's always there (ById, ByEmail).
+    // Empty constructor + AddCriteria for optional filters (WithFilters).
     private OrderSpecification() : base()
     {
         AddDefaultIncludes();
@@ -14,15 +14,12 @@ public class OrderSpecification : BaseSpecification<Order>
         AddDefaultIncludes();
     }
 
-    // We use static and non-static methods, to differentiate critical methods and optional ones
-
-    // - - - - - - - - -  Critical Filters - - - - - - - - - 
+    // - - - - - - - - -  Critical Filters (static factories) - - - - - - - - -
     public static OrderSpecification ById(int id)
         => new OrderSpecification(o => o.Id == id);
 
-    // Nothing runs here: the lambda is an expression tree, stored as data.
-    // SpecificationEvaluator hands it to EF, which translates it to
-    // WHERE BuyerEmail = @email ORDER BY OrderDate DESC.
+    // The lambdas don't run here; they are stored as expression trees.
+    // EF later turns it into WHERE BuyerEmail = @email ORDER BY OrderDate DESC.
     public static OrderSpecification ByEmail(string email)
     {
         var spec = new OrderSpecification(o => o.BuyerEmail == email);
@@ -36,12 +33,11 @@ public class OrderSpecification : BaseSpecification<Order>
     public static OrderSpecification ByPaymentIntent(string paymentIntentId)
         => new OrderSpecification(o => o.PaymentIntentId == paymentIntentId);
 
-    // For Admin
+    // Admin orders list: optional status filter, newest first, paged.
     public static OrderSpecification WithFilters(OrderSpecParams specParams)
     {
         var spec = new OrderSpecification();
 
-        // Apply status filter if provided
         if (!string.IsNullOrEmpty(specParams.Status))
         {
             var status = ParseOrderStatus(specParams.Status);
@@ -49,10 +45,8 @@ public class OrderSpecification : BaseSpecification<Order>
                 spec.AddCriteria(o => o.Status == status.Value);
         }
 
-        // Apply ordering
         spec.AddOrderByDescending(o => o.OrderDate);
 
-        // Apply pagination
         spec.ApplyPaging(specParams.PageSize * (specParams.PageIndex - 1), specParams.PageSize);
 
         return spec;
@@ -67,7 +61,7 @@ public class OrderSpecification : BaseSpecification<Order>
         return spec;
     }
 
-    // - - - - - - - - -  Optional Filters - - - - - - - - -
+    // - - - - - - - - -  Optional Filters (chainable) - - - - - - - - -
     public OrderSpecification WithStatus(OrderStatus status)
     {
         AddCriteria(o => o.Status == status);

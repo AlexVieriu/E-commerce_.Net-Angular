@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Playwright config: where tests live, which browsers/servers to use, how tests are grouped.
-// The reasoning behind these choices is in mindset/spikes.md, T37.
+// Why it is set up this way: mindset/spikes/sprint-b.md, T37.
 export default defineConfig({
   testDir: './tests',
   globalSetup: require.resolve('./global-setup'),
@@ -14,13 +13,11 @@ export default defineConfig({
   use: {
     baseURL: 'https://localhost:4200',
     ignoreHTTPSErrors: true, // both dev servers use self-signed local dev certs
-    // Keep a trace whenever a test fails. 'on-first-retry' would never fire here:
-    // retries are 0 outside CI, and this suite is local-only.
+    // 'on-first-retry' would never fire: retries are 0 outside CI, and this suite is local-only.
     trace: 'retain-on-failure'
   },
 
-  // webServer: Playwright starts these itself before testing, and stops them after.
-  // No more "did you forget to run the app" -- it's automatic.
+  // Playwright starts these servers before the tests and stops them after.
   webServer: [
     {
       command: 'dotnet run --project ../src/API/API.csproj',
@@ -39,13 +36,10 @@ export default defineConfig({
     }
   ],
 
-  // A "project" is a group of test files that share settings (here: which login to start with).
-  // `dependencies` means "run this project first" -- Playwright waits for it to finish before
-  // starting this one. `storageState` is a saved login (cookies) so a test doesn't have to log
-  // in itself -- it just loads an already-logged-in browser session.
+  // A project = test files sharing settings (here: which login they start with).
+  // `dependencies` run first; `storageState` loads a saved login (cookies) instead of logging in.
   projects: [
-    // These two only log in and save that login to a file -- 
-    // they don't test anything themselves.
+    // These two only log in and save the session to a file.
     { name: 'setup-customer', testMatch: /setup\/customer\.setup\.ts/ },
     { name: 'setup-admin', testMatch: /setup\/admin\.setup\.ts/ },
 
@@ -56,8 +50,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/customer.json' }
     },
     {
-      // Also depends on `checkout`: the order this test looks for is the one `checkout` just
-      // placed. Running `checkout` first guarantees that order exists -- see spikes.md T37.
+      // Depends on `checkout`, so the order it looks for already exists.
       name: 'customer-orders',
       testMatch: /auth-orders\.spec\.ts/,
       dependencies: ['setup-customer', 'checkout'],

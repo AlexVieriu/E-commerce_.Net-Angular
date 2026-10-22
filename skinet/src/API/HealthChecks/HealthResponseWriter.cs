@@ -3,7 +3,7 @@ namespace API.HealthChecks;
 // Status and timing only — a failed check's exception text can name the database server.
 public static class HealthResponseWriter
 {
-    // Cached: a new JsonSerializerOptions per call discards the serializer's metadata cache.
+    // Reused: a new JsonSerializerOptions per call rebuilds its metadata cache (CA1869).
     private static readonly JsonSerializerOptions ReportJsonOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 

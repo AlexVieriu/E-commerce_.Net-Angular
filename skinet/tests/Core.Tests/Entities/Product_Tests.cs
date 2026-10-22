@@ -1,6 +1,6 @@
 namespace Core.Tests.Entities;
 
-// BEGINNER EXAMPLE 1: Testing Simple Entity Properties
+// Testing Simple Entity Properties
 public class Product_Tests
 {
     // MethodName_Scenario_ExpectedBehavior
@@ -27,7 +27,7 @@ public class Product_Tests
 }
 
 
-// BEGINNER EXAMPLE 2: Testing Business Logic - Stock Availability
+// Testing Business Logic - Stock Availability
 public class ProductStock_Tests
 {
     [Theory]
@@ -59,7 +59,7 @@ public class ProductStock_Tests
 }
 
 
-// BEGINNER EXAMPLE 3: Testing Entity Inheritance 
+// Testing Entity Inheritance 
 public class BaseEntity_Tests
 {
     [Fact]
@@ -83,7 +83,7 @@ public class BaseEntity_Tests
     }
 }
 
-// BEGINNER EXAMPLE 10: Testing String Properties
+// Testing String Properties
 public class ProductName_Tests
 {
     [Theory]

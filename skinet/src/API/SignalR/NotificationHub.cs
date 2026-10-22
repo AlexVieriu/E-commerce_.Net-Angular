@@ -1,11 +1,7 @@
 namespace API.SignalR;
-// This hub enables sending notifications to users by their email address
-// SignalR natively only tracks client connection IDs 
-// (generated identifiers used by browsers, to maintain WebSocket connections), 
-// not user identities like email addresses
-// To map email addresses to connection IDs, we store this relationship in memory,
-// using a thread-safe ConcurrentDictionary 
-// For production scaling across multiple servers, this should be replaced with a distributed cache like Redis
+// Maps a buyer's email to one connection id, so the server can push to them.
+// SignalR's built-in Clients.User(id) does the same by user id, across every tab.
+// In memory: a second server instance wouldn't see it.
 [Authorize]
 public class NotificationHub : Hub
 {
@@ -24,7 +20,6 @@ public class NotificationHub : Hub
     {
         var email = Context.User?.GetEmail()!;
         if (!string.IsNullOrEmpty(email))
-            // removes the email key from our user connection
             UserConnections.TryRemove(email, out _);
 
         return base.OnDisconnectedAsync(exception);

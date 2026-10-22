@@ -2,9 +2,8 @@ namespace API.Controllers;
 
 public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
 {
-    // Invalidation pattern for every products cache key. No trailing "|" on purpose:
-    // list keys look like "/api/products|query...", by-id keys like "/api/products/72".
-    // A trailing "|" matches only the list keys, leaving the by-id (edit) view stale (BUG-15).
+    // Matches list keys ("/api/products|…") and by-id keys ("/api/products/72").
+    // A trailing "|" would miss the by-id keys and leave the edit view stale (BUG-15).
     private const string ProductsCachePattern = "api/products";
 
     [Cache(10)]
@@ -48,8 +47,7 @@ public class ProductsController(IUnitOfWork unitOfWork) : BaseApiController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Product>> UpdateProduct(int id, CreateProductDTO productDto)
     {
-        // Load the TRACKED entity first — EF needs the original stock to build the [ConcurrencyCheck]
-        // WHERE clause(BUG-16).
+        // Load the tracked entity: EF needs its original stock for the [ConcurrencyCheck] WHERE clause (BUG-16).
         var product = await unitOfWork.Repository<Product>().GetByIdAsync(id);
 
         if (product == null)

@@ -4,11 +4,9 @@ public class UnitOfWork(StoreContext context) : IUnitOfWork
 {
     private readonly ConcurrentDictionary<string, object> _repositories = new();
 
-    // If we have 100 Entities, we will need to create 100 repositories, that's why 
-    // we will create a generic repository
+    // One generic repository per entity type, created on first use and then reused.
     public IGenericRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity
     {
-        // Get's the name of the current member(at runtime)
         var type = typeof(TEntity).Name;
 
         return (IGenericRepository<TEntity>)_repositories.GetOrAdd(type, t =>
@@ -26,8 +24,7 @@ public class UnitOfWork(StoreContext context) : IUnitOfWork
         return await context.SaveChangesAsync() > 0;
     }
 
-    // SuppressFinalize: this type has no finalizer, but the Dispose pattern requires the call so a
-    // derived type that *does* add one isn't finalized twice.
+    // CA1816: SuppressFinalize covers a derived type that adds a finalizer.
     public void Dispose()
     {
         context.Dispose();

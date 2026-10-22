@@ -32,10 +32,8 @@ export class CheckoutSuccessComponent {
   private orderService = inject(OrderService);
 
   constructor() {
-    // Primary path: the Stripe webhook pushes OrderCompleteNotification over SignalR,
-    // which sets orderSignal. Fallback: if no push arrives within the timeout (webhook
-    // delayed or notification lost), fetch the order by id so the user never sees an
-    // endless spinner.
+    // Normal path: the webhook pushes the order over SignalR into orderSignal.
+    // Fallback: no push before the timer fires → fetch the order by id, so the spinner never hangs.
     const orderId = this.orderService.createdOrder?.id;
     const fallbackTimer = setTimeout(() => {
       if (this.signalrService.orderSignal() || !orderId) return;

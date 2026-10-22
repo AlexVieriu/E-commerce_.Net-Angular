@@ -2,23 +2,15 @@ namespace Infrastructure.Data.Factory;
 
 public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStoreContext>
 {
-    // public SqlServerStoreContext CreateDbContext(string[] args)
-    // {
-    //     var optionsBuilder = new DbContextOptionsBuilder<SqlServerStoreContext>();
-    //     optionsBuilder.UseSqlServer("Server=tcp:skinet-2025a.database.windows.net,1433;Initial Catalog=skinet89;Persist Security Info=False;User ID=appuser;Password=Pa$$w0rd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=100;");
-    //     return new SqlServerStoreContext(optionsBuilder.Options);
-    // }
-
+    // Used by `dotnet ef` at design time; reads the connection string from appsettings.json or env vars.
     public SqlServerStoreContext CreateDbContext(string[] args)
     {
-        // Build configuration to read from appsettings.json
         var configuration = new ConfigurationBuilder()
             .SetBasePath(GetBasePath())
             .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
-        // Get the connection string
         var connectionString = configuration.GetConnectionString("SqlServerAzureConnection");
 
         if (string.IsNullOrEmpty(connectionString))
@@ -37,7 +29,6 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStor
             using var connection = new SqlConnection(connectionString);
             connection.Open();
 
-            // Optional: Test with a simple query to ensure the database is accessible
             using var command = new SqlCommand("SELECT 1", connection);
             command.ExecuteScalar();
 
@@ -55,7 +46,7 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerStor
 
     private static string GetBasePath()
     {
-        // Look for appsettings.json in current directory or parent directories
+        // Walks up from the current directory to the first appsettings.json.
         var currentDir = Directory.GetCurrentDirectory();
         var directory = new DirectoryInfo(currentDir);
 

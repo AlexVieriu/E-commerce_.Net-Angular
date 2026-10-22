@@ -1,6 +1,6 @@
 namespace Application.Tests.Common.Mapping;
 
-// INTERMEDIATE EXAMPLE 17: Testing Exception Handling
+// Testing Exception Handling
 public class AddressMappingExtensions_Tests
 {
     [Fact]

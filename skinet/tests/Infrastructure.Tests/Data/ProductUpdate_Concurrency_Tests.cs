@@ -47,9 +47,8 @@ public class ProductUpdate_Concurrency_Tests
         (await verify.Products.FindAsync(1))!.QuantityInStock.Should().Be(42);
     }
 
-    // The guard still bites when the row really does change between the load and the save.
-    // That window is narrow by design — the original is read microseconds before the UPDATE —
-    // so this is the only way to reach it: mutate the row from a second context in between.
+    // The guard still fires when the row really changes between the load and the save.
+    // That window is tiny, so a second context changes the row in between.
     [Fact]
     public async Task UpdateProduct_StockChangedBetweenLoadAndSave_ThrowsConcurrencyException()
     {

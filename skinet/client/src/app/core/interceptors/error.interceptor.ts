@@ -28,15 +28,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
       if (err.status === 401) {
-        // Session is gone (cookie expired/cleared) — drop stale client auth state
-        // so the navbar updates from username back to Login/Register.
+        // The session is gone (cookie expired or cleared): drop the stale user so the navbar shows Login.
         accountService.clearCurrentUser();
         const alreadyOnLogin = router.url.includes('/account/login');
         if (!alreadyOnLogin)
           router.navigate(['/account/login'], { queryParams: { returnUrl: router.url } });
       }
       if (err.status === 403) {
-        snackbar.error('Forbidden'); // we don't have error message for "Forbidden" status
+        snackbar.error('Forbidden'); // A 403 has no body to show.
       }
       if (err.status === 409) {
         // A stale checkout cart and an admin edit conflict both land here.

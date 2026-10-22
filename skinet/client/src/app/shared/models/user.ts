@@ -1,8 +1,7 @@
 import { Address } from './address';
 
-// Nullability mirrors AccountController's /user-info: AppUser.FirstName/LastName are `string?`
-// and Address comes from `user.Address?.toDto()`. Declaring them required is what let BUG-13
-// through — `null + ' ' + null` compiles fine and yields the string "null null".
+// Optional like /user-info: names are `string?` and the address can be null.
+// Declared required, `null + ' ' + null` compiled and showed "null null" (BUG-13).
 export type User = {
   firstName?: string;
   lastName?: string;

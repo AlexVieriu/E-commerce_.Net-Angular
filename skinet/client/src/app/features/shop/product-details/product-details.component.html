@@ -28,7 +28,7 @@
               Add to cart
             </button>
 
-            <!-- The stepper edits the cart line, so it has nothing to show until there is one. -->
+            <!-- Shown only when the product is in the cart. -->
             @if (quantityInCart() > 0) {
               <div class="flex items-center gap-2">
                 <span class="text-frost">In cart:</span>

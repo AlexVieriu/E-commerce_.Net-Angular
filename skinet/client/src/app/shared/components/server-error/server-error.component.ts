@@ -10,8 +10,6 @@ import { ApiErrorResponse } from '../../models/apiErrorResponse';
   styleUrl: './server-error.component.scss'
 })
 export class ServerErrorComponent {
-  // history.state is the browser's built-in storage for data passed during navigation.
-  // When the error interceptor calls router.navigateByUrl('/server-error', { state: { error: ... } }),
-  // Angular stores that data in history.state. We can read it here — or anywhere
+  // errorInterceptor navigates here with { state: { error } }; the router keeps it in history.state.
   readonly error: ApiErrorResponse | undefined = history.state['error'];
 }

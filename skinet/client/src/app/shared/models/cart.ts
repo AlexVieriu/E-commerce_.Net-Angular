@@ -6,7 +6,7 @@ import { Coupon } from './coupon';
 export class Cart implements CartType {
   items: CartItem[] = [];
 
-  // Added for Stripe integration
+  // Checkout fields: delivery + Stripe.
   deliveryMethodId?: number;
   paymentIntentId?: string;
   clientSecret?: string;

@@ -19,8 +19,7 @@ export class TextInputComponent implements ControlValueAccessor {
     this.controlDir.valueAccessor = this;
   }
 
-  // Required by ControlValueAccessor, but intentionally no-ops: the template binds the FormControl
-  // directly (see `control` below), so Angular's own directive handles value and touch propagation.
+  // ControlValueAccessor needs these, but the template binds `control` directly, so they do nothing.
   writeValue(): void {
     // no-op
   }

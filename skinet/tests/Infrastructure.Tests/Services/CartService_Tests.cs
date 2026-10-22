@@ -2,8 +2,7 @@ namespace Infrastructure.Tests.Services;
 
 public class CartService_Tests
 {
-    // No test passes a cart key any more — CartService derives it from the caller (BUG-18),
-    // so every Redis call in here must land on "cart:{TestUserId}".
+    // CartService builds the key from the caller (BUG-18), so every Redis call here lands on "cart:{TestUserId}".
     private const string TestUserId = "user-1";
     private const string TestUserKey = $"cart:{TestUserId}";
 
@@ -15,7 +14,6 @@ public class CartService_Tests
         return mock;
     }
 
-    // INTERMEDIATE EXAMPLE 13: Basic Mocking with Moq
     [Fact]
     public async Task GetCartAsync_ShouldReturnCart_WhenCartExists()
     {
@@ -89,8 +87,7 @@ public class CartService_Tests
 
         var storedCart = JsonSerializer.Serialize(new ShoppingCart { Items = cart.Items });
 
-        // CartService calls StringSetAsync(key, value, TimeSpan) — TimeSpan implicitly converts to Expiration,
-        // resolving to the newer IDatabaseAsync overload: StringSetAsync(RedisKey, RedisValue, Expiration, ValueCondition, CommandFlags)
+        // CartService's TimeSpan converts to Expiration, so the call binds to the IDatabaseAsync overload with Expiration.
         mockDatabase.As<IDatabaseAsync>()
                     .Setup(x => x.StringSetAsync(
                         It.IsAny<RedisKey>(),
@@ -100,7 +97,7 @@ public class CartService_Tests
                         It.IsAny<CommandFlags>()))
                     .ReturnsAsync(true);
 
-        // Mock StringGetAsync for the GetCartAsync call inside SetCartAsync
+        // SetCartAsync reads the cart back with GetCartAsync.
         mockDatabase.Setup(x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
                     .ReturnsAsync(storedCart);
 
@@ -117,7 +114,6 @@ public class CartService_Tests
         result.Should().NotBeNull();
         result!.Items.Count.Should().Be(1);
 
-        // Verify that StringSetAsync was called
         mockDatabase.As<IDatabaseAsync>()
                     .Verify(x => x.StringSetAsync(
                         It.IsAny<RedisKey>(),
@@ -128,8 +124,8 @@ public class CartService_Tests
                         Times.Once);
     }
 
-    // The BUG-18 regression test: the cart lands on the caller's key, whoever the caller is.
-    // The other half — "a client cannot send an id" — is enforced by the type: ShoppingCart has none.
+    // BUG-18 regression: the cart lands on the caller's key.
+    // "A client cannot send an id" needs no test — ShoppingCart has no Id.
     [Fact]
     public async Task SetCartAsync_ShouldStoreUnderTheCallersKey()
     {
@@ -178,8 +174,7 @@ public class CartService_Tests
 
         var shoppingCart = new ShoppingCart();
 
-        // CartService calls the newer overload: StringSetAsync(RedisKey, RedisValue, Expiration, ValueCondition, CommandFlags)
-        // Must use As<IDatabaseAsync>() because it is an explicit interface implementation
+        // The Expiration overload is declared on IDatabaseAsync, so the setup goes through As<IDatabaseAsync>().
         mockDatabase.As<IDatabaseAsync>()
             .Setup(x => x.StringSetAsync(
                 It.IsAny<RedisKey>(),
@@ -198,10 +193,9 @@ public class CartService_Tests
         // Act
         var result = await cartService.SetCartAsync(shoppingCart);
 
-        // Assert: result is null — StringSet returned false so GetCartAsync was never called
+        // Assert: the save failed, so null comes back and the cart is never read
         result.Should().BeNull();
 
-        // Verify: StringGetAsync was NOT called (save failed, so GetCartAsync was never invoked)
         mockDatabase.Verify(
             x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()),
             Times.Never);
@@ -218,7 +212,7 @@ public class CartService_Tests
         mockRedis.Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object?>()))
             .Returns(mockDatabase.Object);
 
-        // Mock: Cart exists, delete returns true
+        // The cart exists, so the delete returns true.
         mockDatabase
             .Setup(x => x.KeyDeleteAsync(TestUserKey, It.IsAny<CommandFlags>()))
             .ReturnsAsync(true);
@@ -231,15 +225,13 @@ public class CartService_Tests
         // Assert
         result.Should().BeTrue();
 
-        // Verify the method was called with correct key
         mockDatabase.Verify(
             x => x.KeyDeleteAsync(TestUserKey, It.IsAny<CommandFlags>()),
             Times.Once);
     }
 
 
-    // https://claude.ai/chat/2165e008-bf1a-43be-b1ae-0387cf5c35f4
-    // Was a Theory over client-supplied keys; now over callers, since the key follows the user.
+    // One case per caller: the key follows the user.
     [Theory]
     [InlineData("user-1")]
     [InlineData("user-2")]

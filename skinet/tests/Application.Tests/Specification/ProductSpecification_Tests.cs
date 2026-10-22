@@ -1,6 +1,6 @@
 namespace Application.Tests.Specification;
 
-// INTERMEDIATE EXAMPLE 15: Testing Specifications Pattern
+// ProductSpecification's filters, run in memory over four products.
 public class ProductSpecification_Tests
 {
     [Fact]
@@ -127,8 +127,7 @@ public class ProductSpecification_Tests
 
     private static List<Product> ApplySpec(ProductSpecification spec, List<Product> products)
     {
-        // .ApplyCriteria method is the key bridge that allows you to test your specification
-        // logic without a database
+        // ApplyCriteria runs the spec's WHERE in memory, so no database is needed.
         var query = products.AsQueryable();
         return spec.ApplyCriteria(query).ToList();
     }

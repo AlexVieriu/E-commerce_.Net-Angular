@@ -9,8 +9,8 @@ export type Dashboard = {
   totalRevenue: number;
   // Every product at or below the stock threshold (5).
   lowStockCount: number;
-  // Only the 10 scarcest of them, so this is shorter than lowStockCount.
+  // Only the 15 scarcest of them, so it can be shorter than lowStockCount.
   lowStockProducts: LowStockProduct[];
-  // The 5 newest orders.
+  // The 15 newest orders.
   recentOrders: RecentOrder[];
 };

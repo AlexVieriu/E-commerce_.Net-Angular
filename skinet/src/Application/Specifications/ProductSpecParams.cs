@@ -9,7 +9,7 @@ public class ProductSpecParams : PagingParams
         get => _brands;
         set
         {
-            // Why need .Split: https://claude.ai/chat/4f11d906-a3bd-46cb-b662-f86d9210e47e
+            // The client sends ?brands=a,b as one value; split it so each brand is its own item (same for Types).
             _brands = value.SelectMany(x => x.Split(',',
                 StringSplitOptions.RemoveEmptyEntries)).ToList();
         }
@@ -31,8 +31,7 @@ public class ProductSpecParams : PagingParams
     public string Search
     {
         get => _search ?? "";
-        // Invariant, not current-culture: this runs in .NET, and ToLower() would use the server's
-        // locale — in Turkish, "I".ToLower() is "ı" (dotless), so a search for "IPHONE" would miss.
+        // Invariant: ToLower() follows the server's locale, and in Turkish "I" becomes "ı".
         set => _search = value.ToLowerInvariant();
     }
 

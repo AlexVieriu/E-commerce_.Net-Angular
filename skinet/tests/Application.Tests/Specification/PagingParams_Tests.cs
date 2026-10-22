@@ -2,7 +2,7 @@ using Application.Specifications;
 
 namespace Application.Tests.Specification;
 
-// BEGINNER EXAMPLE 11: Testing Default Values
+// Testing Default Values
 public class PagingParams_Tests
 {
     [Fact]

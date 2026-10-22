@@ -1,6 +1,6 @@
 namespace Application.Tests.Common.DTOs;
 
-// BEGINNER EXAMPLE 7: Testing DTOs with Data Annotations
+// Testing DTOs with Data Annotations
 public class AddressDto_Tests
 {
     [Fact]
