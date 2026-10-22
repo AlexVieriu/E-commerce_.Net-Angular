@@ -9,7 +9,7 @@ How code flows from a task to a sprint release. Pairs with the deploy gate in `t
 | `main` | Sprint releases only — **exactly one squashed commit per sprint** (descriptive body). Push = Azure deploy. | **squash** |
 | `development` | Integration — one **squashed commit per task**. | squash |
 | `feature/<n>-<slug>` | One per task, from `development`. | — |
-| `fix/bug-<n>-<slug>` | One per bug in `Execution plan.md`, from `development`. | squash |
+| `fix/bug-<n>-<slug>` | One per bug in `docs/archive/execution-plan.md`, from `development`. | squash |
 | `fix/task-<n>-<slug>` | Forgotten changes on an already-merged task, from `development`. | squash |
 
 ## Task flow (during a sprint)
@@ -76,7 +76,7 @@ come back as add/add conflicts.
 - **Tree replacement → main:** **exactly one commit per sprint.** `main` is the recruiter-/interviewer-facing
   history — it must read as a tidy list of sprints, never 20+ task commits. The granular work
   stays on `development` and in PRs. Put the sprint's items in the commit **body** as
-  `feat(task-N): …` and `fix(bug-N): …` lines so each sprint maps to `Execution plan.md`.
+  `feat(task-N): …` and `fix(bug-N): …` lines so each sprint maps to `docs/archive/execution-plan.md`.
 
 `main` log must read like this — nothing else:
 
@@ -95,6 +95,6 @@ come back as add/add conflicts.
 - Never commit directly to `main` **except the sprint release itself**, which has no other mechanic
   (orphan branch, see Sprint flow). One such commit per sprint, at a verified sprint end. Nothing else.
 - `main` = **one squashed commit per sprint**, with a `feat(task-N): …` / `fix(bug-N): …` body. Squash only, never `--merge`.
-- Every Sprint / Task / bug fix tracked in `Execution plan.md` is squash-merged — each maps to a `task-N` / `bug-N` reference.
+- Every Sprint / Task / bug fix tracked in `docs/archive/execution-plan.md` is squash-merged — each maps to a `task-N` / `bug-N` reference.
 - `main` push = production deploy — only at a **verified** sprint end (checklist green first).
 - Local → development → main. Verify with your own eyes before the `main` merge.

@@ -5,9 +5,8 @@
     (change)="updateDeliveryMethod($event.value)"
   >
     @for (method of checkoutService.deliveryMethods(); track method.id) {
-      <!-- Not a <label>: mat-radio-button renders its own internal label, and labels can't nest.
-           Padding lives on the *projected content* so it sits inside that internal label and stays
-           clickable — on the outer div it would be a dead ring with a lying cursor-pointer. -->
+      <!-- Not a <label>: mat-radio-button has its own, and labels can't nest.
+           The padding sits on the projected content, inside that label, so the whole box is clickable. -->
       <div class="border-line w-full h-full hover:bg-surface-2">
         <mat-radio-button
           class="w-full h-full"

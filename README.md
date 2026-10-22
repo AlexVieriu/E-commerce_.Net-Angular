@@ -86,7 +86,7 @@ Infrastructure never learns that HTTP exists: the signed-in user arrives through
 declared in `Application` and implemented in `API`.
 
 → [backend](skinet/docs/backend/architecture.md) · [frontend](skinet/docs/frontend/architecture.md) ·
-[all 27 docs](skinet/docs/INDEX.md)
+[all 27 docs](skinet/docs/INDEX.md) · [project history](skinet/progress.md)
 
 ## The interesting bits
 
@@ -167,7 +167,6 @@ cd e2e && npm ci && npx playwright test                 # needs API + client run
   API key.
 - **The cart still accepts a coupon object the server ignores** — a server-owned cart, where the client
   sends a code and never a discount, would close that at the source.
-- **Logging out on `/checkout` doesn't redirect** (BUG-17) — the guard navigates instead of blocking.
 - **No soft delete** — deleting a product that has appeared on an order is permanent.
 - **Coupon restrictions are ignored** — `minimum_amount`, `first_time_transaction` and per-customer limits
   are never read.

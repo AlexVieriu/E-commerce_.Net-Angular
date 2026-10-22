@@ -4,8 +4,7 @@ using FluentValidation.TestHelper;
 
 namespace Application.Tests.Common.DTOs;
 
-// Helper to run DataAnnotation validation without ASP.NET pipeline
-// (still used by RegisterDTO, which keeps DataAnnotations — only CreateProductDTO was migrated).
+// Runs DataAnnotations validation without the ASP.NET pipeline (RegisterDTO still uses them).
 file static class Validator
 {
     public static IList<ValidationResult> Validate(object model)

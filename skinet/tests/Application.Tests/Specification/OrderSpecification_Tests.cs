@@ -1,7 +1,6 @@
 namespace Application.Tests.Specification;
 
-// INTERMEDIATE EXAMPLE 16 
-// https://claude.ai/chat/5ef954ce-d219-4526-ba8c-da407bd48229
+// Each OrderSpecification factory, run in memory over a list of orders.
 public class OrderSpecification_Tests
 {
     [Fact]
@@ -51,7 +50,7 @@ public class OrderSpecification_Tests
 
         var spec = OrderSpecification.ByEmail(email);
 
-        // Act — ApplyFullSpec applies criteria + ordering (ApplyCriteria applies WHERE only)
+        // Act — full spec: WHERE + ORDER BY
         var result = ApplyFullSpec(spec, orders).ToList();
 
         // Assert
@@ -142,7 +141,7 @@ public class OrderSpecification_Tests
         var newerOrder = CreateOrder(2, "test@test.com", orderDate: DateTime.UtcNow.AddDays(-1));
         var orders = new List<Order> { olderOrder, newerOrder }.AsQueryable();
 
-        // Act — ApplyFullSpec applies criteria + ordering (ApplyCriteria applies WHERE only)
+        // Act — full spec: WHERE + ORDER BY
         var result = ApplyFullSpec(spec, orders).ToList();
 
         // Assert
@@ -165,13 +164,12 @@ public class OrderSpecification_Tests
             CreateOrder(5, "test@test.com", orderDate: DateTime.UtcNow)
         }.AsQueryable();
 
-        // Act — ApplyFullSpec applies criteria + ordering + paging (ApplyCriteria applies WHERE only)
+        // Act — full spec: WHERE + ORDER BY + paging
         var result = ApplyFullSpec(spec, orders).ToList();
 
-        // Assert
+        // Assert — newest first is 5, 4, 3, 2, 1; page 2 skips 5 and 4
         Assert.Equal(2, result.Count);
-        // Page 2 with PageSize 2 means skip 2, take 2 (items 3 and 4)
-        Assert.Equal(3, result[0].Id); // After ordering desc, should get orders 3 and 2
+        Assert.Equal(3, result[0].Id);
         Assert.Equal(2, result[1].Id);
     }
 
@@ -290,9 +288,7 @@ public class OrderSpecification_Tests
         Price = 10
     };
 
-    // Applies criteria + ordering + paging.
-    // ApplyCriteria() only applies WHERE — ordering and paging are applied by
-    // SpecificationEvaluator in production. Use this helper for tests that assert on ordering/paging.
+    // ApplyCriteria() is WHERE only; this adds ORDER BY and paging, as SpecificationEvaluator does in production.
     private static IQueryable<T> ApplyFullSpec<T>(BaseSpecification<T> spec, IQueryable<T> query)
     {
         if (spec.Criteria != null)

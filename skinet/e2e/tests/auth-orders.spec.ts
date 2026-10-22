@@ -5,9 +5,7 @@ import { OrdersPage } from '../pages/OrdersPage';
 import { HeaderNav } from '../pages/HeaderNav';
 
 test.describe('registration (always exercises the real register path)', () => {
-  // This test needs to start logged out, so we override the project's saved login with an
-  // empty one. We also use a brand-new email every run, so it always actually registers
-  // instead of accidentally logging into an account that already exists.
+  // Starts logged out (empty storageState) with a fresh email, so it really registers.
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('a new visitor can register and then log in', async ({ page }) => {
@@ -29,8 +27,7 @@ test.describe('registration (always exercises the real register path)', () => {
 });
 
 test.describe('existing customer', () => {
-  // This runs after checkout.spec.ts (see playwright.config.ts `dependencies`), so this
-  // account is guaranteed to already have one order -- the one checkout.spec.ts just placed.
+  // Runs after checkout.spec.ts (`dependencies`), so this account already has an order.
   test('My Orders shows the order placed at checkout', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();

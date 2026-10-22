@@ -2,7 +2,7 @@ namespace API.Controllers;
 
 public class FallbackController(IWebHostEnvironment env) : Controller
 {
-    // Every SPA deep link lands here, and PhysicalFile never sees StaticFileOptions — so the header is set here too.
+    // SPA deep links land here, and PhysicalFile skips StaticFileOptions, so no-cache is set here too.
     public IActionResult Index()
     {
         Response.SetNoCache();

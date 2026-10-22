@@ -6,9 +6,7 @@ import { LoginPage } from '../../pages/LoginPage';
 const authFile = path.join(__dirname, '../../playwright/.auth/customer.json');
 
 setup('authenticate as customer', async ({ page, request }) => {
-  // Make sure this account exists before we try to log in.
-  // First time this runs, it creates the account. Every time after, the account already
-  // exists, so this call fails -- and we just ignore that, since that's expected.
+  // Register first; after the first run it fails as a duplicate, which is expected and ignored.
   await request.post(`${API_URL}account/register`, {
     data: { firstName: 'E2E', lastName: 'Customer', email: CUSTOMER_EMAIL, password: CUSTOMER_PASSWORD },
     failOnStatusCode: false
@@ -19,7 +17,6 @@ setup('authenticate as customer', async ({ page, request }) => {
   await loginPage.login(CUSTOMER_EMAIL, CUSTOMER_PASSWORD);
   await page.waitForURL('**/shop');
 
-  // Save the logged-in session (cookies) to a file. Other tests load this file instead
-  // of logging in again themselves -- see playwright.config.ts's `storageState`.
+  // Save the session (cookies); other projects load it via `storageState`.
   await page.context().storageState({ path: authFile });
 });

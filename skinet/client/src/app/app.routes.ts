@@ -1,8 +1,8 @@
-import { Routes } from '@angular/router';
-import { NotFoundComponent } from './shared/components/not-found/not-found.component';
-import { ServerErrorComponent } from './shared/components/server-error/server-error.component';
-import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { authGuard } from './core/guards/auth.guard';
+import { NotFoundComponent } from './shared/components/not-found/not-found.component';
+import { Routes } from '@angular/router';
+import { ServerErrorComponent } from './shared/components/server-error/server-error.component';
 
 export const routes: Routes = [
   {
@@ -43,5 +43,5 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
     loadChildren: () => import('./features/admin/routes').then((m) => m.adminRoutes)
   },
-  { path: '**', redirectTo: 'not-found', pathMatch: 'full' } // Default redirect for unmatched routes
+  { path: '**', redirectTo: 'not-found', pathMatch: 'full' }
 ];

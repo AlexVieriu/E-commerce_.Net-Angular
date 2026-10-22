@@ -1,12 +1,10 @@
 import { Page, FrameLocator, expect } from '@playwright/test';
 
-// A "page object": one class per app page, holding its buttons/fields as methods.
-// Tests call these methods instead of repeating selectors -- easier to read, easier to fix.
+// Page object: the checkout's selectors live here once, so tests don't repeat them.
 export class CheckoutPage {
   constructor(private page: Page) {}
 
-  // Stripe's card/address forms live inside iframes (separate embedded pages).
-  // frameLocator() is how Playwright reaches inside an iframe to click/fill things.
+  // Stripe's card and address forms are iframes; frameLocator() reaches inside them.
   private addressFrame(): FrameLocator {
     return this.page.frameLocator('iframe[title="Secure address input frame"]');
   }
@@ -19,8 +17,8 @@ export class CheckoutPage {
     await this.page.goto('/checkout');
   }
 
-  // Sometimes the first click on "Next" doesn't work -- the form thinks it's still validating.
-  // So we click, wait a bit, check if the step moved on, and click again if it didn't (up to 5 times).
+  // The first Next click can land while the form is still validating.
+  // So: click, wait 1s, and retry until the step is active (max 5 tries).
   private async clickNextUntilStepActive(stepName: string) {
     const nextButton = this.page.getByRole('button', { name: 'Next' });
     const stepHeader = this.page.locator('.mat-step-header', { hasText: stepName });
@@ -37,12 +35,11 @@ export class CheckoutPage {
 
   async fillAddress(address: { name: string; line1: string; city: string; state: string; postalCode: string }) {
     const frame = this.addressFrame();
-    // We pick the country ourselves (US) instead of trusting the auto-detected one --
-    // it's not always the same, and the State field only shows up for some countries.
+    // Pin the country to US: auto-detect varies, and only some countries show a State field.
     await frame.locator('select[name="country"]').selectOption('US');
     await frame.locator('#shippingAddress-nameInput').fill(address.name);
     await frame.locator('#shippingAddress-addressLine1Input').fill(address.line1);
-    await this.page.keyboard.press('Escape'); // closes the address-suggestions popup, if one opened
+    await this.page.keyboard.press('Escape'); // closes the address suggestions, if any
     await frame.locator('#shippingAddress-localityInput').fill(address.city);
     await frame.locator('select[name="administrativeArea"]').selectOption(address.state);
     await frame.locator('#shippingAddress-postalCodeInput').fill(address.postalCode);

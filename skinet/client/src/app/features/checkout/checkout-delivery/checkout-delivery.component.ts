@@ -42,7 +42,7 @@ export class CheckoutDeliveryComponent {
     if (cart) {
       try {
         await firstValueFrom(this.cartService.setCart({ ...cart, deliveryMethodId: method.id }));
-        this.deliveryComplete.emit(true); // affect parent property from child component
+        this.deliveryComplete.emit(true); // tells the checkout this step is done
       } catch {
         // errorInterceptor already reacted; the step stays incomplete.
       }

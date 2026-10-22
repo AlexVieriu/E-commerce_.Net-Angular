@@ -94,9 +94,9 @@ What the snippet reads:
 |---|---|
 | `c` | the ten card images — `ng-img` is the marker the directive stamps on what it controls |
 | eager | how many download immediately |
-| lazy | how many wait until you scroll |
+| lazy | how many start later — Chrome still fetches them unscrolled once within 1250 px of the viewport |
 | rendered | how wide the image is painted on screen |
-| natural | how wide the image file really is — `0` until it downloads, which is why nine drop out |
+| natural | how wide the image file really is — `0` until it downloads, so the filter drops any not loaded yet |
 
 - **Why:** `shop.component.html` feeds `priority` from `$index === 0`. Ten eager images means that input
   never reached `ProductItemComponent`, and lazy loading is doing nothing.

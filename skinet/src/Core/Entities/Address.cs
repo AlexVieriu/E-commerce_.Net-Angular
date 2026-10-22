@@ -2,7 +2,7 @@ namespace Core.Entities;
 
 public class Address : BaseEntity
 {
-    // we use the same prop that are in Stripe
+    // Same fields as Stripe's address object.
     public required string Line1 { get; set; }
     public string? Line2 { get; set; }
     public required string City { get; set; }

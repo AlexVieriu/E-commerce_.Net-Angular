@@ -33,8 +33,7 @@ export class LoginComponent {
     password: ['', Validators.required]
   });
 
-  // the .login endpoint to the backend is provided by :"app.MapGroup("api").MapIdentityApi<AppUser>()" in Program.cs
-  // MapIdentityApi: Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity
+  // POST api/login comes from MapIdentityApi<AppUser>() in Program.cs.
   onSubmit() {
     this.accountService
       .login(this.loginForm.getRawValue())

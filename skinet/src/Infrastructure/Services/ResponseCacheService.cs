@@ -4,8 +4,7 @@ public class ResponseCacheService(IConnectionMultiplexer redis) : IResponseCache
 {
     private readonly IDatabase _redisDB = redis.GetDatabase(1); // 0 is for our cart
 
-    // Cached: JsonSerializerOptions builds an internal metadata cache on first use, so a new instance
-    // per call throws that cache away and re-reflects over every type. Once, statically, is the fix.
+    // Reused: a new JsonSerializerOptions per call rebuilds its metadata cache (CA1869).
     private static readonly JsonSerializerOptions CacheJsonOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 

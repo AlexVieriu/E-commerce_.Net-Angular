@@ -14,8 +14,7 @@ export class OrderService {
   private http = inject(HttpClient);
   private checkoutConflict = inject(CheckoutConflictService);
   orderComplete = false;
-  // Order created during checkout (before payment confirm). Lets the success page
-  // fall back to fetching it by id if the SignalR push is delayed or lost.
+  // Set before the payment confirms, so the success page can fetch the order if SignalR is late.
   createdOrder: Order | null = null;
 
   createOrder(orderToCreate: OrderToCreate) {

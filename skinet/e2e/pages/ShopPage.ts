@@ -14,9 +14,8 @@ export class ShopPage {
       .getByRole('button', { name: /add to cart/i })
       .click();
 
-    // "Add to cart" sends a request in the background. If we navigate away too fast,
-    // that request can get cancelled and the item never actually gets added.
-    // So we wait here until the cart icon's badge shows "1" -- proof it really worked.
+    // Navigating away too fast can cancel the add-to-cart request.
+    // So wait for the cart badge to show "1" — proof the item was saved.
     await expect(this.page.locator('.mat-badge-content')).toHaveText('1');
   }
 }

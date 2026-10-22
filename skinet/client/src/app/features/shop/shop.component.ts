@@ -1,33 +1,33 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { httpResource } from '@angular/common/http';
-import { ProductItemComponent } from './product-item/product-item.component';
-import { MatDialog } from '@angular/material/dialog';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { FiltersDialogComponent } from './filter-dialog/filter-dialog.component';
+import { FormsModule } from '@angular/forms';
+import { httpResource } from '@angular/common/http';
 import { MatButton } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { MatListOption, MatSelectionList, MatSelectionListChange } from '@angular/material/list';
-import { ShopParams } from '../../shared/models/shopParams';
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Pagination } from '../../shared/models/pagination';
-import { FormsModule } from '@angular/forms';
 import { Product } from '../../shared/models/products';
+import { ProductItemComponent } from './product-item/product-item.component';
+import { ShopParams } from '../../shared/models/shopParams';
 import { ShopService } from '../../core/services/shop.service';
-import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-shop',
   imports: [
-    ProductItemComponent,
+    EmptyStateComponent,
+    FormsModule,
     MatButton,
     MatIcon,
-    MatMenu,
-    MatSelectionList,
     MatListOption,
+    MatMenu,
     MatMenuTrigger,
     MatPaginator,
-    FormsModule,
-    EmptyStateComponent
+    MatSelectionList,
+    ProductItemComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shop.component.html',

@@ -1,5 +1,5 @@
-import { CanActivateFn, Router } from '@angular/router';
 import { AccountService } from '../services/account.service';
+import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { of, map } from 'rxjs';
 
@@ -12,9 +12,8 @@ export const authGuard: CanActivateFn = (_route, state) => {
     return of(true);
   }
 
-  // The router runs every guard at once, then picks an answer by array order.
-  // Navigating from in here would move the page before the router has decided.
-  // returnUrl brings the user back after login.
+  // Return a UrlTree, never navigate: navigate() replaces the navigation before the router picks.
+  // returnUrl sends the user back after login.
   return accountService
     .getAuthState()
     .pipe(

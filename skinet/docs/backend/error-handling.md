@@ -40,7 +40,7 @@ lives in the services that own `POST /orders` and `POST /payments` — see `fron
 
 ⚠️ **Known gap:** the 409 body has no machine-readable type, so the client separates the two conflicts by
 *which service made the call*. `PriceChangedException` also saves the re-priced cart before throwing, then
-doesn't return it — the client fetches it again. Both tracked in *Pull-in candidates* (`Execution plan.md`),
+doesn't return it — the client fetches it again. Both tracked in *Pull-in candidates* (`docs/archive/execution-plan.md`),
 to ride with the next change in this middleware.
 
 ## Error Flow

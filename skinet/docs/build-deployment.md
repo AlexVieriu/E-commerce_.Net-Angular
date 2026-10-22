@@ -173,7 +173,7 @@ deploy has no way to invalidate it.
 
 ### Health endpoints
 
-Azure's probe cannot be slowed below 60 seconds, so the path it pings must check nothing.
+App Service Health check pings the one path you set in the portal, every minute ([App Service docs](https://learn.microsoft.com/en-us/azure/app-service/monitor-instances-health-check)). That path must check nothing, or every ping wakes the database.
 
 | Path | Checks | Called by | Answer |
 |---|---|---|---|

@@ -1,5 +1,4 @@
-// This account belongs to the test suite, not the app's seed data.
-// customer.setup.ts creates it the first time (via the API), and just logs in every time after.
+// The suite's own account, not seed data: customer.setup.ts registers it once, then logs in.
 export const CUSTOMER_EMAIL = 'e2e.customer@skinet-test.local';
 export const CUSTOMER_PASSWORD = 'Pa$$w0rd12!@';
 
@@ -9,8 +8,8 @@ export const CART_A_EMAIL = 'e2e.cart.a@skinet-test.local';
 export const CART_B_EMAIL = 'e2e.cart.b@skinet-test.local';
 export const CART_PASSWORD = 'Pa$$w0rd12!@';
 
-// The app itself creates this admin account on every startup (StoreContextSeed.cs).
-// Password comes from local user-secrets (AdminSettings:Password), not from here.
+// The app resets this admin's password from config on startup (StoreContextSeed.cs),
+// so ADMIN_PASSWORD must match your local user-secret AdminSettings:Password.
 export const ADMIN_EMAIL = 'admin@test.com';
 export const ADMIN_PASSWORD = 'Admin@12345!';
 

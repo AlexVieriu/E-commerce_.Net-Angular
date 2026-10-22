@@ -16,7 +16,7 @@ if (!builder.Environment.IsDevelopment())
     }
 }
 
-// Kestrel localhost config for dev only — Azure handles HTTPS termination in prod
+// Dev only: Azure terminates HTTPS in production.
 if (builder.Environment.IsDevelopment())
 {
     builder.WebHost.ConfigureKestrel(options =>
@@ -60,9 +60,8 @@ app.UseCors("CorsPolicy");
 
 app.UseSecurityHeaders(policies => policies
     .AddDefaultSecurityHeaders()
-    // Stripe Elements iframes (js.stripe.com, hooks.stripe.com) don't send CORP/COEP headers,
-    // so COEP 'credentialless' from the defaults blocks them. We don't use SharedArrayBuffer /
-    // cross-origin isolation, so turn COEP off. COOP same-origin from the defaults stays.
+    // The default COEP (credentialless) blocks Stripe's iframes, which send no COEP header.
+    // We don't need cross-origin isolation, so COEP is off; the default COOP stays.
     .AddCrossOriginEmbedderPolicy(builder => builder.UnsafeNone())
     .AddContentSecurityPolicy(csp =>
     {
@@ -77,7 +76,7 @@ app.UseSecurityHeaders(policies => policies
     .AddPermissionsPolicy(p => p.AddAccelerometer().None())
 );
 
-// Static files served before rate limiter so Angular chunks are never throttled
+// Static files come before the rate limiter, so Angular chunks are never throttled.
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -90,7 +89,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRateLimiter();
 
-// For SignalR
+// Cookie auth for the controllers and the SignalR hub.
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -120,7 +119,7 @@ if (!app.Environment.IsDevelopment())
 
 app.MapHub<NotificationHub>("/hub/notifications");
 
-// `dotnet run -- --seed` is a one-shot: seed (incl. the Bogus demo dataset) then exit, don't serve.
+// `dotnet run -- --seed` seeds (Bogus demo data included) and exits without serving.
 var runSeed = args.Contains("--seed");
 
 await app.SeedDatabaseAsync(runSeed);

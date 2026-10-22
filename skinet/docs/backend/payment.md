@@ -82,7 +82,19 @@ delete it instead: `CartService` builds `cart:{ICurrentUser.Id}` and the webhook
 | Intent status | What happens |
 |---|---|
 | `succeeded` · `canceled` | drop the id, create a fresh intent |
-| anything else, incl. `processing` | reuse it — a second intent for a payment in flight is a second charge |
+| anything else, incl. `requires_action` (3DS) and `processing` | reuse it — it can still complete, so a second intent risks a second charge |
+
+**PaymentIntent statuses** ([Stripe lifecycle](https://docs.stripe.com/payments/paymentintents/lifecycle)):
+
+| Status | Meaning | Code |
+|---|---|---|
+| `requires_payment_method` | no card attached yet, or the last attempt was declined | reuse |
+| `requires_confirmation` | card entered, not yet confirmed (most integrations skip it) | reuse |
+| `requires_action` | customer must act, e.g. 3DS | reuse |
+| `processing` | submitted, result pending; cards process quickly, bank debits can take days | reuse |
+| `requires_capture` | authorized, capture pending (manual capture only) | never reached: no `CaptureMethod` is set, so capture is automatic |
+| `succeeded` | paid | replace |
+| `canceled` | stopped for good, cannot be undone | replace |
 
 Deny-list, never an allow-list. Three routes reach a spent intent: a closed tab (`succeeded`); Stripe
 cancelling an intent confirmed past its limit — *"a variable upper limit … any further calls to this
@@ -185,7 +197,7 @@ endpoint.
 - Webhook endpoint must not have `[Authorize]` — verified by Stripe signature only.
 - Stripe amounts always in cents (multiply by 100).
 - Never delete the cart before the charge succeeds — the retry Stripe allows walks back through it (BUG-2).
-- Never create a second intent for one Stripe has not finished with; `processing` may be mid-3DS (BUG-2).
-- `PaymentIntent` creation uses `IdempotencyKey = Guid.NewGuid()`. The cart-id prefix went with `ShoppingCart.Id` (BUG-18); the Guid was always what made the key unique, so a new intent can still be created for the same cart after a price-change rejection.
+- Never create a second intent for one Stripe has not finished with; 3DS is `requires_action`, and `processing` is a payment in flight (BUG-2).
+- `PaymentIntent` creation uses `IdempotencyKey = Guid.NewGuid()` — new per call, so it only covers the SDK's retries of that request, and a price-change rejection can still create a fresh intent.
 - Payment status is Stripe-sourced only — never admin-entered. A "fix a stuck order" action must reconcile from Stripe's API (re-fetch the `PaymentIntent`, reuse the webhook's match/mismatch logic), not accept a status value typed in by a human.
 

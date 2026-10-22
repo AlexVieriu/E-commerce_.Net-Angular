@@ -2,7 +2,7 @@ namespace Core.Tests.Entities;
 
 public class ShoppingCart_Tests
 {
-    // BEGINNER EXAMPLE 6: Testing Collections
+    // Testing Collections
     [Fact]
     public void ShoppingCart_Items_ShouldInitializeAsEmptyList()
     {
