@@ -16,7 +16,6 @@ Adding a new standalone component inside a feature or shared folder.
 ```typescript
 @Component({
   selector: 'app-product-item',
-  standalone: true,
   imports: [CurrencyPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-item.component.html',
@@ -28,5 +27,5 @@ export class ProductItemComponent {
 
 ## Pitfalls
 
-- Showing state a template reads from a plain field instead of a signal — nothing notifies Angular and the view never updates (BUG-10). Omitting `ChangeDetectionStrategy.OnPush` is *not* a bug: it is the v22 default, and the line is kept for intent.
+- Showing state a template reads from a plain field instead of a signal — the view never updates (BUG-10, see `state-management.md`).
 - Importing a module (e.g., `CommonModule`) instead of the specific directive/pipe needed.

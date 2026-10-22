@@ -5,10 +5,8 @@ public class StoreContextSeed
     public static async Task SeedAsync(StoreContext context, UserManager<AppUser> userManager,
         string adminPassword)
     {
-        // Key Vault (AdminSettings:Password) is the source of truth for the admin password.
-        // Create the admin if missing, otherwise RESET its password from config on every startup
-        // so rotating the secret + restart actually updates the account (BUG-9). Without this the
-        // seed only created-if-missing, leaving a stale password no one could recover.
+        // Config (Key Vault) owns the admin password: on every startup, create the admin if missing,
+        // otherwise reset its password — so rotating the secret and restarting updates it (BUG-9).
         var admin = await userManager.FindByEmailAsync("admin@test.com");
         if (admin is null)
         {

@@ -12,7 +12,7 @@ export class RegisterPage {
     await this.page.getByLabel('Last Name').fill(fields.lastName);
     await this.page.getByLabel('Email').fill(fields.email);
     await this.page.getByLabel('Password').fill(fields.password);
-    // The header also has a "Register" button, so we look only inside the form.
+    // The header has a "Register" button too, so search inside the form only.
     await this.page.locator('form').getByRole('button', { name: 'Register' }).click();
   }
 }

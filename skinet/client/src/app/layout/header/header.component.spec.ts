@@ -7,8 +7,8 @@ import { provideRouter } from '@angular/router';
 import { HeaderComponent } from './header.component';
 import { BusyService } from '../../core/services/busy.service';
 
-// BUG-10 was the view never hearing that the request finished, so every case waits
-// on Angular's own scheduler (whenStable) instead of forcing a refresh — detectChanges() would pass on the broken code too.
+// BUG-10: the view never heard the request finish, so every case waits on whenStable().
+// detectChanges() forces a refresh, so it would pass on the broken code too.
 describe('HeaderComponent loading bar', () => {
   let fixture: ComponentFixture<HeaderComponent>;
   let busyService: BusyService;
@@ -62,7 +62,7 @@ describe('HeaderComponent loading bar', () => {
     expect(barIsVisible()).toBe(true);
   });
 
-  // An unbalanced idle() must not push the count negative, or the next request would not show the bar.
+  // An extra idle() must not push the count below 0, or the next request wouldn't show the bar.
   it('shows the bar again after an extra idle', async () => {
     busyService.idle();
     busyService.busy();

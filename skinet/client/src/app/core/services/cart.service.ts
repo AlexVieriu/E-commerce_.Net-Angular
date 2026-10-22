@@ -54,9 +54,8 @@ export class CartService {
   getCartAsync() {
     return this.http.get<Cart>(this.baseUrl + 'cart').pipe(
       map((cart) => {
-        // map - allows to perform side effects and transform emitted value before passing it downstream
-        this._cart.set(cart); // Update the `cart` signal with the fetched cart data
-        return cart; // Pass the cart data downstream to subscribers
+        this._cart.set(cart);
+        return cart;
       })
     );
   }
@@ -145,13 +144,12 @@ export class CartService {
 
   // private methods
 
-  // errorInterceptor already reacted (snackbar or login redirect) and rethrew the error.
-  // Swallowed here because (click) handlers ignore the promise, so a rejection would be uncaught.
+  // errorInterceptor already reported the error; swallowed so a (click) caller can't leak a rejection.
   private async saveCart(cart: Cart) {
     try {
       await firstValueFrom(this.setCart(cart));
     } catch {
-      // Handled by errorInterceptor; the cart signal still holds the last saved cart.
+      // The cart signal still holds the last saved cart.
     }
   }
 

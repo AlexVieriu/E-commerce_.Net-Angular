@@ -1,13 +1,10 @@
 namespace Infrastructure.Data;
 
-// Non-generic + generic methods, so T is inferred at the call site instead of being named twice
-// (SpecificationEvaluator<T>.GetQuery(...) forced the caller to repeat the type — that's CA1000).
+// A non-generic class with generic methods, so T is inferred at the call site (CA1000).
 public static class SpecificationEvaluator
 {
-    // ApplyCommon builds WHERE + JOINs + ORDER BY; this method adds the steps whose order changes the result.
-    // Distinct must run before Skip/Take (dedupe, then page); paging leans on ApplyCommon's ORDER BY so the
-    // page window is deterministic (SQL OFFSET/FETCH needs it). Chaining order of Where/Include/OrderBy is
-    // NOT a perf lever — the DB optimizer picks the plan.
+    // Distinct runs before Skip/Take (dedupe, then page), and paging relies on ApplyCommon's ORDER BY.
+    // The order of Where/Include/OrderBy calls doesn't affect speed — the database picks the plan.
     public static IQueryable<T> GetQuery<T>(IQueryable<T> query, ISpecification<T> spec)
         where T : BaseEntity
     {

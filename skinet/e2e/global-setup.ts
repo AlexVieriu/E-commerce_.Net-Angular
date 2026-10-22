@@ -1,10 +1,8 @@
 import { execFileSync } from 'child_process';
 import path from 'path';
 
-// Playwright runs this once, before it starts the app, and before any test.
-// We use it to get the app's dependencies ready: Redis running, database seeded.
-// `dotnet run -- --seed` seeds data then exits (it does not serve the app) --
-// that's why it runs here and not as one of the webServer entries below.
+// Runs once before any test, but AFTER the webServer entries are up (Playwright starts those first).
+// `dotnet run -- --seed` seeds and exits, so it can't be a webServer entry.
 export default function globalSetup() {
   const repoRoot = path.resolve(__dirname, '..');
 

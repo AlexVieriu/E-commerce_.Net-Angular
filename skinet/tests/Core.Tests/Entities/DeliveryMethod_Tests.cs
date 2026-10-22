@@ -1,6 +1,6 @@
 namespace Core.Tests.Entities;
 
-// BEGINNER EXAMPLE 12: Testing Object Initialization
+// Testing Object Initialization
 public class DeliveryMethod_Tests
 {
     [Fact]

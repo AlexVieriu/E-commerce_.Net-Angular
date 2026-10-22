@@ -69,8 +69,7 @@ export class CheckoutComponent {
   saveAddress = signal(false);
   loading = signal(false);
 
-  // as the elements get completed we update our signal
-  // inline type annotation - Angular signal (we use it instead of interface)
+  // Which steps are complete; the confirmation token needs all three.
   completionStatus = signal<{ address: boolean; card: boolean; delivery: boolean }>({
     address: false,
     card: false,
@@ -83,9 +82,8 @@ export class CheckoutComponent {
   constructor() {
     afterNextRender(() => void this.mountStripeElements());
 
-    // Elements is built from one clientSecret, and the server returns a new one when it replaced a
-    // spent intent. Rebuild, or the mounted elements stay tied to a dead intent.
-    // Claiming the secret first stops the rebuild's own POST /payments from re-firing this. (BUG-2)
+    // Elements is bound to one clientSecret; a replaced intent brings a new one, so rebuild.
+    // Claiming the secret first stops the rebuild's own POST /payments re-firing this. (BUG-2)
     effect(() => {
       const clientSecret = this.cartService.cart()?.clientSecret;
       if (!clientSecret || !this.mountedClientSecret) return;
@@ -95,8 +93,8 @@ export class CheckoutComponent {
       void this.rebuildStripeElements();
     });
 
-    // Shipping belongs to checkout: leaving it drops the fee from the Cart page's order summary.
-    // The delivery step re-selects the method from cart.deliveryMethodId on the way back in.
+    // Leaving checkout drops the shipping fee from the Cart page's summary.
+    // Coming back, the delivery step re-selects it from cart.deliveryMethodId.
     inject(DestroyRef).onDestroy(() => {
       this.stripeService.disposeElements();
       this.cartService.setSelectedDelivery(null);
@@ -150,10 +148,9 @@ export class CheckoutComponent {
   }
 
   async onStepChange(event: StepperSelectionEvent) {
-    // index = 1 -> i moved to the next step
+    // Arriving at Shipping: save the address to the account if the box is ticked.
     if (event.selectedIndex === 1) {
       if (this.saveAddress()) {
-        // update the user account Address from the API
         const address = (await this.getAddressFromStripeAddress()) as Address;
         if (address) firstValueFrom(this.accountService.updateAddress(address));
       }
@@ -173,7 +170,6 @@ export class CheckoutComponent {
 
   async getConfirmationToken() {
     try {
-      // check if every status in completionStatus(address, card, delivery) is true
       const everyStatusTrue = Object.values(this.completionStatus()).every(
         (status) => status == true
       );
@@ -189,13 +185,10 @@ export class CheckoutComponent {
 
   async confirmPayment(stepper: MatStepper) {
     this.loading.set(true);
-    // if they have a problem with the credit card, go back to payment page
     try {
       if (this.confirmationToken()) {
-        // Create the order FIRST (status Pending) so the Stripe webhook always finds it.
-        // Otherwise payment_intent.succeeded can arrive before the order exists (a race
-        // that loses on slow clients), leaving the order stuck Pending with no SignalR push.
-        // Bonus: price/stock validation now runs *before* the customer is charged.
+        // Order first (Pending), so the payment_intent.succeeded webhook always finds it.
+        // It also re-checks price and stock before the customer is charged.
         const order = await this.createOrderModel();
         const createdOrder = (await firstValueFrom(this.orderService.createOrder(order))) as Order;
         if (!createdOrder) throw new Error('Order creation failed');
@@ -214,7 +207,7 @@ export class CheckoutComponent {
     } catch (error: unknown) {
       if (error instanceof HttpErrorResponse && error.status === 409) return;
       this.snackBar.error(error instanceof Error ? error.message : 'Something went wrong');
-      stepper.previous(); // go to Step 2, then can go to Step 3 to generate new token
+      stepper.previous(); // Back to Payment: re-entering it re-runs POST /payments (BUG-2)
     } finally {
       this.loading.set(false);
     }

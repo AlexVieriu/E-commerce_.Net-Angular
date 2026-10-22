@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { httpResource } from '@angular/common/http';
-import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatDivider } from '@angular/material/divider';
 import { CartService } from '../../../core/services/cart.service';
-import { Product } from '../../../shared/models/products';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { environment } from '../../../../environments/environment';
+import { httpResource } from '@angular/common/http';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatDivider } from '@angular/material/divider';
+import { MatIcon } from '@angular/material/icon';
+import { Product } from '../../../shared/models/products';
 
 @Component({
   selector: 'app-product-details',
@@ -20,20 +20,20 @@ export class ProductDetailsComponent {
 
   id = input.required<string>();
   product = httpResource<Product>(() => environment.apiUrl + 'products/' + this.id());
-  quantityInCart = computed(
-    () =>
-      this.cartService.cart()?.items.find((x) => x.productId === this.product.value()?.id)
-        ?.quantity ?? 0
-  );
+  quantityInCart = computed(() => {
+    const productId = this.product.value()?.id;
+    const cartItem = this.cartService.cart()?.items.find((item) => item.productId === productId);
+    return cartItem?.quantity ?? 0;
+  });
 
-  // Adding and editing are separate intents (BUG-14), so the button only ever adds one.
+  // The button only adds one; editing is a separate control (BUG-14).
   addOne() {
     const product = this.product.value();
     if (!product) return;
     this.cartService.addItemToCart(product);
   }
 
-  // At a quantity of one the service drops the line, and the stepper disappears with it.
+  // At quantity one, the service removes the cart item and the stepper hides.
   removeOne() {
     const product = this.product.value();
     if (!product) return;

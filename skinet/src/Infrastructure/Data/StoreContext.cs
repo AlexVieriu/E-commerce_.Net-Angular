@@ -26,17 +26,11 @@ public class StoreContext : IdentityDbContext<AppUser>
 
         builder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
 
-        // Apply database-specific configurations (to be overridden in derived classes)
+        // Provider-specific settings, e.g. SQL Server's decimal column types.
         ApplyDatabaseSpecificConfigurations(builder);
-
-        // -- Old code --
-        // .ApplyConfigurationsFromAssembly : applies configuration from all IEntityTypeConfiguration instances that are defined in provided assembly 
-        // .Assembly : gets the assembly that contains the type of the current instance
-        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
     }
 
     protected virtual void ApplyDatabaseSpecificConfigurations(ModelBuilder modelBuilder)
     {
-        // Default implementation - can be overridden in derived classes
     }
 }

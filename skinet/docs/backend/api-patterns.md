@@ -55,12 +55,7 @@ Returned by `ExceptionMiddleware`. See `backend/error-handling.md`.
 
 ## Rate Limiting
 
-Two policies — see `controllers.md` for which endpoints use each.
-
-| Policy | Limit | Applied to |
-|---|---|---|
-| Global | 200 req/min per IP | All endpoints |
-| `strict` | 30 req/min per IP | Identity + Coupons |
+Global 200 req/min per IP, plus a `strict` policy (30 req/min) — table in `controllers.md`.
 
 ## Rules / Constraints
 

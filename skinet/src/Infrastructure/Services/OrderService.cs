@@ -99,8 +99,7 @@ public class OrderService(IUnitOfWork unitOfWork, ICartService cartService,
                 "Stock changed during checkout due to a concurrent order. Please try again.");
         }
 
-        // The cart stays: a declined card leaves the intent payable, and the retry needs the cart.
-        // The client deletes it once the payment succeeds. (BUG-2)
+        // The cart stays for a declined-card retry; the client deletes it once payment succeeds. (BUG-2)
         return order;
     }
 

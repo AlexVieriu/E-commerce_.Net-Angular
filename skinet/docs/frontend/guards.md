@@ -53,9 +53,11 @@ There is no single place. Guards are attached where the route is declared:
 2. Otherwise → `getAuthState()` (GET `/api/account/auth-status`), then allow or return the login `UrlTree`
    with `returnUrl` set from `state.url`.
 
-Step 2 is rarely reached: `provideAppInitializer` blocks bootstrap on `InitService.init()`, so
-`currentUser` is already settled before any route activates. It still covers a cookie that dies
-mid-session.
+Step 2 is every anonymous visit: `InitService.init()` settles `currentUser` before any route activates,
+and for a visitor with no session it settles to `null`.
+
+A cookie that dies mid-session is not caught here: `currentUser` is still set, so step 1 allows. The
+first API call then 401s, and `errorInterceptor` clears the user and sends them to login.
 
 ## adminGuard
 
@@ -85,8 +87,9 @@ Checks `orderService.orderComplete` — a plain boolean, not a signal.
 - **Return a `UrlTree`; never navigate.** The whole of BUG-17.
 - **A guard that might not be the one answering stays silent.** Snackbars fire regardless of what the
   router picks, so gate them on the condition that makes this guard the right one to speak.
-- `authGuard` is listed first everywhere it is paired. With `UrlTree` this is belt-and-braces rather than
-  load-bearing — `emptycartGuard` and `adminGuard` both stand down for anonymous visitors on their own.
+- `authGuard` is listed first everywhere it is paired. On `/checkout` that is belt-and-braces —
+  `emptycartGuard` returns `true` for anonymous visitors. On `/admin` it is load-bearing: `adminGuard`
+  returns its own login `UrlTree` without a `returnUrl` — listed first, it would win and drop the `returnUrl`.
 - Guards use `inject()`, not constructor injection.
 - Specs live in `core/guards/guards.spec.ts` — one file, since all four share the contract. They assert
   the destination *and* that `navigate` / `navigateByUrl` were never called.

@@ -39,7 +39,7 @@ Infrastructure          -> Application
     ^
     |
 API                     -> Infrastructure
-  Controllers/ Middleware/ Filters/ Errors/ SignalR/ Extensions/ Settings/ HealthChecks/
+  Controllers/ Conventions/ Middleware/ Filters/ Errors/ SignalR/ Extensions/ Settings/ HealthChecks/
   Services/                     CurrentUser (see the placement rule below)
 ```
 
@@ -68,7 +68,7 @@ usually Infrastructure, but not always.
 exist only to answer an HTTP probe, and hosting them in Infrastructure would mean a health-check package
 reference there.
 
-## DB Registration (Program.cs)
+## DB Registration (`ApplicationServicesExtensions.cs`)
 
 SQLite in Development, SqlServer in Production via factory pattern:
 
@@ -86,8 +86,6 @@ All other code depends on `StoreContext` only — never on the derived contexts.
   abstractions only, no ASP.NET Core.
 - Application → no references to Infrastructure or API.
 - Service interfaces in Application, not Core.
-- `IProductRepository` is legacy — use `IGenericRepository<Product>` + specs.
-- Migrations per-provider: run SQLite and SqlServer separately.
 - Infrastructure → no references to API, even one-directionally useful ones (SignalR, `NotificationHub`,
   etc. all live in `API`). `API` already references `Infrastructure`, so the reverse would be circular
   and won't compile. An Infrastructure service that needs to trigger a SignalR push can't do it itself —
@@ -97,6 +95,3 @@ All other code depends on `StoreContext` only — never on the derived contexts.
 
 - Referencing `StoreContext` or Infrastructure types directly in a controller.
 - Adding a service interface to Core instead of Application.
-- Running only one migration when changing schema — must run both providers.
-- Trying to move a SignalR/notification call into an Infrastructure service "to keep it all in one
-  place" — it can't reference `NotificationHub` from there (see Rules above).

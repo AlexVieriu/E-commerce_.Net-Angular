@@ -5,15 +5,15 @@ import { ShopPage } from '../pages/ShopPage';
 import { CartPage } from '../pages/CartPage';
 import { HeaderNav } from '../pages/HeaderNav';
 
-// BUG-18 from the user's side: the cart followed the *browser*, not the person — the id lived in
-// localStorage and survived logout, so the next person to log in inherited the previous one's items.
+// BUG-18: the cart id lived in localStorage and survived logout,
+// so the next person on the same browser got the previous one's items.
 // No storageState here on purpose: the logout is the bug, so it has to be performed for real.
 test('a second user on the same browser never inherits the first user cart', async ({
   page,
   request
 }) => {
   // Register once; the API 400s on a duplicate, which we ignore.
-  // Carts outlive the run in Redis, so clear both — otherwise the counts below are last run's leftovers.
+  // Carts outlive the run in Redis, so clear both, or the counts below see last run's items.
   for (const email of [CART_A_EMAIL, CART_B_EMAIL]) {
     await request.post(`${API_URL}account/register`, {
       data: { firstName: 'E2E', lastName: 'Cart', email, password: CART_PASSWORD },

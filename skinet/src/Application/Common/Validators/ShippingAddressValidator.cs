@@ -2,12 +2,11 @@ using FluentValidation;
 
 namespace Application.Common.Validators;
 
-// Child validator reused via SetValidator on CreateOrderDto.ShippingAddress — demonstrates
-// FluentValidation's composability (one address rule set, reusable across DTOs).
+// Child validator, plugged into CreateOrderDto.ShippingAddress with SetValidator.
 public class ShippingAddressValidator : AbstractValidator<ShippingAddress>
 {
-    // The only countries Stripe itself validates a state for; elsewhere (e.g. Romania) the
-    // Address Element legitimately omits it. https://support.stripe.com/questions/connect-address-validation
+    // Stripe validates a state only for these three (stated for Connect onboarding); Romania, e.g., has none.
+    // https://support.stripe.com/questions/connect-address-validation
     private static readonly string[] StateRequiredCountries = ["US", "CA", "AU"];
 
     public ShippingAddressValidator()

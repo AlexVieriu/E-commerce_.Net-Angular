@@ -15,14 +15,14 @@ export class SignalrService {
     if (this.hubConnection?.state === HubConnectionState.Connected) return;
 
     this.hubConnection = new HubConnectionBuilder()
-      // withCredentials, so the Cookie will be send when we make the connection to this hub
+      // withCredentials sends the auth cookie, so the hub knows who connected.
       .withUrl(this.hubUrl, { withCredentials: true })
       .withAutomaticReconnect()
       .build();
 
     this.hubConnection.start().catch((err) => console.log(err));
 
-    // Listen for messages from the server: PaymentController.cs -> HandlePaymentIntentSucceeded()
+    // Sent by PaymentsController (webhook) and AdminController.SyncPaymentStatus.
     this.hubConnection.on('OrderCompleteNotification', (order: Order) => {
       this.orderSignal.set(order);
     });

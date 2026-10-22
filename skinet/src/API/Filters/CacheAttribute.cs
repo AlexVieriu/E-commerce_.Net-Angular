@@ -5,18 +5,13 @@ public class CacheAttribute(int timeToLiveInMinutes) : Attribute, IAsyncActionFi
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        // we can't inject services in attributes, so we get it from the HttpContext
+        // An attribute gets no constructor injection, so the service comes from the request.
         var cacheService = context.HttpContext.RequestServices.GetRequiredService<IResponseCacheService>();
-
-        // if we have this implemented, when we have different order of query params, 
-        // we will have different cache keys
-        // var cacheKey2 = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
 
         var cacheKey = GenerateCacheKeyFromRequest(context.HttpContext.Request);
 
         var cachedResponse = await cacheService.GetCachedResponseAsync(cacheKey);
 
-        // if we have a cached response
         if (!string.IsNullOrEmpty(cachedResponse))
         {
             var contentResult = new ContentResult
@@ -27,11 +22,10 @@ public class CacheAttribute(int timeToLiveInMinutes) : Attribute, IAsyncActionFi
             };
 
             context.Result = contentResult;
-            return; // return to the client; don't hit the controller and the database
+            return; // Cache hit: the action and the database are skipped.
         }
 
-        // calls the GetProducts() action or other action that has cache attribute
-        var executedContext = await next(); 
+        var executedContext = await next();
 
         if (executedContext.Result is OkObjectResult okObjectResult)
         {
@@ -41,11 +35,9 @@ public class CacheAttribute(int timeToLiveInMinutes) : Attribute, IAsyncActionFi
         }
     }
 
-    // cache key ex: "/api/products|brandId-1|typeId-2"
-    // Invariant culture: a cache key must be byte-identical regardless of the server's locale.
-    // Path lowercased: routing is case-insensitive, so "/api/Products/72" and "/api/products/72"
-    // are the same resource. Without this they'd cache under different keys and InvalidateCache
-    // (a single-case Redis pattern, case-sensitive) would miss whichever case it wasn't written for.
+    // Key e.g. "/api/products|brandId-1|typeId-2"; query keys are sorted, so their order doesn't matter.
+    // Path lowercased: routing ignores case, but InvalidateCache's Redis pattern doesn't.
+    // Invariant culture: the key must not depend on the server's locale.
     private static string GenerateCacheKeyFromRequest(HttpRequest request)
     {
         var keyBuilder = new StringBuilder();

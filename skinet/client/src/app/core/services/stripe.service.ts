@@ -47,7 +47,7 @@ export class StripeService {
         const cart = await firstValueFrom(this.createOrUpdatePaymentIntent());
         this.elements = stripe.elements({
           clientSecret: cart.clientSecret,
-          // Elements render in Stripe's iframes, so our CSS never reaches them: match the snow theme here.
+          // Stripe's iframes don't see our CSS, so the snow theme is set here.
           appearance: {
             theme: 'night',
             labels: 'floating',
@@ -71,7 +71,7 @@ export class StripeService {
     if (!this.paymentElement) {
       const elements = await this.initializeElements();
       if (elements) {
-        // .create(..) ->  https://docs.stripe.com/payments/payment-element
+        // https://docs.stripe.com/payments/payment-element
         this.paymentElement = elements.create('payment');
       } else {
         throw new Error('Elements instance has not been initialized');
@@ -101,8 +101,7 @@ export class StripeService {
     const user = this.accountService.currentUser();
     const defaultValues: StripeAddressElementOptions['defaultValues'] = {};
 
-    // Never concatenate directly — a user with no first/last name would yield the
-    // literal string "null null", which then gets saved onto the order (BUG-13).
+    // filter(Boolean): a user with no name must not save "null null" onto the order (BUG-13).
     const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
     if (fullName) {
       defaultValues.name = fullName;
@@ -152,13 +151,11 @@ export class StripeService {
   createOrUpdatePaymentIntent() {
     if (!this.cartService.cart()) throw new Error('Problem with cart');
 
-    // Always store the response: the clientSecret changes when the server replaced a spent intent,
-    // and confirmPayment() reads it off this signal.
-    // Stored locally, not POSTed back -- the server already saved this cart. (BUG-2)
+    // Store every response: a replaced intent brings a new clientSecret, read by confirmPayment().
+    // Set locally, not POSTed back — the server already saved this cart. (BUG-2)
     return this.http.post<Cart>(this.baseUrl + 'payments', {}).pipe(
       tap((cart) => this.cartService.setLocalCart(cart)),
-      // 409 = a price change or a retired coupon (BUG-19).
-      // Recovered here because every caller funnels through this method.
+      // 409 = a price change or a retired coupon (BUG-19); every caller passes through here.
       catchError((err: HttpErrorResponse) => {
         if (err.status === 409) this.checkoutConflict.recoverStaleCart();
         return throwError(() => err);
@@ -176,6 +173,4 @@ export class StripeService {
   }
 }
 
-// firstValueFrom
-// converts an Observable to a Promise by waiting for the Observable to emit
-// its first value, then resolving the Promise with that value.
+// firstValueFrom: a Promise of the Observable's first value (rejects if it completes empty).

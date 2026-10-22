@@ -14,9 +14,8 @@ const ADDRESS = {
   postalCode: '94043'
 };
 
-// This test walks through the whole checkout flow like a real customer would:
-// add a product, go to checkout, fill in address + payment, pay, and land on the success page.
-// It uses Stripe's official test card, so it's a real payment, just against Stripe's test mode.
+// The full checkout as a customer: add, address, pay, success page.
+// A real payment with Stripe's test card, in test mode.
 test('customer can check out with a real Stripe payment', async ({ page }) => {
   const shop = new ShopPage(page);
   const cart = new CartPage(page);
@@ -36,8 +35,8 @@ test('customer can check out with a real Stripe payment', async ({ page }) => {
   await expect(page).toHaveURL(/\/checkout\/success/);
 });
 
-// BUG-2: creating the order deleted the Redis cart one step before the charge, so a decline left
-// nothing to retry with -- the customer got "Cart unavailable" instead of Stripe's message.
+// BUG-2: creating the order deleted the cart before the charge, so a decline left nothing to retry —
+// the customer saw "Cart unavailable" instead of Stripe's message.
 test('a declined card can be retried in the same session', async ({ page }) => {
   const shop = new ShopPage(page);
   const cart = new CartPage(page);

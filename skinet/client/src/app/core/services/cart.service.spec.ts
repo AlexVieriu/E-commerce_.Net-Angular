@@ -9,7 +9,7 @@ import { CartItem } from '../../shared/models/cartItem';
 import { environment } from '../../../environments/environment';
 
 // errorInterceptor reacts to a failed save (snackbar or login redirect) and rethrows it.
-// Templates call these async methods from (click) and ignore the promise, so a rejection would be uncaught.
+// Templates call these from (click) and ignore the promise, so a rejection would go uncaught.
 describe('CartService — a rejected cart save', () => {
   let service: CartService;
   let httpTesting: HttpTestingController;

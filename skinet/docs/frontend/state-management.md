@@ -97,6 +97,3 @@ State a template reads must be a signal, even a boolean nobody else shares.
 
 - Clearing the cart on logout but not loading it on login — the badge stays empty until the user
   refreshes the page, because `InitService` only runs at app startup. Clear and load must be paired.
-- Calling `.set()` from a component — bypasses service logic.
-- Using `BehaviorSubject` for new state — use signals.
-- Forgetting `asReadonly()` — signal appears readonly but isn't enforced.

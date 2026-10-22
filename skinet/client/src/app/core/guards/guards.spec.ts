@@ -1,6 +1,4 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { AccountService } from '../services/account.service';
 import {
   ActivatedRouteSnapshot,
   provideRouter,
@@ -8,21 +6,22 @@ import {
   RouterStateSnapshot,
   UrlTree
 } from '@angular/router';
-import { firstValueFrom, isObservable, Observable, of } from 'rxjs';
-import { authGuard } from './auth.guard';
 import { adminGuard } from './admin.guard';
-import { emptycartGuard } from './emptycart.guard';
-import { orderCompleteGuard } from './order-complete.guard';
-import { AccountService } from '../services/account.service';
-import { CartService } from '../services/cart.service';
-import { OrderService } from '../services/order.service';
-import { SnackbarService } from '../services/snackbar.service';
-import { User } from '../../shared/models/user';
+import { authGuard } from './auth.guard';
 import { Cart } from '../../shared/models/cart';
+import { CartService } from '../services/cart.service';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { emptycartGuard } from './emptycart.guard';
+import { firstValueFrom, isObservable, Observable, of } from 'rxjs';
+import { orderCompleteGuard } from './order-complete.guard';
+import { OrderService } from '../services/order.service';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { SnackbarService } from '../services/snackbar.service';
+import { TestBed } from '@angular/core/testing';
+import { User } from '../../shared/models/user';
 
-// BUG-17: the router runs every guard at once, then picks by array order.
-// A guard that navigates itself moves the page first, so it cannot lose.
-// These specs pin both halves: return a destination, never navigate.
+// BUG-17: a guard that navigates replaces the navigation, so it wins whatever the array order.
+// These specs pin the fix: return a destination, never navigate.
 
 const currentUser = signal<User | null>(null);
 const isAdmin = signal(false);

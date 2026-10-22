@@ -31,8 +31,7 @@ public class Order_DiscountEdge_Tests
     public void GetTotal_WhenDiscountExceedsSubtotal_TotalIsNegative()
     {
         // Documents current behaviour: no floor at zero.
-        // If this becomes a bug in production, this test will catch the regression
-        // when a floor is added (change Should().Be(-5m) to Should().Be(0m)).
+        // If a floor is added, change Should().Be(-5m) to Should().Be(0m).
         var order = MakeOrder(subtotal: 50m, discount: 60m, shipping: 5m);
 
         order.GetTotal().Should().Be(-5m);
