@@ -185,10 +185,11 @@ App Service Health check pings the one path you set in the portal, every minute 
 - The query form lands in logs — rotate the key, don't reuse a password.
 - Not Identity on that path: it reads `AspNetUsers`, which is gone when SQL is what died. Configuration is
   already in memory.
-- F1 only records the metric — no instance is removed or replaced, so the alert on it is the point.
-- Changing `healthCheckPath` restarts the app. Settle the path first.
-- The pings keep the app loaded, so it stops unloading after 20 idle minutes — and every cold start
-  re-runs `SeedDatabaseAsync`, which wakes the database.
+- On F1 the Azure health check does nothing measurable: no *Health check status* data in 40 min, and the
+  app still unloaded after 20 idle minutes (cold start 54 s, measured 2026-10-31).
+- The path stays set for a move to Basic. Changing `healthCheckPath` restarts the app.
+- **Uptime = UptimeRobot** (free) pings `/health` every 15 min: it keeps the app loaded and alerts when it is down.
+- Every cold start re-runs `SeedDatabaseAsync`, which wakes the database.
 - Measured with Redis stopped: `/health` stayed `Healthy`; `/health/ready` gave 503 in 5.4s.
 
 ## SQLite → SqlServer Switch
@@ -224,7 +225,7 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 | **App Service → Connection Strings** | `Redis` (Custom), `SqlServerAzureConnection` (SQLServer) |
 | **App Service → App Settings** | `KeyVaultUrl`, AppInsights vars (Azure-managed) |
 | **App Service → Health check** | Path `/health` |
-| **Alert rule** `skinet-health-down` | `avg HealthCheckStatus < 100` over 5 min, checked every 1 min, severity 1 → action group `azureapp-auto` (Azure mobile app push) |
+| **UptimeRobot** (outside Azure) | HTTPS monitor on `/health`, every 15 min — keep-alive + down alert by email |
 | **`appsettings.json`** | `KeyVaultUrl`, Logging config only — nothing sensitive |
 
 ### Azure roles
