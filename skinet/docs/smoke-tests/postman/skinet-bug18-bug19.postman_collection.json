@@ -1,0 +1,1072 @@
+{
+	"info": {
+		"_postman_id": "355c631a-7bd4-425e-9c50-a0cc1bab844c",
+		"name": "Skinet - Job Interview Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8648065"
+	},
+	"item": [
+		{
+			"name": "1 · BUG-18 IDOR · pre-fix",
+			"item": [
+				{
+					"name": "Step 1: Register - User A",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Alice\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/account/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Register - User B",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Alice\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"user_B@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/account/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Login - User A",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Create A cart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"cart-of-A\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": 1,\r\n            \"productName\": \"Angular Blue Boots\",\r\n            \"price\": 180,\r\n            \"quantity\": 1,\r\n            \"pictureUrl\": \"/images/products/boot-ang1.png\",\r\n            \"brand\": \"Angular\",\r\n            \"type\": \"Boots\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Login - User B",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_B@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: B reads A's cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"B must NOT see A's cart (items should be empty)\", () => {\r\n    pm.expect(pm.response.json().items).to.be.empty;\r\n});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/cart?id=cart-of-A",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "cart-of-A"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 7: B overwrites A's cart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"cart-of-A\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": 1,\r\n            \"productName\": \"Angular Blue Boots\",\r\n            \"price\": 180,\r\n            \"quantity\": 99,\r\n            \"pictureUrl\": \"/images/products/boot-ang1.png\",\r\n            \"brand\": \"Angular\",\r\n            \"type\": \"Boots\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 8: Login - User A",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 9: Proof: A reads cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"A's cart must still have quantity 1 (B must not change it)\", () => {\r\n    pm.expect(pm.response.json().items[0].quantity).to.eql(1);\r\n});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart?id=cart-of-A",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "cart-of-A"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2 · BUG-18 IDOR · fixed",
+			"item": [
+				{
+					"name": "Step 1: Register - User A",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Alice\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/account/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Register - User B",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Alice\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"user_B@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/account/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Login - User A",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Create A cart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"cart-of-A\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": 1,\r\n            \"productName\": \"Angular Blue Boots\",\r\n            \"price\": 180,\r\n            \"quantity\": 1,\r\n            \"pictureUrl\": \"/images/products/boot-ang1.png\",\r\n            \"brand\": \"Angular\",\r\n            \"type\": \"Boots\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Login - User B",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_B@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: B reads A's cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"B must NOT see A's cart (items should be empty)\", () => {\r\n    pm.expect(pm.response.json().items).to.be.empty;\r\n});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/cart?id=cart-of-A",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "cart-of-A"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 7: B overwrites A's cart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"cart-of-A\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": 1,\r\n            \"productName\": \"Angular Blue Boots\",\r\n            \"price\": 180,\r\n            \"quantity\": 99,\r\n            \"pictureUrl\": \"/images/products/boot-ang1.png\",\r\n            \"brand\": \"Angular\",\r\n            \"type\": \"Boots\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 8: Login - User A",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 9: A reads cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"A's cart must still have quantity 1 (B must not change it)\", () => {\r\n    pm.expect(pm.response.json().items[0].quantity).to.eql(1);\r\n});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart?",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3 · BUG-19 coupon · pre-fix",
+			"item": [
+				{
+					"name": "Step 0: Register - User A",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Alice\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/account/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 1: Login - User A",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Validate coupon",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/coupons/gimme5",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"coupons",
+								"gimme5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Forge the cart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"productId\": 1,\r\n            \"productName\": \"Angular Blue Boots\",\r\n            \"price\": 200,\r\n            \"quantity\": 1,\r\n            \"pictureUrl\": \"/images/products/boot-ang1.png\",\r\n            \"brand\": \"Angular\",\r\n            \"type\": \"Boots\"\r\n        }\r\n    ],\r\n    \"deliveryMethodId\": 1,\r\n    \"coupon\": {\r\n        \"name\": \"GIMME5\",\r\n        \"amountOff\": 999,\r\n        \"percentOff\": null,\r\n        \"promotionCode\": \"gimme5\",\r\n        \"id\": \"hFVUDrfn\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Check Redis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Create payment intent",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/payments",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: Place order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const order = pm.response.json();\r\npm.test(\"Discount must be the real coupon ($5), not the forged 999\", () => {\r\n    pm.expect(order.discount).to.eql(5);\r\n});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"deliveryMethodId\": 1,\r\n    \"shippingAddress\": {\r\n        \"name\": \"Alice Test\",\r\n        \"line1\": \"1 Test St\",\r\n        \"city\": \"Bucharest\",\r\n        \"postalCode\": \"010101\",\r\n        \"country\": \"RO\"\r\n    },\r\n    \"paymentSummary\": {\r\n        \"last4\": 4242,\r\n        \"brand\": \"visa\",\r\n        \"expMonth\": 12,\r\n        \"expYear\": 2030\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/orders",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4 · BUG-19 coupon · fixed",
+			"item": [
+				{
+					"name": "Step 0: Register - User A",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Alice\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/account/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 1: Login - User A",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"user_A@test.com\",\r\n    \"password\": \"2/Azr7>JV{r0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/login?useCookies=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"login"
+							],
+							"query": [
+								{
+									"key": "useCookies",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Validate coupon",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/coupons/gimme5",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"coupons",
+								"gimme5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Forge the cart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"productId\": 1,\r\n            \"productName\": \"Angular Blue Boots\",\r\n            \"price\": 200,\r\n            \"quantity\": 1,\r\n            \"pictureUrl\": \"/images/products/boot-ang1.png\",\r\n            \"brand\": \"Angular\",\r\n            \"type\": \"Boots\"\r\n        }\r\n    ],\r\n    \"deliveryMethodId\": 1,\r\n    \"coupon\": {\r\n        \"name\": \"GIMME5\",\r\n        \"amountOff\": 999,\r\n        \"percentOff\": null,\r\n        \"promotionCode\": \"gimme5\",\r\n        \"id\": \"hFVUDrfn\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Check Redis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/cart",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Create payment intent",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7096/api/payments",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: Place order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const order = pm.response.json();\r\npm.test(\"Discount must be the real coupon ($5), not the forged 999\", () => {\r\n    pm.expect(order.discount).to.eql(5);\r\n});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"deliveryMethodId\": 1,\r\n    \"shippingAddress\": {\r\n        \"name\": \"Alice Test\",\r\n        \"line1\": \"1 Test St\",\r\n        \"city\": \"Bucharest\",\r\n        \"postalCode\": \"010101\",\r\n        \"country\": \"RO\"\r\n    },\r\n    \"paymentSummary\": {\r\n        \"last4\": 4242,\r\n        \"brand\": \"visa\",\r\n        \"expMonth\": 12,\r\n        \"expYear\": 2030\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7096/api/orders",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7096",
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
