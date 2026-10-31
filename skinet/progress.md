@@ -120,6 +120,7 @@ timeline
 - [x] .NET 11 RC2 + Angular 22.2 (#100, #101) · cart 401 fix (#102) · pinned Docker images (#103)
 - [x] v1.0 released Oct 15 · Gate Oct 17–22
 - [x] Post-release — UptimeRobot keep-alive, unused Stripe key out of Key Vault (Oct 31, #108)
+- [x] Post-release — BUG-18 + BUG-19 reproduced in Postman, red before each fix, green after (Oct 31, #109)
 - [ ] T60 — Scheduled weekly CI advisory run → v2
 
 </details>

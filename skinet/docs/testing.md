@@ -88,8 +88,8 @@ T16/T18 idempotency and T13/T14 concurrency have no clean manual check — `dotn
 - [ ] Live URL loads, no 500
 - [ ] Smoke: register → login → cart → Stripe payment → admin order visible
 - [ ] Live `/health` → `Healthy` with `Content-Type: text/plain`. **HTML means the signal is dead** — the
-      route was renamed, or the Azure path is mistyped, and the SPA catch-all is answering instead
-- [ ] App Service → Health check: path is `/health`, alert rule enabled (setting it restarts the app)
+      route was renamed, or the monitor URL is mistyped, and the SPA catch-all is answering instead
+- [ ] UptimeRobot monitor on `/health` shows **Up** — it is what keeps F1 from unloading the app
 - [ ] One `/health/ready?key=…` call, in the same sitting as the smoke — it costs a database wake
 
 Both local and Azure green → sprint is closed. See `git-workflow.md` for the merge step.
