@@ -160,7 +160,7 @@ visitor, because the browser, not the build, is what pulls them.
 | Draw on the quota | Cost |
 |---|---|
 | One `/shop` page view, cold cache (`pageSize = 10`, 800px WebP) | **1759 KB** — Lighthouse, median of 3, after T35 |
-| `/health` at Azure's 60s probe | ~1.4 MB/day (1440 responses, almost all headers) |
+| `/health` at UptimeRobot's 15-min ping | ~0.1 MB/day (96 responses, almost all headers) |
 
 So roughly **96 catalogue page views exhaust the day**, and a full day of health probes costs less than
 one of them — page weight is the lever, the probe is not.
@@ -171,11 +171,11 @@ since that date) — freshness is the browser's guess. The hashed-asset and `/im
 
 ### Health endpoints
 
-App Service Health check pings the one path you set in the portal, every minute ([App Service docs](https://learn.microsoft.com/en-us/azure/app-service/monitor-instances-health-check)). That path must check nothing, or every ping wakes the database.
+UptimeRobot pings `/health` every 15 minutes. That path must check nothing, or every ping wakes the database.
 
 | Path | Checks | Called by | Answer |
 |---|---|---|---|
-| `/health` | nothing | Azure, every 60s | 200 + `Healthy` (`text/plain`) |
+| `/health` | nothing | UptimeRobot, every 15 min | 200 + `Healthy` (`text/plain`) |
 | `/health/ready` | SQL `CanConnectAsync` (10s cap) + Redis `PING` (5s cap) | you, CI, the deploy gate | 200/503 + per-check JSON |
 
 - Liveness opens no connection: **0 wakes**. Nothing pings `/health/ready` — each call is one wake, so
@@ -185,10 +185,10 @@ App Service Health check pings the one path you set in the portal, every minute 
 - The query form lands in logs — rotate the key, don't reuse a password.
 - Not Identity on that path: it reads `AspNetUsers`, which is gone when SQL is what died. Configuration is
   already in memory.
-- On F1 the Azure health check does nothing measurable: no *Health check status* data in 40 min, and the
-  app still unloaded after 20 idle minutes (cold start 54 s, measured 2026-10-31).
-- The path stays set for a move to Basic. Changing `healthCheckPath` restarts the app.
-- **Uptime = UptimeRobot** (free) pings `/health` every 15 min: it keeps the app loaded and alerts when it is down.
+- **UptimeRobot** (free) keeps the app loaded — F1 unloads it after ~20 idle minutes — and emails when it is down.
+- The Azure health check ([App Service docs](https://learn.microsoft.com/en-us/azure/app-service/monitor-instances-health-check))
+  does nothing measurable on F1: no *Health check status* data in 40 min, and the app still unloaded (cold
+  start 54 s, measured 2026-10-31). Its path stays set for a move to Basic; changing it restarts the app.
 - Every cold start re-runs `SeedDatabaseAsync`, which wakes the database.
 - Measured with Redis stopped: `/health` stayed `Healthy`; `/health/ready` gave 503 in 5.4s.
 
