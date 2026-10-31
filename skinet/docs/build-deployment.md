@@ -220,10 +220,11 @@ App Service reads Key Vault via System Managed Identity — no credentials store
 
 | Where | What lives there |
 |---|---|
-| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `StripeSettings--PublishableKey`, `AdminSettings--Password`, `HealthSettings--ReadyKey` |
+| **Key Vault** `kv-skinet-test` | `StripeSettings--SecretKey`, `StripeSettings--WhSecret`, `AdminSettings--Password`, `HealthSettings--ReadyKey` |
 | **App Service → Connection Strings** | `Redis` (Custom), `SqlServerAzureConnection` (SQLServer) |
 | **App Service → App Settings** | `KeyVaultUrl`, AppInsights vars (Azure-managed) |
-| **App Service → Health check** | Path `/health`, plus an alert rule on the *Health check status* metric |
+| **App Service → Health check** | Path `/health` |
+| **Alert rule** `skinet-health-down` | `avg HealthCheckStatus < 100` over 5 min, checked every 1 min, severity 1 → action group `azureapp-auto` (Azure mobile app push) |
 | **`appsettings.json`** | `KeyVaultUrl`, Logging config only — nothing sensitive |
 
 ### Azure roles
